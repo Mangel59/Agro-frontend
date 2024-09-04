@@ -1,0 +1,84 @@
+[
+  {
+    "id": "localizacion",
+    "text": "Localizacion",
+    "icon": "People",
+    "children": [
+      {
+        "id": "pais",
+        "text": "Pais",
+        "icon": "Timer"
+      },
+      {
+        "id": "departamento",
+        "text": "Departamento",
+        "icon": "PhonelinkSetup"
+      },
+      {
+        "id": "municipio",
+        "text": "Municipio",
+        "icon": "PhonelinkSetup"
+      }
+    ]
+  },
+  {
+    "id": "inventario",
+    "text": "Inventario",
+    "icon": "AddShoppingCartIcon",
+    "children": [
+      {
+        "id": "producto_presentacion",
+        "text": "ProductoPresentacion",
+        "icon": "ProductionQuantityLimitsIcon"
+      },
+      {
+        "id": "producto",
+        "text": "Producto",
+        "icon": "ProductionQuantityLimitsIcon"
+      },
+      {
+        "id": "producto_categoria",
+        "text": "Producto Categoría",
+        "icon": "ProductionQuantityLimitsIcon"
+      },
+      {
+        "id": "produccion",
+        "text": "Produccion",
+        "icon": "ProductionQuantityLimitsIcon"
+      },
+      {
+        "id": "kardex",
+        "text": "Kardex",
+        "icon": "ProductionQuantityLimitsIcon"
+      },
+      {
+        "id": "kardex_item",
+        "text": "KardexItem",
+        "icon": "ProductionQuantityLimitsIcon"
+      }
+    ]
+  },
+  {
+    "id": "reportes",
+    "text": "Reportes",
+    "icon": "Settings",
+    "children": []
+  },
+  {
+    "id": "autenticacion",
+    "text": "Autenticación",
+    "icon": "LockIcon",  
+    "children": [
+      {
+        "id": "persona",
+        "text": "Persona",
+        "icon": "PersonIcon" 
+      },
+      {
+        "id": "empresa",
+        "text": "Empresa",
+        "icon": "PersonIcon" 
+      }
+    ]
+  }
+]
