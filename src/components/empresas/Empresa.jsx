@@ -1,10 +1,18 @@
 import * as React from "react";
-import axios from "../axiosConfig";
+// import axios from "../axiosConfig";
+import axios from "axios"; 
 import MessageSnackBar from "../MessageSnackBar";
 import FormEmpresa from "./FormEmpresa";
 import GridEmpresa from "./GridEmpresa";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * El componente Empresa gestiona el módulo de empresas, incluyendo el formulario
+ * y la tabla de datos para crear, actualizar, y eliminar empresas.
+ * 
+ * @componente
+ * @returns {JSX.Element} El módulo de gestión de empresas.
+ */
 export default function Empresa() {
   const row = {
     id: 0,
@@ -29,9 +37,10 @@ export default function Empresa() {
   const [message, setMessage] = React.useState(messageData);
   const [empresas, setEmpresas] = React.useState([]);
 
-  React.useEffect(() => {
+  // Función para recargar los datos
+  const reloadData = () => {
     axios
-      .get(`${SiteProps.urlbasev1}/empresas?page=0&size=30&sort=id,asc`)
+      .get(`${SiteProps.urlbasev1}/empresas`)
       .then((response) => {
         const empresaData = response.data.data.map((item) => ({
           ...item,
@@ -42,6 +51,11 @@ export default function Empresa() {
       .catch((error) => {
         console.error("Error al buscar empresas!", error);
       });
+
+  };
+
+  React.useEffect(() => {
+    reloadData();  // Llama a reloadData para cargar los datos iniciales
   }, []);
 
   return (
@@ -51,7 +65,9 @@ export default function Empresa() {
         setMessage={setMessage}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
+        reloadData={reloadData}  // Pasa reloadData como prop a FormProductocategoria
         empresas={empresas}
+
       />
       <GridEmpresa
         selectedRow={selectedRow}

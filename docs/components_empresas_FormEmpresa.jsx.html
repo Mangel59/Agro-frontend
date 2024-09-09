@@ -1,4 +1,32 @@
-import * as React from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/empresas/FormEmpresa.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/empresas/FormEmpresa.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import * as React from "react";
 import axios from "axios";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -27,6 +55,20 @@ import { SiteProps } from "../dashboard/SiteProps";
 export default function FormEmpresa(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
+
+  /**
+   * Recarga los datos de empresas desde el servidor.
+   */
+  const reloadData = () => {
+    axios
+      .get(`${SiteProps.urlbasev1}/empresas`)
+      .then((response) => {
+        setEmpresas(response.data);  // Recargar los datos de empresas
+      })
+      .catch((error) => {
+        console.error("Error al recargar los datos!", error);
+      });
+  };
 
    /**
    * Crea una nueva empresa y abre el formulario.
@@ -234,14 +276,14 @@ export default function FormEmpresa(props) {
   };
 
   return (
-    <React.Fragment>
-      <StackButtons
+    &lt;React.Fragment>
+      &lt;StackButtons
         methods={methods}
         create={create}
         open={open}
         setOpen={setOpen}
       />
-      <Dialog
+      &lt;Dialog
         open={open}
         onClose={handleClose}
         PaperProps={{
@@ -249,11 +291,11 @@ export default function FormEmpresa(props) {
           onSubmit: handleSubmit,
         }}
       >
-        <DialogTitle>{methodName} Empresa</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Completa el formulario.</DialogContentText>
-          <FormControl fullWidth margin="normal">
-            <TextField
+        &lt;DialogTitle>{methodName} Empresa&lt;/DialogTitle>
+        &lt;DialogContent>
+          &lt;DialogContentText>Completa el formulario.&lt;/DialogContentText>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;TextField
               autoFocus
               required
               id="nombre"
@@ -263,9 +305,9 @@ export default function FormEmpresa(props) {
               variant="standard"
               defaultValue={props.selectedRow?.nombre || ""}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;TextField
               required
               id="descripcion"
               name="descripcion"
@@ -274,22 +316,22 @@ export default function FormEmpresa(props) {
               variant="standard"
               defaultValue={props.selectedRow?.descripcion || ""}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label">Estado</InputLabel>
-            <Select
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;InputLabel id="estado-label">Estado&lt;/InputLabel>
+            &lt;Select
               labelId="estado-label"
               id="estado"
               name="estado"
               defaultValue={props.selectedRow?.estado || 0}
               fullWidth
             >
-              <MenuItem value={0}>Inactivo</MenuItem>
-              <MenuItem value={1}>Activo</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
+              &lt;MenuItem value={0}>Inactivo&lt;/MenuItem>
+              &lt;MenuItem value={1}>Activo&lt;/MenuItem>
+            &lt;/Select>
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;TextField
               required
               id="celular"
               name="celular"
@@ -298,9 +340,9 @@ export default function FormEmpresa(props) {
               variant="standard"
               defaultValue={props.selectedRow?.celular || ""}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;TextField
               required
               id="correo"
               name="correo"
@@ -310,9 +352,9 @@ export default function FormEmpresa(props) {
               variant="standard"
               defaultValue={props.selectedRow?.correo || ""}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;TextField
               required
               id="contacto"
               name="contacto"
@@ -321,9 +363,9 @@ export default function FormEmpresa(props) {
               variant="standard"
               defaultValue={props.selectedRow?.contacto || ""}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;TextField
               required
               id="identificacion"
               name="identificacion"
@@ -332,9 +374,9 @@ export default function FormEmpresa(props) {
               variant="standard"
               defaultValue={props.selectedRow?.identificacion || ""}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;TextField
               required
               id="personaId"
               name="personaId"
@@ -343,28 +385,51 @@ export default function FormEmpresa(props) {
               variant="standard"
               defaultValue={props.selectedRow?.personaId || ""}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="tipoIdentificacionId-label">
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;InputLabel id="tipoIdentificacionId-label">
               Tipo de Identificación
-            </InputLabel>
-            <Select
+            &lt;/InputLabel>
+            &lt;Select
               labelId="tipoIdentificacionId-label"
               id="tipoIdentificacionId"
               name="tipoIdentificacionId"
               defaultValue={props.selectedRow?.tipoIdentificacionId || 0}
               fullWidth
             >
-              <MenuItem value={1}>Cédula</MenuItem>
-              <MenuItem value={2}>Pasaporte</MenuItem>
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancelar</Button>
-          <Button type="submit">{methodName}</Button>
-        </DialogActions>
-      </Dialog>
-    </React.Fragment>
+              &lt;MenuItem value={1}>Cédula&lt;/MenuItem>
+              &lt;MenuItem value={2}>Pasaporte&lt;/MenuItem>
+            &lt;/Select>
+          &lt;/FormControl>
+        &lt;/DialogContent>
+        &lt;DialogActions>
+          &lt;Button onClick={handleClose}>Cancelar&lt;/Button>
+          &lt;Button type="submit">{methodName}&lt;/Button>
+        &lt;/DialogActions>
+      &lt;/Dialog>
+    &lt;/React.Fragment>
   );
 }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Thu Sep 05 2024 07:47:43 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,12 +1,9 @@
 import * as React from 'react';
-import { Button, TextField, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import { Button, TextField, FormControl, InputLabel, MenuItem, Select, Typography, Box, Container } from '@mui/material';
 import { SiteProps } from '../dashboard/SiteProps';
 import axios from '../axiosConfig';
 // import axios from 'axios'
 import FormRegistroEmpresa from './FormRegistroEmpresa';
-
-
-
 
 export default function FormRegistroPersona(props) {
   // Definimos la URL del endpoint
@@ -37,6 +34,34 @@ export default function FormRegistroPersona(props) {
   };
 
   return (
+    <>
+    <Container 
+      maxWidth={false}  
+      disableGutters  
+      sx={{
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        minHeight: '100vh',  
+        backgroundColor: '#FFF',
+        padding: 3,
+        mt: 55,
+      }}
+    >
+
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 3,
+          padding: 4,
+          backgroundColor: 'white',
+          borderRadius: 4,
+          boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)',
+          width: '100%',
+          maxWidth: 400,
+        }}
+      >
     <form onSubmit={handleSubmit}>
       <Typography variant="h5" component="h2" gutterBottom>
         Formulario Persona
@@ -66,14 +91,21 @@ export default function FormRegistroPersona(props) {
         />
       </FormControl>
       
-      <FormControl fullWidth margin="normal">
-        <InputLabel id="tipoIdentificacionId-label">Tipo de Identificación</InputLabel>
+      <FormControl fullWidth margin="normal" variant="outlined">
+        <InputLabel
+          id="tipoIdentificacionId-label"
+          sx={{
+            backgroundColor: 'white', 
+            padding: '0 8px',      
+          }}
+        >Tipo de Identificación</InputLabel>
         <Select
           labelId="tipoIdentificacionId-label"
           id="tipoIdentificacionId"
           name="tipoIdentificacionId"
           defaultValue={props.selectedRow?.tipoIdentificacionId || ''}
           fullWidth
+          label="Tipo de Identificación"
         >
           <MenuItem value={1}>Cédula</MenuItem>
           <MenuItem value={2}>Pasaporte</MenuItem>
@@ -85,15 +117,20 @@ export default function FormRegistroPersona(props) {
           required
           id="identificacion"
           name="identificacion"
-          label="Identificación"
+          label="Número de Identificación"
           fullWidth
           variant="standard"
           defaultValue={props.selectedRow?.identificacion || ''}
         />
       </FormControl>
       
-      <FormControl fullWidth margin="normal">
-        <InputLabel id="genero-label">Género</InputLabel>
+      <FormControl fullWidth margin="normal" variant='outlined'>
+        <InputLabel id="genero-label"
+          sx={{
+            backgroundColor: 'white', 
+            padding: '0 8px',      
+          }}
+        >Género</InputLabel>
         <Select
           labelId="genero-label"
           id="genero"
@@ -158,7 +195,12 @@ export default function FormRegistroPersona(props) {
       </FormControl>
       
       <FormControl fullWidth margin="normal">
-        <InputLabel id="estado-label">Estado</InputLabel>
+        <InputLabel id="estado-label"
+          sx={{
+            backgroundColor: 'white', 
+            padding: '0 8px',      
+          }}
+        >Estado</InputLabel>
         <Select
           labelId="estado-label"
           id="estado"
@@ -175,5 +217,8 @@ export default function FormRegistroPersona(props) {
         Guardar
       </Button>
     </form>
+    </Box>
+    </Container>
+    </>
   );
 }

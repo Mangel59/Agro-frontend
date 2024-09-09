@@ -105,9 +105,8 @@ export default function FormProductoCategoria(props) {
     const validatePayload = (data) => {
       if (
         !data.nombre ||
-        !data.tipoIdentificacionId ||
-        !data.identificacion ||
-        !data.direccion
+        !data.descripcion ||
+        !data.estado
       ) {
         console.error("Invalid data:", data);
         props.setMessage({
@@ -216,7 +215,7 @@ export default function FormProductoCategoria(props) {
           onSubmit: handleSubmit,
         }}
       >
-        <DialogTitle>Producto Categoría</DialogTitle>
+        <DialogTitle>{methodName} Producto Categoría</DialogTitle>
         <DialogContent>
           <DialogContentText>Completa el formulario.</DialogContentText>
           <FormControl fullWidth margin="normal">
@@ -231,103 +230,19 @@ export default function FormProductoCategoria(props) {
               defaultValue={props.selectedRow?.nombre || ""}
             />
           </FormControl>
+          
           <FormControl fullWidth margin="normal">
             <TextField
               required
-              id="apellido"
-              name="apellido"
-              label="Apellido"
+              id="descripcion"
+              name="descripcion"
+              label="Descripción"
               fullWidth
               variant="standard"
-              defaultValue={props.selectedRow?.apellido || ""}
+              defaultValue={props.selectedRow?.descripcion || ""}
             />
           </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="tipoIdentificacionId-label">
-              Tipo de Identificación
-            </InputLabel>
-            <Select
-              labelId="tipoIdentificacionId-label"
-              id="tipoIdentificacionId"
-              name="tipoIdentificacionId"
-              defaultValue={props.selectedRow?.tipoIdentificacionId || ""}
-              fullWidth
-            >
-              <MenuItem value={1}>Cédula</MenuItem>
-              <MenuItem value={2}>Pasaporte</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="identificacion"
-              name="identificacion"
-              label="Identificación"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.identificacion || ""}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="genero-label">Género</InputLabel>
-            <Select
-              labelId="genero-label"
-              id="genero"
-              name="genero"
-              defaultValue={props.selectedRow?.genero ? "f" : "m"}
-              fullWidth
-            >
-              <MenuItem value="m">Masculino</MenuItem>
-              <MenuItem value="f">Femenino</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="fechaNacimiento"
-              name="fechaNacimiento"
-              label="Fecha de Nacimiento"
-              type="date"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.fechaNacimiento || ""}
-              InputLabelProps={{ shrink: true }}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="estrato"
-              name="estrato"
-              label="Estrato"
-              type="number"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.estrato || 0}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="direccion"
-              name="direccion"
-              label="Dirección"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.direccion || ""}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="celular"
-              name="celular"
-              label="Celular"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.celular || ""}
-            />
-          </FormControl>
+          
           <FormControl fullWidth margin="normal">
             <InputLabel id="estado-label">Estado</InputLabel>
             <Select

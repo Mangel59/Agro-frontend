@@ -1,6 +1,35 @@
-import React, { useState } from 'react';
-import { Container, TextField, Button, Typography, Box, IconButton, InputAdornment, Alert, Link } from '@mui/material';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/Login.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/Login.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState } from 'react';
+import { Container, TextField, Button, Typography, Box, IconButton, InputAdornment, Alert, Link, Switch } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+// import axios from '../components/axiosConfig';
 import axios from 'axios';
 import LoginIcon from '@mui/icons-material/Login';
 import { Link as RouterLink } from 'react-router-dom';
@@ -10,13 +39,23 @@ import FormRegistroPersona from './seguridad/FormRegistroPersona';
 import FormRegistroEmpresa from './seguridad/FormRegistroEmpresa';
 import Contenido from '../components/dashboard/Contenido';
 
+/**
+ * El componente Login maneja el formulario de inicio de sesión, valida la entrada del usuario
+ * y envía solicitudes de inicio de sesión al backend.
+ *
+ * @componente
+ * @ejemplo
+ * return (
+ *   &lt;Login />
+ * )
+ */
 export default function Login(props) {
   const { t, i18n } = useTranslation(); // Hook de traducción
-  const [username, setUsername] = useState(''); // Estado para el nombre de usuario/correo electrónico
-  const [password, setPassword] = useState(''); // Estado para la contraseña
-  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar la contraseña
-  const [error, setError] = useState(''); // Estado para manejar errores de autenticación
-  const toggleTheme = useThemeToggle(); // Hook para alternar entre temas
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const toggleTheme = useThemeToggle();
 
   /**
    * Alterna la visibilidad del campo de la contraseña.
@@ -52,59 +91,62 @@ export default function Login(props) {
    * @param {Event} event - El evento de envío del formulario.
    */  
   const handleSubmit = (event) => {
-    event.preventDefault(); // Previene la recarga de la página al enviar el formulario
-    setError(''); // Reinicia cualquier mensaje de error
+    event.preventDefault();
+    setError('');
 
     if (!validateEmail(username)) {
-      setError(t('invalid_email')); // Muestra mensaje de error si el correo no es válido
+      setError(t('invalid_email'));
       return;
     }
 
-    // Petición al backend para el login
-    axios.post('http://172.16.79.156:8080/auth/login', {
+
+  // PETICION 
+  axios.post('http://172.16.79.156:8080/auth/login', {
+    //axios.post('http://localhost:8080/auth/login', {
       username,
       password,
     })
     .then(response => {
-      // Guardar el token en el almacenamiento local para manejar la sesión
+      // localStorage.setItem('token', response.data);
+      console.log(response.data)
+
       localStorage.setItem('token', response.data.token);
 
-      // Verificar si props.setIsAuthenticated existe y es una función
-      if (props.setIsAuthenticated && typeof props.setIsAuthenticated === 'function') {
-        // Actualizar el estado de autenticación global
-        props.setIsAuthenticated(true);
-      } else {
-        console.warn('setIsAuthenticated no está disponible o no es una función.');
-      }
-
       const usuarioEstado = response.data.usuarioEstado;
-
-      // Según el estado del usuario, redirigir a los módulos correspondientes
-      if (usuarioEstado === 2) {
-        props.setCurrentModule(<FormRegistroPersona setCurrentModule={props.setCurrentModule} />);
-      } else if (usuarioEstado === 3) {
-        props.setCurrentModule(<FormRegistroEmpresa setCurrentModule={props.setCurrentModule} />);
-      } else if (usuarioEstado === 4) {
-        props.setCurrentModule(<Contenido setCurrentModule={props.setCurrentModule} />);
+      // const usuarioEstado = 3;
+      props.setShowLogout(true);
+      if ( usuarioEstado  == 2 ) {
+        props.setCurrentModule( &lt;FormRegistroPersona setCurrentModule={props.setCurrentModule}/>)
       }
+      if ( usuarioEstado  == 3 ) {
+        props.setCurrentModule( &lt;FormRegistroEmpresa setCurrentModule={props.setCurrentModule}/>)
+      }
+      if ( usuarioEstado  == 4 ) {
+        props.setCurrentModule( &lt;Contenido setCurrentModule={props.setCurrentModule}/>)
+      }
+      // props.setCurrentModule( &lt;FormRegistroPersona/>)
+      // window.location.href = '/home';
+
     })
     .catch(error => {
-      setError(t('login_error')); // Mostrar error si la autenticación falla
+      setError(t('login_error'));
       console.error('There was an error logging in!', error);
     });
   };
 
+
   /**
-   * Cambia el idioma de la aplicación usando la biblioteca i18n.
+   * Changes the language of the application using the i18n library.
    *
-   * @param {string} lng - El código de idioma al que cambiar (por ejemplo, 'en' para inglés, 'es' para español).
-   */
+   * @param {string} lng - The language code to switch to (e.g., 'en' for English, 'es' for Spanish).
+   */ 
   const handleLanguageChange = (lng) => {
     i18n.changeLanguage(lng);
   };
 
   return (
-    <Container 
+    &lt;>
+    &lt;Container 
       maxWidth={false}  
       disableGutters  
       sx={{
@@ -117,7 +159,8 @@ export default function Login(props) {
         mt: 15,
       }}
     >
-      <Box
+
+      &lt;Box
         component="form"
         onSubmit={handleSubmit}
         sx={{
@@ -132,7 +175,7 @@ export default function Login(props) {
           maxWidth: 400,
         }}
       >
-        <Typography 
+        &lt;Typography 
           variant="h4"  
           component="h1" 
           align="center" 
@@ -143,33 +186,33 @@ export default function Login(props) {
           }}
         >
           {t('login')}
-        </Typography>
-        {error && (
-          <Alert severity="error">{error}</Alert>
+        &lt;/Typography>
+        {error &amp;&amp; (
+          &lt;Alert severity="error">{error}&lt;/Alert>
         )}
         
-        <TextField
+        &lt;TextField
           label={t("email")}
           variant="outlined"
           value={username}
           onChange={e => setUsername(e.target.value)}
           fullWidth
           sx={{
-            '& .MuiOutlinedInput-root': {
+            '&amp; .MuiOutlinedInput-root': {
               borderRadius: 3,
-              '& fieldset': {
+              '&amp; fieldset': {
                 borderColor: '#1e88e5',
               },
-              '&:hover fieldset': {
+              '&amp;:hover fieldset': {
                 borderColor: '#1565c0',
               },
             },
-            '& .MuiInputLabel-root': {
+            '&amp; .MuiInputLabel-root': {
               color: '#1e88e5',
             },
           }}
         />
-        <TextField
+        &lt;TextField
           label={t("password")}
           variant="outlined"
           type={showPassword ? 'text' : 'password'}
@@ -177,36 +220,37 @@ export default function Login(props) {
           onChange={e => setPassword(e.target.value)}
           fullWidth
           sx={{
-            '& .MuiOutlinedInput-root': {
+            '&amp; .MuiOutlinedInput-root': {
               borderRadius: 3,
-              '& fieldset': {
+              '&amp; fieldset': {
                 borderColor: '#1e88e5',
               },
-              '&:hover fieldset': {
+              '&amp;:hover fieldset': {
                 borderColor: '#1565c0',
               },
             },
-            '& .MuiInputLabel-root': {
+            '&amp; .MuiInputLabel-root': {
               color: '#1e88e5',
             },
           }}
           InputProps={{
             endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
+              &lt;InputAdornment position="end">
+                &lt;IconButton
                   aria-label="toggle password visibility"
                   onClick={handleClickShowPassword}
                   onMouseDown={handleMouseDownPassword}
                   edge="end"
                 >
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
+                  {showPassword ? &lt;VisibilityOff /> : &lt;Visibility />}
+                &lt;/IconButton>
+              &lt;/InputAdornment>
             ),
           }}
         />
-
-        <Link
+        {/*Creado por karla, modifcado por maria */}
+        {/* Botón de "¿Olvidaste tu contraseña?" */}
+        &lt;Link
           component={RouterLink}
           to="/forgetpassword"  
           variant="body2"
@@ -219,36 +263,35 @@ export default function Login(props) {
             alignSelf: 'flex-end'  
           }}
         >
-          {t('Forgot your password?')} 
-        </Link>
+           {t('Forgot your password?')} 
+        &lt;/Link>
         
-        <Button
+        &lt;Button
           type="submit"
           variant="contained"
           color="primary"
           fullWidth
-          startIcon={<LoginIcon />}
+          startIcon={&lt;LoginIcon />}
           sx={{
             padding: '12px 0',
             borderRadius: 3,
             textTransform: 'none',
             fontWeight: 'bold',
             backgroundColor: '#1e88e5',
-            '&:hover': {
+            '&amp;:hover': {
               backgroundColor: '#1565c0',
             },
           }}
         >
           {t('login')}
-        </Button>
-
-        <Typography 
+        &lt;/Button>
+        &lt;Typography 
           variant="body2" 
           align="center" 
           sx={{ marginTop: 3, color: '#666' }}
         >
           {t("no_account")}{" "}
-          <Link 
+          &lt;Link 
             component={RouterLink} 
             to="/register" 
             sx={{ 
@@ -258,14 +301,40 @@ export default function Login(props) {
             }}
           >
             {t('register_here')}
-          </Link>
-        </Typography>
+          &lt;/Link>
+        &lt;/Typography>
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
-          <Button onClick={() => handleLanguageChange('en')}>English</Button>
-          <Button onClick={() => handleLanguageChange('es')}>Español</Button>
-        </Box>
-      </Box>
-    </Container>
+        {/* Botones de cambio de idioma */}
+        &lt;Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
+          &lt;Button onClick={() => handleLanguageChange('en')}>English&lt;/Button>
+          &lt;Button onClick={() => handleLanguageChange('es')}>Español&lt;/Button>
+        &lt;/Box>
+      &lt;/Box>
+    &lt;/Container>
+    &lt;/>
   );
 }
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Thu Sep 05 2024 07:47:43 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

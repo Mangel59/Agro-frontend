@@ -1,4 +1,32 @@
-import * as React from 'react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/dashboard/Navigator2.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/dashboard/Navigator2.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import * as React from 'react';
 import axios from 'axios';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
@@ -38,17 +66,17 @@ import Producto from '../producto/Producto.jsx';
 import ProductoCategoria from '../producto_categoria/ProductoCategoria.jsx';
 
 const icons = {
-  DnsRounded: <DnsRoundedIcon />,
-  Home: <HomeIcon />,
-  People: <PeopleIcon />,
-  Public: <PublicIcon />,
-  AddShoppingCartIcon: <AddShoppingCartIcon />,
-  Settings: <SettingsIcon />,
-  Timer: <TimerIcon />,
-  PhonelinkSetup: <PhonelinkSetupIcon />,
-  ProductionQuantityLimitsIcon: <ProductionQuantityLimitsIcon />,
-  LockIcon: <LockIcon />,
-  PersonIcon: <PersonIcon />
+  DnsRounded: &lt;DnsRoundedIcon />,
+  Home: &lt;HomeIcon />,
+  People: &lt;PeopleIcon />,
+  Public: &lt;PublicIcon />,
+  AddShoppingCartIcon: &lt;AddShoppingCartIcon />,
+  Settings: &lt;SettingsIcon />,
+  Timer: &lt;TimerIcon />,
+  PhonelinkSetup: &lt;PhonelinkSetupIcon />,
+  ProductionQuantityLimitsIcon: &lt;ProductionQuantityLimitsIcon />,
+  LockIcon: &lt;LockIcon />,
+  PersonIcon: &lt;PersonIcon />
 };
 
 const components = {
@@ -99,7 +127,7 @@ export default function Navigator2(props) {
           setBreadcrumb([firstMenuId]);
 
           const firstMenu = response.data[0];
-          if (firstMenu.children && firstMenu.children.length > 0) {
+          if (firstMenu.children &amp;&amp; firstMenu.children.length > 0) {
             props.setCurrentModuleItem(renderSubmenu(firstMenu.children, firstMenuId));
           }
         }
@@ -118,7 +146,7 @@ export default function Navigator2(props) {
     setSelectedMenu(menuId);
     const menu = menuItems.find(item => item.id === menuId);
     setBreadcrumb([menuId]);
-    if (menu && menu.children) {
+    if (menu &amp;&amp; menu.children) {
       props.setCurrentModuleItem(renderSubmenu(menu.children, menuId));
     } else {
       props.setCurrentModuleItem(null); // Clear content if no children
@@ -156,41 +184,41 @@ export default function Navigator2(props) {
    */
   const renderSubmenu = (children, parentMenuId) => {
     return (
-      <Box display="flex" flexWrap="wrap" justifyContent="center" p={2}>
+      &lt;Box display="flex" flexWrap="wrap" justifyContent="center" p={2}>
         {children.map(({ id, text, icon }) => (
-          <Card sx={{ minWidth: 275, m: 2 }} key={id}>
-            <CardContent>
-              <ListItemIcon>{icons[icon]}</ListItemIcon>
-              <Typography variant="h5" component="div">
+          &lt;Card sx={{ minWidth: 275, m: 2 }} key={id}>
+            &lt;CardContent>
+              &lt;ListItemIcon>{icons[icon]}&lt;/ListItemIcon>
+              &lt;Typography variant="h5" component="div">
                 {t(text)} {/* Traducir el texto del menú */}
-              </Typography>
-            </CardContent>
-            <CardActions>
-              <Button size="small" onClick={() => handleSubMenuClick(id, parentMenuId)}>{t('see_more')}</Button>
-            </CardActions>
-          </Card>
+              &lt;/Typography>
+            &lt;/CardContent>
+            &lt;CardActions>
+              &lt;Button size="small" onClick={() => handleSubMenuClick(id, parentMenuId)}>{t('see_more')}&lt;/Button>
+            &lt;/CardActions>
+          &lt;/Card>
         ))}
-      </Box>
+      &lt;/Box>
     );
   };
 
   return (
-    <Box>
-      <List component="nav">
+    &lt;Box>
+      &lt;List component="nav">
         {menuItems.map(({ id, text, icon }) => (
-          <ListItem disablePadding key={id}
+          &lt;ListItem disablePadding key={id}
             id={id}
             onClick={() => handleMenuClick(id)}
           >
-            <ListItemButton selected={selectedMenu === id}>
-              <ListItemIcon>{icons[icon]}</ListItemIcon>
-              <ListItemText primary={t(text)} /> {/* Traducir el texto del menú */}
-            </ListItemButton>
-          </ListItem>
+            &lt;ListItemButton selected={selectedMenu === id}>
+              &lt;ListItemIcon>{icons[icon]}&lt;/ListItemIcon>
+              &lt;ListItemText primary={t(text)} /> {/* Traducir el texto del menú */}
+            &lt;/ListItemButton>
+          &lt;/ListItem>
         ))}
-        <Divider sx={{ my: 1 }} />
-      </List>
-    </Box>
+        &lt;Divider sx={{ my: 1 }} />
+      &lt;/List>
+    &lt;/Box>
   );
 }
 
@@ -199,3 +227,26 @@ export default function Navigator2(props) {
 
 
 
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Thu Sep 05 2024 07:47:43 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

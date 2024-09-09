@@ -1,4 +1,32 @@
-// CREADO POR: EMANUEL
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/Register.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/Register.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// CREADO POR: EMANUEL
 // FECHA DE CREACION: 8/08/2024
 // MODIFICADO POR: MARIA 16/05/2024, 22/08/2024
 
@@ -19,7 +47,7 @@ import AppBarComponent from './dashboard/AppBarComponent';
  * @component
  * @example
  * return (
- *   <Register />
+ *   &lt;Register />
  * )
  */
 export default function Register(props) {
@@ -61,7 +89,7 @@ export default function Register(props) {
   };
 
   const validatePassword = (password) => {
-    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&amp;*])[A-Za-z\d!@#$%^&amp;*]{8,}$/;
     return passwordRegex.test(password);
   };
 
@@ -97,20 +125,6 @@ export default function Register(props) {
       username,
       password,
     })
-    .then(response => {
-      // Aquí puedes manejar la respuesta de éxito si es necesario
-      setOpenSnackbar(true); // Muestra el Snackbar de éxito
-    })
-    .catch(error => {
-      if (error.response && error.response.status === 403) {
-        // Aquí mostramos el mensaje de que el correo ya existe
-        setError(t('email ya existe'));
-      } else {
-        // Otros posibles errores
-        setError(t('registration_failed'));
-      }
-    });
-   
     
   };
 
@@ -124,9 +138,9 @@ export default function Register(props) {
   };
 
   return (
-    <>
+    &lt;>
 
-    <Container 
+    &lt;Container 
       maxWidth={false}
       disableGutters
       sx={{
@@ -140,7 +154,7 @@ export default function Register(props) {
       }}
     >
 
-      <Paper 
+      &lt;Paper 
         elevation={6}
         sx={{ 
           padding: 4, 
@@ -150,7 +164,7 @@ export default function Register(props) {
           width: '100%',
         }}
       >
-        <Box
+        &lt;Box
           component="form"
           onSubmit={handleSubmit}
           sx={{
@@ -159,7 +173,7 @@ export default function Register(props) {
             gap: 3,
           }}
         >
-          <Typography 
+          &lt;Typography 
             variant="h4" 
             component="h1" 
             align="center" 
@@ -170,34 +184,32 @@ export default function Register(props) {
             }}
           >
             {t('register')}
-          </Typography>
-          {error && (
-            <Alert severity="error">{error}</Alert>
+          &lt;/Typography>
+          {error &amp;&amp; (
+            &lt;Alert severity="error">{error}&lt;/Alert>
           )}
-          <TextField
-            id="email-input"
+          &lt;TextField
             label={t("email")}
             variant="outlined"
             value={username}
             onChange={e => setUsername(e.target.value)}
             fullWidth
             sx={{
-              '& .MuiOutlinedInput-root': {
+              '&amp; .MuiOutlinedInput-root': {
                 borderRadius: 3,
-                '& fieldset': {
+                '&amp; fieldset': {
                   borderColor: '#1e88e5',
                 },
-                '&:hover fieldset': {
+                '&amp;:hover fieldset': {
                   borderColor: '#1565c0',
                 },
               },
-              '& .MuiInputLabel-root': {
+              '&amp; .MuiInputLabel-root': {
                 color: '#1e88e5',
               },
             }}
           />
-          <TextField
-            id="password-input"
+          &lt;TextField
             label={t("password")}
             variant="outlined"
             type={showPassword ? 'text' : 'password'}
@@ -205,36 +217,35 @@ export default function Register(props) {
             onChange={e => setPassword(e.target.value)}
             fullWidth
             sx={{
-              '& .MuiOutlinedInput-root': {
+              '&amp; .MuiOutlinedInput-root': {
                 borderRadius: 3,
-                '& fieldset': {
+                '&amp; fieldset': {
                   borderColor: '#1e88e5',
                 },
-                '&:hover fieldset': {
+                '&amp;:hover fieldset': {
                   borderColor: '#1565c0',
                 },
               },
-              '& .MuiInputLabel-root': {
+              '&amp; .MuiInputLabel-root': {
                 color: '#1e88e5',
               },
             }}
             InputProps={{
               endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
+                &lt;InputAdornment position="end">
+                  &lt;IconButton
                     aria-label="toggle password visibility"
                     onClick={handleClickShowPassword}
                     onMouseDown={handleMouseDownPassword}
                     edge="end"
                   >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
+                    {showPassword ? &lt;VisibilityOff /> : &lt;Visibility />}
+                  &lt;/IconButton>
+                &lt;/InputAdornment>
               ),
             }}
           />
-          <Button 
-          id="register-button"
+          &lt;Button 
             type="submit" 
             variant="contained" 
             color="primary" 
@@ -245,20 +256,20 @@ export default function Register(props) {
               textTransform: 'none',
               fontWeight: 'bold',
               backgroundColor: '#1e88e5',
-              '&:hover': {
+              '&amp;:hover': {
                 backgroundColor: '#1565c0',
               },
             }}
           >
             {t('register')}
-          </Button>
-          <Typography 
+          &lt;/Button>
+          &lt;Typography 
             variant="body2" 
             align="center" 
             sx={{ marginTop: 3, color: '#666' }}
           >
             {t("already_have_account")}{" "}
-            <Link 
+            &lt;Link 
               component={RouterLink} 
               to="/login" 
               sx={{ 
@@ -268,28 +279,51 @@ export default function Register(props) {
               }}
             >
               {t('login_here')}
-            </Link>
-          </Typography>
+            &lt;/Link>
+          &lt;/Typography>
 
           {/* Botones de cambio de idioma */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
-            <Button onClick={() => handleLanguageChange('en')}>English</Button>
-            <Button onClick={() => handleLanguageChange('es')}>Español</Button>
-          </Box>
-        </Box>
-      </Paper>
-      <Snackbar
+          &lt;Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
+            &lt;Button onClick={() => handleLanguageChange('en')}>English&lt;/Button>
+            &lt;Button onClick={() => handleLanguageChange('es')}>Español&lt;/Button>
+          &lt;/Box>
+        &lt;/Box>
+      &lt;/Paper>
+      &lt;Snackbar
       open={openSnackbar}
       autoHideDuration={3000}
       onClose={() => setOpenSnackbar(false)}
     >
-      <Alert onClose={() => setOpenSnackbar(false)} severity="warning" sx={{ width: '100%' }} timeout="10000">
+      &lt;Alert onClose={() => setOpenSnackbar(false)} severity="success" sx={{ width: '100%' }} timeout="10000">
         {t('registration_success')}
-      </Alert>
-    </Snackbar>
+      &lt;/Alert>
+    &lt;/Snackbar>
 
-    </Container>
-    </>
+    &lt;/Container>
+    &lt;/>
   );
 }
 
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Thu Sep 05 2024 07:47:43 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

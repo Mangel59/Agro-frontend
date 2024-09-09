@@ -1,4 +1,32 @@
-import * as React from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/personas/FormPersona.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/personas/FormPersona.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import * as React from "react";
 import axios from "axios";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -237,14 +265,14 @@ export default function FormPersona(props) {
 
   //hacer el post de la persona
   return (
-    <React.Fragment>
-      <StackButtons
+    &lt;React.Fragment>
+      &lt;StackButtons
         methods={methods}
         create={create}
         open={open}
         setOpen={setOpen}
       />
-      <Dialog
+      &lt;Dialog
         open={open}
         onClose={handleClose}
         PaperProps={{
@@ -252,11 +280,11 @@ export default function FormPersona(props) {
           onSubmit: handleSubmit,
         }}
       >
-        <DialogTitle>Persona</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Completa el formulario.</DialogContentText>
-          <FormControl fullWidth margin="normal">
-            <TextField
+        &lt;DialogTitle>Persona&lt;/DialogTitle>
+        &lt;DialogContent>
+          &lt;DialogContentText>Completa el formulario.&lt;/DialogContentText>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;TextField
               autoFocus
               required
               id="nombre"
@@ -266,9 +294,9 @@ export default function FormPersona(props) {
               variant="standard"
               defaultValue={props.selectedRow?.nombre || ""}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;TextField
               required
               id="apellido"
               name="apellido"
@@ -277,24 +305,24 @@ export default function FormPersona(props) {
               variant="standard"
               defaultValue={props.selectedRow?.apellido || ""}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="tipoIdentificacionId-label">
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;InputLabel id="tipoIdentificacionId-label">
               Tipo de Identificación
-            </InputLabel>
-            <Select
+            &lt;/InputLabel>
+            &lt;Select
               labelId="tipoIdentificacionId-label"
               id="tipoIdentificacionId"
               name="tipoIdentificacionId"
               defaultValue={props.selectedRow?.tipoIdentificacionId || ""}
               fullWidth
             >
-              <MenuItem value={1}>Cédula</MenuItem>
-              <MenuItem value={2}>Pasaporte</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
+              &lt;MenuItem value={1}>Cédula&lt;/MenuItem>
+              &lt;MenuItem value={2}>Pasaporte&lt;/MenuItem>
+            &lt;/Select>
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;TextField
               required
               id="identificacion"
               name="identificacion"
@@ -303,22 +331,22 @@ export default function FormPersona(props) {
               variant="standard"
               defaultValue={props.selectedRow?.identificacion || ""}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="genero-label">Género</InputLabel>
-            <Select
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;InputLabel id="genero-label">Género&lt;/InputLabel>
+            &lt;Select
               labelId="genero-label"
               id="genero"
               name="genero"
               defaultValue={props.selectedRow?.genero ? "f" : "m"}
               fullWidth
             >
-              <MenuItem value="m">Masculino</MenuItem>
-              <MenuItem value="f">Femenino</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
+              &lt;MenuItem value="m">Masculino&lt;/MenuItem>
+              &lt;MenuItem value="f">Femenino&lt;/MenuItem>
+            &lt;/Select>
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;TextField
               required
               id="fechaNacimiento"
               name="fechaNacimiento"
@@ -329,9 +357,9 @@ export default function FormPersona(props) {
               defaultValue={props.selectedRow?.fechaNacimiento || ""}
               InputLabelProps={{ shrink: true }}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;TextField
               required
               id="estrato"
               name="estrato"
@@ -341,9 +369,9 @@ export default function FormPersona(props) {
               variant="standard"
               defaultValue={props.selectedRow?.estrato || 0}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;TextField
               required
               id="direccion"
               name="direccion"
@@ -352,9 +380,9 @@ export default function FormPersona(props) {
               variant="standard"
               defaultValue={props.selectedRow?.direccion || ""}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;TextField
               required
               id="celular"
               name="celular"
@@ -363,26 +391,49 @@ export default function FormPersona(props) {
               variant="standard"
               defaultValue={props.selectedRow?.celular || ""}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label">Estado</InputLabel>
-            <Select
+          &lt;/FormControl>
+          &lt;FormControl fullWidth margin="normal">
+            &lt;InputLabel id="estado-label">Estado&lt;/InputLabel>
+            &lt;Select
               labelId="estado-label"
               id="estado"
               name="estado"
               defaultValue={props.selectedRow?.estado || 0}
               fullWidth
             >
-              <MenuItem value={0}>Inactivo</MenuItem>
-              <MenuItem value={1}>Activo</MenuItem>
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancelar</Button>
-          <Button type="submit">{methodName}</Button>
-        </DialogActions>
-      </Dialog>
-    </React.Fragment>
+              &lt;MenuItem value={0}>Inactivo&lt;/MenuItem>
+              &lt;MenuItem value={1}>Activo&lt;/MenuItem>
+            &lt;/Select>
+          &lt;/FormControl>
+        &lt;/DialogContent>
+        &lt;DialogActions>
+          &lt;Button onClick={handleClose}>Cancelar&lt;/Button>
+          &lt;Button type="submit">{methodName}&lt;/Button>
+        &lt;/DialogActions>
+      &lt;/Dialog>
+    &lt;/React.Fragment>
   );
 }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Thu Sep 05 2024 07:47:43 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
