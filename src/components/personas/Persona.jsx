@@ -33,7 +33,7 @@ export default function Persona(props) {
   // Función para recargar los datos
   const reloadData = () => {
     axios
-      .get(`${SiteProps.urlbasev1}/personas?page=0&size=30&sort=id,asc`)
+      .get(`${SiteProps.urlbasev1}/personas`)
       .then((response) => {
         const personaData = response.data.data.map((item) => ({
           ...item,
