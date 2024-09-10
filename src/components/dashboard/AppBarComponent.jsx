@@ -6,6 +6,7 @@ import Register from '../Register';
 import Logout from '../Logout';
 import { useThemeToggle } from './ThemeToggleProvider';
 
+
 export default function AppBarComponent(props) {
   const location = useLocation();
   const [showLogout, setShowLogout] = React.useState(false);

@@ -60,6 +60,20 @@ export default function Register(props) {
       username,
       password,
     })
+    .then(response => {
+      // Aquí puedes manejar la respuesta de éxito si es necesario
+      setOpenSnackbar(true); // Muestra el Snackbar de éxito
+    })
+    .catch(error => {
+      if (error.response && error.response.status === 403) {
+        // Aquí mostramos el mensaje de que el correo ya existe
+        setError(t('email ya existe'));
+      } else {
+        // Otros posibles errores
+        setError(t('registration_failed'));
+      }
+    });
+   
     
   };
 
@@ -119,6 +133,7 @@ export default function Register(props) {
             <Alert severity="error">{error}</Alert>
           )}
           <TextField
+            id="email-input"
             label={t("email")}
             variant="outlined"
             value={username}
@@ -140,6 +155,7 @@ export default function Register(props) {
             }}
           />
           <TextField
+            id="password-input"
             label={t("password")}
             variant="outlined"
             type={showPassword ? 'text' : 'password'}
@@ -176,6 +192,7 @@ export default function Register(props) {
             }}
           />
           <Button 
+          id="register-button"
             type="submit" 
             variant="contained" 
             color="primary" 
@@ -224,7 +241,7 @@ export default function Register(props) {
       autoHideDuration={3000}
       onClose={() => setOpenSnackbar(false)}
     >
-      <Alert onClose={() => setOpenSnackbar(false)} severity="success" sx={{ width: '100%' }} timeout="10000">
+      <Alert onClose={() => setOpenSnackbar(false)} severity="warning" sx={{ width: '100%' }} timeout="10000">
         {t('registration_success')}
       </Alert>
     </Snackbar>
