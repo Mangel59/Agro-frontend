@@ -279,7 +279,12 @@ export default function FormPersona(props) {
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="tipoIdentificacionId-label">
+            <InputLabel id="tipoIdentificacionId-label"
+            sx={{
+              backgroundColor: 'white', 
+              padding: '0 8px',      
+            }}
+            >
               Tipo de Identificación
             </InputLabel>
             <Select
@@ -298,14 +303,19 @@ export default function FormPersona(props) {
               required
               id="identificacion"
               name="identificacion"
-              label="Identificación"
+              label="Número de Identificación"
               fullWidth
               variant="standard"
               defaultValue={props.selectedRow?.identificacion || ""}
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="genero-label">Género</InputLabel>
+            <InputLabel id="genero-label"
+              sx={{
+                backgroundColor: 'white', 
+                padding: '0 8px',      
+              }}
+            >Género</InputLabel>
             <Select
               labelId="genero-label"
               id="genero"
@@ -313,7 +323,7 @@ export default function FormPersona(props) {
               defaultValue={props.selectedRow?.genero ? "f" : "m"}
               fullWidth
             >
-              <MenuItem value="m">Masculino</MenuItem>
+              <MenuItem value="m">Maculino</MenuItem>
               <MenuItem value="f">Femenino</MenuItem>
             </Select>
           </FormControl>
@@ -365,16 +375,21 @@ export default function FormPersona(props) {
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label">Estado</InputLabel>
+            <InputLabel id="estado-label"
+              sx={{
+                backgroundColor: 'white', 
+                padding: '0 8px',      
+              }}
+            >Estado</InputLabel>
             <Select
               labelId="estado-label"
               id="estado"
               name="estado"
-              defaultValue={props.selectedRow?.estado || 0}
+              defaultValue={props.selectedRow?.estado || ''}
               fullWidth
             >
-              <MenuItem value={0}>Inactivo</MenuItem>
               <MenuItem value={1}>Activo</MenuItem>
+              <MenuItem value={0}>Inactivo</MenuItem>
             </Select>
           </FormControl>
         </DialogContent>

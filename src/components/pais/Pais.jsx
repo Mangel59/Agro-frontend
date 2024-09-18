@@ -8,10 +8,8 @@ import { SiteProps } from '../dashboard/SiteProps';
 
 export default function Pais() {
   const row = {
-    pai_id: 0,
-    pai_nombre: "",
-    pai_codigo: 0,
-    pai_acronimo: ""
+    id: 0,
+    name: "",
   };
 
   const [selectedRow, setSelectedRow] = React.useState(row);
@@ -26,11 +24,11 @@ export default function Pais() {
   const [pais, setPais] = React.useState([]);
 
   React.useEffect(() => {
-    axios.get(`${SiteProps.urlbase}/pais`)
+    axios.get(`${SiteProps.urlbasev1}/items/pais`)
       .then(response => {
         const paisData = response.data.map((item) => ({
           ...item,
-          id: item.pai_id, // Asignar id basado en pai_id
+          id: item.id, // Asignar id basado en pai_id
         }));
         setPais(paisData);
         console.log(paisData);

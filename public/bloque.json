@@ -1,0 +1,167 @@
+[
+  {
+    "blo_id": 1,
+    "blo_sede_id": 1,
+    "blo_tipo_bloque_id": 1,
+    "blo_nombre": "Bloque A",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-75.343, 39.984]},
+    "blo_coordenadas": {"latitude": 39.984, "longitude": -75.343},
+    "blo_numero_pisos": 5,
+    "blo_descripcion": "Bloque administrativo de la sede A",
+    "blo_estado": 1
+  },
+  {
+    "blo_id": 2,
+    "blo_sede_id": 2,
+    "blo_tipo_bloque_id": 2,
+    "blo_nombre": "Bloque B",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-74.343, 38.984]},
+    "blo_coordenadas": {"latitude": 38.984, "longitude": -74.343},
+    "blo_numero_pisos": 4,
+    "blo_descripcion": "Bloque de producción de la sede B",
+    "blo_estado": 1
+  },
+  {
+    "blo_id": 3,
+    "blo_sede_id": 3,
+    "blo_tipo_bloque_id": 3,
+    "blo_nombre": "Bloque C",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-73.343, 37.984]},
+    "blo_coordenadas": {"latitude": 37.984, "longitude": -73.343},
+    "blo_numero_pisos": 3,
+    "blo_descripcion": "Bloque de investigación de la sede C",
+    "blo_estado": 1
+  },
+  {
+    "blo_id": 4,
+    "blo_sede_id": 4,
+    "blo_tipo_bloque_id": 4,
+    "blo_nombre": "Bloque D",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-72.343, 36.984]},
+    "blo_coordenadas": {"latitude": 36.984, "longitude": -72.343},
+    "blo_numero_pisos": 2,
+    "blo_descripcion": "Bloque de almacenamiento de la sede D",
+    "blo_estado": 1
+  },
+  {
+    "blo_id": 5,
+    "blo_sede_id": 5,
+    "blo_tipo_bloque_id": 5,
+    "blo_nombre": "Bloque E",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-71.343, 35.984]},
+    "blo_coordenadas": {"latitude": 35.984, "longitude": -71.343},
+    "blo_numero_pisos": 6,
+    "blo_descripcion": "Bloque de mantenimiento de la sede E",
+    "blo_estado": 1
+  },
+  {
+    "blo_id": 6,
+    "blo_sede_id": 6,
+    "blo_tipo_bloque_id": 6,
+    "blo_nombre": "Bloque F",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-70.343, 34.984]},
+    "blo_coordenadas": {"latitude": 34.984, "longitude": -70.343},
+    "blo_numero_pisos": 5,
+    "blo_descripcion": "Bloque de servicios de la sede F",
+    "blo_estado": 1
+  },
+  {
+    "blo_id": 7,
+    "blo_sede_id": 7,
+    "blo_tipo_bloque_id": 7,
+    "blo_nombre": "Bloque G",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-69.343, 33.984]},
+    "blo_coordenadas": {"latitude": 33.984, "longitude": -69.343},
+    "blo_numero_pisos": 4,
+    "blo_descripcion": "Bloque de capacitación de la sede G",
+    "blo_estado": 1
+  },
+  {
+    "blo_id": 8,
+    "blo_sede_id": 8,
+    "blo_tipo_bloque_id": 8,
+    "blo_nombre": "Bloque H",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-68.343, 32.984]},
+    "blo_coordenadas": {"latitude": 32.984, "longitude": -68.343},
+    "blo_numero_pisos": 3,
+    "blo_descripcion": "Bloque de innovación de la sede H",
+    "blo_estado": 1
+  },
+  {
+    "blo_id": 9,
+    "blo_sede_id": 9,
+    "blo_tipo_bloque_id": 9,
+    "blo_nombre": "Bloque I",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-67.343, 31.984]},
+    "blo_coordenadas": {"latitude": 31.984, "longitude": -67.343},
+    "blo_numero_pisos": 5,
+    "blo_descripcion": "Bloque de atención al cliente de la sede I",
+    "blo_estado": 1
+  },
+  {
+    "blo_id": 10,
+    "blo_sede_id": 10,
+    "blo_tipo_bloque_id": 10,
+    "blo_nombre": "Bloque J",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-66.343, 30.984]},
+    "blo_coordenadas": {"latitude": 30.984, "longitude": -66.343},
+    "blo_numero_pisos": 4,
+    "blo_descripcion": "Bloque logístico de la sede J",
+    "blo_estado": 1
+  },
+  {
+    "blo_id": 11,
+    "blo_sede_id": 11,
+    "blo_tipo_bloque_id": 11,
+    "blo_nombre": "Bloque K",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-65.343, 29.984]},
+    "blo_coordenadas": {"latitude": 29.984, "longitude": -65.343},
+    "blo_numero_pisos": 3,
+    "blo_descripcion": "Bloque comercial de la sede K",
+    "blo_estado": 1
+  },
+  {
+    "blo_id": 12,
+    "blo_sede_id": 12,
+    "blo_tipo_bloque_id": 12,
+    "blo_nombre": "Bloque L",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-64.343, 28.984]},
+    "blo_coordenadas": {"latitude": 28.984, "longitude": -64.343},
+    "blo_numero_pisos": 3,
+    "blo_descripcion": "Bloque de soporte técnico de la sede L",
+    "blo_estado": 1
+  },
+  {
+    "blo_id": 13,
+    "blo_sede_id": 13,
+    "blo_tipo_bloque_id": 13,
+    "blo_nombre": "Bloque M",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-63.343, 27.984]},
+    "blo_coordenadas": {"latitude": 27.984, "longitude": -63.343},
+    "blo_numero_pisos": 2,
+    "blo_descripcion": "Bloque residencial de la sede M",
+    "blo_estado": 1
+  },
+  {
+    "blo_id": 14,
+    "blo_sede_id": 14,
+    "blo_tipo_bloque_id": 14,
+    "blo_nombre": "Bloque N",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-62.343, 26.984]},
+    "blo_coordenadas": {"latitude": 26.984, "longitude": -62.343},
+    "blo_numero_pisos": 2,
+    "blo_descripcion": "Bloque de comedores de la sede N",
+    "blo_estado": 1
+  },
+  {
+    "blo_id": 15,
+    "blo_sede_id": 15,
+    "blo_tipo_bloque_id": 15,
+    "blo_nombre": "Bloque O",
+    "blo_geolocalizacion": {"type": "Point", "coordinates": [-61.343, 25.984]},
+    "blo_coordenadas": {"latitude": 25.984, "longitude": -61.343},
+    "blo_numero_pisos": 5,
+    "blo_descripcion": "Bloque de recreación de la sede O",
+    "blo_estado": 1
+  }
+]

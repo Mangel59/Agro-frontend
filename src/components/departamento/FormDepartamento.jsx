@@ -1,4 +1,5 @@
 import * as React from "react";
+import axios from 'axios'; 
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
@@ -11,252 +12,222 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
-import axios from 'axios';
 import { SiteProps } from '../dashboard/SiteProps';
 
-/**
- * Componente FormDepartamento que gestiona la creación, actualización y eliminación de departamentos.
- * 
- * @param {Object} props - Props del componente.
- * @param {Function} props.setMessage - Función para establecer el mensaje de notificación.
- * @param {Object} props.selectedRow - Fila seleccionada en la tabla de departamentos.
- * @param {Function} props.setSelectedRow - Función para establecer la fila seleccionada.
- * @param {Array} props.pais - Lista de países para seleccionar en el formulario.
- * @param {Function} props.setDepartamentos - Función para actualizar la lista de departamentos.
- * @returns {JSX.Element} Componente que contiene el formulario para gestionar departamentos.
- */
-export default function FormDepartamento(props) {
+export default function FormMunicipio(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
 
-  // Función para crear un nuevo departamento
-  const create = () => {
-    const row = {
-      dep_id: 0,
-      dep_nombre: "",
-      dep_pais_id: 0,
-      dep_codigo: 0,
-      dep_acronimo: "",
-    };
-    props.setSelectedRow(row);
-    setMethodName("Add");
-    setOpen(true);
-    console.log("create() " + props.selectedRow);
-  };
+  // const create = () => {
+  //   const row = {
+  //     id: 0,
+  //     name: "",
+      
+  //   };
+  //   props.setSelectedRow(row);
+  //   setMethodName("Add");
+  //   setOpen(true);
+  //   console.log("create() " + JSON.stringify(row));
+  // };
 
-  // Función para actualizar un departamento existente
-  const update = () => {
-    if (props.selectedRow.id === 0) {
-      console.log("select row");
-      const messageData = {
-        open: true,
-        severity: "error",
-        text: "Select row!",
-      };
-      props.setMessage(messageData);
-      return;
-    }
-    setMethodName("Update");
-    setOpen(true);
-    console.log("update() " + props.selectedRow);
-  };
+  // const update = () => {
+  //   if (!props.selectedRow || props.selectedRow.id === 0) {
+  //     const messageData = {
+  //       open: true,
+  //       severity: "error",
+  //       text: "Select row!",
+  //     };
+  //     props.setMessage(messageData);
+  //     return;
+  //   }
+  //   setMethodName("Update");
+  //   setOpen(true);
+  //   console.log("update() " + JSON.stringify(props.selectedRow));
+  // };
 
-  // Función para eliminar un departamento
-  const deleteRow = () => {
-    if (props.selectedRow.id === 0) {
-      console.log("select row");
-      const messageData = {
-        open: true,
-        severity: "error",
-        text: "Select row!",
-      };
-      props.setMessage(messageData);
-      return;
-    }
-    setMethodName("Delete");
-    setOpen(true);
-    console.log("delete() " + props.selectedRow);
-  };
+  // const deleteRow = () => {
+  //   if (props.selectedRow.id === 0) {
+  //     const messageData = {
+  //       open: true,
+  //       severity: "error",
+  //       text: "Select row!",
+  //     };
+  //     props.setMessage(messageData);
+  //     return;
+  //   }
+  //   const id = props.selectedRow.id;
+  //   const url = `${SiteProps.urlbasev1}/items/municipio/${id}`;
+  //   axios
+  //     .delete(url, {
+  //       headers: {
+  //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //       },
+  //     })
+  //     .then((response) => {
+  //       props.setMessage({
+  //         open: true,
+  //         severity: "success",
+  //         text: "Municipio eliminada con éxito!",
+  //       });
+  //       setOpen(false);
+  //       props.reloadData();
+  //     })
+  //     .catch((error) => {
+  //       const errorMessage = error.response
+  //         ? error.response.data.message
+  //         : error.message;
+  //       props.setMessage({
+  //         open: true,
+  //         severity: "error",
+  //         text: `Error al eliminar municipio! ${errorMessage}`,
+  //       });
+  //       console.error(
+  //         "Error al eliminar municipio!",
+  //         error.response || error.message
+  //       );
+  //     });
+  // };
 
-  // Métodos disponibles para el formulario
-  const methods = {
-    create,
-    update,
-    deleteRow,
-  };
+  // const methods = {
+  //   create,
+  //   update,
+  //   deleteRow,
+  // };
 
-  React.useEffect(() => {
-    if (props.selectedRow != undefined) {
-      console.log("SB: " + props.selectedRow.id);
-    }
-  }, [props.selectedRow]);
+  // React.useEffect(() => {
+  //   if (props.selectedRow !== undefined) {
+  //     console.log("Selected Row ID: " + props.selectedRow.id);
+  //   }
+  // }, [props.selectedRow]);
+  // const handleClose = () => {
+  //   setOpen(false);
+  // };
 
-  // Función para abrir el diálogo
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
+  // const handleSubmit = (event) => {
+  //   event.preventDefault();
+  //   const formData = new FormData(event.currentTarget);
+  //   const formJson = Object.fromEntries(formData.entries());
+  //   const id = props.selectedRow?.id || 0;
+  //   const validatePayload = (data) => {
+  //     if (
+  //       !data.name
+  //     ) {
+  //       console.error("Invalid data:", data);
+  //       props.setMessage({
+  //         open: true,
+  //         severity: "error",
+  //         text: "Por favor completa todos los campos obligatorios!",
+  //       });
+  //       return false;
+  //     }
+  //     return true;
+  //   };
 
-  // Función para cerrar el diálogo
-  const handleClose = () => {
-    setOpen(false);
-  };
+  //   if (!validatePayload(formJson)) return;
 
-  // Función para manejar el envío del formulario
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const formJson = Object.fromEntries(formData.entries());
-    const id = props.selectedRow.id;
-    console.log("Submitting data:", formJson);
+  //   if (methodName === "Add") {
+  //     axios.post(`${SiteProps.urlbasev1}/items/municipio`, formJson)
+  //       .then(response => {
+  //         props.setMessage({ open: true, severity: "success", text: "Municipio creado con éxito!" });
+  //         setOpen(false);
+  //         // Reload municipios
+  //         axios.get(`${SiteProps.urlbasev1}/items/municipio`)
+  //           .then(response => {
+  //             props.setMunicipios(response.data);
+  //           })
+  //           .catch(error => {
+  //             console.error("Error al buscar municipio!", error);
+  //           });
+  //       })
+  //       .catch(error => {
+  //         const errorMessage = error.response ? error.response.data.message : error.message;
+  //         props.setMessage({ open: true, severity: "error", text: `Error al crear municipio! ${errorMessage}` });
+  //         console.error("Error al crear municipio!", error.response || error.message);
+  //       });
+  //   } else if (methodName === "Update") {
+  //     axios.put(`${SiteProps.urlbasev1}/items/municipio/${id}`, formJson)
+  //       .then(response => {
+  //         props.setMessage({ open: true, severity: "success", text: "Municipio actualizado con éxito!" });
+  //         setOpen(false);
+  //         // Reload municipios
+  //         axios.get(`${SiteProps.urlbasev1}/items/municipio`)
+  //           .then(response => {
+  //             props.setMunicipios(response.data);
+  //           })
+  //           .catch(error => {
+  //             console.error("Error al buscar municipio!", error);
+  //           });
+  //       })
+  //       .catch(error => {
+  //         const errorMessage = error.response ? error.response.data.message : error.message;
+  //         props.setMessage({ open: true, severity: "error", text: `Error al actualizar municipio! ${errorMessage}`});
+  //         console.error("Error al actualizar municipio!", error.response || error.message);
+  //       });
+  //   } else if (methodName === "Delete") {
+  //     axios.delete(`${SiteProps.urlbasev1}/items/municipio/${id}`)
+  //       .then(response => {
+  //         props.setMessage({ open: true, severity: "success", text: "Municipio eliminado con éxito!" });
+  //         setOpen(false);
+  //         // Reload municipios
+  //         axios.get(`${SiteProps.urlbasev1}/items/municipio`)
+  //           .then(response => {
+  //             props.setMunicipios(response.data);
+  //           })
+  //           .catch(error => {
+  //             console.error("Error al buscar municipio!", error);
+  //           });
+  //       })
+  //       .catch(error => {
+  //         const errorMessage = error.response ? error.response.data.message : error.message;
+  //         props.setMessage({ open: true, severity: "error", text: `Error al eliminar municipio! ${errorMessage}` });
+  //         console.error("Error al eliminar municipio!", error.response || error.message);
+  //       });
+  //   }
 
-    // Lógica para agregar un nuevo departamento
-    if (methodName === "Add") {
-      axios.post(`${SiteProps.urlbase}/departamento`, formJson)
-        .then(response => {
-          props.setMessage({ open: true, severity: "success", text: "Departamento creado con éxito!" });
-          setOpen(false);
-          // Recargar departamentos
-          axios.get(`${SiteProps.urlbase}/departamento`)
-            .then(response => {
-              props.setDepartamentos(response.data);
-            })
-            .catch(error => {
-              console.error("Error al buscar departamento!", error);
-            });
-        })
-        .catch(error => {
-          props.setMessage({ open: true, severity: "error", text: "Error al crear departamento!" });
-          console.error("Error al crear departamento!", error.response || error.message);
-        });
-    } 
-    // Lógica para actualizar un departamento existente
-    else if (methodName === "Update") {
-      axios.put(`${SiteProps.urlbase}/departamento/${id}`, formJson)
-        .then(response => {
-          props.setMessage({ open: true, severity: "success", text: "Departamento actualizado con éxito!" });
-          setOpen(false);
-          // Recargar departamentos
-          axios.get(`${SiteProps.urlbase}/departamento`)
-            .then(response => {
-              props.setDepartamentos(response.data);
-            })
-            .catch(error => {
-              console.error("Error al buscar departamento!", error);
-            });
-        })
-        .catch(error => {
-          props.setMessage({ open: true, severity: "error", text: "Error al actualizar departamento!" });
-          console.error("Error al actualizar departamento!", error.response || error.message);
-        });
-    } 
-    // Lógica para eliminar un departamento
-    else if (methodName === "Delete") {
-      axios.delete(`${SiteProps.urlbase}/departamento/${id}`)
-        .then(response => {
-          props.setMessage({ open: true, severity: "success", text: "Departamento eliminado con éxito!" });
-          setOpen(false);
-          // Recargar departamentos
-          axios.get(`${SiteProps.urlbase}/departamento`)
-            .then(response => {
-              props.setDepartamentos(response.data);
-            })
-            .catch(error => {
-              console.error("Error al buscar departamento!", error);
-            });
-        })
-        .catch(error => {
-          props.setMessage({ open: true, severity: "error", text: "Error al eliminar departamento!" });
-          console.error("Error al eliminar departamento!", error.response || error.message);
-        });
-    }
+  //   handleClose();
+  // };
 
-    handleClose();
-  };
+  // return (
+  //   <React.Fragment>
+  //     <StackButtons
+  //       methods={methods}
+  //       create={create}
+  //       open={open}
+  //       setOpen={setOpen}
 
-  return (
-    <React.Fragment>
-      <StackButtons
-        methods={methods}
-        create={create}
-        open={open}
-        setOpen={setOpen}
-        handleClickOpen={handleClickOpen}
-      />
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        PaperProps={{
-          component: "form",
-          onSubmit: handleSubmit,
-        }}
-      >
-        <DialogTitle>Departamentos</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Completa el formulario.</DialogContentText>
-          <FormControl fullWidth>
-            <TextField
-              autoFocus
-              required
-              id="nombre"
-              name="nombre"
-              label="Nombre"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              defaultValue={props.selectedRow.nombre}
-            />
-          </FormControl>
+  //     />
+  //     <Dialog
+  //       open={open}
+  //       onClose={handleClose}
+  //       PaperProps={{
+  //         component: "form",
+  //         onSubmit: handleSubmit,
+  //       }}
+  //     >
+  //       <DialogTitle>Municipios</DialogTitle>
+  //       <DialogContent>
+  //         <DialogContentText>Completa el formulario.</DialogContentText>
+  //         <FormControl fullWidth>
+  //           <TextField
+  //             autoFocus
+  //             required
+  //             id="name"
+  //             name="name"
+  //             label="Nombre"
+  //             fullWidth
+  //             variant="standard"
+  //             margin="normal"
+  //             defaultValue={props.selectedRow.name}
+  //           />
+  //         </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="pais-select-label">Pais</InputLabel>
-            <Select
-              labelId="pais-select-label"
-              id="pais"
-              name="pais"
-              defaultValue={props.selectedRow.pais}
-              margin="dense"
-            >
-              {props.pais.map((pais) => (
-                <MenuItem key={pais.id} value={pais.id}>
-                  {pais.nombre}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl fullWidth>
-            <TextField
-              autoFocus
-              required
-              id="codigo"
-              name="codigo"
-              label="Código"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              defaultValue={props.selectedRow.codigo}
-            />
-          </FormControl>
-
-          <FormControl fullWidth>
-            <TextField
-              autoFocus
-              required
-              id="acronimo"
-              name="acronimo"
-              label="Acrónimo"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              defaultValue={props.selectedRow.acronimo}
-            />
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancelar</Button>
-          <Button type="submit">{methodName}</Button>
-        </DialogActions>
-      </Dialog>
-    </React.Fragment>
-  );
+  //       </DialogContent>
+  //       <DialogActions>
+  //         <Button onClick={handleClose}>Cancel</Button>
+  //         <Button type="submit">{methodName}</Button>
+  //       </DialogActions>
+  //     </Dialog>
+  //   </React.Fragment>
+  // );
 }
+

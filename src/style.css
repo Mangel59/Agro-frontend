@@ -4,11 +4,11 @@
   padding: 0; 
   text-align: center;
   background-color: transparent; 
-  min-height: 100vh; /* Asegura que ocupe toda la altura */
-  display: flex; /* Para centrar el contenido verticalmente */
+  /*min-height: 100vh; /* Asegura que ocupe toda la altura */
+  /* display: flex; /* Para centrar el contenido verticalmente */
   flex-direction: column;
   justify-content: center;
-  overflow-y: auto; /* Permitir el scroll vertical */
+  /*overflow-y: auto; /* Permitir el scroll vertical */
 }
 
 .logo {

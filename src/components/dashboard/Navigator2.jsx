@@ -36,6 +36,7 @@ import Reportes from '../reportes/Reportes';
 import Empresa from '../empresas/Empresa.jsx';
 import Producto from '../producto/Producto.jsx';
 import ProductoCategoria from '../producto_categoria/ProductoCategoria.jsx';
+import Almacen from '../almacen/Almacen.jsx';
 
 const icons = {
   DnsRounded: <DnsRoundedIcon />,
@@ -55,6 +56,7 @@ const components = {
   pais: Pais,
   departamento: Departamento,
   municipio: Municipio,
+  almacen:Almacen,
   producto_presentacion: ProductoPresentacion,
   producto_categoria: ProductoCategoria,
   producto: Producto,

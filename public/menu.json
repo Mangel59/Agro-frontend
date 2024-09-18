@@ -18,6 +18,11 @@
         "id": "municipio",
         "text": "Municipio",
         "icon": "PhonelinkSetup"
+      },
+      {
+        "id": "almacen",
+        "text": "Almacén",
+        "icon": "PhonelinkSetup"
       }
     ]
   },

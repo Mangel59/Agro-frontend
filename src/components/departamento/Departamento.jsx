@@ -13,11 +13,8 @@ import { SiteProps } from '../dashboard/SiteProps';
 export default function Departamento() {
   // Fila inicial seleccionada
   const row = {
-    dep_id: 0,
-    dep_nombre: "",
-    dep_pais_id: 0,
-    dep_codigo: 0,
-    dep_acronimo: ""
+    id: 0,
+    name: "",
   };
 
   // Estado para la fila seleccionada
@@ -36,16 +33,13 @@ export default function Departamento() {
   // Estado para los departamentos
   const [departamentos, setDepartamentos] = React.useState([]);
 
-  // Estado para los países
-  const [pais, setPais] = React.useState([]);
-
   // Efecto para obtener los departamentos al cargar el componente
   React.useEffect(() => {
-    axios.get(`${SiteProps.urlbase}/departamento`)
+    axios.get(`${SiteProps.urlbasev1}/items/departamento`)
       .then(response => {
         const departamentoData = response.data.map((item) => ({
           ...item,
-          id: item.dep_id, // Asignar id basado en pai_id
+          id: item.id, // Asignar id basado en pai_id
         }));
         setDepartamentos(departamentoData);
         console.log(departamentoData);
@@ -55,22 +49,10 @@ export default function Departamento() {
       });
   }, []);
 
-  // Efecto para obtener los países al cargar el componente
-  React.useEffect(() => {
-    axios.get(`${SiteProps.urlbase}/pais`)
-      .then(response => {
-        setPais(response.data);
-        console.log(pais);
-      })
-      .catch(error => {
-        console.error("Error al buscar país!", error);
-      });
-  }, []);
-
   return (
     <div style={{ height: '100%', width: '100%' }}>
       <MessageSnackBar message={message} setMessage={setMessage} />
-      <FormDepartamento setMessage={setMessage} selectedRow={selectedRow} setSelectedRow={setSelectedRow} departamentos={departamentos} pais={pais}/>
+      <FormDepartamento setMessage={setMessage} selectedRow={selectedRow} setSelectedRow={setSelectedRow} departamentos={departamentos}/>
       <GridDepartamento selectedRow={selectedRow} setSelectedRow={setSelectedRow} departamentos={departamentos} />
     </div>
   );
