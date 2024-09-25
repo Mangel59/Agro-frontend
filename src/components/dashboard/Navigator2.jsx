@@ -14,8 +14,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import PublicIcon from '@mui/icons-material/Public';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import SettingsIcon from '@mui/icons-material/Settings';
-import TimerIcon from '@mui/icons-material/Timer';
-import PhonelinkSetupIcon from '@mui/icons-material/PhonelinkSetup';
+import ApartmentIcon from '@mui/icons-material/Apartment';
 import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -23,6 +22,7 @@ import CardActions from '@mui/material/CardActions';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import LockIcon from '@mui/icons-material/Lock';
+import LocationCityIcon from '@mui/icons-material/LocationCity';
 import PersonIcon from '@mui/icons-material/Person';
 import Persona from "../personas/Persona.jsx";
 import Pais from '../pais/Pais';
@@ -37,6 +37,12 @@ import Empresa from '../empresas/Empresa.jsx';
 import Producto from '../producto/Producto.jsx';
 import ProductoCategoria from '../producto_categoria/ProductoCategoria.jsx';
 import Almacen from '../almacen/Almacen.jsx';
+import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import Espacio from '../espacio/Espacio.jsx';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
+import Bloque from '../bloque/Bloque.jsx';
+import Sede from '../sede/Sede.jsx';
+import DomainIcon from '@mui/icons-material/Domain';
 
 const icons = {
   DnsRounded: <DnsRoundedIcon />,
@@ -44,19 +50,25 @@ const icons = {
   People: <PeopleIcon />,
   Public: <PublicIcon />,
   AddShoppingCartIcon: <AddShoppingCartIcon />,
+  Domain: <DomainIcon/> ,
   Settings: <SettingsIcon />,
-  Timer: <TimerIcon />,
-  PhonelinkSetup: <PhonelinkSetupIcon />,
+  Apartment: <ApartmentIcon />,
+  LocationCity: <LocationCityIcon />,
   ProductionQuantityLimitsIcon: <ProductionQuantityLimitsIcon />,
   LockIcon: <LockIcon />,
-  PersonIcon: <PersonIcon />
+  PersonIcon: <PersonIcon />,
+  HomeWork: <HomeWorkIcon/>,
+  Warehouse: <WarehouseIcon/>
 };
 
 const components = {
   pais: Pais,
   departamento: Departamento,
   municipio: Municipio,
-  almacen:Almacen,
+  almacen: Almacen,
+  espacio: Espacio,
+  bloque: Bloque,
+  sede: Sede,
   producto_presentacion: ProductoPresentacion,
   producto_categoria: ProductoCategoria,
   producto: Producto,
