@@ -54,7 +54,7 @@ export default function FormProductoCategoria(props) {
       return;
     }
     const id = props.selectedRow.id;
-    const url = `${SiteProps.urlbasev1}/productoCategorias/${id}`;
+    const url = `${SiteProps.urlbasev1}/productoCategoria/${id}`;
     axios
       .delete(url, {
         headers: {

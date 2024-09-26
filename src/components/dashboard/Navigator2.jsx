@@ -128,16 +128,36 @@ export default function Navigator2(props) {
    * 
    * @param {string} menuId - El ID del menú que ha sido seleccionado.
    */
+  // const handleMenuClick = (menuId) => {
+  //   setSelectedMenu(menuId);
+  //   const menu = menuItems.find(item => item.id === menuId);
+  //   setBreadcrumb([menuId]);
+  //   if (menu && menu.children) {
+  //     props.setCurrentModuleItem(renderSubmenu(menu.children, menuId));
+  //   } else {
+  //     props.setCurrentModuleItem(null); // Clear content if no children
+  //   }
+  // };
+
   const handleMenuClick = (menuId) => {
     setSelectedMenu(menuId);
     const menu = menuItems.find(item => item.id === menuId);
     setBreadcrumb([menuId]);
-    if (menu && menu.children) {
+    
+    if (menu && menu.children && menu.children.length > 0) {
+      // Si el menú tiene hijos, renderiza el submenú
       props.setCurrentModuleItem(renderSubmenu(menu.children, menuId));
     } else {
-      props.setCurrentModuleItem(null); // Clear content if no children
+      // Si no tiene hijos, renderiza directamente el componente del menú seleccionado
+      const Component = components[menuId];
+      if (Component) {
+        props.setCurrentModuleItem(<Component />); // Renderiza el componente correspondiente
+      } else {
+        props.setCurrentModuleItem(null); // Si no hay componente, no renderiza nada
+      }
     }
   };
+  
 
   /**
    * Maneja el evento de clic en un submenú.

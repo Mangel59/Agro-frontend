@@ -489,28 +489,7 @@ export default function FormAlmacen(props) {
             </Select>
           </FormControl>
 
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="geolocalizacion-type-label">Tipo de Geolocalización</InputLabel>
-            <Select
-              labelId="geolocalizacion-type-label"
-              id="geolocalizacion_type"
-              name="geolocalizacion_type"
-              value={props.selectedRow?.geolocalizacion.type || "Point"}
-              onChange={(event) => {
-                const type = event.target.value;
-                props.setSelectedRow((prevRow) => ({
-                  ...prevRow,
-                  geolocalizacion: {
-                    ...prevRow.geolocalizacion,
-                    type,
-                  },
-                }));
-              }}
-            >
-              <MenuItem value="Point">Point</MenuItem>
-              {/* Agrega más tipos si es necesario */}
-            </Select>
-          </FormControl>
+          
 
           <FormControl fullWidth>
             <TextField
