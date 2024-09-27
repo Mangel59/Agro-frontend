@@ -1,5 +1,5 @@
 import * as React from "react";
-import axios from "axios";
+import axios from "../axiosConfig";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
@@ -14,21 +14,15 @@ import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
-export default function FormPersona(props) {
+export default function FormProducto(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
   const create = () => {
     const row = {
       id: 0,
-      tipoIdentificacionId: "",
-      identificacion: "",
-      apellido: "",
       nombre: "",
-      genero: "",
-      fechaNacimiento: "",
-      estrato: 0,
-      direccion: "",
-      celular: "",
+      productoCategoriaId: 0,
+      descripcion: "",
       estado: 0,
     };
     props.setSelectedRow(row);
@@ -61,7 +55,7 @@ export default function FormPersona(props) {
       return;
     }
     const id = props.selectedRow.id;
-    const url = `${SiteProps.urlbasev1}/personas/${id}`;
+    const url = `${SiteProps.urlbasev1}/productos/${id}`;
     axios
       .delete(url, {
         headers: {
@@ -72,7 +66,7 @@ export default function FormPersona(props) {
         props.setMessage({
           open: true,
           severity: "success",
-          text: "Persona eliminada con éxito!",
+          text: "Producto eliminada con éxito!",
         });
         props.reloadData();
       })
@@ -83,10 +77,10 @@ export default function FormPersona(props) {
         props.setMessage({
           open: true,
           severity: "error",
-          text: `Error al eliminar persona! ${errorMessage}`,
+          text: `Error al eliminar producto! ${errorMessage}`,
         });
         console.error(
-          "Error al eliminar persona!",
+          "Error al eliminar producto!",
           error.response || error.message
         );
       });
@@ -112,9 +106,7 @@ export default function FormPersona(props) {
     const validatePayload = (data) => {
       if (
         !data.nombre ||
-        !data.tipoIdentificacionId ||
-        !data.identificacion ||
-        !data.direccion
+        !data.descripcion
       ) {
         console.error("Invalid data:", data);
         props.setMessage({
@@ -127,7 +119,7 @@ export default function FormPersona(props) {
       return true;
     };
     if (!validatePayload(formJson)) return;
-    const url = `${SiteProps.urlbasev1}/personas`;
+    const url = `${SiteProps.urlbasev1}/productos`;
     if (methodName === "Add") {
       axios
         .post(url, formJson)
@@ -135,7 +127,7 @@ export default function FormPersona(props) {
           props.setMessage({
             open: true,
             severity: "success",
-            text: "Persona creada con éxito!",
+            text: "Producto creada con éxito!",
           });
           setOpen(false);
           props.reloadData();
@@ -147,7 +139,7 @@ export default function FormPersona(props) {
           props.setMessage({
             open: true,
             severity: "error",
-            text: `Error al crear persona! ${errorMessage}`,
+            text: `Error al crear producto! ${errorMessage}`,
           });
         });
     } else if (methodName === "Update") {
@@ -157,7 +149,7 @@ export default function FormPersona(props) {
           props.setMessage({
             open: true,
             severity: "success",
-            text: "Persona actualizada con éxito!",
+            text: "Producto actualizada con éxito!",
           });
           setOpen(false);
           props.reloadData();
@@ -169,10 +161,10 @@ export default function FormPersona(props) {
           props.setMessage({
             open: true,
             severity: "error",
-            text: `Error al actualizar persona! ${errorMessage}`,
+            text: `Error al actualizar producto! ${errorMessage}`,
           });
           console.error(
-            "Error al actualizar persona!",
+            "Error al actualizar producto!",
             error.response || error.message
           );
         });
@@ -183,7 +175,7 @@ export default function FormPersona(props) {
           props.setMessage({
             open: true,
             severity: "success",
-            text: "Persona eliminada con éxito!",
+            text: "Producto eliminada con éxito!",
           });
           setOpen(false);
           props.reloadData();
@@ -195,10 +187,10 @@ export default function FormPersona(props) {
           props.setMessage({
             open: true,
             severity: "error",
-            text: `Error al eliminar persona! ${errorMessage}`,
+            text: `Error al eliminar producto! ${errorMessage}`,
           });
           console.error(
-            "Error al eliminar persona!",
+            "Error al eliminar producto!",
             error.response || error.message
           );
         });
@@ -206,7 +198,7 @@ export default function FormPersona(props) {
     handleClose();
   };
 
-  //hacer el post de la persona
+  //hacer el post de la producto
   return (
     <React.Fragment>
       <StackButtons
@@ -223,7 +215,7 @@ export default function FormPersona(props) {
           onSubmit: handleSubmit,
         }}
       >
-        <DialogTitle>Persona</DialogTitle>
+        <DialogTitle>Producto</DialogTitle>
         <DialogContent>
           <DialogContentText>Completa el formulario.</DialogContentText>
           <FormControl fullWidth margin="normal">
@@ -238,114 +230,48 @@ export default function FormPersona(props) {
               defaultValue={props.selectedRow?.nombre || ""}
             />
           </FormControl>
+
           <FormControl fullWidth margin="normal">
             <TextField
               required
-              id="apellido"
-              name="apellido"
-              label="Apellido"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.apellido || ""}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="tipoIdentificacionId-label">
-              Tipo de Identificación
-            </InputLabel>
-            <Select
-              labelId="tipoIdentificacionId-label"
-              id="tipoIdentificacionId"
-              name="tipoIdentificacionId"
-              defaultValue={props.selectedRow?.tipoIdentificacionId || ""}
-              fullWidth
-            >
-              <MenuItem value={1}>Cédula</MenuItem>
-              <MenuItem value={2}>Pasaporte</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="identificacion"
-              name="identificacion"
-              label="Identificación"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.identificacion || ""}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="genero-label">Género</InputLabel>
-            <Select
-              labelId="genero-label"
-              id="genero"
-              name="genero"
-              defaultValue={props.selectedRow?.genero ? "f" : "m"}
-              fullWidth
-            >
-              <MenuItem value="m">Masculino</MenuItem>
-              <MenuItem value="f">Femenino</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="fechaNacimiento"
-              name="fechaNacimiento"
-              label="Fecha de Nacimiento"
-              type="date"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.fechaNacimiento || ""}
-              InputLabelProps={{ shrink: true }}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="estrato"
-              name="estrato"
-              label="Estrato"
+              id="productocategoriaid"
+              name="productocategoriaid"
+              label="ID de categoria producto"
               type="number"
               fullWidth
               variant="standard"
               defaultValue={props.selectedRow?.estrato || 0}
             />
           </FormControl>
+
           <FormControl fullWidth margin="normal">
             <TextField
               required
-              id="direccion"
-              name="direccion"
-              label="Dirección"
+              id="descripcion"
+              name="descripcion"
+              label="Descripción"
               fullWidth
               variant="standard"
-              defaultValue={props.selectedRow?.direccion || ""}
+              defaultValue={props.selectedRow?.descripcion || ""}
             />
           </FormControl>
+
           <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="celular"
-              name="celular"
-              label="Celular"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.celular || ""}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label">Estado</InputLabel>
+            <InputLabel id="estado-label"
+              sx={{
+                backgroundColor: 'white', 
+                padding: '0 8px',      
+              }}
+            >Estado</InputLabel>
             <Select
               labelId="estado-label"
               id="estado"
               name="estado"
-              defaultValue={props.selectedRow?.estado || 0}
+              defaultValue={props.selectedRow?.estado || ''}
               fullWidth
             >
-              <MenuItem value={0}>Inactivo</MenuItem>
               <MenuItem value={1}>Activo</MenuItem>
+              <MenuItem value={0}>Inactivo</MenuItem>
             </Select>
           </FormControl>
         </DialogContent>

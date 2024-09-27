@@ -5,7 +5,7 @@ const columns = [
   { field: 'id', headerName: 'ID', width: 90, type: 'number' },
   { field: 'nombre', headerName: 'Nombre', width: 150, type: 'string' },
   { field: 'descripcion', headerName: 'Descripción', width: 250, type: 'string' },
-  { field: 'estado', headerName: 'Estado', width: 100, type: 'string',
+  { field: 'estado', headerName: 'Estado', width: 100, type: 'number',
     valueGetter: (params) => params.row.estado === 1 ? 'Activo' : 'Inactivo' },
 ];
 

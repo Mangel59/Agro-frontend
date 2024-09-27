@@ -38,3 +38,49 @@ export default function GridProductoPresentacion(props) {
     />
   );
 }
+
+// import * as React from 'react';
+// import { DataGrid } from '@mui/x-data-grid';
+
+// const columns = [
+//   { field: 'prp_id', headerName: 'ID', width: 90, type: 'number' },
+//   { field: 'prp_nombre', headerName: 'Nombre', width: 250, type: 'string' },
+//   { field: 'prp_producto_id', headerName: 'Producto', width: 150, type: 'number' },
+//   { field: 'prp_unidad_id', headerName: 'Unidad', width: 150, type: 'number' },
+//   { field: 'prp_descripcion', headerName: 'Descripción', width: 250, type: 'string' },
+//   { field: 'prp_estado', headerName: 'Estado', width: 120, type: 'number' },
+//   { field: 'prp_cantidad', headerName: 'Cantidad', width: 120, type: 'number' },
+//   { field: 'prp_marca_id', headerName: 'Marca', width: 150, type: 'number' },
+//   { field: 'prp_presentacion_id', headerName: 'Presentación', width: 150, type: 'number' }
+// ];
+
+// export default function GridProductoPresentacion(props) {
+//   const handleRowSelection = (selectionModel) => {
+//     if (selectionModel.length > 0) {
+//       // Busca la fila seleccionada en `productoPresentacion` utilizando el ID seleccionado
+//       const selectedRow = props.productoPresentacion.find(
+//         (row) => row.prp_id === selectionModel[0]
+//       );
+//       props.setSelectedRow(selectedRow); // Actualiza la fila seleccionada en el componente padre
+//     } else {
+//       props.setSelectedRow(null); // Si no se selecciona ninguna fila
+//     }
+//   };
+
+//   return (
+//     <DataGrid
+//       rows={props.productoPresentacion}
+//       getRowId={(row) => row.prp_id} // Importante: Asegura que cada fila tenga un ID único
+//       onRowSelectionModelChange={handleRowSelection} // Maneja la selección de filas
+//       columns={columns}
+//       initialState={{
+//         pagination: {
+//           paginationModel: {
+//             pageSize: 5,
+//           },
+//         },
+//       }}
+//       pageSizeOptions={[5, 10, 20, 50]}
+//     />
+//   );
+// }

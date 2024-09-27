@@ -1,16 +1,11 @@
-// creadora:MARIA CUELLAR
-// CREADO EL 14/08/2024
-// MENU DE PERFILES, CERRAR SECCION
-/// AGREGAR
 import React, { useState } from 'react';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import logout from './Logout';
-import PerfilGroup from './PerfilGroup';
+import Login from './Login'; 
 
-const ProfileMenu = ({ setCurrentModule }) => {
+const ProfileMenu = ({ setCurrentModule, setIsAuthenticated }) => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleClick = (event) => {
@@ -21,8 +16,16 @@ const ProfileMenu = ({ setCurrentModule }) => {
     setAnchorEl(null);
   };
 
-  const handleProfileClick = () => {
-    setCurrentModule(<PerfilGroup setCurrentModule={setCurrentModule} />);
+  const handleLogout = () => {
+    // Remover token del almacenamiento local
+    localStorage.removeItem('token');
+    
+    // Actualizar estado de autenticación
+    setIsAuthenticated(false);
+
+    // Redirigir al componente Login
+    setCurrentModule(<Login setIsAuthenticated={setIsAuthenticated} setCurrentModule={setCurrentModule} />);
+    
     handleClose();
   };
 
@@ -44,8 +47,8 @@ const ProfileMenu = ({ setCurrentModule }) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        <MenuItem onClick={handleProfileClick}>Perfiles</MenuItem>
-        <MenuItem onClick={logout}>Cerrar Sesión</MenuItem>
+        <MenuItem onClick={() => setCurrentModule(<PerfilGroup setCurrentModule={setCurrentModule} />)}>Perfiles</MenuItem>
+        <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
       </Menu>
     </div>
   );

@@ -12,6 +12,16 @@ import { useTranslation } from 'react-i18next';
 import { useThemeToggle } from './dashboard/ThemeToggleProvider';
 import AppBarComponent from './dashboard/AppBarComponent'; 
 
+/**
+ * Register component handles the registration form, validating user input,
+ * and sending data to the backend.
+ *
+ * @component
+ * @example
+ * return (
+ *   <Register />
+ * )
+ */
 export default function Register(props) {
   const { t, i18n } = useTranslation(); // Hook de traducción
   const [username, setUsername] = useState('');
@@ -23,14 +33,28 @@ export default function Register(props) {
 
   const navigate = useNavigate();
 
+  /**
+ * Toggles the visibility of the password field.
+ */
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
+  /**
+ * Prevents the default action when the mouse button is pressed on the password visibility toggle.
+ *
+ * @param {Event} event - The mouse down event.
+ */
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
 
+  /**
+ * Validates if the input is a properly formatted email.
+ *
+ * @param {string} email - The email address to validate.
+ * @returns {boolean} - Returns true if the email is valid, false otherwise.
+ */
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -41,6 +65,12 @@ export default function Register(props) {
     return passwordRegex.test(password);
   };
 
+  /**
+ * Handles the form submission, validates the input, and sends the registration
+ * request to the server.
+ *
+ * @param {Event} event - The form submit event.
+ */
   const handleSubmit = (event) => {
     event.preventDefault();
     setError('');
@@ -50,6 +80,13 @@ export default function Register(props) {
       return;
     }
 
+    /**
+ * Validates if the password meets the required criteria:
+ * at least 8 characters, one uppercase letter, one digit, and one special character.
+ *
+ * @param {string} password - The password to validate.
+ * @returns {boolean} - Returns true if the password is valid, false otherwise.
+ */
     if (!validatePassword(password)) {
       setError(t('invalid_password'));
       return;
@@ -77,6 +114,11 @@ export default function Register(props) {
     
   };
 
+  /**
+ * Changes the language of the application using the i18n library.
+ *
+ * @param {string} lng - The language code to switch to (e.g., 'en' for English, 'es' for Spanish).
+ */
   const handleLanguageChange = (lng) => {
     i18n.changeLanguage(lng);
   };

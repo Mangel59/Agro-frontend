@@ -8,11 +8,8 @@ import { SiteProps } from "../dashboard/SiteProps";
 
 export default function Municipio() {
   const row = {
-    mun_id: 0,
-    mun_nombre: "",
-    mun_departamento_id: 0,
-    mun_codigo: 0,
-    mun_acronimo: "",
+    id: 0,
+    name: "",
   };
 
   const [selectedRow, setSelectedRow] = React.useState(row);
@@ -24,33 +21,20 @@ export default function Municipio() {
 
   const [message, setMessage] = React.useState(messageData);
   const [municipios, setMunicipios] = React.useState([]);
-  const [departamentos, setDepartamentos] = React.useState([]);
 
   React.useEffect(() => {
     axios
-      .get(`${SiteProps.urlbase}/municipio`)
+      .get(`${SiteProps.urlbasev1}/items/municipio`)
       .then((response) => {
         const municipioData = response.data.map((item) => ({
           ...item,
-          id: item.mun_id,
+          id: item.id,
         }));
         setMunicipios(municipioData);
         console.log(municipioData);
       })
       .catch((error) => {
-        console.error("Error al buscar pais!", error);
-      });
-  }, []);
-
-  React.useEffect(() => {
-    axios
-      .get(`${SiteProps.urlbase}/departamento`)
-      .then((response) => {
-        setDepartamentos(response.data);
-        console.log(response.data);
-      })
-      .catch((error) => {
-        console.error("Error al buscar departamento!", error);
+        console.error("Error al buscar municipio!", error);
       });
   }, []);
 
@@ -62,7 +46,6 @@ export default function Municipio() {
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
         municipios={municipios}
-        departamentos={departamentos}
       />
       <GridMunicipio
         selectedRow={selectedRow}

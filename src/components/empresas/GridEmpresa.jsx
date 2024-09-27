@@ -16,6 +16,15 @@ const columns = [
   { field: 'identificacion', headerName: 'No. de Identificación', width: 150, type: 'string' }
 ];
 
+/**
+ * El componente GridEmpresa muestra una tabla con los datos de las empresas.
+ * 
+ * @componente
+ * @param {object} props - Propiedades pasadas al componente.
+ * @param {array} props.empresas - Lista de empresas a mostrar en la tabla.
+ * @param {function} props.setSelectedRow - Función para establecer la fila seleccionada.
+ * @returns {JSX.Element} La tabla de datos de empresas.
+ */
 export default function GridEmpresa(props) {
   return (
     <DataGrid

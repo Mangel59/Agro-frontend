@@ -1,7 +1,7 @@
 {
   "source": {
     "include": ["src"],
-    "includePattern": ".jsx?$",
+    "includePattern": ".+\\.jsx?$",
     "excludePattern": "(node_modules/|docs)"
   },
   "opts": {

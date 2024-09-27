@@ -3,11 +3,8 @@ import { DataGrid } from '@mui/x-data-grid';
 
 // Definición de las columnas para el DataGrid
 const columns = [
-  { field: 'dep_id', headerName: 'ID', width: 90, type: 'number' },
-  { field: 'dep_nombre', headerName: 'Nombre', width: 250, type: 'string' },
-  { field: 'dep_pais_id', headerName: 'Pais', width: 150, type: 'number' },
-  { field: 'dep_codigo', headerName: 'Codigo', width: 150, type: 'number' },
-  { field: 'dep_acronimo', headerName: 'Acronimo', width: 150, type: 'string' }
+  { field: 'id', headerName: 'ID', width: 90, type: 'number' },
+  { field: 'name', headerName: 'Nombre', width: 250, type: 'string' },
 ];
 
 /**

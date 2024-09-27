@@ -1,22 +1,16 @@
 import * as React from "react";
-import axios from "axios";  // Usa axios directamente
+import axios from "../axiosConfig";  // Usa axios directamente
 import MessageSnackBar from "../MessageSnackBar";
-import FormPersona from "./FormProducto";
-import GridPersona from "./GridProducto";
+import FormProducto from "./FormProducto";
+import GridProducto from "./GridProducto";
 import { SiteProps } from "../dashboard/SiteProps";
 
-export default function Persona(props) {
+export default function Producto(props) {
   const row = {
     id: 0,
-    tipoIdentificacionId: 0,
-    identificacion: "",
-    apellido: "",
     nombre: "",
-    genero: "",
-    fechaNacimiento: "",
-    estrato: 0,
-    direccion: "",
-    celular: "",
+    productoCategoriaId: 0,
+    descripcion: "",
     estado: 0,
   };
 
@@ -28,21 +22,21 @@ export default function Persona(props) {
   };
 
   const [message, setMessage] = React.useState(messageData);
-  const [personas, setPersonas] = React.useState([]);
+  const [productos, setProductos] = React.useState([]);
 
   // Función para recargar los datos
   const reloadData = () => {
     axios
-      .get(`${SiteProps.urlbasev1}/personas?page=0&size=30&sort=id,asc`)
+      .get(`${SiteProps.urlbasev1}/productos`)
       .then((response) => {
-        const personaData = response.data.data.map((item) => ({
+        const productoData = response.data.map((item) => ({
           ...item,
           id: item.id,
         }));
-        setPersonas(personaData);
+        setProductos(productoData);
       })
       .catch((error) => {
-        console.error("Error al buscar personas!", error);
+        console.error("Error al buscar productos!", error);
       });
 
   };
@@ -55,18 +49,18 @@ export default function Persona(props) {
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <MessageSnackBar message={message} setMessage={setMessage} />
-      <FormPersona
+      <FormProducto
         setMessage={setMessage}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        reloadData={reloadData}  // Pasa reloadData como prop a FormPersona
-        personas={personas}
+        reloadData={reloadData}  // Pasa reloadData como prop a FormProducto
+        productos={productos}
 
       />
-      <GridPersona
+      <GridProducto
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        personas={personas}
+        productos={productos}
       />
     </div>
   );

@@ -5,6 +5,14 @@ import FormPersona from "./FormPersona";
 import GridPersona from "./GridPersona";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * El componente Persona gestiona el módulo de personas, integrando el formulario
+ * y la tabla de datos.
+ * 
+ * @componente
+ * @param {object} props - Propiedades pasadas al componente.
+ * @returns {JSX.Element} El módulo de gestión de personas.
+ */
 export default function Persona(props) {
   const row = {
     id: 0,
@@ -30,7 +38,9 @@ export default function Persona(props) {
   const [message, setMessage] = React.useState(messageData);
   const [personas, setPersonas] = React.useState([]);
 
-  // Función para recargar los datos
+  /**
+   * Recarga los datos de las personas desde el servidor.
+   */
   const reloadData = () => {
     axios
       .get(`${SiteProps.urlbasev1}/personas`)

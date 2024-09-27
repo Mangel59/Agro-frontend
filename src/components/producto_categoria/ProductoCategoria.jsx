@@ -1,5 +1,5 @@
 import * as React from "react";
-import axios from "axios";  // Usa axios directamente
+import axios from "../axiosConfig";  // Usa axios directamente
 import MessageSnackBar from "../MessageSnackBar";
 import FormProductoCategoria from "./FormProductoCategoria";
 import GridProductoCategoria from "./GridProductoCategoria";
@@ -28,18 +28,24 @@ export default function ProductoCategoria(props) {
     axios
       .get(`${SiteProps.urlbasev1}/productoCategorias`)
       .then((response) => {
-        const productocategoriaData = response.data.data.map((item) => ({
-          ...item,
-          id: item.id,
-        }));
-        setProductocategorias(productocategoriaData);
+        if (response.data && Array.isArray(response.data)) { // Verificar que response.data es un array
+          const productocategoriaData = response.data.map((item) => ({
+            ...item,
+            id: item.id,
+          }));
+          setProductocategorias(productocategoriaData);
+        } else {
+          setProductocategorias([]);  // Si no hay datos, establece una lista vacía
+          console.error("No se encontraron categorias de productos!");
+        }
       })
       .catch((error) => {
         console.error("Error al buscar producto categorias!", error);
+        setProductocategorias([]);  // En caso de error, establece una lista vacía
       });
-
   };
-
+  
+  
   React.useEffect(() => {
     reloadData();  // Llama a reloadData para cargar los datos iniciales
   }, []);

@@ -14,9 +14,24 @@ import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * El componente FormPersona gestiona el formulario para crear, actualizar y eliminar personas.
+ * 
+ * @componente
+ * @param {object} props - Propiedades pasadas al componente.
+ * @param {function} props.setSelectedRow - Función para establecer la fila seleccionada.
+ * @param {object} props.selectedRow - Datos de la persona seleccionada.
+ * @param {function} props.reloadData - Función para recargar los datos después de una operación.
+ * @param {function} props.setMessage - Función para establecer un mensaje en el snackbar.
+ * @returns {JSX.Element} El formulario de gestión de personas.
+ */
 export default function FormPersona(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
+  
+  /**
+   * Crea una nueva persona y abre el diálogo de formulario.
+   */
   const create = () => {
     const row = {
       id: 0,
@@ -36,6 +51,10 @@ export default function FormPersona(props) {
     setOpen(true);
     console.log("create() " + JSON.stringify(row));
   };
+
+  /**
+   * Actualiza la persona seleccionada y abre el diálogo de formulario.
+   */
   const update = () => {
     if (!props.selectedRow || props.selectedRow.id === 0) {
       const messageData = {
@@ -50,6 +69,10 @@ export default function FormPersona(props) {
     setOpen(true);
     console.log("update() " + JSON.stringify(props.selectedRow));
   };
+
+  /**
+   * Elimina la persona seleccionada.
+   */
   const deleteRow = () => {
     if (props.selectedRow.id === 0) {
       const messageData = {
@@ -104,6 +127,12 @@ export default function FormPersona(props) {
   const handleClose = () => {
     setOpen(false);
   };
+
+   /**
+   * Maneja el envío del formulario para crear o actualizar una persona.
+   * 
+   * @param {Event} event - El evento de envío del formulario.
+   */
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -250,7 +279,12 @@ export default function FormPersona(props) {
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="tipoIdentificacionId-label">
+            <InputLabel id="tipoIdentificacionId-label"
+            sx={{
+              backgroundColor: 'white', 
+              padding: '0 8px',      
+            }}
+            >
               Tipo de Identificación
             </InputLabel>
             <Select
@@ -269,14 +303,19 @@ export default function FormPersona(props) {
               required
               id="identificacion"
               name="identificacion"
-              label="Identificación"
+              label="Número de Identificación"
               fullWidth
               variant="standard"
               defaultValue={props.selectedRow?.identificacion || ""}
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="genero-label">Género</InputLabel>
+            <InputLabel id="genero-label"
+              sx={{
+                backgroundColor: 'white', 
+                padding: '0 8px',      
+              }}
+            >Género</InputLabel>
             <Select
               labelId="genero-label"
               id="genero"
@@ -284,7 +323,7 @@ export default function FormPersona(props) {
               defaultValue={props.selectedRow?.genero ? "f" : "m"}
               fullWidth
             >
-              <MenuItem value="m">Masculino</MenuItem>
+              <MenuItem value="m">Maculino</MenuItem>
               <MenuItem value="f">Femenino</MenuItem>
             </Select>
           </FormControl>
@@ -336,16 +375,21 @@ export default function FormPersona(props) {
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label">Estado</InputLabel>
+            <InputLabel id="estado-label"
+              sx={{
+                backgroundColor: 'white', 
+                padding: '0 8px',      
+              }}
+            >Estado</InputLabel>
             <Select
               labelId="estado-label"
               id="estado"
               name="estado"
-              defaultValue={props.selectedRow?.estado || 0}
+              defaultValue={props.selectedRow?.estado || ''}
               fullWidth
             >
-              <MenuItem value={0}>Inactivo</MenuItem>
               <MenuItem value={1}>Activo</MenuItem>
+              <MenuItem value={0}>Inactivo</MenuItem>
             </Select>
           </FormControl>
         </DialogContent>

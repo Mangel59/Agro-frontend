@@ -2,6 +2,15 @@ import * as React from 'react';
 import { DataGrid, GridToolbarContainer, GridToolbarFilterButton } from '@mui/x-data-grid';
 import axios from 'axios';
 
+/**
+ * El componente GridPersona muestra una tabla con los datos de las personas.
+ * 
+ * @componente
+ * @param {object} props - Propiedades pasadas al componente.
+ * @param {array} props.personas - Lista de personas a mostrar en la tabla.
+ * @param {function} props.setSelectedRow - Función para establecer la fila seleccionada.
+ * @returns {JSX.Element} La tabla de datos de personas.
+ */
 export default function GridPersona(props) {
     const [data, setData] = React.useState([]);
     const [loading, setLoading] = React.useState(false);

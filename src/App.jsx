@@ -24,25 +24,24 @@ import './i18n.js';
 import './index.css';
 import AppBarComponent from './components/dashboard/AppBarComponent.jsx';
 
-
+/**
+ * Componente principal de la aplicación.
+ * Renderiza la estructura general de la aplicación, incluyendo la barra de navegación, 
+ * la gestión de rutas y la funcionalidad de alternar temas.
+ * 
+ * @component
+ */
 const App = () => {
-  const { t } = useTranslation();
-  const [open, setOpen] = React.useState(false);
-  // const [currentModule, setCurrentModule] = React.useState(<Grid1 />);
-  const [currentModule, setCurrentModule] = React.useState(<Inicio />);
+  const { t } = useTranslation(); // Hook para la internacionalización
+  const [open, setOpen] = React.useState(false); // Estado para controlar la apertura del drawer
+  const [currentModule, setCurrentModule] = React.useState(<Inicio />); // Estado para controlar el módulo actual que se muestra
 
-  const [message, setMessage] = React.useState(null);
-  const toggleTheme = useThemeToggle();
+  const [message, setMessage] = React.useState(null); // Estado para el mensaje que se muestra en la pantalla
+  const toggleTheme = useThemeToggle(); // Función para alternar el tema de la aplicación
 
-    // const handleLogin = () => {
-    //     // navigate('/login');
-    //     setCurrentModule (<Login/>)
-    // };
-
-    // const handleRegister = () => {
-    //     // navigate('/register');
-    //     setCurrentModule (<Register/>)
-    // };
+  /**
+   * Alterna la visibilidad del drawer.
+   */
 
   const toggleDrawer = () => {
     setOpen(!open);
@@ -62,7 +61,7 @@ const App = () => {
     setMessage('Bienvenido a la aplicación');//  // Mensaje simulado
   }, []);
 
-  const isAuthenticated = !!localStorage.getItem('token');
+  const isAuthenticated = !!localStorage.getItem('token'); // Verifica si el usuario está autenticado
   
   return (
     <Box sx={{ display: 'flex', height: '100vh', width: '100vw' }}>

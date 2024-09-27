@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, TextField, FormControl, InputLabel, MenuItem, Select ,Typography} from '@mui/material';
+import { Button, TextField, FormControl, InputLabel, MenuItem, Select ,Typography, Container, Box } from '@mui/material';
 import { SiteProps } from '../dashboard/SiteProps';
 import axios from '../axiosConfig';
 import Contenido from '../dashboard/Contenido';
@@ -34,6 +34,34 @@ export default function FormRegistroEmpresa(props) {
       });
   };
   return (
+    <>
+    <Container 
+      maxWidth={false}  
+      disableGutters  
+      sx={{
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        minHeight: '100vh',  
+        backgroundColor: '#FFF',
+        padding: 3,
+        mt: 45,
+      }}
+    >
+
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 3,
+        padding: 4,
+        backgroundColor: 'white',
+        borderRadius: 4,
+        boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)',
+        width: '100%',
+        maxWidth: 400,
+      }}
+    >
     <form onSubmit={handleSubmit}>
       <FormControl fullWidth margin="normal">
 
@@ -44,7 +72,7 @@ export default function FormRegistroEmpresa(props) {
           required
           id="nombre"
           name="nombre"
-          label="Nombre"
+          label="Nombre de la Empresa"
           fullWidth
           variant="standard"
           defaultValue={props.selectedRow?.nombre || ''}
@@ -64,7 +92,12 @@ export default function FormRegistroEmpresa(props) {
       </FormControl>
       
       <FormControl fullWidth margin="normal">
-        <InputLabel id="estado-label">Estado</InputLabel>
+        <InputLabel id="estado-label"
+          sx={{
+            backgroundColor: 'white', 
+            padding: '0 8px',      
+          }}
+        >Estado</InputLabel>
         <Select
           labelId="estado-label"
           id="estado"
@@ -107,7 +140,7 @@ export default function FormRegistroEmpresa(props) {
           required
           id="contacto"
           name="contacto"
-          label="Contacto"
+          label="Nombre de Encargado"
           fullWidth
           variant="standard"
           defaultValue={props.selectedRow?.contacto || ''}
@@ -115,7 +148,12 @@ export default function FormRegistroEmpresa(props) {
       </FormControl>
       
       <FormControl fullWidth margin="normal">
-        <InputLabel id="tipoIdentificacionId-label">Tipo de Identificación</InputLabel>
+        <InputLabel id="tipoIdentificacionId-label"
+          sx={{
+            backgroundColor: 'white', 
+            padding: '0 8px',      
+          }}
+        >Tipo de Identificación</InputLabel>
         <Select
           labelId="tipoIdentificacionId-label"
           id="tipoIdentificacionId"
@@ -131,6 +169,18 @@ export default function FormRegistroEmpresa(props) {
       <FormControl fullWidth margin="normal">
         <TextField
           required
+          id="identificacion"
+          name="identificacion"
+          label="Número de Identificación"
+          fullWidth
+          variant="standard"
+          defaultValue={props.selectedRow?.identificacion || ''}
+        />
+      </FormControl>
+      
+      <FormControl fullWidth margin="normal">
+        <TextField
+          required
           id="personaId"
           name="personaId"
           label="ID Persona"
@@ -140,22 +190,13 @@ export default function FormRegistroEmpresa(props) {
           defaultValue={props.selectedRow?.personaId || 0}
         />
       </FormControl>
-      
-      <FormControl fullWidth margin="normal">
-        <TextField
-          required
-          id="identificacion"
-          name="identificacion"
-          label="Identificación"
-          fullWidth
-          variant="standard"
-          defaultValue={props.selectedRow?.identificacion || ''}
-        />
-      </FormControl>
 
       <Button type="submit" variant="contained" color="primary" fullWidth>
         Guardar Empresa
       </Button>
     </form>
+    </Box>
+    </Container>
+    </>
   );
 }

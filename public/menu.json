@@ -7,17 +7,37 @@
       {
         "id": "pais",
         "text": "Pais",
-        "icon": "Timer"
+        "icon": "Apartment"
       },
       {
         "id": "departamento",
         "text": "Departamento",
-        "icon": "PhonelinkSetup"
+        "icon": "LocationCity"
       },
       {
         "id": "municipio",
         "text": "Municipio",
-        "icon": "PhonelinkSetup"
+        "icon": "Apartment"
+      },
+      {
+        "id": "almacen",
+        "text": "Almacén",
+        "icon": "LocationCity"
+      },
+      {
+        "id": "espacio",
+        "text": "Espacio",
+        "icon": "HomeWork"
+      },
+      {
+        "id": "bloque",
+        "text": "Bloque",
+        "icon": "Warehouse"
+      },
+      {
+        "id": "sede",
+        "text": "Sede",
+        "icon": "Domain"
       }
     ]
   },

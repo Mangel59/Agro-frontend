@@ -14,20 +14,23 @@ import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * El componente FormEmpresa maneja el formulario para crear, actualizar y eliminar empresas.
+ * 
+ * @componente
+ * @param {object} props - Propiedades pasadas al componente.
+ * @param {object} props.selectedRow - Fila seleccionada que contiene los datos de la empresa.
+ * @param {function} props.setMessage - Función para establecer el mensaje en el snackbar.
+ * @param {function} props.reloadData - Función para recargar los datos después de una operación.
+ * @returns {JSX.Element} El formulario de gestión de empresas.
+ */
 export default function FormEmpresa(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
-  const reloadData = () => {
-    axios
-      .get(`${SiteProps.urlbasev1}/empresas`)
-      .then((response) => {
-        setEmpresas(response.data);  // Recargar los datos de empresas
-      })
-      .catch((error) => {
-        console.error("Error al recargar los datos!", error);
-      });
-  };
 
+   /**
+   * Crea una nueva empresa y abre el formulario.
+   */
   const create = () => {
     const row = {
       id: 0,
@@ -47,6 +50,9 @@ export default function FormEmpresa(props) {
     console.log("create() " + JSON.stringify(row));
   };
 
+  /**
+   * Actualiza la empresa seleccionada.
+   */
   const update = () => {
     if (!props.selectedRow || props.selectedRow.id === 0) {
       const messageData = {
@@ -62,6 +68,9 @@ export default function FormEmpresa(props) {
     console.log("update() " + JSON.stringify(props.selectedRow));
   };
 
+  /**
+   * Elimina la empresa seleccionada.
+   */
   const deleteRow = () => {
     if (props.selectedRow.id === 0) {
       const messageData = {
@@ -249,7 +258,7 @@ export default function FormEmpresa(props) {
               required
               id="nombre"
               name="nombre"
-              label="Nombre"
+              label="Nombre de la Empresa"
               fullWidth
               variant="standard"
               defaultValue={props.selectedRow?.nombre || ""}
@@ -267,16 +276,21 @@ export default function FormEmpresa(props) {
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label">Estado</InputLabel>
+            <InputLabel id="estado-label"
+              sx={{
+                backgroundColor: 'white', 
+                padding: '0 8px',      
+              }}
+            >Estado</InputLabel>
             <Select
               labelId="estado-label"
               id="estado"
               name="estado"
-              defaultValue={props.selectedRow?.estado || 0}
+              defaultValue={props.selectedRow?.estado || ''}
               fullWidth
             >
-              <MenuItem value={0}>Inactivo</MenuItem>
               <MenuItem value={1}>Activo</MenuItem>
+              <MenuItem value={0}>Inactivo</MenuItem>
             </Select>
           </FormControl>
           <FormControl fullWidth margin="normal">
@@ -314,11 +328,31 @@ export default function FormEmpresa(props) {
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
+            <InputLabel id="tipoIdentificacionId-label"
+              sx={{
+                backgroundColor: 'white', 
+                padding: '0 8px',      
+              }}
+            >
+              Tipo de Identificación
+            </InputLabel>
+            <Select
+              labelId="tipoIdentificacionId-label"
+              id="tipoIdentificacionId"
+              name="tipoIdentificacionId"
+              defaultValue={props.selectedRow?.tipoIdentificacionId || ""}
+              fullWidth
+            >
+              <MenuItem value={1}>Cédula</MenuItem>
+              <MenuItem value={2}>Pasaporte</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
             <TextField
               required
               id="identificacion"
               name="identificacion"
-              label="Identificación"
+              label="Número de Identificación"
               fullWidth
               variant="standard"
               defaultValue={props.selectedRow?.identificacion || ""}
@@ -334,21 +368,6 @@ export default function FormEmpresa(props) {
               variant="standard"
               defaultValue={props.selectedRow?.personaId || ""}
             />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="tipoIdentificacionId-label">
-              Tipo de Identificación
-            </InputLabel>
-            <Select
-              labelId="tipoIdentificacionId-label"
-              id="tipoIdentificacionId"
-              name="tipoIdentificacionId"
-              defaultValue={props.selectedRow?.tipoIdentificacionId || 0}
-              fullWidth
-            >
-              <MenuItem value={1}>Cédula</MenuItem>
-              <MenuItem value={2}>Pasaporte</MenuItem>
-            </Select>
           </FormControl>
         </DialogContent>
         <DialogActions>

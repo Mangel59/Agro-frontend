@@ -7,6 +7,17 @@ import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Box from '@mui/material/Box';
 
+/**
+ * El componente ComboBox proporciona una interfaz de selección para almacen, produccion y tipo_movimiento,
+ * con selectores de fecha para especificar una fecha de inicio y fin. El componente obtiene datos del servidor
+ * para cada uno de los menús desplegables y permite al usuario seleccionar opciones.
+ * 
+ * @componente
+ * @param {function} onAlmacenChange - Callback para manejar los cambios en la selección de almacen.
+ * @param {function} onProduccionChange - Callback para manejar los cambios en la selección de produccion.
+ * @param {function} onMovimientoChange - Callback para manejar los cambios en la selección de tipo_movimiento.
+ * @returns {JSX.Element} Un formulario con selectores de fecha y menús desplegables para almacen, produccion y movimiento.
+ */
 export default function ComboBox({ onAlmacenChange, onProduccionChange, onMovimientoChange }) {
   const [movimiento, setMovimiento] = useState([]);
   const [almacen, setAlmacen] = useState([]);
@@ -16,6 +27,7 @@ export default function ComboBox({ onAlmacenChange, onProduccionChange, onMovimi
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
 
+  // Obtener datos para almacen, produccion y movimiento
   useEffect(() => {
     axios.get(`${SiteProps.urldinamica}/items/tipo_movimiento`)
       .then(response => {

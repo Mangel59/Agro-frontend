@@ -19,6 +19,14 @@ const images = [
     { src: '/images/carousel/img5.png' },
 ];
 
+/**
+ * CustomArrow es un componente de botón utilizado para navegar entre las diapositivas del carrusel.
+ *
+ * @param {Object} props - Las propiedades pasadas al componente de la flecha.
+ * @param {function} props.onClick - La función para manejar el evento de clic de la flecha.
+ * @param {string} props.direction - La dirección en la que apunta la flecha, ya sea 'prev' o 'next'.
+ * @returns {JSX.Element} Un elemento de botón estilizado como una flecha personalizada.
+ */
 const CustomArrow = (props) => {
     const { onClick, direction } = props;
     return (
@@ -49,14 +57,30 @@ const CustomArrow = (props) => {
     );
 };
 
+/**
+ * El componente Inicio muestra la pantalla de bienvenida con un carrusel de imágenes y botones
+ * para iniciar sesión y registrarse.
+ *
+ * @componente
+ * @ejemplo
+ * return (
+ *   <Inicio />
+ * )
+ */
 const Inicio = (props) => {
     const navigate = useNavigate();
     const toggleTheme = useThemeToggle();
 
+    /**
+     * Navega a la página de inicio de sesión.
+     */
     const handleLogin = () => {
         navigate('/login');
     };
 
+    /**
+     * Navega a la página de registro.
+     */
     const handleRegister = () => {
         navigate('/register');
     };

@@ -14,8 +14,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import PublicIcon from '@mui/icons-material/Public';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import SettingsIcon from '@mui/icons-material/Settings';
-import TimerIcon from '@mui/icons-material/Timer';
-import PhonelinkSetupIcon from '@mui/icons-material/PhonelinkSetup';
+import ApartmentIcon from '@mui/icons-material/Apartment';
 import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -23,6 +22,7 @@ import CardActions from '@mui/material/CardActions';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import LockIcon from '@mui/icons-material/Lock';
+import LocationCityIcon from '@mui/icons-material/LocationCity';
 import PersonIcon from '@mui/icons-material/Person';
 import Persona from "../personas/Persona.jsx";
 import Pais from '../pais/Pais';
@@ -36,6 +36,13 @@ import Reportes from '../reportes/Reportes';
 import Empresa from '../empresas/Empresa.jsx';
 import Producto from '../producto/Producto.jsx';
 import ProductoCategoria from '../producto_categoria/ProductoCategoria.jsx';
+import Almacen from '../almacen/Almacen.jsx';
+import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import Espacio from '../espacio/Espacio.jsx';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
+import Bloque from '../bloque/Bloque.jsx';
+import Sede from '../sede/Sede.jsx';
+import DomainIcon from '@mui/icons-material/Domain';
 
 const icons = {
   DnsRounded: <DnsRoundedIcon />,
@@ -43,18 +50,25 @@ const icons = {
   People: <PeopleIcon />,
   Public: <PublicIcon />,
   AddShoppingCartIcon: <AddShoppingCartIcon />,
+  Domain: <DomainIcon/> ,
   Settings: <SettingsIcon />,
-  Timer: <TimerIcon />,
-  PhonelinkSetup: <PhonelinkSetupIcon />,
+  Apartment: <ApartmentIcon />,
+  LocationCity: <LocationCityIcon />,
   ProductionQuantityLimitsIcon: <ProductionQuantityLimitsIcon />,
   LockIcon: <LockIcon />,
-  PersonIcon: <PersonIcon />
+  PersonIcon: <PersonIcon />,
+  HomeWork: <HomeWorkIcon/>,
+  Warehouse: <WarehouseIcon/>
 };
 
 const components = {
   pais: Pais,
   departamento: Departamento,
   municipio: Municipio,
+  almacen: Almacen,
+  espacio: Espacio,
+  bloque: Bloque,
+  sede: Sede,
   producto_presentacion: ProductoPresentacion,
   producto_categoria: ProductoCategoria,
   producto: Producto,
@@ -66,19 +80,33 @@ const components = {
   empresa: Empresa
 };
 
-
+/**
+ * El componente Navigator2 renderiza un sistema de menús dinámico que permite la
+ * navegación entre diferentes módulos y submódulos. El menú se obtiene desde un 
+ * archivo JSON y se muestra utilizando componentes de Material-UI.
+ * 
+ * @componente
+ * @param {object} props - Propiedades pasadas al componente.
+ * @param {function} props.setCurrentModuleItem - Función para actualizar el módulo actual que se está mostrando.
+ * @returns {JSX.Element} El menú de navegación.
+ */
 export default function Navigator2(props) {
   const { t } = useTranslation(); // Hook de traducción
   const [menuItems, setMenuItems] = React.useState([]);
   const [selectedMenu, setSelectedMenu] = React.useState(null);
   const [breadcrumb, setBreadcrumb] = React.useState([]);
 
+  /**
+   * useEffect para obtener los ítems del menú al montar el componente.
+   * 
+   * @function
+   */
   React.useEffect(() => {
     axios.get('/menu.json')
       .then((response) => {
         setMenuItems(response.data);
 
-        // Auto-select the first menu and display its children
+        // Seleccionar automáticamente el primer menú y mostrar sus hijos
         if (response.data.length > 0) {
           const firstMenuId = response.data[0].id;
           setSelectedMenu(firstMenuId);
@@ -95,28 +123,71 @@ export default function Navigator2(props) {
       });
   }, []);
 
+   /**
+   * Maneja el evento de clic en el menú principal.
+   * 
+   * @param {string} menuId - El ID del menú que ha sido seleccionado.
+   */
+  // const handleMenuClick = (menuId) => {
+  //   setSelectedMenu(menuId);
+  //   const menu = menuItems.find(item => item.id === menuId);
+  //   setBreadcrumb([menuId]);
+  //   if (menu && menu.children) {
+  //     props.setCurrentModuleItem(renderSubmenu(menu.children, menuId));
+  //   } else {
+  //     props.setCurrentModuleItem(null); // Clear content if no children
+  //   }
+  // };
+
   const handleMenuClick = (menuId) => {
     setSelectedMenu(menuId);
     const menu = menuItems.find(item => item.id === menuId);
     setBreadcrumb([menuId]);
-    if (menu && menu.children) {
+    
+    if (menu && menu.children && menu.children.length > 0) {
+      // Si el menú tiene hijos, renderiza el submenú
       props.setCurrentModuleItem(renderSubmenu(menu.children, menuId));
     } else {
-      props.setCurrentModuleItem(null); // Clear content if no children
+      // Si no tiene hijos, renderiza directamente el componente del menú seleccionado
+      const Component = components[menuId];
+      if (Component) {
+        props.setCurrentModuleItem(<Component />); // Renderiza el componente correspondiente
+      } else {
+        props.setCurrentModuleItem(null); // Si no hay componente, no renderiza nada
+      }
     }
   };
+  
 
+  /**
+   * Maneja el evento de clic en un submenú.
+   * 
+   * @param {string} subMenuId - El ID del submenú que ha sido seleccionado.
+   * @param {string} parentMenuId - El ID del menú padre.
+   */
   const handleSubMenuClick = (subMenuId, parentMenuId) => {
     setBreadcrumb([...breadcrumb, subMenuId]);
     props.setCurrentModuleItem(React.createElement(components[subMenuId], { goBack: () => handleBackToParent(parentMenuId) }));
   };
 
+   /**
+   * Retorna al menú padre después de navegar en un submenú.
+   * 
+   * @param {string} parentMenuId - El ID del menú padre al cual se debe regresar.
+   */
   const handleBackToParent = (parentMenuId) => {
     const parentMenu = menuItems.find(item => item.id === parentMenuId);
     setBreadcrumb([parentMenuId]);
     props.setCurrentModuleItem(renderSubmenu(parentMenu.children, parentMenuId));
   };
 
+  /**
+   * Renderiza el submenú de un menú específico.
+   * 
+   * @param {Array} children - Los ítems hijos del menú.
+   * @param {string} parentMenuId - El ID del menú padre.
+   * @returns {JSX.Element} Los submenús renderizados.
+   */
   const renderSubmenu = (children, parentMenuId) => {
     return (
       <Box display="flex" flexWrap="wrap" justifyContent="center" p={2}>
