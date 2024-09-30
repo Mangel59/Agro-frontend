@@ -207,9 +207,3 @@ export default function Navigator2(props) {
     </Box>
   );
 }
-
-
-
-
-
-

@@ -74,16 +74,16 @@ import GridAlmacen from './GridAlmacen';
 
 export default function Almacen() {
   const row = {
-    id: null,  // Usamos null en lugar de 0 para evitar conflicto con ids
-    nombre: "",
-    descripcion: "",
-    sedeId: 0,
-    geolocalizacion: {
+    alm_id: null,  // Usamos null en lugar de 0 para evitar conflicto con ids
+    alm_nombre: "",
+    alm_descripcion: "",
+    alm_sede_id: 0,
+    alm_geolocalizacion: {
       type: "Point",
       coordinates: [0, 0],
     },
-    coordenadas: "",
-    estado: 0
+    alm_coordenadas: "",
+    alm_estado: 0
   };
 
   const [selectedRow, setSelectedRow] = React.useState(row);
@@ -108,6 +108,7 @@ export default function Almacen() {
   };
 
   React.useEffect(() => {
+    fetchData('/almacen.json', setAlmacenes);  // Cargar almacenes
     fetchData('/sede.json', setSede);
     fetchData('/bloque.json', setBloque);
     fetchData('/espacio.json', setEspacio);
@@ -116,7 +117,7 @@ export default function Almacen() {
 
   // Función para agregar un nuevo almacén
   const addAlmacen = (newData) => {
-    const newAlmacen = { ...newData, id: Date.now() };  // Genera un ID único usando Date.now()
+    const newAlmacen = { ...newData, alm_id: Date.now() };  // Genera un ID único usando Date.now()
     setAlmacenes((prevData) => [...prevData, newAlmacen]);
     setMessage({ open: true, severity: "success", text: "Almacén creado con éxito!" });
   };
@@ -124,14 +125,14 @@ export default function Almacen() {
   // Función para actualizar un almacén
   const updateAlmacen = (updatedData) => {
     setAlmacenes((prevData) =>
-      prevData.map((item) => (item.id === updatedData.id ? updatedData : item))
+      prevData.map((item) => (item.alm_id === updatedData.alm_id ? updatedData : item))
     );
     setMessage({ open: true, severity: "success", text: "Almacén actualizado con éxito!" });
   };
 
   // Función para eliminar un almacén
-  const deleteAlmacen = (id) => {
-    setAlmacenes((prevData) => prevData.filter((item) => item.id !== id));
+  const deleteAlmacen = (alm_id) => {
+    setAlmacenes((prevData) => prevData.filter((item) => item.alm_id !== alm_id));
     setMessage({ open: true, severity: "success", text: "Almacén eliminado con éxito!" });
   };
 
