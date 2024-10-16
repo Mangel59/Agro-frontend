@@ -1,0 +1,272 @@
+[
+    {
+        "alm_id": 1,
+        "alm_nombre": "Almacén B1",
+        "alm_sede_id": 4,
+        "alm_geolocalizacion": "4.6017100, -74.0817500",
+        "alm_coordenadas": "4.6017100, -74.0817500",
+        "alm_descripcion": "Descripción del Almacén B1",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 2,
+        "alm_nombre": "Almacén C2",
+        "alm_sede_id": 1,
+        "alm_geolocalizacion": "4.6027100, -74.0827500",
+        "alm_coordenadas": "4.6027100, -74.0827500",
+        "alm_descripcion": "Descripción del Almacén C2",
+        "alm_estado": "activo"
+    },
+    {
+        "alm_id": 3,
+        "alm_nombre": "Almacén D3",
+        "alm_sede_id": 4,
+        "alm_geolocalizacion": "4.6037100, -74.0837500",
+        "alm_coordenadas": "4.6037100, -74.0837500",
+        "alm_descripcion": "Descripción del Almacén D3",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 4,
+        "alm_nombre": "Almacén E4",
+        "alm_sede_id": 4,
+        "alm_geolocalizacion": "4.6047100, -74.0847500",
+        "alm_coordenadas": "4.6047100, -74.0847500",
+        "alm_descripcion": "Descripción del Almacén E4",
+        "alm_estado": "activo"
+    },
+    {
+        "alm_id": 5,
+        "alm_nombre": "Almacén F5",
+        "alm_sede_id": 3,
+        "alm_geolocalizacion": "4.6057100, -74.0857500",
+        "alm_coordenadas": "4.6057100, -74.0857500",
+        "alm_descripcion": "Descripción del Almacén F5",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 6,
+        "alm_nombre": "Almacén G6",
+        "alm_sede_id": 2,
+        "alm_geolocalizacion": "4.6067100, -74.0867500",
+        "alm_coordenadas": "4.6067100, -74.0867500",
+        "alm_descripcion": "Descripción del Almacén G6",
+        "alm_estado": "activo"
+    },
+    {
+        "alm_id": 7,
+        "alm_nombre": "Almacén H7",
+        "alm_sede_id": 3,
+        "alm_geolocalizacion": "4.6077100, -74.0877500",
+        "alm_coordenadas": "4.6077100, -74.0877500",
+        "alm_descripcion": "Descripción del Almacén H7",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 8,
+        "alm_nombre": "Almacén I8",
+        "alm_sede_id": 5,
+        "alm_geolocalizacion": "4.6087100, -74.0887500",
+        "alm_coordenadas": "4.6087100, -74.0887500",
+        "alm_descripcion": "Descripción del Almacén I8",
+        "alm_estado": "activo"
+    },
+    {
+        "alm_id": 9,
+        "alm_nombre": "Almacén J9",
+        "alm_sede_id": 1,
+        "alm_geolocalizacion": "4.6097100, -74.0897500",
+        "alm_coordenadas": "4.6097100, -74.0897500",
+        "alm_descripcion": "Descripción del Almacén J9",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 10,
+        "alm_nombre": "Almacén K10",
+        "alm_sede_id": 3,
+        "alm_geolocalizacion": "4.60107100, -74.08107500",
+        "alm_coordenadas": "4.60107100, -74.08107500",
+        "alm_descripcion": "Descripción del Almacén K10",
+        "alm_estado": "activo"
+    },
+    {
+        "alm_id": 11,
+        "alm_nombre": "Almacén L11",
+        "alm_sede_id": 4,
+        "alm_geolocalizacion": "4.60117100, -74.08117500",
+        "alm_coordenadas": "4.60117100, -74.08117500",
+        "alm_descripcion": "Descripción del Almacén L11",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 12,
+        "alm_nombre": "Almacén M12",
+        "alm_sede_id": 2,
+        "alm_geolocalizacion": "4.60127100, -74.08127500",
+        "alm_coordenadas": "4.60127100, -74.08127500",
+        "alm_descripcion": "Descripción del Almacén M12",
+        "alm_estado": "activo"
+    },
+    {
+        "alm_id": 13,
+        "alm_nombre": "Almacén N13",
+        "alm_sede_id": 3,
+        "alm_geolocalizacion": "4.60137100, -74.08137500",
+        "alm_coordenadas": "4.60137100, -74.08137500",
+        "alm_descripcion": "Descripción del Almacén N13",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 14,
+        "alm_nombre": "Almacén O14",
+        "alm_sede_id": 4,
+        "alm_geolocalizacion": "4.60147100, -74.08147500",
+        "alm_coordenadas": "4.60147100, -74.08147500",
+        "alm_descripcion": "Descripción del Almacén O14",
+        "alm_estado": "activo"
+    },
+    {
+        "alm_id": 15,
+        "alm_nombre": "Almacén P15",
+        "alm_sede_id": 4,
+        "alm_geolocalizacion": "4.60157100, -74.08157500",
+        "alm_coordenadas": "4.60157100, -74.08157500",
+        "alm_descripcion": "Descripción del Almacén P15",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 16,
+        "alm_nombre": "Almacén Q16",
+        "alm_sede_id": 2,
+        "alm_geolocalizacion": "4.60167100, -74.08167500",
+        "alm_coordenadas": "4.60167100, -74.08167500",
+        "alm_descripcion": "Descripción del Almacén Q16",
+        "alm_estado": "activo"
+    },
+    {
+        "alm_id": 17,
+        "alm_nombre": "Almacén R17",
+        "alm_sede_id": 5,
+        "alm_geolocalizacion": "4.60177100, -74.08177500",
+        "alm_coordenadas": "4.60177100, -74.08177500",
+        "alm_descripcion": "Descripción del Almacén R17",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 18,
+        "alm_nombre": "Almacén S18",
+        "alm_sede_id": 4,
+        "alm_geolocalizacion": "4.60187100, -74.08187500",
+        "alm_coordenadas": "4.60187100, -74.08187500",
+        "alm_descripcion": "Descripción del Almacén S18",
+        "alm_estado": "activo"
+    },
+    {
+        "alm_id": 19,
+        "alm_nombre": "Almacén T19",
+        "alm_sede_id": 4,
+        "alm_geolocalizacion": "4.60197100, -74.08197500",
+        "alm_coordenadas": "4.60197100, -74.08197500",
+        "alm_descripcion": "Descripción del Almacén T19",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 20,
+        "alm_nombre": "Almacén U20",
+        "alm_sede_id": 5,
+        "alm_geolocalizacion": "4.60207100, -74.08207500",
+        "alm_coordenadas": "4.60207100, -74.08207500",
+        "alm_descripcion": "Descripción del Almacén U20",
+        "alm_estado": "activo"
+    },
+    {
+        "alm_id": 21,
+        "alm_nombre": "Almacén V21",
+        "alm_sede_id": 4,
+        "alm_geolocalizacion": "4.60217100, -74.08217500",
+        "alm_coordenadas": "4.60217100, -74.08217500",
+        "alm_descripcion": "Descripción del Almacén V21",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 22,
+        "alm_nombre": "Almacén W22",
+        "alm_sede_id": 4,
+        "alm_geolocalizacion": "4.60227100, -74.08227500",
+        "alm_coordenadas": "4.60227100, -74.08227500",
+        "alm_descripcion": "Descripción del Almacén W22",
+        "alm_estado": "activo"
+    },
+    {
+        "alm_id": 23,
+        "alm_nombre": "Almacén X23",
+        "alm_sede_id": 2,
+        "alm_geolocalizacion": "4.60237100, -74.08237500",
+        "alm_coordenadas": "4.60237100, -74.08237500",
+        "alm_descripcion": "Descripción del Almacén X23",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 24,
+        "alm_nombre": "Almacén Y24",
+        "alm_sede_id": 1,
+        "alm_geolocalizacion": "4.60247100, -74.08247500",
+        "alm_coordenadas": "4.60247100, -74.08247500",
+        "alm_descripcion": "Descripción del Almacén Y24",
+        "alm_estado": "activo"
+    },
+    {
+        "alm_id": 25,
+        "alm_nombre": "Almacén Z25",
+        "alm_sede_id": 5,
+        "alm_geolocalizacion": "4.60257100, -74.08257500",
+        "alm_coordenadas": "4.60257100, -74.08257500",
+        "alm_descripcion": "Descripción del Almacén Z25",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 26,
+        "alm_nombre": "Almacén A26",
+        "alm_sede_id": 3,
+        "alm_geolocalizacion": "4.60267100, -74.08267500",
+        "alm_coordenadas": "4.60267100, -74.08267500",
+        "alm_descripcion": "Descripción del Almacén A26",
+        "alm_estado": "activo"
+    },
+    {
+        "alm_id": 27,
+        "alm_nombre": "Almacén B27",
+        "alm_sede_id": 1,
+        "alm_geolocalizacion": "4.60277100, -74.08277500",
+        "alm_coordenadas": "4.60277100, -74.08277500",
+        "alm_descripcion": "Descripción del Almacén B27",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 28,
+        "alm_nombre": "Almacén C28",
+        "alm_sede_id": 2,
+        "alm_geolocalizacion": "4.60287100, -74.08287500",
+        "alm_coordenadas": "4.60287100, -74.08287500",
+        "alm_descripcion": "Descripción del Almacén C28",
+        "alm_estado": "activo"
+    },
+    {
+        "alm_id": 29,
+        "alm_nombre": "Almacén D29",
+        "alm_sede_id": 4,
+        "alm_geolocalizacion": "4.60297100, -74.08297500",
+        "alm_coordenadas": "4.60297100, -74.08297500",
+        "alm_descripcion": "Descripción del Almacén D29",
+        "alm_estado": "inactivo"
+    },
+    {
+        "alm_id": 30,
+        "alm_nombre": "Almacén E30",
+        "alm_sede_id": 4,
+        "alm_geolocalizacion": "4.60307100, -74.08307500",
+        "alm_coordenadas": "4.60307100, -74.08307500",
+        "alm_descripcion": "Descripción del Almacén E30",
+        "alm_estado": "activo"
+    }
+]

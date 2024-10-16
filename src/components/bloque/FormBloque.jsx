@@ -14,9 +14,12 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
+import Drawer from '@mui/material/Drawer'; // Para el menú flotante
+import MenuIcon from '@mui/icons-material/Menu'; // Ícono de menú para abrir/cerrar
 
 export default function FormBloque(props) {
   const [open, setOpen] = React.useState(false);
+  const [drawerOpen, setDrawerOpen] = React.useState(false); // Controlar el estado del menú
   const [methodName, setMethodName] = React.useState("");
 
   const handleInputChange = (event) => {
@@ -96,8 +99,41 @@ export default function FormBloque(props) {
     setOpen(false);
   };
 
+  // Controlar el abrir/cerrar del menú
+  const toggleDrawer = (open) => (event) => {
+    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+    setDrawerOpen(open);
+  };
+
   return (
     <React.Fragment>
+      {/* Botón para abrir el menú */}
+      <Button onClick={toggleDrawer(true)} sx={{ position: 'fixed', top: '10px', left: '10px' }}>
+        <MenuIcon />
+      </Button>
+
+      {/* Menú flotante */}
+      <Drawer open={drawerOpen} onClose={toggleDrawer(false)}>
+        <Box
+          sx={{
+            width: 250,
+            backgroundColor: '#fff', // Fondo blanco
+            height: '100vh', // Altura completa de la pantalla
+            borderRight: '1px solid #ddd', // Borde claro
+            padding: 2,
+            boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)', // Sombra para destacar el menú
+          }}
+          role="presentation"
+          onClick={toggleDrawer(false)}
+          onKeyDown={toggleDrawer(false)}
+        >
+          {/* Aquí puedes agregar más contenido del menú */}
+          <p>Menú flotante</p>
+        </Box>
+      </Drawer>
+
       <Box display="flex" justifyContent="right" mb={2}>
         <Button
           variant="outlined"
@@ -126,6 +162,7 @@ export default function FormBloque(props) {
           DELETE
         </Button>
       </Box>
+
       <Dialog
         open={open}
         onClose={() => setOpen(false)}

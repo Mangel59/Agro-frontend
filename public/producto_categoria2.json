@@ -1,0 +1,212 @@
+[
+    {
+        "prc_id": 1,
+        "prc_nombre": "Categoría B1",
+        "prc_descripcion": "Descripción de la Categoría B1",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 3
+    },
+    {
+        "prc_id": 2,
+        "prc_nombre": "Categoría C2",
+        "prc_descripcion": "Descripción de la Categoría C2",
+        "prc_estado": "activo",
+        "prc_empresa_id": 5
+    },
+    {
+        "prc_id": 3,
+        "prc_nombre": "Categoría D3",
+        "prc_descripcion": "Descripción de la Categoría D3",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 5
+    },
+    {
+        "prc_id": 4,
+        "prc_nombre": "Categoría E4",
+        "prc_descripcion": "Descripción de la Categoría E4",
+        "prc_estado": "activo",
+        "prc_empresa_id": 3
+    },
+    {
+        "prc_id": 5,
+        "prc_nombre": "Categoría F5",
+        "prc_descripcion": "Descripción de la Categoría F5",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 3
+    },
+    {
+        "prc_id": 6,
+        "prc_nombre": "Categoría G6",
+        "prc_descripcion": "Descripción de la Categoría G6",
+        "prc_estado": "activo",
+        "prc_empresa_id": 2
+    },
+    {
+        "prc_id": 7,
+        "prc_nombre": "Categoría H7",
+        "prc_descripcion": "Descripción de la Categoría H7",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 5
+    },
+    {
+        "prc_id": 8,
+        "prc_nombre": "Categoría I8",
+        "prc_descripcion": "Descripción de la Categoría I8",
+        "prc_estado": "activo",
+        "prc_empresa_id": 1
+    },
+    {
+        "prc_id": 9,
+        "prc_nombre": "Categoría J9",
+        "prc_descripcion": "Descripción de la Categoría J9",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 4
+    },
+    {
+        "prc_id": 10,
+        "prc_nombre": "Categoría K10",
+        "prc_descripcion": "Descripción de la Categoría K10",
+        "prc_estado": "activo",
+        "prc_empresa_id": 3
+    },
+    {
+        "prc_id": 11,
+        "prc_nombre": "Categoría L11",
+        "prc_descripcion": "Descripción de la Categoría L11",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 4
+    },
+    {
+        "prc_id": 12,
+        "prc_nombre": "Categoría M12",
+        "prc_descripcion": "Descripción de la Categoría M12",
+        "prc_estado": "activo",
+        "prc_empresa_id": 2
+    },
+    {
+        "prc_id": 13,
+        "prc_nombre": "Categoría N13",
+        "prc_descripcion": "Descripción de la Categoría N13",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 4
+    },
+    {
+        "prc_id": 14,
+        "prc_nombre": "Categoría O14",
+        "prc_descripcion": "Descripción de la Categoría O14",
+        "prc_estado": "activo",
+        "prc_empresa_id": 2
+    },
+    {
+        "prc_id": 15,
+        "prc_nombre": "Categoría P15",
+        "prc_descripcion": "Descripción de la Categoría P15",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 2
+    },
+    {
+        "prc_id": 16,
+        "prc_nombre": "Categoría Q16",
+        "prc_descripcion": "Descripción de la Categoría Q16",
+        "prc_estado": "activo",
+        "prc_empresa_id": 3
+    },
+    {
+        "prc_id": 17,
+        "prc_nombre": "Categoría R17",
+        "prc_descripcion": "Descripción de la Categoría R17",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 5
+    },
+    {
+        "prc_id": 18,
+        "prc_nombre": "Categoría S18",
+        "prc_descripcion": "Descripción de la Categoría S18",
+        "prc_estado": "activo",
+        "prc_empresa_id": 1
+    },
+    {
+        "prc_id": 19,
+        "prc_nombre": "Categoría T19",
+        "prc_descripcion": "Descripción de la Categoría T19",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 1
+    },
+    {
+        "prc_id": 20,
+        "prc_nombre": "Categoría U20",
+        "prc_descripcion": "Descripción de la Categoría U20",
+        "prc_estado": "activo",
+        "prc_empresa_id": 5
+    },
+    {
+        "prc_id": 21,
+        "prc_nombre": "Categoría V21",
+        "prc_descripcion": "Descripción de la Categoría V21",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 1
+    },
+    {
+        "prc_id": 22,
+        "prc_nombre": "Categoría W22",
+        "prc_descripcion": "Descripción de la Categoría W22",
+        "prc_estado": "activo",
+        "prc_empresa_id": 4
+    },
+    {
+        "prc_id": 23,
+        "prc_nombre": "Categoría X23",
+        "prc_descripcion": "Descripción de la Categoría X23",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 1
+    },
+    {
+        "prc_id": 24,
+        "prc_nombre": "Categoría Y24",
+        "prc_descripcion": "Descripción de la Categoría Y24",
+        "prc_estado": "activo",
+        "prc_empresa_id": 5
+    },
+    {
+        "prc_id": 25,
+        "prc_nombre": "Categoría Z25",
+        "prc_descripcion": "Descripción de la Categoría Z25",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 3
+    },
+    {
+        "prc_id": 26,
+        "prc_nombre": "Categoría A26",
+        "prc_descripcion": "Descripción de la Categoría A26",
+        "prc_estado": "activo",
+        "prc_empresa_id": 4
+    },
+    {
+        "prc_id": 27,
+        "prc_nombre": "Categoría B27",
+        "prc_descripcion": "Descripción de la Categoría B27",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 1
+    },
+    {
+        "prc_id": 28,
+        "prc_nombre": "Categoría C28",
+        "prc_descripcion": "Descripción de la Categoría C28",
+        "prc_estado": "activo",
+        "prc_empresa_id": 2
+    },
+    {
+        "prc_id": 29,
+        "prc_nombre": "Categoría D29",
+        "prc_descripcion": "Descripción de la Categoría D29",
+        "prc_estado": "inactivo",
+        "prc_empresa_id": 3
+    },
+    {
+        "prc_id": 30,
+        "prc_nombre": "Categoría E30",
+        "prc_descripcion": "Descripción de la Categoría E30",
+        "prc_estado": "activo",
+        "prc_empresa_id": 3
+    }
+]

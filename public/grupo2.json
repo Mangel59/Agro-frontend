@@ -1,0 +1,212 @@
+[
+    {
+        "gru_id": 1,
+        "gru_nombre": "Grupo B1",
+        "gru_empresa_id": 3,
+        "gru_descripcion": "Descripción del Grupo B1",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 2,
+        "gru_nombre": "Grupo C2",
+        "gru_empresa_id": 4,
+        "gru_descripcion": "Descripción del Grupo C2",
+        "gru_estado": "activo"
+    },
+    {
+        "gru_id": 3,
+        "gru_nombre": "Grupo D3",
+        "gru_empresa_id": 4,
+        "gru_descripcion": "Descripción del Grupo D3",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 4,
+        "gru_nombre": "Grupo E4",
+        "gru_empresa_id": 3,
+        "gru_descripcion": "Descripción del Grupo E4",
+        "gru_estado": "activo"
+    },
+    {
+        "gru_id": 5,
+        "gru_nombre": "Grupo F5",
+        "gru_empresa_id": 5,
+        "gru_descripcion": "Descripción del Grupo F5",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 6,
+        "gru_nombre": "Grupo G6",
+        "gru_empresa_id": 3,
+        "gru_descripcion": "Descripción del Grupo G6",
+        "gru_estado": "activo"
+    },
+    {
+        "gru_id": 7,
+        "gru_nombre": "Grupo H7",
+        "gru_empresa_id": 2,
+        "gru_descripcion": "Descripción del Grupo H7",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 8,
+        "gru_nombre": "Grupo I8",
+        "gru_empresa_id": 1,
+        "gru_descripcion": "Descripción del Grupo I8",
+        "gru_estado": "activo"
+    },
+    {
+        "gru_id": 9,
+        "gru_nombre": "Grupo J9",
+        "gru_empresa_id": 1,
+        "gru_descripcion": "Descripción del Grupo J9",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 10,
+        "gru_nombre": "Grupo K10",
+        "gru_empresa_id": 1,
+        "gru_descripcion": "Descripción del Grupo K10",
+        "gru_estado": "activo"
+    },
+    {
+        "gru_id": 11,
+        "gru_nombre": "Grupo L11",
+        "gru_empresa_id": 2,
+        "gru_descripcion": "Descripción del Grupo L11",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 12,
+        "gru_nombre": "Grupo M12",
+        "gru_empresa_id": 3,
+        "gru_descripcion": "Descripción del Grupo M12",
+        "gru_estado": "activo"
+    },
+    {
+        "gru_id": 13,
+        "gru_nombre": "Grupo N13",
+        "gru_empresa_id": 3,
+        "gru_descripcion": "Descripción del Grupo N13",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 14,
+        "gru_nombre": "Grupo O14",
+        "gru_empresa_id": 1,
+        "gru_descripcion": "Descripción del Grupo O14",
+        "gru_estado": "activo"
+    },
+    {
+        "gru_id": 15,
+        "gru_nombre": "Grupo P15",
+        "gru_empresa_id": 4,
+        "gru_descripcion": "Descripción del Grupo P15",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 16,
+        "gru_nombre": "Grupo Q16",
+        "gru_empresa_id": 4,
+        "gru_descripcion": "Descripción del Grupo Q16",
+        "gru_estado": "activo"
+    },
+    {
+        "gru_id": 17,
+        "gru_nombre": "Grupo R17",
+        "gru_empresa_id": 1,
+        "gru_descripcion": "Descripción del Grupo R17",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 18,
+        "gru_nombre": "Grupo S18",
+        "gru_empresa_id": 3,
+        "gru_descripcion": "Descripción del Grupo S18",
+        "gru_estado": "activo"
+    },
+    {
+        "gru_id": 19,
+        "gru_nombre": "Grupo T19",
+        "gru_empresa_id": 4,
+        "gru_descripcion": "Descripción del Grupo T19",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 20,
+        "gru_nombre": "Grupo U20",
+        "gru_empresa_id": 2,
+        "gru_descripcion": "Descripción del Grupo U20",
+        "gru_estado": "activo"
+    },
+    {
+        "gru_id": 21,
+        "gru_nombre": "Grupo V21",
+        "gru_empresa_id": 2,
+        "gru_descripcion": "Descripción del Grupo V21",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 22,
+        "gru_nombre": "Grupo W22",
+        "gru_empresa_id": 5,
+        "gru_descripcion": "Descripción del Grupo W22",
+        "gru_estado": "activo"
+    },
+    {
+        "gru_id": 23,
+        "gru_nombre": "Grupo X23",
+        "gru_empresa_id": 3,
+        "gru_descripcion": "Descripción del Grupo X23",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 24,
+        "gru_nombre": "Grupo Y24",
+        "gru_empresa_id": 5,
+        "gru_descripcion": "Descripción del Grupo Y24",
+        "gru_estado": "activo"
+    },
+    {
+        "gru_id": 25,
+        "gru_nombre": "Grupo Z25",
+        "gru_empresa_id": 2,
+        "gru_descripcion": "Descripción del Grupo Z25",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 26,
+        "gru_nombre": "Grupo A26",
+        "gru_empresa_id": 3,
+        "gru_descripcion": "Descripción del Grupo A26",
+        "gru_estado": "activo"
+    },
+    {
+        "gru_id": 27,
+        "gru_nombre": "Grupo B27",
+        "gru_empresa_id": 2,
+        "gru_descripcion": "Descripción del Grupo B27",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 28,
+        "gru_nombre": "Grupo C28",
+        "gru_empresa_id": 5,
+        "gru_descripcion": "Descripción del Grupo C28",
+        "gru_estado": "activo"
+    },
+    {
+        "gru_id": 29,
+        "gru_nombre": "Grupo D29",
+        "gru_empresa_id": 5,
+        "gru_descripcion": "Descripción del Grupo D29",
+        "gru_estado": "inactivo"
+    },
+    {
+        "gru_id": 30,
+        "gru_nombre": "Grupo E30",
+        "gru_empresa_id": 5,
+        "gru_descripcion": "Descripción del Grupo E30",
+        "gru_estado": "activo"
+    }
+]

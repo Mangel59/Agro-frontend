@@ -1,138 +1,137 @@
 [
-    {
-      "alm_id": 1,
-      "alm_sede_id": 1,
-      "alm_nombre": "Almacén A",
-      "alm_geolocalizacion": { "type": "Point", "coordinates": [-75.343, 39.984] },
-      "alm_coordenadas": { "latitude": 39.984, "longitude": -75.343 },
-      "alm_descripcion": "Almacén central de la sede A",
-      "alm_estado": 1
-    },
-    {
-      "alm_id": 2,
-      "alm_sede_id": 2,
-      "alm_nombre": "Almacén B",
-      "alm_geolocalizacion": { "type": "Point", "coordinates": [-74.343, 38.984] },
-      "alm_coordenadas": { "latitude": 38.984, "longitude": -74.343 },
-      "alm_descripcion": "Almacén de la sede B",
-      "alm_estado": 1
-    },
-    {
-      "alm_id": 3,
-      "alm_sede_id": 3,
-      "alm_nombre": "Almacén C",
-      "alm_geolocalizacion": { "type": "Point", "coordinates": [-73.343, 37.984] },
-      "alm_coordenadas": { "latitude": 37.984, "longitude": -73.343 },
-      "alm_descripcion": "Almacén de distribución de la sede C",
-      "alm_estado": 1
-    },
-    {
-      "alm_id": 4,
-      "alm_sede_id": 4,
-      "alm_nombre": "Almacén D",
-      "alm_geolocalizacion": { "type": "Point", "coordinates": [-72.343, 36.984] },
-      "alm_coordenadas": { "latitude": 36.984, "longitude": -72.343 },
-      "alm_descripcion": "Almacén de producción de la sede D",
-      "alm_estado": 1
-    },
-    {
-      "alm_id": 5,
-      "alm_sede_id": 5,
-      "alm_nombre": "Almacén E",
-      "alm_geolocalizacion": { "type": "Point", "coordinates": [-71.343, 35.984] },
-      "alm_coordenadas": { "latitude": 35.984, "longitude": -71.343 },
-      "alm_descripcion": "Almacén de investigación de la sede E",
-      "alm_estado": 1
-    },
-    {
-        "alm_id": 6,
-        "alm_sede_id": 6,
-        "alm_nombre": "Almacén F",
-        "alm_geolocalizacion": { "type": "Point", "coordinates": [-71.343, 35.984] },
-        "alm_coordenadas": { "latitude": 35.984, "longitude": -71.343 },
-        "alm_descripcion": "Almacén de investigación de la sede F",
-        "alm_estado": 1
-    },
-    {
-        "alm_id": 7,
-        "alm_sede_id": 7,
-        "alm_nombre": "Almacén G",
-        "alm_geolocalizacion": { "type": "Point", "coordinates": [-71.343, 35.984] },
-        "alm_coordenadas": { "latitude": 35.984, "longitude": -71.343 },
-        "alm_descripcion": "Almacén de investigación de la sede G",
-        "alm_estado": 1
-    },
-    {
-        "alm_id": 8,
-        "alm_sede_id": 8,
-        "alm_nombre": "Almacén H",
-        "alm_geolocalizacion": { "type": "Point", "coordinates": [-71.343, 35.984] },
-        "alm_coordenadas": { "latitude": 35.984, "longitude": -71.343 },
-        "alm_descripcion": "Almacén de investigación de la sede H",
-        "alm_estado": 1
-    },
-    {
-        "alm_id": 9,
-        "alm_sede_id": 9,
-        "alm_nombre": "Almacén I",
-        "alm_geolocalizacion": { "type": "Point", "coordinates": [-71.343, 35.984] },
-        "alm_coordenadas": { "latitude": 35.984, "longitude": -71.343 },
-        "alm_descripcion": "Almacén de investigación de la sede I",
-        "alm_estado": 1
-    },
-    {
-        "alm_id": 10,
-        "alm_sede_id": 10,
-        "alm_nombre": "Almacén J",
-        "alm_geolocalizacion": { "type": "Point", "coordinates": [-71.343, 35.984] },
-        "alm_coordenadas": { "latitude": 35.984, "longitude": -71.343 },
-        "alm_descripcion": "Almacén de investigación de la sede J",
-        "alm_estado": 1
-    },
-    {
-        "alm_id": 11,
-        "alm_sede_id": 11,
-        "alm_nombre": "Almacén K",
-        "alm_geolocalizacion": { "type": "Point", "coordinates": [-75.343, 39.984] },
-        "alm_coordenadas": { "latitude": 39.984, "longitude": -75.343 },
-        "alm_descripcion": "Almacén central de la sede K",
-        "alm_estado": 1
-      },
-      {
-        "alm_id": 12,
-        "alm_sede_id": 12,
-        "alm_nombre": "Almacén L",
-        "alm_geolocalizacion": { "type": "Point", "coordinates": [-74.343, 38.984] },
-        "alm_coordenadas": { "latitude": 38.984, "longitude": -74.343 },
-        "alm_descripcion": "Almacén de la sede L",
-        "alm_estado": 1
-      },
-      {
-        "alm_id": 13,
-        "alm_sede_id": 13,
-        "alm_nombre": "Almacén M",
-        "alm_geolocalizacion": { "type": "Point", "coordinates": [-73.343, 37.984] },
-        "alm_coordenadas": { "latitude": 37.984, "longitude": -73.343 },
-        "alm_descripcion": "Almacén de distribución de la sede M",
-        "alm_estado": 1
-      },
-      {
-        "alm_id": 14,
-        "alm_sede_id": 14,
-        "alm_nombre": "Almacén N",
-        "alm_geolocalizacion": { "type": "Point", "coordinates": [-72.343, 36.984] },
-        "alm_coordenadas": { "latitude": 36.984, "longitude": -72.343 },
-        "alm_descripcion": "Almacén de producción de la sede N",
-        "alm_estado": 1
-      },
-      {
-        "alm_id": 15,
-        "alm_sede_id": 15,
-        "alm_nombre": "Almacén O",
-        "alm_geolocalizacion": { "type": "Point", "coordinates": [-71.343, 35.984] },
-        "alm_coordenadas": { "latitude": 35.984, "longitude": -71.343 },
-        "alm_descripcion": "Almacén de investigación de la sede O",
-        "alm_estado": 1
-      }
-  ]
-  
+  {
+    "alm_id": 1,
+    "alm_sede_id": 1,
+    "alm_nombre": "Almacén A",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-75.343, 39.984] },
+    "alm_coordenadas": { "latitude": 39.984, "longitude": -75.343 },
+    "alm_descripcion": "Almacén central de la sede A",
+    "alm_estado": 1
+  },
+  {
+    "alm_id": 2,
+    "alm_sede_id": 2,
+    "alm_nombre": "Almacén B",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-74.343, 38.984] },
+    "alm_coordenadas": { "latitude": 38.984, "longitude": -74.343 },
+    "alm_descripcion": "Almacén de la sede B",
+    "alm_estado": 1
+  },
+  {
+    "alm_id": 3,
+    "alm_sede_id": 3,
+    "alm_nombre": "Almacén C",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-73.343, 37.984] },
+    "alm_coordenadas": { "latitude": 37.984, "longitude": -73.343 },
+    "alm_descripcion": "Almacén de distribución de la sede C",
+    "alm_estado": 1
+  },
+  {
+    "alm_id": 4,
+    "alm_sede_id": 4,
+    "alm_nombre": "Almacén D",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-72.343, 36.984] },
+    "alm_coordenadas": { "latitude": 36.984, "longitude": -72.343 },
+    "alm_descripcion": "Almacén de producción de la sede D",
+    "alm_estado": 1
+  },
+  {
+    "alm_id": 5,
+    "alm_sede_id": 5,
+    "alm_nombre": "Almacén E",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-71.343, 35.984] },
+    "alm_coordenadas": { "latitude": 35.984, "longitude": -71.343 },
+    "alm_descripcion": "Almacén de investigación de la sede E",
+    "alm_estado": 1
+  },
+  {
+    "alm_id": 6,
+    "alm_sede_id": 6,
+    "alm_nombre": "Almacén F",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-71.343, 35.984] },
+    "alm_coordenadas": { "latitude": 35.984, "longitude": -71.343 },
+    "alm_descripcion": "Almacén de investigación de la sede F",
+    "alm_estado": 1
+  },
+  {
+    "alm_id": 7,  
+    "alm_sede_id": 7,
+    "alm_nombre": "Almacén G",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-71.343, 35.984] },
+    "alm_coordenadas": { "latitude": 35.984, "longitude": -71.343 },
+    "alm_descripcion": "Almacén de investigación de la sede G",
+    "alm_estado": 1
+  },
+  {
+    "alm_id": 8,
+    "alm_sede_id": 8,
+    "alm_nombre": "Almacén H",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-71.343, 35.984] },
+    "alm_coordenadas": { "latitude": 35.984, "longitude": -71.343 },
+    "alm_descripcion": "Almacén de investigación de la sede H",
+    "alm_estado": 1
+  },
+  {
+    "alm_id": 9,
+    "alm_sede_id": 9,
+    "alm_nombre": "Almacén I",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-71.343, 35.984] },
+    "alm_coordenadas": { "latitude": 35.984, "longitude": -71.343 },
+    "alm_descripcion": "Almacén de investigación de la sede I",
+    "alm_estado": 1
+  },
+  {
+    "alm_id": 10,
+    "alm_sede_id": 10,
+    "alm_nombre": "Almacén J",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-71.343, 35.984] },
+    "alm_coordenadas": { "latitude": 35.984, "longitude": -71.343 },
+    "alm_descripcion": "Almacén de investigación de la sede J",
+    "alm_estado": 1
+  },
+  {
+    "alm_id": 11,
+    "alm_sede_id": 11,
+    "alm_nombre": "Almacén K",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-75.343, 39.984] },
+    "alm_coordenadas": { "latitude": 39.984, "longitude": -75.343 },
+    "alm_descripcion": "Almacén central de la sede K",
+    "alm_estado": 1
+  },
+  {
+    "alm_id": 12,
+    "alm_sede_id": 12,
+    "alm_nombre": "Almacén L",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-74.343, 38.984] },
+    "alm_coordenadas": { "latitude": 38.984, "longitude": -74.343 },
+    "alm_descripcion": "Almacén de la sede L",
+    "alm_estado": 1
+  },
+  {
+    "alm_id": 13,
+    "alm_sede_id": 13,
+    "alm_nombre": "Almacén M",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-73.343, 37.984] },
+    "alm_coordenadas": { "latitude": 37.984, "longitude": -73.343 },
+    "alm_descripcion": "Almacén de distribución de la sede M",
+    "alm_estado": 1
+  },
+  {
+    "alm_id": 14,
+    "alm_sede_id": 14,
+    "alm_nombre": "Almacén N",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-72.343, 36.984] },
+    "alm_coordenadas": { "latitude": 36.984, "longitude": -72.343 },
+    "alm_descripcion": "Almacén de producción de la sede N",
+    "alm_estado": 1
+  },
+  {
+    "alm_id": 15,
+    "alm_sede_id": 15,
+    "alm_nombre": "Almacén O",
+    "alm_geolocalizacion": { "type": "Point", "coordinates": [-71.343, 35.984] },
+    "alm_coordenadas": { "latitude": 35.984, "longitude": -71.343 },
+    "alm_descripcion": "Almacén de investigación de la sede O",
+    "alm_estado": 1
+  }
+]
