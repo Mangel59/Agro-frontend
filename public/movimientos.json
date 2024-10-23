@@ -1,0 +1,234 @@
+{
+  "empresas": [
+    {
+      "nombre_empresa": "Empresa A",
+      "tipos_movimiento": [
+        {
+          "tipo_movimiento": "Total",
+          "descripcion": "Movimiento Total",
+          "campos_requeridos": [
+            "fecha_inicio",
+            "fecha_fin"
+          ],
+          "detalles_movimientos": [
+            {
+              "hora": "15:30",
+              "kar_almacen_id": 1,
+              "kar_produccion_id": 2,
+              "pro_nombre": "Maíz",
+              "kar_tipo_movimiento_id": 3,
+              "cantidad": -100,
+              "entrada": 0,
+              "salida": 5000,
+              "saldo": -25000
+            },
+            {
+              "hora": "15:30",
+              "kar_almacen_id": 1,
+              "kar_produccion_id": 2,
+              "pro_nombre": "Maíz",
+              "kar_tipo_movimiento_id": 3,
+              "cantidad": -100,
+              "entrada": 0,
+              "salida": 5000,
+              "saldo": -25000
+            }
+          ],
+          "totales_productos": [
+            {
+              "prp_producto_id": 1,
+              "pro_nombre": "Maíz",
+              "entrada": 1662500,
+              "salida": 913000,
+              "saldo": 749500
+            },
+            {
+              "prp_producto_id": 2,
+              "pro_nombre": "Arroz",
+              "entrada": 187500,
+              "salida": 93000,
+              "saldo": 94500
+            },
+            {
+              "prp_producto_id": 3,
+              "pro_nombre": "Soya",
+              "entrada": 302500,
+              "salida": 203750,
+              "saldo": 98750
+            }
+          ]
+        },
+        {
+          "tipo_movimiento": "Detallado",
+          "descripcion": "Movimiento Detallado",
+          "campos_requeridos": [
+            "fecha_inicio",
+            "fecha_fin"
+          ],
+          "detalles_inventario": [
+            {
+              "prp_producto_id": 1,
+              "pro_nombre": "Maíz",
+              "entrada": 1662500,
+              "salida": 913000,
+              "saldo": 749500
+            },
+            {
+              "prp_producto_id": 2,
+              "pro_nombre": "Arroz",
+              "entrada": 187500,
+              "salida": 93000,
+              "saldo": 94500
+            },
+            {
+              "prp_producto_id": 3,
+              "pro_nombre": "Soya",
+              "entrada": 302500,
+              "salida": 203750,
+              "saldo": 98750
+            }
+          ],
+          "detalles_movimientos": [
+            {
+              "kar_almacen_id": 1,
+              "kar_produccion_id": 1,
+              "pro_nombre": "Maíz",
+              "kar_tipo_movimiento_id": 3,
+              "cantidad": -100,
+              "entrada": 0,
+              "salida": 5000,
+              "saldo": -25000,
+              "hora": "15:30"
+            },
+            {
+              "kar_almacen_id": 1,
+              "kar_produccion_id": 1,
+              "pro_nombre": "Maíz",
+              "kar_tipo_movimiento_id": 3,
+              "cantidad": -50,
+              "entrada": 0,
+              "salida": 2500,
+              "saldo": -37500,
+              "hora": "15:30"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre_empresa": "Empresa B",
+      "tipos_movimiento": [
+        {
+          "tipo_movimiento": "Total",
+          "descripcion": "Movimiento Total",
+          "campos_requeridos": [
+            "fecha_inicio",
+            "fecha_fin"
+          ],
+          "detalles_movimientos": [
+            {
+              "hora": "15:30",
+              "kar_almacen_id": 1,
+              "kar_produccion_id": 2,
+              "pro_nombre": "Maíz",
+              "kar_tipo_movimiento_id": 3,
+              "cantidad": -100,
+              "entrada": 0,
+              "salida": 5000,
+              "saldo": -25000
+            },
+            {
+              "hora": "15:30",
+              "kar_almacen_id": 1,
+              "kar_produccion_id": 2,
+              "pro_nombre": "Maíz",
+              "kar_tipo_movimiento_id": 3,
+              "cantidad": -100,
+              "entrada": 0,
+              "salida": 5000,
+              "saldo": -25000
+            }
+          ],
+          "totales_productos": [
+            {
+              "prp_producto_id": 1,
+              "pro_nombre": "Maíz",
+              "entrada": 1662500,
+              "salida": 913000,
+              "saldo": 749500
+            },
+            {
+              "prp_producto_id": 2,
+              "pro_nombre": "Arroz",
+              "entrada": 187500,
+              "salida": 93000,
+              "saldo": 94500
+            },
+            {
+              "prp_producto_id": 3,
+              "pro_nombre": "Soya",
+              "entrada": 302500,
+              "salida": 203750,
+              "saldo": 98750
+            }
+          ]
+        },
+        {
+          "tipo_movimiento": "Detallado",
+          "descripcion": "Movimiento Detallado",
+          "campos_requeridos": [
+            "fecha_inicio",
+            "fecha_fin"
+          ],
+          "detalles_inventario": [
+            {
+              "prp_producto_id": 1,
+              "pro_nombre": "Maíz",
+              "entrada": 1662500,
+              "salida": 913000,
+              "saldo": 749500
+            },
+            {
+              "prp_producto_id": 2,
+              "pro_nombre": "Arroz",
+              "entrada": 187500,
+              "salida": 93000,
+              "saldo": 94500
+            },
+            {
+              "prp_producto_id": 3,
+              "pro_nombre": "Soya",
+              "entrada": 302500,
+              "salida": 203750,
+              "saldo": 98750
+            }
+          ],
+          "detalles_movimientos": [
+            {
+              "kar_almacen_id": 2,
+              "kar_produccion_id": 2,
+              "pro_nombre": "Soya",
+              "kar_tipo_movimiento_id": 1,
+              "cantidad": 150,
+              "entrada": 7500,
+              "salida": 0,
+              "saldo": 37500,
+              "hora": "15:30"
+            },
+            {
+              "kar_almacen_id": 2,
+              "kar_produccion_id": 2,
+              "pro_nombre": "Soya",
+              "kar_tipo_movimiento_id": 3,
+              "cantidad": -50,
+              "entrada": 0,
+              "salida": 2500,
+              "saldo": 22500,
+              "hora": "15:30"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
