@@ -310,7 +310,6 @@
 // }
 
 
-
 import * as React from "react";
 import AddIcon from "@mui/icons-material/Add";
 import UpdateIcon from "@mui/icons-material/Update";
@@ -342,16 +341,16 @@ export default function FormAlmacen(props) {
 
   const create = () => {
     const row = {
-      id: 0,
-      nombre: "",
-      descripcion: "",
-      sedeId: 0,
-      geolocalizacion: {
+      alm_id: 0,
+      alm_nombre: "",
+      alm_descripcion: "",
+      alm_sede_id: 0,
+      alm_geolocalizacion: {
         type: "Point",
         coordinates: [0, 0],
       },
-      coordenadas: "",
-      estado: 0
+      alm_coordenadas: "",
+      alm_estado: 0
     };
     props.setSelectedRow(row);
     setMethodName("Add");
@@ -359,7 +358,7 @@ export default function FormAlmacen(props) {
   };
 
   const update = () => {
-    if (!props.selectedRow || !props.selectedRow.id) {
+    if (!props.selectedRow || !props.selectedRow.alm_id) {
       props.setMessage({
         open: true,
         severity: "error",
@@ -372,7 +371,7 @@ export default function FormAlmacen(props) {
   };
 
   const deleteRow = () => {
-    if (!props.selectedRow || !props.selectedRow.id) {
+    if (!props.selectedRow || !props.selectedRow.alm_id) {
       props.setMessage({
         open: true,
         severity: "error",
@@ -380,7 +379,7 @@ export default function FormAlmacen(props) {
       });
       return;
     }
-    props.deleteAlmacen(props.selectedRow.id);
+    props.deleteAlmacen(props.selectedRow.alm_id);
     setOpen(false);
   };
 
@@ -439,45 +438,42 @@ export default function FormAlmacen(props) {
         <DialogContent>
           <DialogContentText>Completa el formulario.</DialogContentText>
 
-          {/* Campos de formulario para los datos del almacen */}
           <FormControl fullWidth>
             <TextField
               autoFocus
-              required  
-              id="nombre"
-              name="nombre"
+              required
+              id="alm_nombre"
+              name="alm_nombre"
               label="Nombre"
               fullWidth
               variant="standard"
               margin="normal"
-              value={props.selectedRow?.nombre || ''} 
+              value={props.selectedRow?.alm_nombre || ''}
               onChange={handleInputChange}
             />
           </FormControl>
 
           <FormControl fullWidth>
             <TextField
-              autoFocus
-              required  
-              id="descripcion"
-              name="descripcion"
+              required
+              id="alm_descripcion"
+              name="alm_descripcion"
               label="Descripcion"
               fullWidth
               variant="standard"
               margin="normal"
-              value={props.selectedRow?.descripcion || ''} 
+              value={props.selectedRow?.alm_descripcion || ''}
               onChange={handleInputChange}
             />
           </FormControl>
 
-          {/* Selector para Sede */}
           <FormControl fullWidth>
             <InputLabel id="sede-select-label">Sede</InputLabel>
             <Select
               labelId="sede-select-label"
-              id="sedeId"
-              name="sedeId"
-              value={props.selectedRow?.sedeId || ''}
+              id="alm_sede_id"
+              name="alm_sede_id"
+              value={props.selectedRow?.alm_sede_id || ''}
               onChange={handleInputChange}
               margin="dense"
             >
@@ -488,75 +484,6 @@ export default function FormAlmacen(props) {
               ))}
             </Select>
           </FormControl>
-
-          
-
-          <FormControl fullWidth>
-            <TextField
-              required
-              id="latitud"
-              name="latitud"
-              label="Latitud"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              value={props.selectedRow?.geolocalizacion.coordinates[1] || ''} 
-              onChange={(event) => {
-                const latitud = event.target.value;
-                props.setSelectedRow((prevRow) => ({
-                  ...prevRow,
-                  geolocalizacion: {
-                    ...prevRow.geolocalizacion,
-                    coordinates: [prevRow.geolocalizacion.coordinates[0], latitud],
-                  },
-                }));
-              }}
-            />
-          </FormControl>
-
-          <FormControl fullWidth>
-            <TextField
-              required
-              id="longitud"
-              name="longitud"
-              label="Longitud"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              value={props.selectedRow?.geolocalizacion.coordinates[0] || ''} 
-              onChange={(event) => {
-                const longitud = event.target.value;
-                props.setSelectedRow((prevRow) => ({
-                  ...prevRow,
-                  geolocalizacion: {
-                    ...prevRow.geolocalizacion,
-                    coordinates: [longitud, prevRow.geolocalizacion.coordinates[1]],
-                  },
-                }));
-              }}
-            />
-          </FormControl>
-
-
-          {/* Estado */}
-          <FormControl fullWidth>
-            <InputLabel id="estado-select-label">Estado</InputLabel>
-            <Select
-              labelId="estado-select-label"
-              id="estado"
-              name="estado"
-              value={props.selectedRow?.estado || ''}
-              onChange={handleInputChange}
-              margin="dense"
-            >
-              {props.estado.map((estado) => (
-                <MenuItem key={estado.est_id} value={estado.est_id}>
-                  {estado.est_nombre}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cancelar</Button>

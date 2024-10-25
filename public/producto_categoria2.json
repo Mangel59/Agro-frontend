@@ -1,0 +1,5 @@
+[
+    { "prc_id": 1, "prc_nombre": "Categoría 1", "almacen_id": 1 },
+    { "prc_id": 2, "prc_nombre": "Categoría 2", "almacen_id": 2 }
+  ]
+  

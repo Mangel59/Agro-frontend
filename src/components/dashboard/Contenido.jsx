@@ -18,31 +18,32 @@ export default function Contenido(props) {
     };
 
     return (
-        <Box sx={{ width: '100%' }}>
-            <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-                <Grid item xs={2}>
-                    <Drawer variant="permanent" open={open}>
-                        <Toolbar
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'flex-end',
-                                px: [1],
-                            }}
-                        >
-                            <IconButton onClick={toggleDrawer}>
-                                <ChevronLeftIcon />
-                            </IconButton>
-                        </Toolbar>
+        <Box sx={{ display: 'flex', width: '100%' }}>
+            <Drawer variant="temporary" open={open} onClose={toggleDrawer} sx={{ display: { xs: 'block', sm: 'none' } }}>
+                <Toolbar
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-end',
+                        px: [1],
+                    }}
+                >
+                    <IconButton onClick={toggleDrawer}>
+                        <ChevronLeftIcon />
+                    </IconButton>
+                </Toolbar>
+                <Navigator2 setCurrentModuleItem={setCurrentModuleItem} />
+            </Drawer>
+            <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} sx={{ flexGrow: 1 }}>
+                <Grid item xs={12} sm={2} sx={{ display: { xs: 'none', sm: 'block' } }}>
+                    <Drawer variant="permanent" open={true}>
                         <Navigator2 setCurrentModuleItem={setCurrentModuleItem} />
                     </Drawer>
                 </Grid>
-                <Grid item xs={10}>
+                <Grid item xs={12} sm={10}>
                     {currentModuleItem}
                 </Grid>
             </Grid>
         </Box>
     );
 }
-
-

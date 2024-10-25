@@ -1,0 +1,4 @@
+[
+  { "sed_id": 1, "sed_nombre": "Sede 1", "sed_empresa_id": 1 },
+  { "sed_id": 2, "sed_nombre": "Sede 2", "sed_empresa_id": 2 }
+]

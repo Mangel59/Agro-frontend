@@ -7,7 +7,15 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { useTranslation } from 'react-i18next'; // Importar useTranslation
+import Grid from '@mui/material/Grid'; // Para estructura adaptable
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardActions from '@mui/material/CardActions';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '@mui/material/styles'; // Para detectar el modo oscuro
+
 import DnsRoundedIcon from '@mui/icons-material/DnsRounded';
 import HomeIcon from '@mui/icons-material/Home';
 import PeopleIcon from '@mui/icons-material/People';
@@ -16,14 +24,13 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardActions from '@mui/material/CardActions';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import LockIcon from '@mui/icons-material/Lock';
 import LocationCityIcon from '@mui/icons-material/LocationCity';
 import PersonIcon from '@mui/icons-material/Person';
+import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
+import DomainIcon from '@mui/icons-material/Domain';
+
 import Persona from "../personas/Persona.jsx";
 import Pais from '../pais/Pais';
 import Departamento from '../departamento/Departamento';
@@ -37,31 +44,32 @@ import Empresa from '../empresas/Empresa.jsx';
 import Producto from '../producto/Producto.jsx';
 import ProductoCategoria from '../producto_categoria/ProductoCategoria.jsx';
 import Almacen from '../almacen/Almacen.jsx';
-import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import Espacio from '../espacio/Espacio.jsx';
-import WarehouseIcon from '@mui/icons-material/Warehouse';
 import Bloque from '../bloque/Bloque.jsx';
 import Sede from '../sede/Sede.jsx';
 import Rkardex from '../rkardex/Rkardex.jsx'
 import DomainIcon from '@mui/icons-material/Domain';
 
+
+// Definición de íconos
 const icons = {
   DnsRounded: <DnsRoundedIcon />,
   Home: <HomeIcon />,
   People: <PeopleIcon />,
   Public: <PublicIcon />,
   AddShoppingCartIcon: <AddShoppingCartIcon />,
-  Domain: <DomainIcon/> ,
+  Domain: <DomainIcon />,
   Settings: <SettingsIcon />,
   Apartment: <ApartmentIcon />,
   LocationCity: <LocationCityIcon />,
   ProductionQuantityLimitsIcon: <ProductionQuantityLimitsIcon />,
   LockIcon: <LockIcon />,
   PersonIcon: <PersonIcon />,
-  HomeWork: <HomeWorkIcon/>,
-  Warehouse: <WarehouseIcon/>
+  HomeWork: <HomeWorkIcon />,
+  Warehouse: <WarehouseIcon />
 };
 
+// Mapeo de componentes por menú
 const components = {
   pais: Pais,
   departamento: Departamento,
@@ -82,38 +90,22 @@ const components = {
   empresa: Empresa
 };
 
-/**
- * El componente Navigator2 renderiza un sistema de menús dinámico que permite la
- * navegación entre diferentes módulos y submódulos. El menú se obtiene desde un 
- * archivo JSON y se muestra utilizando componentes de Material-UI.
- * 
- * @componente
- * @param {object} props - Propiedades pasadas al componente.
- * @param {function} props.setCurrentModuleItem - Función para actualizar el módulo actual que se está mostrando.
- * @returns {JSX.Element} El menú de navegación.
- */
 export default function Navigator2(props) {
-  const { t } = useTranslation(); // Hook de traducción
+  const { t } = useTranslation(); // Hook para traducción
+  const theme = useTheme(); // Para obtener el tema actual (oscuro o claro)
   const [menuItems, setMenuItems] = React.useState([]);
   const [selectedMenu, setSelectedMenu] = React.useState(null);
   const [breadcrumb, setBreadcrumb] = React.useState([]);
 
-  /**
-   * useEffect para obtener los ítems del menú al montar el componente.
-   * 
-   * @function
-   */
+  // Obtener ítems del menú
   React.useEffect(() => {
     axios.get('/menu.json')
       .then((response) => {
         setMenuItems(response.data);
-
-        // Seleccionar automáticamente el primer menú y mostrar sus hijos
         if (response.data.length > 0) {
           const firstMenuId = response.data[0].id;
           setSelectedMenu(firstMenuId);
           setBreadcrumb([firstMenuId]);
-
           const firstMenu = response.data[0];
           if (firstMenu.children && firstMenu.children.length > 0) {
             props.setCurrentModuleItem(renderSubmenu(firstMenu.children, firstMenuId));
@@ -125,102 +117,91 @@ export default function Navigator2(props) {
       });
   }, []);
 
-   /**
-   * Maneja el evento de clic en el menú principal.
-   * 
-   * @param {string} menuId - El ID del menú que ha sido seleccionado.
-   */
-  // const handleMenuClick = (menuId) => {
-  //   setSelectedMenu(menuId);
-  //   const menu = menuItems.find(item => item.id === menuId);
-  //   setBreadcrumb([menuId]);
-  //   if (menu && menu.children) {
-  //     props.setCurrentModuleItem(renderSubmenu(menu.children, menuId));
-  //   } else {
-  //     props.setCurrentModuleItem(null); // Clear content if no children
-  //   }
-  // };
-
+  // Manejador de clic en menú
   const handleMenuClick = (menuId) => {
     setSelectedMenu(menuId);
     const menu = menuItems.find(item => item.id === menuId);
     setBreadcrumb([menuId]);
     
     if (menu && menu.children && menu.children.length > 0) {
-      // Si el menú tiene hijos, renderiza el submenú
       props.setCurrentModuleItem(renderSubmenu(menu.children, menuId));
     } else {
-      // Si no tiene hijos, renderiza directamente el componente del menú seleccionado
       const Component = components[menuId];
       if (Component) {
-        props.setCurrentModuleItem(<Component />); // Renderiza el componente correspondiente
+        props.setCurrentModuleItem(<Component />);
       } else {
-        props.setCurrentModuleItem(null); // Si no hay componente, no renderiza nada
+        props.setCurrentModuleItem(null);
       }
     }
   };
-  
 
-  /**
-   * Maneja el evento de clic en un submenú.
-   * 
-   * @param {string} subMenuId - El ID del submenú que ha sido seleccionado.
-   * @param {string} parentMenuId - El ID del menú padre.
-   */
+  // Manejador de clic en submenú
   const handleSubMenuClick = (subMenuId, parentMenuId) => {
     setBreadcrumb([...breadcrumb, subMenuId]);
     props.setCurrentModuleItem(React.createElement(components[subMenuId], { goBack: () => handleBackToParent(parentMenuId) }));
   };
 
-   /**
-   * Retorna al menú padre después de navegar en un submenú.
-   * 
-   * @param {string} parentMenuId - El ID del menú padre al cual se debe regresar.
-   */
+  // Volver al menú padre
   const handleBackToParent = (parentMenuId) => {
     const parentMenu = menuItems.find(item => item.id === parentMenuId);
     setBreadcrumb([parentMenuId]);
     props.setCurrentModuleItem(renderSubmenu(parentMenu.children, parentMenuId));
   };
 
-  /**
-   * Renderiza el submenú de un menú específico.
-   * 
-   * @param {Array} children - Los ítems hijos del menú.
-   * @param {string} parentMenuId - El ID del menú padre.
-   * @returns {JSX.Element} Los submenús renderizados.
-   */
-  const renderSubmenu = (children, parentMenuId) => {
-    return (
-      <Box display="flex" flexWrap="wrap" justifyContent="center" p={2}>
-        {children.map(({ id, text, icon }) => (
-          <Card sx={{ minWidth: 275, m: 2 }} key={id}>
+  // Renderizar submenús
+// Renderizar submenús
+const renderSubmenu = (children, parentMenuId) => {
+  return (
+    <Grid container spacing={3} sx={{ padding: 2 }}> {/* Ajuste de spacing */}
+      {children.map(({ id, text, icon }) => (
+        <Grid item xs={12} sm={6} md={4} key={id}>
+          <Card sx={{ minWidth: 275, height: '100%', backgroundColor: theme.palette.mode === 'dark' ? '#424242' : '#fff', 
+            marginBottom: '20px', // Espacio adicional entre las tarjetas
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Sombra para darle más estilo
+          }}>
             <CardContent>
               <ListItemIcon>{icons[icon]}</ListItemIcon>
-              <Typography variant="h5" component="div">
-                {t(text)} {/* Traducir el texto del menú */}
+              <Typography variant="h6" component="div">
+                {t(text)}
               </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" onClick={() => handleSubMenuClick(id, parentMenuId)}>{t('see_more')}</Button>
+              <Button size="small" onClick={() => handleSubMenuClick(id, parentMenuId)}>
+                {t('see_more')}
+              </Button>
             </CardActions>
           </Card>
-        ))}
-      </Box>
-    );
-  };
+        </Grid>
+      ))}
+    </Grid>
+  );
+};
+
 
   return (
-    <Box>
+    <Box
+      sx={{
+        position: 'fixed',
+        top: '70px',
+        left: '0',
+        width: '250px',
+        height: '100vh',
+        overflowY: 'auto',
+        backgroundColor: '#fff', // Aseguramos que el fondo del menú siempre sea blanco
+        color: theme.palette.mode === 'dark' ? '#fff' : '#000', // Texto basado en el modo
+        p: 2,
+        boxShadow: '0 0 10px rgba(0,0,0,0.1)' // Añadimos una sombra para destacarlo mejor
+      }}
+    >
+      {/* Menú principal */}
       <List component="nav">
         {menuItems.map(({ id, text, icon }) => (
-          <ListItem disablePadding key={id}
-            id={id}
-            onClick={() => handleMenuClick(id)}
-          >
+          <ListItem disablePadding key={id} id={id} onClick={() => handleMenuClick(id)}>
             <ListItemButton selected={selectedMenu === id}>
-              <ListItemIcon>{icons[icon]}</ListItemIcon>
-              <ListItemText primary={t(text)} /> {/* Traducir el texto del menú */}
+              <ListItemIcon sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+                {icons[icon]}
+              </ListItemIcon>
+              <ListItemText primary={t(text)} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -229,9 +210,3 @@ export default function Navigator2(props) {
     </Box>
   );
 }
-
-
-
-
-
-
