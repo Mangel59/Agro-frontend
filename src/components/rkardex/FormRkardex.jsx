@@ -1,5 +1,3 @@
-
-
 import * as React from "react";
 import AddIcon from "@mui/icons-material/Add";
 import UpdateIcon from "@mui/icons-material/Update";
@@ -17,7 +15,7 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 
-export default function FormKardex(props) {
+export default function FormRkardex(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
 
@@ -38,7 +36,7 @@ export default function FormKardex(props) {
   };
 
   const update = () => {
-    if (!props.selectedRow || !props.selectedRow.id) {
+    if (!props.selectedRow || !props.selectedRow.kar_id) {
       props.setMessage({
         open: true,
         severity: "error",
@@ -51,7 +49,7 @@ export default function FormKardex(props) {
   };
 
   const deleteRow = () => {
-    if (!props.selectedRow || !props.selectedRow.id) {
+    if (!props.selectedRow || !props.selectedRow.kar_id) {
       props.setMessage({
         open: true,
         severity: "error",
@@ -59,7 +57,7 @@ export default function FormKardex(props) {
       });
       return;
     }
-    props.deleteAlmacen(props.selectedRow.id);
+    props.deleteKardex(props.selectedRow.kar_id);
     setOpen(false);
   };
 
@@ -68,12 +66,20 @@ export default function FormKardex(props) {
     const formData = props.selectedRow;
 
     if (methodName === "Add") {
-      props.addAlmacen(formData);
+      props.addKardex(formData);
     } else if (methodName === "Update") {
-      props.updateAlmacen(formData);
+      props.updateKardex(formData);
     }
 
     setOpen(false);
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    props.setSelectedRow((prev) => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   return (
@@ -117,6 +123,8 @@ export default function FormKardex(props) {
         <DialogTitle>Kardex</DialogTitle>
          <DialogContent>
            <DialogContentText>Completa el formulario.</DialogContentText>
+
+           {/* Campo de fecha */}
            <FormControl fullWidth>
              <TextField
               autoFocus
@@ -128,19 +136,20 @@ export default function FormKardex(props) {
               fullWidth
               variant="standard"
               margin="normal"
-              defaultValue={props.selectedRow.kar_fecha_hora.toISOString().substring(0, 16)}
-              
+              value={props.selectedRow.kar_fecha_hora?.toISOString().substring(0, 16) || ""}
+              onChange={handleChange}
             />
           </FormControl>
 
-          <FormControl fullWidth>
+          {/* Select Almacén */}
+          <FormControl fullWidth margin="normal">
             <InputLabel id="almacen-select-label">Almacén</InputLabel>
             <Select
               labelId="almacen-select-label"
               id="kar_almacen_id"
               name="kar_almacen_id"
-              defaultValue={props.selectedRow.kar_almacen_id}
-              margin="dense"
+              value={props.selectedRow.kar_almacen_id || ""}
+              onChange={handleChange}
             >
               {props.almacen.map((alm) => (
                 <MenuItem key={alm.alm_id} value={alm.alm_id}>
@@ -150,14 +159,15 @@ export default function FormKardex(props) {
             </Select>
           </FormControl>
 
-          <FormControl fullWidth>
+          {/* Select Producción */}
+          <FormControl fullWidth margin="normal">
             <InputLabel id="produccion-select-label">Producción</InputLabel>
             <Select
               labelId="produccion-select-label"
               id="kar_produccion_id"
               name="kar_produccion_id"
-              defaultValue={props.selectedRow.kar_produccion_id}
-              margin="dense"
+              value={props.selectedRow.kar_produccion_id || ""}
+              onChange={handleChange}
             >
               {props.produccion.map((prod) => (
                 <MenuItem key={prod.pro_id} value={prod.pro_id}>
@@ -167,14 +177,15 @@ export default function FormKardex(props) {
             </Select>
           </FormControl>
 
-          <FormControl fullWidth>
+          {/* Select Tipo Movimiento */}
+          <FormControl fullWidth margin="normal">
             <InputLabel id="tipo-movimiento-select-label">Tipo Movimiento</InputLabel>
             <Select
               labelId="tipo-movimiento-select-label"
               id="kar_tipo_movimiento_id"
               name="kar_tipo_movimiento_id"
-              defaultValue={props.selectedRow.kar_tipo_movimiento_id}
-              margin="dense"
+              value={props.selectedRow.kar_tipo_movimiento_id || ""}
+              onChange={handleChange}
             >
               {props.tipoMovimiento.map((tipo) => (
                 <MenuItem key={tipo.tim_id} value={tipo.tim_id}>
@@ -184,58 +195,8 @@ export default function FormKardex(props) {
             </Select>
           </FormControl>
 
-          <FormControl fullWidth>
-            <InputLabel id="almacen-select-label">Almacén</InputLabel>
-            <Select
-              labelId="almacen-select-label"
-              id="kar_almacen_id"
-              name="kar_almacen_id"
-              defaultValue={props.selectedRow.kar_almacen_id}
-            >
-              
-              {props.almacen.map((alm) => (
-                <MenuItem key={alm.alm_id} value={alm.alm_id}>
-                  {alm.alm_nombre}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl fullWidth>
-            <InputLabel id="produccion-select-label">Producción</InputLabel>
-            <Select
-              labelId="produccion-select-label"
-              id="kar_produccion_id"
-              name="kar_produccion_id"
-              defaultValue={props.selectedRow.kar_produccion_id}
-              margin="dense"
-            >
-              {props.produccion.map((prod) => (
-                <MenuItem key={prod.pro_id} value={prod.pro_id}>
-                  {prod.pro_nombre}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl fullWidth>
-            <InputLabel id="tipo-movimiento-select-label">Tipo Movimiento</InputLabel>
-            <Select
-              labelId="tipo-movimiento-select-label"
-              id="kar_tipo_movimiento_id"
-              name="kar_tipo_movimiento_id"
-              defaultValue={props.selectedRow.kar_tipo_movimiento_id}
-              margin="dense"
-            >
-              {props.tipoMovimiento.map((tipo) => (
-                <MenuItem key={tipo.tim_id} value={tipo.tim_id}>
-                  {tipo.tim_nombre}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl fullWidth>
+          {/* Descripción */}
+          <FormControl fullWidth margin="normal">
             <TextField
               autoFocus
               required
@@ -244,19 +205,20 @@ export default function FormKardex(props) {
               label="Descripción"
               fullWidth
               variant="standard"
-              margin="normal"
-              defaultValue={props.selectedRow.kar_descripcion}
+              value={props.selectedRow.kar_descripcion || ""}
+              onChange={handleChange}
             />
           </FormControl>
 
-          <FormControl fullWidth>
+          {/* Estado */}
+          <FormControl fullWidth margin="normal">
             <InputLabel id="estado-select-label">Estado</InputLabel>
             <Select
               labelId="estado-select-label"
               id="kar_estado"
               name="kar_estado"
-              defaultValue={props.selectedRow.kar_estado}
-              margin="dense"
+              value={props.selectedRow.kar_estado || ""}
+              onChange={handleChange}
             >
               {props.estado.map((estado) => (
                 <MenuItem key={estado.est_id} value={estado.est_id}>
@@ -274,3 +236,5 @@ export default function FormKardex(props) {
     </React.Fragment>
   );
 }
+
+

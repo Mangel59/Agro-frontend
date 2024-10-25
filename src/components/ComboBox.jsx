@@ -1,115 +1,124 @@
 import React, { useState, useEffect } from 'react';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
-import axios from 'axios';
-import { SiteProps } from './dashboard/SiteProps';
-import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Box from '@mui/material/Box';
+import MenuItem from '@mui/material/MenuItem';
+import axios from 'axios';
 
-/**
- * El componente ComboBox proporciona una interfaz de selección para almacen, produccion y tipo_movimiento,
- * con selectores de fecha para especificar una fecha de inicio y fin. El componente obtiene datos del servidor
- * para cada uno de los menús desplegables y permite al usuario seleccionar opciones.
- * 
- * @componente
- * @param {function} onAlmacenChange - Callback para manejar los cambios en la selección de almacen.
- * @param {function} onProduccionChange - Callback para manejar los cambios en la selección de produccion.
- * @param {function} onMovimientoChange - Callback para manejar los cambios en la selección de tipo_movimiento.
- * @returns {JSX.Element} Un formulario con selectores de fecha y menús desplegables para almacen, produccion y movimiento.
- */
-export default function ComboBox({ onAlmacenChange, onProduccionChange, onMovimientoChange }) {
-  const [movimiento, setMovimiento] = useState([]);
-  const [almacen, setAlmacen] = useState([]);
-  const [produccion, setProduccion] = useState([]);
+export default function ComboBox({ onAlmacenChange, onProduccionChange, onMovimientoChange, onDescripcionChange, onEstadoChange }) {
+  const [almacenes, setAlmacenes] = useState([]);
+  const [producciones, setProducciones] = useState([]);
+  const [movimientos, setMovimientos] = useState([]);
   const [selectedAlmacen, setSelectedAlmacen] = useState(null);
   const [selectedProduccion, setSelectedProduccion] = useState(null);
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [selectedMovimiento, setSelectedMovimiento] = useState(null);
+  const [descripcion, setDescripcion] = useState('');
+  const [estado, setEstado] = useState('');
 
-  // Obtener datos para almacen, produccion y movimiento
+  // Obtener datos desde kardex.json usando axios
   useEffect(() => {
-    axios.get(`${SiteProps.urldinamica}/items/tipo_movimiento`)
+    axios.get('/kardex.json')
       .then(response => {
-        setMovimiento(response.data);
-      })
-      .catch(error => console.error('Error fetching tipo_movimiento:', error));
+        const kardexData = response.data;
 
-    axios.get(`${SiteProps.urldinamica}/items/almacen`)
-      .then(response => {
-        setAlmacen(response.data);
-      })
-      .catch(error => console.error('Error fetching almacen:', error));
+        // Extraer almacenes únicos
+        const almacenesUnicos = [...new Set(kardexData.map(item => item.kar_almacen_id))];
+        setAlmacenes(almacenesUnicos);
 
-    axios.get(`${SiteProps.urldinamica}/items/produccion`)
-      .then(response => {
-        setProduccion(response.data);
+        // Extraer producciones únicas
+        const produccionesUnicas = [...new Set(kardexData.map(item => item.kar_produccion_id))];
+        setProducciones(produccionesUnicas);
+
+        // Extraer movimientos únicos
+        const movimientosUnicos = [...new Set(kardexData.map(item => item.kar_tipo_movimiento_id))];
+        setMovimientos(movimientosUnicos);
       })
-      .catch(error => console.error('Error fetching produccion:', error));
+      .catch(error => console.error('Error al cargar kardex.json:', error));
   }, []);
 
+  // Notificar cambios individuales
+  useEffect(() => {
+    if (onAlmacenChange) onAlmacenChange(selectedAlmacen);
+  }, [selectedAlmacen, onAlmacenChange]);
+
+  useEffect(() => {
+    if (onProduccionChange) onProduccionChange(selectedProduccion);
+  }, [selectedProduccion, onProduccionChange]);
+
+  useEffect(() => {
+    if (onMovimientoChange) onMovimientoChange(selectedMovimiento);
+  }, [selectedMovimiento, onMovimientoChange]);
+
+  useEffect(() => {
+    if (onDescripcionChange) onDescripcionChange(descripcion);
+  }, [descripcion, onDescripcionChange]);
+
+  useEffect(() => {
+    if (onEstadoChange) onEstadoChange(estado);
+  }, [estado, onEstadoChange]);
+
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box sx={{ display: 'flex', gap: 2, mb: 4 , pt:2 }}>
-        <DateTimePicker
-          label="Fecha Inicio (MM/DD/YYYY hh:mm)"
-          value={startDate}
-          onChange={(newValue) => {
-            setStartDate(newValue);
-          }}
-          renderInput={(params) => <TextField {...params} sx={{ width: 300}} />}
-          ampm={false}
-        />
-        <DateTimePicker
-          label="Fecha Fin (MM/DD/YYYY hh:mm)"
-          value={endDate}
-          onChange={(newValue) => {
-            setEndDate(newValue);
-          }}
-          renderInput={(params) => <TextField {...params} sx={{ width: 300}} />}
-          ampm={false}
-        />
-      </Box>
-      <Box sx={{ display: 'flex', gap: 2, pb:2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 4, pt: 2 }}>
+      {/* Primera fila: Almacén, Producción, Movimiento */}
+      <Box sx={{ display: 'flex', gap: 2 }}>
         <Autocomplete
           disablePortal
           id="combo-box-almacen"
-          options={almacen}
-          getOptionLabel={(option) => option.nombre}
-          sx={{ width: 300,display: 'flex' }}
-          onChange={(event, newValue) => {
-            setSelectedAlmacen(newValue);
-            onAlmacenChange(newValue);
-          }}
+          options={almacenes}
+          getOptionLabel={(option) => `Almacén ${option}`}  // Muestra el ID del almacén
+          sx={{ width: 300 }}
+          onChange={(event, newValue) => setSelectedAlmacen(newValue)}
           renderInput={(params) => <TextField {...params} label="Almacén" />}
         />
+
         <Autocomplete
           disablePortal
           id="combo-box-produccion"
-          options={produccion}
-          getOptionLabel={(option) => option.nombre}
-          sx={{ width: 300,display: 'flex' }}
-          onChange={(event, newValue) => {
-            setSelectedProduccion(newValue);
-            onProduccionChange(newValue);
-          }}
+          options={producciones}
+          getOptionLabel={(option) =>` Producción ${option}`}  // Muestra el ID de la producción
+          sx={{ width: 300 }}
+          onChange={(event, newValue) => setSelectedProduccion(newValue)}
           renderInput={(params) => <TextField {...params} label="Producción" />}
-          disabled={!selectedAlmacen}
+          disabled={!selectedAlmacen}  // Se habilita solo si hay un almacén seleccionado
         />
+
         <Autocomplete
           disablePortal
           id="combo-box-tipo-movimiento"
-          options={movimiento}
-          getOptionLabel={(option) => option.nombre}
-          sx={{ width: 300,display: 'flex' }}
-          onChange={(event, newValue) => {
-            onMovimientoChange(newValue);
-          }}
+          options={movimientos}
+          getOptionLabel={(option) => `Movimiento ${option}`}  // Muestra el ID del movimiento
+          sx={{ width: 300 }}
+          onChange={(event, newValue) => setSelectedMovimiento(newValue)}
           renderInput={(params) => <TextField {...params} label="Tipo Movimiento" />}
-          disabled={!selectedProduccion}
+          disabled={!selectedProduccion}  // Se habilita solo si hay una producción seleccionada
         />
       </Box>
-    </LocalizationProvider>
+
+      {/* Segunda fila: Descripción y Estado */}
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        {/* Campo de Descripción */}
+        <TextField
+          id="descripcion"
+          label="Descripción"
+          variant="outlined"
+          sx={{ width: 300 }}
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.target.value)}
+        />
+
+        {/* ComboBox para seleccionar Estado */}
+        <TextField
+          id="estado"
+          select
+          label="Estado"
+          sx={{ width: 300 }}
+          value={estado}
+          onChange={(e) => setEstado(e.target.value)}
+        >
+          <MenuItem value={1}>Activo</MenuItem>
+          <MenuItem value={0}>Inactivo</MenuItem>
+        </TextField>
+      </Box>
+    </Box>
   );
 }
-

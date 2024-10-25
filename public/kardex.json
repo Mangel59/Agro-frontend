@@ -1,0 +1,182 @@
+[
+{
+    "kar_id": 1,
+    "kar_fecha_hora": "2023-01-01 15:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 1,
+    "kar_descripcion": "Entrada de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 2,
+    "kar_fecha_hora": "2023-01-01 18:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 2,
+    "kar_descripcion": "Salida de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 3,
+    "kar_fecha_hora": "2023-01-02 08:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 1,
+    "kar_descripcion": "Entrada de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 4,
+    "kar_fecha_hora": "2023-01-02 10:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 2,
+    "kar_descripcion": "Salida de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 5,
+    "kar_fecha_hora": "2023-01-02 12:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 1,
+    "kar_descripcion": "Entrada de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 6,
+    "kar_fecha_hora": "2023-01-02 14:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 2,
+    "kar_descripcion": "Salida de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 7,
+    "kar_fecha_hora": "2023-01-02 16:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 1,
+    "kar_descripcion": "Entrada de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 8,
+    "kar_fecha_hora": "2023-01-02 18:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 2,
+    "kar_descripcion": "Salida de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 9,
+    "kar_fecha_hora": "2023-01-03 08:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 1,
+    "kar_descripcion": "Entrada de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 10,
+    "kar_fecha_hora": "2023-01-03 10:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 2,
+    "kar_descripcion": "Salida de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 11,
+    "kar_fecha_hora": "2023-01-03 12:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 1,
+    "kar_descripcion": "Entrada de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 12,
+    "kar_fecha_hora": "2023-01-03 14:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 2,
+    "kar_descripcion": "Salida de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 13,
+    "kar_fecha_hora": "2023-01-04 08:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 1,
+    "kar_descripcion": "Entrada de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 14,
+    "kar_fecha_hora": "2023-01-04 10:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 2,
+    "kar_descripcion": "Salida de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 15,
+    "kar_fecha_hora": "2023-01-04 12:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 1,
+    "kar_descripcion": "Entrada de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 16,
+    "kar_fecha_hora": "2023-01-04 14:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 2,
+    "kar_descripcion": "Salida de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 17,
+    "kar_fecha_hora": "2023-01-05 08:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 1,
+    "kar_descripcion": "Entrada de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 18,
+    "kar_fecha_hora": "2023-01-05 10:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 2,
+    "kar_descripcion": "Salida de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 19,
+    "kar_fecha_hora": "2023-01-05 12:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 1,
+    "kar_descripcion": "Entrada de maíz",
+    "kar_estado": 1
+  },
+  {
+    "kar_id": 20,
+    "kar_fecha_hora": "2023-01-05 14:00:00",
+    "kar_almacen_id": 1,
+    "kar_produccion_id": 1,
+    "kar_tipo_movimiento_id": 2,
+    "kar_descripcion": "Salida de maíz",
+    "kar_estado": 1
+  }
+]

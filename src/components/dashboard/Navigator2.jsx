@@ -30,7 +30,7 @@ import Departamento from '../departamento/Departamento';
 import Municipio from '../municipio/Municipio';
 import ProductoPresentacion from '../producto_presentacion/ProductoPresentacion';
 import Produccion from '../produccion/Produccion';
-import Kardex from '../kardex/Kardex';
+import Kardex from '../kardex/Kardex.jsx';
 import KardexItem from '../kardex_item/KardexItem';
 import Reportes from '../reportes/Reportes';
 import Empresa from '../empresas/Empresa.jsx';
@@ -42,6 +42,7 @@ import Espacio from '../espacio/Espacio.jsx';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import Bloque from '../bloque/Bloque.jsx';
 import Sede from '../sede/Sede.jsx';
+import Rkardex from '../rkardex/Rkardex.jsx'
 import DomainIcon from '@mui/icons-material/Domain';
 
 const icons = {
@@ -74,6 +75,7 @@ const components = {
   producto: Producto,
   produccion: Produccion,
   kardex: Kardex,
+  rkardex: Rkardex,
   kardex_item: KardexItem,
   reportes: Reportes,
   persona: Persona,
