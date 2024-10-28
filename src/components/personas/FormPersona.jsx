@@ -84,7 +84,7 @@ export default function FormPersona(props) {
       return;
     }
     const id = props.selectedRow.id;
-    const url = `${SiteProps.urlbasev1}/personas/${id}`;
+    const url = `${SiteProps.urlbase}/personas/${id}`;
     axios
       .delete(url, {
         headers: {

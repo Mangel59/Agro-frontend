@@ -48,7 +48,7 @@ import Espacio from '../espacio/Espacio.jsx';
 import Bloque from '../bloque/Bloque.jsx';
 import Sede from '../sede/Sede.jsx';
 import Rkardex from '../rkardex/Rkardex.jsx'
-import DomainIcon from '@mui/icons-material/Domain';
+// import DomainIcon from '@mui/icons-material/Domain';
 
 
 // Definición de íconos
