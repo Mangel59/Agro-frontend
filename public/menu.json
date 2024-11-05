@@ -72,13 +72,13 @@
         "icon": "ProductionQuantityLimitsIcon"
       },
       {
-        "id": "rkardex",
-        "text": "Rkardex",
+        "id": "kardex_item",
+        "text": "KardexItem",
         "icon": "ProductionQuantityLimitsIcon"
       },
       {
-        "id": "kardex_item",
-        "text": "KardexItem",
+        "id": "kardex_nuevo",
+        "text": "Kardex Nuevo",
         "icon": "ProductionQuantityLimitsIcon"
       }
     ]
