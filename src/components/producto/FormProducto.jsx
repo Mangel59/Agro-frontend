@@ -17,6 +17,8 @@ import { SiteProps } from "../dashboard/SiteProps";
 export default function FormProducto(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
+  
+  // Crear un nuevo producto
   const create = () => {
     const row = {
       id: 0,
@@ -28,45 +30,48 @@ export default function FormProducto(props) {
     props.setSelectedRow(row);
     setMethodName("Add");
     setOpen(true);
-    console.log("create() " + JSON.stringify(row));
   };
+  
+  // Actualizar un producto existente
   const update = () => {
     if (!props.selectedRow || props.selectedRow.id === 0) {
-      const messageData = {
+      props.setMessage({
         open: true,
         severity: "error",
-        text: "Select row!",
-      };
-      props.setMessage(messageData);
+        text: "Selecciona una fila para actualizar",
+      });
       return;
     }
     setMethodName("Update");
     setOpen(true);
-    console.log("update() " + JSON.stringify(props.selectedRow));
   };
+
+  // Eliminar un producto
   const deleteRow = () => {
     if (props.selectedRow.id === 0) {
-      const messageData = {
+      props.setMessage({
         open: true,
         severity: "error",
-        text: "Select row!",
-      };
-      props.setMessage(messageData);
+        text: "Selecciona una fila para eliminar",
+      });
       return;
     }
     const id = props.selectedRow.id;
     const url = `${SiteProps.urlbasev1}/productos/${id}`;
+    
+    const token = localStorage.getItem("token");
+
     axios
       .delete(url, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => {
+      .then(() => {
         props.setMessage({
           open: true,
           severity: "success",
-          text: "Producto eliminada con éxito!",
+          text: "Producto eliminado con éxito",
         });
         props.reloadData();
       })
@@ -77,132 +82,117 @@ export default function FormProducto(props) {
         props.setMessage({
           open: true,
           severity: "error",
-          text: `Error al eliminar producto! ${errorMessage}`,
+          text: `Error al eliminar producto: ${errorMessage}`,
         });
-        console.error(
-          "Error al eliminar producto!",
-          error.response || error.message
-        );
       });
   };
-  const methods = {
-    create,
-    update,
-    deleteRow,
-  };
-  React.useEffect(() => {
-    if (props.selectedRow !== undefined) {
-      console.log("Selected Row ID: " + props.selectedRow.id);
-    }
-  }, [props.selectedRow]);
+
   const handleClose = () => {
     setOpen(false);
   };
+
+  // Enviar el formulario para crear o actualizar un producto
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const formJson = Object.fromEntries(formData.entries());
     const id = props.selectedRow?.id || 0;
+
     const validatePayload = (data) => {
-      if (
-        !data.nombre ||
-        !data.descripcion
-      ) {
-        console.error("Invalid data:", data);
+      if (!data.nombre || !data.descripcion) {
         props.setMessage({
           open: true,
           severity: "error",
-          text: "Invalid data!",
+          text: "Datos inválidos. Revisa el formulario.",
         });
         return false;
       }
       return true;
     };
+
     if (!validatePayload(formJson)) return;
+
     const url = `${SiteProps.urlbasev1}/productos`;
+    const token = localStorage.getItem("token");
+
+    console.log("Datos del formulario: ", formJson);
+    console.log("Token: ", token); // Para verificar si el token es válido
+    
+    if (!token) {
+      console.error("Token no encontrado.");
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Error: Token de autenticación no encontrado.",
+      });
+      return;
+    }
+
+    // Lógica para crear un producto
     if (methodName === "Add") {
-      axios
-        .post(url, formJson)
-        .then((response) => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: "Producto creada con éxito!",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response
-            ? error.response.data.message
-            : error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al crear producto! ${errorMessage}`,
-          });
+      axios.post(url, formJson, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        props.setMessage({
+          open: true,
+          severity: "success",
+          text: "Producto creado con éxito",
         });
-    } else if (methodName === "Update") {
-      axios
-        .put(`${url}/${id}`, formJson)
-        .then((response) => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: "Producto actualizada con éxito!",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response
-            ? error.response.data.message
-            : error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al actualizar producto! ${errorMessage}`,
-          });
-          console.error(
-            "Error al actualizar producto!",
-            error.response || error.message
-          );
+        setOpen(false);
+        props.reloadData();  // Actualiza la lista después de agregar
+      })
+      .catch((error) => {
+        const errorMessage = error.response
+          ? error.response.data.message
+          : error.message;
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al crear producto: ${errorMessage}`,
         });
-    } else if (methodName === "Delete") {
+      });
+    }
+    
+    // Lógica para actualizar un producto
+    else if (methodName === "Update") {
       axios
-        .delete(`${url}/${id}`)
+        .put(`${url}/${id}`, formJson, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
         .then((response) => {
+          console.log("Respuesta al actualizar: ", response);
           props.setMessage({
             open: true,
             severity: "success",
-            text: "Producto eliminada con éxito!",
+            text: "Producto actualizado con éxito",
           });
           setOpen(false);
           props.reloadData();
         })
         .catch((error) => {
+          console.error("Error al actualizar producto:", error.response || error);
           const errorMessage = error.response
             ? error.response.data.message
             : error.message;
           props.setMessage({
             open: true,
             severity: "error",
-            text: `Error al eliminar producto! ${errorMessage}`,
+            text: `Error al actualizar producto: ${errorMessage}`,
           });
-          console.error(
-            "Error al eliminar producto!",
-            error.response || error.message
-          );
         });
     }
+
     handleClose();
   };
 
-  //hacer el post de la producto
+  // Renderizado del formulario de producto
   return (
     <React.Fragment>
       <StackButtons
-        methods={methods}
+        methods={{ create, update, deleteRow }}
         create={create}
         open={open}
         setOpen={setOpen}
@@ -236,11 +226,11 @@ export default function FormProducto(props) {
               required
               id="productocategoriaid"
               name="productocategoriaid"
-              label="ID de categoria producto"
+              label="ID de categoría del producto"
               type="number"
               fullWidth
               variant="standard"
-              defaultValue={props.selectedRow?.estrato || 0}
+              defaultValue={props.selectedRow?.productoCategoriaId || 0}
             />
           </FormControl>
 
@@ -257,17 +247,12 @@ export default function FormProducto(props) {
           </FormControl>
 
           <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label"
-              sx={{
-                backgroundColor: 'white', 
-                padding: '0 8px',      
-              }}
-            >Estado</InputLabel>
+            <InputLabel id="estado-label">Estado</InputLabel>
             <Select
               labelId="estado-label"
               id="estado"
               name="estado"
-              defaultValue={props.selectedRow?.estado || ''}
+              defaultValue={props.selectedRow?.estado || 1}
               fullWidth
             >
               <MenuItem value={1}>Activo</MenuItem>

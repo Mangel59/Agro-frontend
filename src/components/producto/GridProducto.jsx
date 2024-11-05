@@ -10,6 +10,16 @@ const columns = [
     valueGetter: (params) => params.row.estado === 1 ? 'Activo' : 'Inactivo' },
 ];
 
+/**
+ * El componente GridPersona muestra una tabla con los datos de las productos.
+ * 
+ * @componente
+ * @param {object} props - Propiedades pasadas al componente.
+ * @param {array} props.productos - Lista de productos a mostrar en la tabla.
+ * @param {function} props.setSelectedRow - Función para establecer la fila seleccionada.
+ * @returns {JSX.Element} La tabla de datos de productos.
+ */
+
 export default function GridProducto(props) {
   return (
     <DataGrid

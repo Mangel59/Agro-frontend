@@ -2,6 +2,7 @@
   "name": "factory",
   "private": true,
   "version": "0.0.0",
+  "proxy": "http://172.16.79.156:8080",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -21,7 +22,9 @@
     "@mui/x-data-grid": "^6.19.6",
     "@mui/x-date-pickers": "^7.9.0",
     "axios": "^1.7.3",
+    "cors": "^2.8.5",
     "date-fns": "^2.28.0",
+    "http-proxy-middleware": "^3.0.3",
     "i18next": "^23.14.0",
     "i18next-browser-languagedetector": "^8.0.0",
     "jspdf": "^2.5.2",

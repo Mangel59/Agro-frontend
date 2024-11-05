@@ -26,26 +26,35 @@ export default function Producto(props) {
 
   // Función para recargar los datos
   const reloadData = () => {
-    axios
-      .get(`${SiteProps.urlbasev1}/productos`)
+    axios.get(`${SiteProps.urlbasev1}/productos`)
       .then((response) => {
-        const productoData = response.data.map((item) => ({
-          ...item,
-          id: item.id,
-        }));
-        setProductos(productoData);
+        // Verificar si la respuesta tiene una propiedad 'data' que contiene un array
+        if (response.data && Array.isArray(response.data.data)) {
+          setProductos(response.data.data); // Ajustar para acceder al array de productos dentro de 'data'
+        } else if (Array.isArray(response.data)) {
+          setProductos(response.data); // Si la respuesta ya es un array directamente
+        } else {
+          console.error('La respuesta no es un array:', response.data);
+          setMessage({
+            open: true,
+            severity: 'error',
+            text: 'Error al cargar productos: respuesta no válida'
+          });
+        }
       })
       .catch((error) => {
-        console.error("Error al buscar productos!", error);
+        console.error('Error al cargar productos:', error);
+        setMessage({
+          open: true,
+          severity: 'error',
+          text: 'Error al cargar productos'
+        });
       });
-
-  };
-
+  };  
   React.useEffect(() => {
-    reloadData();  // Llama a reloadData para cargar los datos iniciales
+    reloadData();  // Llama al cargar el componente
   }, []);
-
-
+  
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <MessageSnackBar message={message} setMessage={setMessage} />
@@ -65,4 +74,3 @@ export default function Producto(props) {
     </div>
   );
 }
-

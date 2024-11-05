@@ -1,21 +1,10 @@
 import * as React from 'react';
 import axios from 'axios';
-import Divider from '@mui/material/Divider';
-import List from '@mui/material/List';
-import Box from '@mui/material/Box';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Grid from '@mui/material/Grid'; // Para estructura adaptable
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardActions from '@mui/material/CardActions';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+import { Divider, List, Box, ListItem, ListItemButton, ListItemIcon, ListItemText, Grid, Card, CardContent, CardActions, Typography, Button, IconButton } from "@mui/material";
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '@mui/material/styles'; // Para detectar el modo oscuro
+import { useTheme } from '@mui/material/styles';
 
+import MenuIcon from '@mui/icons-material/Menu';
 import DnsRoundedIcon from '@mui/icons-material/DnsRounded';
 import HomeIcon from '@mui/icons-material/Home';
 import PeopleIcon from '@mui/icons-material/People';
@@ -65,7 +54,7 @@ const icons = {
   ProductionQuantityLimitsIcon: <ProductionQuantityLimitsIcon />,
   LockIcon: <LockIcon />,
   PersonIcon: <PersonIcon />,
-  HomeWork: <HomeWorkIcon />,
+  HomeWorkIcon: <HomeWorkIcon />,
   Warehouse: <WarehouseIcon />
 };
 
@@ -91,13 +80,13 @@ const components = {
 };
 
 export default function Navigator2(props) {
-  const { t } = useTranslation(); // Hook para traducción
-  const theme = useTheme(); // Para obtener el tema actual (oscuro o claro)
+  const { t } = useTranslation();
+  const theme = useTheme();
   const [menuItems, setMenuItems] = React.useState([]);
   const [selectedMenu, setSelectedMenu] = React.useState(null);
   const [breadcrumb, setBreadcrumb] = React.useState([]);
+  const [open, setOpen] = React.useState(true);
 
-  // Obtener ítems del menú
   React.useEffect(() => {
     axios.get('/menu.json')
       .then((response) => {
@@ -117,7 +106,6 @@ export default function Navigator2(props) {
       });
   }, []);
 
-  // Manejador de clic en menú
   const handleMenuClick = (menuId) => {
     setSelectedMenu(menuId);
     const menu = menuItems.find(item => item.id === menuId);
@@ -135,38 +123,37 @@ export default function Navigator2(props) {
     }
   };
 
-  // Manejador de clic en submenú
   const handleSubMenuClick = (subMenuId, parentMenuId) => {
     setBreadcrumb([...breadcrumb, subMenuId]);
     props.setCurrentModuleItem(React.createElement(components[subMenuId], { goBack: () => handleBackToParent(parentMenuId) }));
   };
 
-  // Volver al menú padre
   const handleBackToParent = (parentMenuId) => {
     const parentMenu = menuItems.find(item => item.id === parentMenuId);
     setBreadcrumb([parentMenuId]);
     props.setCurrentModuleItem(renderSubmenu(parentMenu.children, parentMenuId));
   };
 
-  // Renderizar submenús
-// Renderizar submenús
-const renderSubmenu = (children, parentMenuId) => {
-  return (
-    <Grid container spacing={3} sx={{ padding: 2 }}> {/* Ajuste de spacing */}
+const renderSubmenu = (children, parentMenuId) => (
+    <Grid container spacing={3} sx={{ padding: 2, marginTop: '40px' }}>
       {children.map(({ id, text, icon }) => (
         <Grid item xs={12} sm={6} md={4} key={id}>
-          <Card sx={{ minWidth: 275, height: '100%', backgroundColor: theme.palette.mode === 'dark' ? '#424242' : '#fff', 
-            marginBottom: '20px', // Espacio adicional entre las tarjetas
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Sombra para darle más estilo
-          }}>
+          <Card sx={{ 
+              minWidth: 275, 
+              height: '100%', 
+              backgroundColor: theme.palette.mode === 'dark' ? '#333' : '#fff', 
+              color: theme.palette.mode === 'dark' ? '#fff' : '#000', 
+              marginBottom: '20px', 
+              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' 
+            }}>
             <CardContent>
-              <ListItemIcon>{icons[icon]}</ListItemIcon>
+              <ListItemIcon sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }}>{icons[icon]}</ListItemIcon>
               <Typography variant="h6" component="div">
                 {t(text)}
               </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" onClick={() => handleSubMenuClick(id, parentMenuId)}>
+              <Button size="small" sx={{ color: theme.palette.mode === 'dark' ? '#90caf9' : '#1976d2' }} onClick={() => handleSubMenuClick(id, parentMenuId)}>
                 {t('see_more')}
               </Button>
             </CardActions>
@@ -175,37 +162,38 @@ const renderSubmenu = (children, parentMenuId) => {
       ))}
     </Grid>
   );
-};
-
 
   return (
-    <Box
-      sx={{
-        position: 'fixed',
-        top: '70px',
-        left: '0',
-        width: '250px',
-        height: '100vh',
-        overflowY: 'auto',
-        backgroundColor: '#fff', // Aseguramos que el fondo del menú siempre sea blanco
-        color: theme.palette.mode === 'dark' ? '#fff' : '#000', // Texto basado en el modo
-        p: 2,
-        boxShadow: '0 0 10px rgba(0,0,0,0.1)' // Añadimos una sombra para destacarlo mejor
-      }}
-    >
-      {/* Menú principal */}
+    <Box sx={{ 
+        position: 'fixed', 
+        top: '65px', 
+        left: '0', 
+        width: open ? '250px' : '70px', 
+        height: '100vh', 
+        overflowY: 'auto', 
+        backgroundColor: theme.palette.mode === 'dark' ? '#212121' : '#fff', 
+        color: theme.palette.mode === 'dark' ? '#fff' : '#000', 
+        boxShadow: '0 0 10px rgba(0,0,0,0.1)', 
+        transition: 'width 0.3s' 
+      }}>
+      {/* Título del menú que funciona como botón de alternancia */}
+      <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', p: 2 }} onClick={() => setOpen(!open)}>
+        <MenuIcon sx={{ mr: open ? 1 : 0, color: theme.palette.mode === 'dark' ? '#fff' : '#000' }} />
+        {open && <Typography variant="h6" sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }}>{t('Menú')}</Typography>}
+      </Box>
+
       <List component="nav">
         {menuItems.map(({ id, text, icon }) => (
           <ListItem disablePadding key={id} id={id} onClick={() => handleMenuClick(id)}>
-            <ListItemButton selected={selectedMenu === id}>
-              <ListItemIcon sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+            <ListItemButton selected={selectedMenu === id} sx={{ justifyContent: open ? 'flex-start' : 'center', px: open ? 2 : 0 }}>
+              <ListItemIcon sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000', minWidth: 0, mr: open ? 2 : 0, justifyContent: 'center' }}>
                 {icons[icon]}
               </ListItemIcon>
-              <ListItemText primary={t(text)} />
+              {open && <ListItemText primary={t(text)} sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }} />}
             </ListItemButton>
           </ListItem>
         ))}
-        <Divider sx={{ my: 1 }} />
+        <Divider sx={{ my: 1, backgroundColor: theme.palette.mode === 'dark' ? '#757575' : '#e0e0e0' }} />
       </List>
     </Box>
   );
