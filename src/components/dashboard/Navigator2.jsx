@@ -36,7 +36,7 @@ import Almacen from '../almacen/Almacen.jsx';
 import Espacio from '../espacio/Espacio.jsx';
 import Bloque from '../bloque/Bloque.jsx';
 import Sede from '../sede/Sede.jsx';
-import Rkardex from '../rkardex/Rkardex.jsx'
+import KardexNuevo from '../kardex_nuevo/KardexNuevo.jsx'
 // import DomainIcon from '@mui/icons-material/Domain';
 
 
@@ -72,7 +72,7 @@ const components = {
   producto: Producto,
   produccion: Produccion,
   kardex: Kardex,
-  rkardex: Rkardex,
+  kardex_nuevo: KardexNuevo,
   kardex_item: KardexItem,
   reportes: Reportes,
   persona: Persona,
