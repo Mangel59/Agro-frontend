@@ -27,7 +27,17 @@
       {
         "id": "espacio",
         "text": "Espacio",
-        "icon": "HomeWork"
+        "icon": "LocationCity"
+      },
+      {
+        "id": "espacio_ocupacion",
+        "text": "Espacio ocupacion",
+        "icon": "LocationCity"
+      },
+      {
+        "id": "tipo_espacio",
+        "text": "Tipo Espacio",
+        "icon": "LocationCity"
       },
       {
         "id": "bloque",
@@ -35,9 +45,19 @@
         "icon": "Warehouse"
       },
       {
+        "id": "tipo_bloque",
+        "text": "Tipo Bloque",
+        "icon": "Warehouse"
+      },
+      {
         "id": "sede",
         "text": "Sede",
         "icon": "Domain"
+      },
+      {
+        "id": "tipo_sede",
+        "text": "Tipo Sede",
+        "icon": "Warehouse"
       }
     ]
   },
@@ -49,6 +69,11 @@
       {
         "id": "producto_presentacion",
         "text": "ProductoPresentacion",
+        "icon": "ProductionQuantityLimitsIcon"
+      },
+      {
+        "id": "presentacion",
+        "text": "Presentacion",
         "icon": "ProductionQuantityLimitsIcon"
       },
       {

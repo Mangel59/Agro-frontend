@@ -4,7 +4,7 @@ import { DataGrid } from '@mui/x-data-grid';
 const columns = [
   { field: 'pro_id', headerName: 'ID', width: 90, type: 'number' },
   { field: 'pro_nombre', headerName: 'Nombre', width: 250, type: 'string' },
-  { field: 'pro_tipo_produccion_id', headerName: 'Tipo Producción', width: 150, type: 'number' },
+  { field: 'pro_tipo_produccioneses_id', headerName: 'Tipo Producción', width: 150, type: 'number' },
   { field: 'pro_descripcion', headerName: 'Descripción', width: 250, type: 'string' },
   { field: 'pro_estado', headerName: 'Estado', width: 120, type: 'number' },
   { 
@@ -27,10 +27,10 @@ const columns = [
 export default function GridProduccion(props) {
   return (
     <DataGrid
-      rows={props.produccion}
+      rows={props.producciones}
       onRowSelectionModelChange={(id) => {
         const selectedIDs = new Set(id);
-        const selectedRowData = props.produccion.filter((row) =>
+        const selectedRowData = props.produccioneses.filter((row) =>
           selectedIDs.has(row.id)
         );
         props.setSelectedRow(selectedRowData[0]);

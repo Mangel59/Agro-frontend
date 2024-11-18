@@ -13,6 +13,7 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
+import { Grid, Box } from "@mui/material";
 
 /**
  * El componente FormPersona gestiona el formulario para crear, actualizar y eliminar personas.
@@ -255,143 +256,58 @@ export default function FormPersona(props) {
         <DialogTitle>Persona</DialogTitle>
         <DialogContent>
           <DialogContentText>Completa el formulario.</DialogContentText>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              autoFocus
-              required
-              id="nombre"
-              name="nombre"
-              label="Nombre"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.nombre || ""}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="apellido"
-              name="apellido"
-              label="Apellido"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.apellido || ""}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="tipoIdentificacionId-label"
-            sx={{
-              backgroundColor: 'white', 
-              padding: '0 8px',      
-            }}
-            >
-              Tipo de Identificación
-            </InputLabel>
-            <Select
-              labelId="tipoIdentificacionId-label"
-              id="tipoIdentificacionId"
-              name="tipoIdentificacionId"
-              defaultValue={props.selectedRow?.tipoIdentificacionId || ""}
-              fullWidth
-            >
-              <MenuItem value={1}>Cédula</MenuItem>
-              <MenuItem value={2}>Pasaporte</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="identificacion"
-              name="identificacion"
-              label="Número de Identificación"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.identificacion || ""}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="genero-label"
-              sx={{
-                backgroundColor: 'white', 
-                padding: '0 8px',      
-              }}
-            >Género</InputLabel>
-            <Select
-              labelId="genero-label"
-              id="genero"
-              name="genero"
-              defaultValue={props.selectedRow?.genero ? "f" : "m"}
-              fullWidth
-            >
-              <MenuItem value="m">Maculino</MenuItem>
-              <MenuItem value="f">Femenino</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="fechaNacimiento"
-              name="fechaNacimiento"
-              label="Fecha de Nacimiento"
-              type="date"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.fechaNacimiento || ""}
-              InputLabelProps={{ shrink: true }}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="estrato"
-              name="estrato"
-              label="Estrato"
-              type="number"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.estrato || 0}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="direccion"
-              name="direccion"
-              label="Dirección"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.direccion || ""}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="celular"
-              name="celular"
-              label="Celular"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.celular || ""}
-            />
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label"
-              sx={{
-                backgroundColor: 'white', 
-                padding: '0 8px',      
-              }}
-            >Estado</InputLabel>
-            <Select
-              labelId="estado-label"
-              id="estado"
-              name="estado"
-              defaultValue={props.selectedRow?.estado || ''}
-              fullWidth
-            >
-              <MenuItem value={1}>Activo</MenuItem>
-              <MenuItem value={0}>Inactivo</MenuItem>
-            </Select>
-          </FormControl>
+          <Box component="div" sx={{ width: '100%', maxWidth: '600px', mx: 'auto' }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField autoFocus required id="nombre" name="nombre" label="Nombre" fullWidth variant="standard" defaultValue={props.selectedRow?.nombre || ""} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField required id="apellido" name="apellido" label="Apellido" fullWidth variant="standard" defaultValue={props.selectedRow?.apellido || ""} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel id="tipoIdentificacionId-label">Tipo de Identificación</InputLabel>
+                  <Select labelId="tipoIdentificacionId-label" id="tipoIdentificacionId" name="tipoIdentificacionId" defaultValue={props.selectedRow?.tipoIdentificacionId || ""}>
+                    <MenuItem value={1}>Cédula</MenuItem>
+                    <MenuItem value={2}>Pasaporte</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField required id="identificacion" name="identificacion" label="Número de Identificación" fullWidth variant="standard" defaultValue={props.selectedRow?.identificacion || ""} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel id="genero-label">Género</InputLabel>
+                  <Select labelId="genero-label" id="genero" name="genero" defaultValue={props.selectedRow?.genero || ""}>
+                    <MenuItem value="m">Masculino</MenuItem>
+                    <MenuItem value="f">Femenino</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField required id="fechaNacimiento" name="fechaNacimiento" label="Fecha de Nacimiento" type="date" fullWidth variant="standard" defaultValue={props.selectedRow?.fechaNacimiento || ""} InputLabelProps={{ shrink: true }} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField required id="estrato" name="estrato" label="Estrato" type="number" fullWidth variant="standard" defaultValue={props.selectedRow?.estrato || 0} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField required id="direccion" name="direccion" label="Dirección" fullWidth variant="standard" defaultValue={props.selectedRow?.direccion || ""} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField required id="celular" name="celular" label="Celular" fullWidth variant="standard" defaultValue={props.selectedRow?.celular || ""} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel id="estado-label">Estado</InputLabel>
+                  <Select labelId="estado-label" id="estado" name="estado" defaultValue={props.selectedRow?.estado || ""}>
+                    <MenuItem value={1}>Activo</MenuItem>
+                    <MenuItem value={0}>Inactivo</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancelar</Button>

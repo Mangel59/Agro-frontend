@@ -3,16 +3,10 @@ import { DataGrid } from '@mui/x-data-grid';
 
 const columns = [
   { field: 'id', headerName: 'ID', width: 90, type: 'number' },
-  { field: 'productoId', headerName: 'ProductoId', with: 90, type: 'number'},
   { field: 'nombre', headerName: 'Nombre', width: 150, type: 'string' },
-  { field: 'unidadId', headerName: 'Unidad Id', width: 90, type: 'number' },
   { field: 'descripcion', headerName: 'Descripción', width: 250, type: 'string' },
   { field: 'estado', headerName: 'Estado', width: 100, type: 'number',
     valueGetter: (params) => params.row.estado === 1 ? 'Activo' : 'Inactivo' },
-  { field: 'cantidad', headerName: 'Cantidad', width: 100, type: 'number'},
-  { field: 'marcaId', headerName: 'Marca Id', width: 100, type: 'number'},
-  { field: 'presentacionId', headerName: 'Presentacion Id', width: 100, type: 'number'},
-
 ];
 
 /**
@@ -24,7 +18,8 @@ const columns = [
  * @param {function} props.setSelectedRow - Función para establecer la fila seleccionada.
  * @returns {JSX.Element} La tabla de datos de Presentacion.
  */
-export default function GridProductoPresentacion(props) {
+
+export default function GridPresentacion(props) {
   return (
     <DataGrid
       rows={props.Presentacion}
