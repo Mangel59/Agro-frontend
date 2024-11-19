@@ -37,6 +37,10 @@ import Espacio from '../espacio/Espacio.jsx';
 import Bloque from '../bloque/Bloque.jsx';
 import Sede from '../sede/Sede.jsx';
 import KardexNuevo from '../kardex_nuevo/KardexNuevo.jsx'
+import Marca from '../marca/Marca.jsx';
+import Unidad from '../unidad/Unidad.jsx';
+import TipoMovimiento from '../tipo_movimiento/TipoMovimiento.jsx';
+import TipoProduccion from '../tipo_produccion/TipoProduccion.jsx';
 // import DomainIcon from '@mui/icons-material/Domain';
 
 
@@ -74,6 +78,10 @@ const components = {
   kardex: Kardex,
   kardex_nuevo: KardexNuevo,
   kardex_item: KardexItem,
+  marca: Marca,
+  unidad: Unidad,
+  tipo_movimiento: TipoMovimiento,
+  tipo_produccion: TipoProduccion,
   reportes: Reportes,
   persona: Persona,
   empresa: Empresa

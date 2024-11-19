@@ -334,18 +334,25 @@ import { Box, Button, Grid, TextField, Select, MenuItem, FormControl, InputLabel
 import { SiteProps } from '../dashboard/SiteProps';
 import GridKardexNuevo from './GridKardexNuevo';
 
+/**
+ * @function FormKardexNuevo
+ * @description Formulario principal para la creación de una entrada en el Kardex.
+ * @param {Object} props - Propiedades del componente, incluyendo setMessage para mostrar mensajes de estado.
+ * @returns {JSX.Element} Componente de formulario con campos dependientes y grilla para gestionar items de Kardex.
+ */
 export default function FormKardexNuevo(props) {
-  const [sedes, setSedes] = useState([]);
-  const [almacenes, setAlmacenes] = useState([]);
+  // Definición de estados para almacenar datos de opciones de selección y del formulario
+  const [sedes, setSedes] = useState([]); 
+  const [almacenes, setAlmacenes] = useState([]); 
   const [bloques, setBloques] = useState([]);
-  const [espacios, setEspacios] = useState([]);
-  const [producciones, setProducciones] = useState([]);
-  const [tipoMovimientos, setTipoMovimientos] = useState([]);
-  const [estados, setEstados] = useState([]);
-  const [kardexItems, setKardexItems] = useState([]);
+  const [espacios, setEspacios] = useState([]); 
+  const [producciones, setProducciones] = useState([]); 
+  const [tipoMovimientos, setTipoMovimientos] = useState([]); 
+  const [estados, setEstados] = useState([]); 
+  const [kardexItems, setKardexItems] = useState([]); 
   const [formData, setFormData] = useState({
-    sedeId: '',           // Nombre de campo mantenido según tu estructura original
-    almacenID: '',         // Coincide con el nombre que espera el backend
+    sedeId: '',
+    almacenID: '',
     bloqueID: '',
     espacioID: '',
     produccionID: '',
@@ -355,7 +362,7 @@ export default function FormKardexNuevo(props) {
     fechaHora: new Date().toISOString().substring(0, 16),
   });
 
-  // Fetch sedes
+  // Hook para obtener las sedes al cargar el componente
   useEffect(() => {
     const fetchSedes = async () => {
       try {
@@ -371,7 +378,7 @@ export default function FormKardexNuevo(props) {
     fetchSedes();
   }, []);
 
-  // Fetch almacenes basado en sedeId
+  // Hook para obtener almacenes en base a la sede seleccionada
   useEffect(() => {
     if (formData.sedeId) {
       const fetchAlmacenes = async () => {
@@ -396,7 +403,7 @@ export default function FormKardexNuevo(props) {
     }
   }, [formData.sedeId]);
 
-  // Fetch bloques basado en sedeId
+  // Hook para obtener bloques en base a la sede seleccionada
   useEffect(() => {
     if (formData.sedeId) {
       const fetchBloques = async () => {
@@ -418,7 +425,7 @@ export default function FormKardexNuevo(props) {
     }
   }, [formData.sedeId]);
 
-  // Fetch espacios basado en bloqueID
+  // Hook para obtener espacios en base al bloque seleccionado
   useEffect(() => {
     if (formData.bloqueID) {
       const fetchEspacios = async () => {
@@ -439,7 +446,7 @@ export default function FormKardexNuevo(props) {
     }
   }, [formData.bloqueID]);
 
-  // Fetch producciones basado en espacioID
+  // Hook para obtener producciones en base al espacio seleccionado
   useEffect(() => {
     if (formData.espacioID) {
       const fetchProducciones = async () => {
@@ -459,7 +466,7 @@ export default function FormKardexNuevo(props) {
     }
   }, [formData.espacioID]);
 
-  // Fetch tipoMovimientos y estados
+  // Hook para obtener tipos de movimientos y estados
   useEffect(() => {
     const fetchTipoMovimientos = async () => {
       try {
@@ -489,29 +496,54 @@ export default function FormKardexNuevo(props) {
     fetchEstados();
   }, []);
 
+  /**
+   * Maneja los cambios en los campos del formulario.
+   * @function handleInputChange
+   * @param {Object} e - Evento del input.
+   */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
-      [name]: name === 'fechaHora' ? value : parseInt(value) || value, // Convierte a entero si es ID
+      [name]: name === 'fechaHora' ? value : parseInt(value) || value,
     }));
   };
 
-  // Handlers para agregar, actualizar y eliminar items
+  /**
+   * Agrega un nuevo item al Kardex.
+   * @function handleAddItem
+   * @param {Object} item - Objeto del item a agregar.
+   */
   const handleAddItem = (item) => {
     setKardexItems((prevItems) => [...prevItems, item]);
   };
 
+  /**
+   * Actualiza un item existente en el Kardex.
+   * @function handleUpdateItem
+   * @param {Object} item - Objeto del item a actualizar.
+   */
   const handleUpdateItem = (item) => {
     setKardexItems((prevItems) =>
       prevItems.map((i) => (i.id === item.id ? item : i))
     );
   };
 
+  /**
+   * Elimina un item del Kardex.
+   * @function handleDeleteItem
+   * @param {Object} item - Objeto del item a eliminar.
+   */
   const handleDeleteItem = (item) => {
     setKardexItems((prevItems) => prevItems.filter((i) => i.id !== item.id));
   };
 
+  /**
+   * Maneja el envío del formulario.
+   * @async
+   * @function handleSubmit
+   * @param {Object} e - Evento del formulario.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {

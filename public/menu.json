@@ -67,6 +67,26 @@
         "icon": "ProductionQuantityLimitsIcon"
       },
       {
+        "id": "marca",
+        "text": "Marca",
+        "icon": "ProductionQuantityLimitsIcon"
+      },
+      {
+        "id": "unidad",
+        "text": "Unidad",
+        "icon": "ProductionQuantityLimitsIcon"
+      },
+      {
+        "id": "tipo_produccion",
+        "text": "Tipo Produccion",
+        "icon": "ProductionQuantityLimitsIcon"
+      },
+      {
+        "id": "tipo_movimiento",
+        "text": "Tipo Movimiento",
+        "icon": "ProductionQuantityLimitsIcon"
+      },
+      {
         "id": "kardex",
         "text": "Kardex",
         "icon": "ProductionQuantityLimitsIcon"
