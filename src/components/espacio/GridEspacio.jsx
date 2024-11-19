@@ -15,7 +15,7 @@ const columns = [
   { field: 'estado', headerName: 'Estado', width: 120, type: 'number' },
 ];
 
-export default function GridEspacio(props) {
+export default function GridEspacioOcupacion(props) {
   const handleRowSelection = (selectionModel) => {
     if (selectionModel.length > 0) {
       const selectedRow = props.espacios.find((row) => row.id === selectionModel[0]);

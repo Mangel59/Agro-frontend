@@ -9,12 +9,10 @@ export default function Produccion() {
   const row = {
     pro_id: 0,
     pro_nombre: "",
-    pro_tipo_produccion_id: 0,
     pro_descripcion: "",
     pro_estado: 0,
     pro_fecha_inicio: new Date(),
-    pro_fecha_final: new Date(),
-    pro_espacio_id: 0
+    pro_fecha_final: new Date()
   };
 
   const [selectedRow, setSelectedRow] = React.useState(row);
@@ -25,59 +23,41 @@ export default function Produccion() {
   };
 
   const [message, setMessage] = React.useState(messageData);
-  const [produccion, setProduccion] = React.useState([]);
-  const [tipoProduccion, setTipoProduccion] = React.useState([]);
-  const [espacio, setEspacio] = React.useState([]);
-  const [estado, setEstado] = React.useState([]);
+  const [producciones, setProduccion] = React.useState([]);
+
+  // Función para recargar los datos de producciones
+  const reloadData = () => {
+    axios.get(`${SiteProps.urlbasev1}/producciones`)
+      .then((response) => {
+        if (Array.isArray(response.data)) {
+          const produccionesData = response.data.map((item) => ({
+            ...item,
+            id: item.pro_id,
+            pro_fecha_inicio: new Date(item.pro_fecha_inicio),
+            pro_fecha_final: new Date(item.pro_fecha_final)
+          }));
+          setProduccion(produccionesData);
+        } else {
+          console.error('La respuesta de producciones no es un array:', response.data);
+          setMessage({
+            open: true,
+            severity: 'error',
+            text: 'Error al cargar producciones: respuesta no válida'
+          });
+        }
+      })
+      .catch((error) => {
+        console.error('Error al cargar producciones:', error);
+        setMessage({
+          open: true,
+          severity: 'error',
+          text: 'Error al cargar producciones'
+        });
+      });
+  };
 
   React.useEffect(() => {
-    axios.get(`${SiteProps.urlbase}/produccion`)
-      .then(response => {
-        const produccionData = response.data.map((item) => ({
-          ...item,
-          id: item.pro_id,
-          pro_fecha_inicio: new Date(item.pro_fecha_inicio),
-          pro_fecha_final: new Date(item.pro_fecha_final)
-        }));
-        setProduccion(produccionData);
-        console.log(produccionData);
-      })
-      .catch(error => {
-        console.error("Error al buscar produccion!", error);
-      });
-  }, []);
-
-  React.useEffect(() => {
-    axios.get(`${SiteProps.urlbase}/tipo_produccion`)
-      .then(response => {
-        setTipoProduccion(response.data);
-        console.log(tipoProduccion);
-      })
-      .catch(error => {
-        console.error("Error al buscar tipo_produccion!", error);
-      });
-  }, []);
-
-  React.useEffect(() => {
-    axios.get(`${SiteProps.urlbase}/espacio`)
-      .then(response => {
-        setEspacio(response.data);
-        console.log(espacio);
-      })
-      .catch(error => {
-        console.error("Error al buscar espacio!", error);
-      });
-  }, []);
-
-  React.useEffect(() => {
-    axios.get(`${SiteProps.urlbase}/estado`)
-      .then(response => {
-        setEstado(response.data);
-        console.log(estado);
-      })
-      .catch(error => {
-        console.error("Error al buscar estado!", error);
-      });
+    reloadData();
   }, []);
 
   return (
@@ -87,16 +67,13 @@ export default function Produccion() {
         setMessage={setMessage}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        tipoProduccion={tipoProduccion}
-        espacio={espacio}
-        estado={estado}
+        reloadData={reloadData}
       />
       <GridProduccion
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        produccion={produccion}
+        producciones={producciones}
       />
     </div>
   );
 }
-

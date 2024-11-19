@@ -1,5 +1,5 @@
 import * as React from "react";
-import axios from '../axiosConfig';
+import axios from "../axiosConfig";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
@@ -12,9 +12,9 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
-import { SiteProps } from '../dashboard/SiteProps';
+import { SiteProps } from "../dashboard/SiteProps";
 
-export default function FormProductoPresentacion(props) {
+export default function FormPresentacion(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
   
@@ -22,15 +22,9 @@ export default function FormProductoPresentacion(props) {
   const create = () => {
     const row = {
       id: 0,
-      productoId: "",
       nombre: "",
-      unidadId: "",
       descripcion: "",
-      productoCategoriaId: 0,
       estado: 0,
-      cantidad: 0,
-      marcaId: 0,
-      presentacionId: 0,
     };
     props.setSelectedRow(row);
     setMethodName("Add");
@@ -62,7 +56,7 @@ export default function FormProductoPresentacion(props) {
       return;
     }
     const id = props.selectedRow.id;
-    const url = `${SiteProps.urlbasev1}/producto-presentaciones/${id}`;
+    const url = `${SiteProps.urlbasev1}/presentaciones/${id}`;
     
     const token = localStorage.getItem("token");
 
@@ -117,7 +111,7 @@ export default function FormProductoPresentacion(props) {
 
     if (!validatePayload(formJson)) return;
 
-    const url = `${SiteProps.urlbasev1}/producto-presentaciones`;
+    const url = `${SiteProps.urlbasev1}/presentaciones`;
     const token = localStorage.getItem("token");
 
     console.log("Datos del formulario: ", formJson);
@@ -230,77 +224,12 @@ export default function FormProductoPresentacion(props) {
   <FormControl fullWidth margin="normal">
     <TextField
       required
-      id="productocategoriaid"
-      name="productocategoriaid"
-      label="ID de categoría del producto"
-      type="number"
-      fullWidth
-      variant="standard"
-      defaultValue={props.selectedRow?.productoCategoriaId || 0}
-    />
-  </FormControl>
-
-  <FormControl fullWidth margin="normal">
-    <TextField
-      required
       id="descripcion"
       name="descripcion"
       label="Descripción"
       fullWidth
       variant="standard"
       defaultValue={props.selectedRow?.descripcion || ""}
-    />
-  </FormControl>
-
-  <FormControl fullWidth margin="normal">
-    <TextField
-      required
-      id="unidadId"
-      name="unidadId"
-      label="Unidad ID"
-      type="number"
-      fullWidth
-      variant="standard"
-      defaultValue={props.selectedRow?.unidadId || 0}
-    />
-  </FormControl>
-
-  <FormControl fullWidth margin="normal">
-    <TextField
-      required
-      id="cantidad"
-      name="cantidad"
-      label="Cantidad"
-      type="number"
-      fullWidth
-      variant="standard"
-      defaultValue={props.selectedRow?.cantidad || 0}
-    />
-  </FormControl>
-
-  <FormControl fullWidth margin="normal">
-    <TextField
-      required
-      id="marcaId"
-      name="marcaId"
-      label="Marca ID"
-      type="number"
-      fullWidth
-      variant="standard"
-      defaultValue={props.selectedRow?.marcaId || 0}
-    />
-  </FormControl>
-
-  <FormControl fullWidth margin="normal">
-    <TextField
-      required
-      id="presentacionId"
-      name="presentacionId"
-      label="Presentación ID"
-      type="number"
-      fullWidth
-      variant="standard"
-      defaultValue={props.selectedRow?.presentacionId || 0}
     />
   </FormControl>
 

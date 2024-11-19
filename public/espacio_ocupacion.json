@@ -1,0 +1,34 @@
+[
+    {
+    "eso_id": 1, 
+    "eso_espacio_id": 1,
+     "eso_actividad_ocupacion_id": 1, 
+     "eso_fecha_inicio": "2023-01-01T08:00:00", 
+     "eso_fecha_fin": "2023-01-31T17:00:00", 
+     "eso_estado": 1
+    },
+    {
+    "eso_id": 2, 
+    "eso_espacio_id": 2,
+    "eso_actividad_ocupacion_id": 2,
+     "eso_fecha_inicio": "2023-01-01T08:00:00",
+      "eso_fecha_fin": "2023-01-31T17:00:00", 
+      "eso_estado": 1
+    },
+    {
+    "eso_id": 3, 
+    "eso_espacio_id": 3,
+    "eso_actividad_ocupacion_id": 3,
+    "eso_fecha_inicio": "2023-01-01T08:00:00",
+    "eso_fecha_fin": "2023-01-31T17:00:00",
+    "eso_estado": 1
+    },
+    {
+    "eso_id": 4, "eso_espacio_id": 4, "eso_actividad_ocupacion_id": 4, "eso_fecha_inicio": "2023-02-01T08:00:00", "eso_fecha_fin": "2023-02-28T17:00:00", "eso_estado": 1},
+    {"eso_id": 5, "eso_espacio_id": 5, "eso_actividad_ocupacion_id": 5, "eso_fecha_inicio": "2023-02-01T08:00:00", "eso_fecha_fin": "2023-02-28T17:00:00", "eso_estado": 1},
+    {"eso_id": 6, "eso_espacio_id": 6, "eso_actividad_ocupacion_id": 6, "eso_fecha_inicio": "2023-03-01T08:00:00", "eso_fecha_fin": "2023-03-31T17:00:00", "eso_estado": 1},
+    {"eso_id": 7, "eso_espacio_id": 7, "eso_actividad_ocupacion_id": 7, "eso_fecha_inicio": "2023-03-01T08:00:00", "eso_fecha_fin": "2023-03-31T17:00:00", "eso_estado": 1},
+    {"eso_id": 8, "eso_espacio_id": 8, "eso_actividad_ocupacion_id": 8, "eso_fecha_inicio": "2023-04-01T08:00:00", "eso_fecha_fin": "2023-04-30T17:00:00", "eso_estado": 1},
+    {"eso_id": 9, "eso_espacio_id": 9, "eso_actividad_ocupacion_id": 9, "eso_fecha_inicio": "2023-04-01T08:00:00", "eso_fecha_fin": "2023-04-30T17:00:00", "eso_estado": 1},
+    {"eso_id": 10, "eso_espacio_id": 10, "eso_actividad_ocupacion_id": 10, "eso_fecha_inicio": "2023-05-01T08:00:00", "eso_fecha_fin": "2023-05-31T17:00:00", "eso_estado": 1}
+]

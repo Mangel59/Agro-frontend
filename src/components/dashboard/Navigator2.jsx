@@ -41,6 +41,11 @@ import Marca from '../marca/Marca.jsx';
 import Unidad from '../unidad/Unidad.jsx';
 import TipoMovimiento from '../tipo_movimiento/TipoMovimiento.jsx';
 import TipoProduccion from '../tipo_produccion/TipoProduccion.jsx';
+import Presentacion from '../Presentacion/Presentacion.jsx';
+import TipoBloque from '../Tipo_bloque/Tipo_bloque.jsx';
+import TipoSedes from '../Tipo_Sede/Tipo_Sede.jsx';
+import TipoEspacio from '../Tipo_Espacio/Tipo_Espacio.jsx';
+import EspacioOcupacion from '../Espacio_ocupacion/Espacio_ocupacion.jsx';
 // import DomainIcon from '@mui/icons-material/Domain';
 
 
@@ -69,9 +74,14 @@ const components = {
   municipio: Municipio,
   almacen: Almacen,
   espacio: Espacio,
+  espacio_ocupacion:EspacioOcupacion,
+  tipo_espacio: TipoEspacio,
   bloque: Bloque,
+  tipo_bloque: TipoBloque,
+  tipo_sede: TipoSedes,
   sede: Sede,
   producto_presentacion: ProductoPresentacion,
+  presentacion: Presentacion,
   producto_categoria: ProductoCategoria,
   producto: Producto,
   produccion: Produccion,
@@ -118,29 +128,37 @@ export default function Navigator2(props) {
     setSelectedMenu(menuId);
     const menu = menuItems.find(item => item.id === menuId);
     setBreadcrumb([menuId]);
-    
+  
     if (menu && menu.children && menu.children.length > 0) {
       props.setCurrentModuleItem(renderSubmenu(menu.children, menuId));
     } else {
       const Component = components[menuId];
+      console.log("Component to render:", Component); // Debugging line
       if (Component) {
         props.setCurrentModuleItem(<Component />);
       } else {
+        console.warn(`No component found for menuId: ${menuId}`);
         props.setCurrentModuleItem(null);
       }
     }
   };
+  
 
   const handleSubMenuClick = (subMenuId, parentMenuId) => {
+    console.log("subMenuId:", subMenuId);
+    console.log("components[subMenuId]:", components[subMenuId]);
+    if (!components[subMenuId]) {
+        console.warn(`El componente para subMenuId "${subMenuId}" es undefined.`);
+    }
     setBreadcrumb([...breadcrumb, subMenuId]);
-    props.setCurrentModuleItem(React.createElement(components[subMenuId], { goBack: () => handleBackToParent(parentMenuId) }));
-  };
-
-  const handleBackToParent = (parentMenuId) => {
-    const parentMenu = menuItems.find(item => item.id === parentMenuId);
-    setBreadcrumb([parentMenuId]);
-    props.setCurrentModuleItem(renderSubmenu(parentMenu.children, parentMenuId));
-  };
+    if (components[subMenuId]) {
+        props.setCurrentModuleItem(
+            React.createElement(components[subMenuId], { goBack: () => handleBackToParent(parentMenuId) })
+        );
+    } else {
+        props.setCurrentModuleItem(null);
+    }
+};
 
 const renderSubmenu = (children, parentMenuId) => (
     <Grid container spacing={3} sx={{ padding: 2, marginTop: '40px' }}>

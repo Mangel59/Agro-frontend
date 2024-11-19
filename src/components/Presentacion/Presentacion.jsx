@@ -1,15 +1,14 @@
-import * as React from 'react';
-import axios from '../axiosConfig';
-import MessageSnackBar from '../MessageSnackBar';
-import FormProductoPresentacion from '../producto_presentacion/FormProductoPresentacion';
-import GridProductoPresentacion from '../producto_presentacion/GridProductoPresentacion';
-import { SiteProps } from '../dashboard/SiteProps';
+import * as React from "react";
+import axios from "../axiosConfig";  // Usa axios directamente
+import MessageSnackBar from "../MessageSnackBar";
+import FormPresentacion from "./FormPresentacion";
+import GridPresentacion from "./GridPresentacion";
+import { SiteProps } from "../dashboard/SiteProps";
 
-export default function ProductoPresentacion() {
+export default function Presentacion (props) {
   const row = {
     id: 0,
     nombre: "",
-    PresentacionCategoriaId: 0,
     descripcion: "",
     estado: 0,
   };
@@ -26,7 +25,7 @@ export default function ProductoPresentacion() {
 
   // Función para recargar los datos
   const reloadData = () => {
-    axios.get(`${SiteProps.urlbasev1}/producto-presentaciones`)
+    axios.get(`${SiteProps.urlbasev1}/presentaciones`)
       .then((response) => {
         // Verificar si la respuesta tiene una propiedad 'data' que contiene un array
         if (response.data && Array.isArray(response.data.data)) {
@@ -58,14 +57,15 @@ export default function ProductoPresentacion() {
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <MessageSnackBar message={message} setMessage={setMessage} />
-      <FormProductoPresentacion
+      <FormPresentacion
         setMessage={setMessage}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        reloadData={reloadData}  // Pasa reloadData como prop a FormProductoPresentacion
+        reloadData={reloadData}  // Pasa reloadData como prop a FormPresentacion
         Presentacion={Presentacion}
+
       />
-      <GridProductoPresentacion
+      <GridPresentacion
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
         Presentacion={Presentacion}
