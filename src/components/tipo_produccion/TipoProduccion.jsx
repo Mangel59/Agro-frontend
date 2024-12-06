@@ -1,18 +1,10 @@
 import * as React from "react";
-import axios from "axios";  // Usa axios directamente
+import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
 import FormTipoProduccion from "./FormTipoProduccion";
 import GridTipoProduccion from "./GridTipoProduccion";
 import { SiteProps } from "../dashboard/SiteProps";
 
-/**
- * El componente Tipo Produccion gestiona el módulo de TipoProduccion, integrando el formulario
- * y la tabla de datos.
- * 
- * @componente
- * @param {object} props - Propiedades pasadas al componente.
- * @returns {JSX.Element} El módulo de gestión de Tipo Producciones.
- */
 export default function TipoProduccion(props) {
   const row = {
     id: 0,
@@ -29,31 +21,47 @@ export default function TipoProduccion(props) {
   };
 
   const [message, setMessage] = React.useState(messageData);
-  const [tipoproducciones, setTipoProducciones] = React.useState([]);
+  const [tiposProduccion, setTiposProduccion] = React.useState([]);
+  const [paginationModel, setPaginationModel] = React.useState({
+    page: 0,
+    pageSize: 5,
+  });
 
-  /**
-   * Recarga los datos de las TipoProducciones desde el servidor.
-   */
   const reloadData = () => {
     axios
-      .get(`${SiteProps.urlbasev1}/tipoproducciones`)
+      .get(`${SiteProps.urlbasev1}/tipo_produccion`, {
+        params: {
+          page: paginationModel.page,
+          size: paginationModel.pageSize,
+        },
+      })
       .then((response) => {
-        const tipoproduccionData = response.data.map((item) => ({
-          ...item,
-          id: item.id,
-        }));
-        setTipoProducciones(tipoproduccionData);
+        if (response.data && Array.isArray(response.data.data)) {
+          setTiposProduccion(response.data.data);
+        } else if (Array.isArray(response.data)) {
+          setTiposProduccion(response.data);
+        } else {
+          console.error("La respuesta no es un array:", response.data);
+          setMessage({
+            open: true,
+            severity: "error",
+            text: "Error al cargar Tipos de Producción: respuesta no válida",
+          });
+        }
       })
       .catch((error) => {
-        console.error("Error al buscar Tipo Producciones!", error);
+        console.error("Error al cargar Tipos de Producción:", error);
+        setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al cargar Tipos de Producción",
+        });
       });
-
   };
 
   React.useEffect(() => {
-    reloadData();  // Llama a reloadData para cargar los datos iniciales
-  }, []);
-
+    reloadData();
+  }, [paginationModel]);
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
@@ -62,16 +70,16 @@ export default function TipoProduccion(props) {
         setMessage={setMessage}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        reloadData={reloadData}  // Pasa reloadData como prop a FormTipoProduccion
-        tipoproducciones={tipoproducciones}
-
+        reloadData={reloadData}
+        tiposProduccion={tiposProduccion}
       />
       <GridTipoProduccion
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        tipoproducciones={tipoproducciones}
+        tiposProduccion={tiposProduccion}
+        paginationModel={paginationModel}
+        setPaginationModel={setPaginationModel}
       />
     </div>
   );
 }
-

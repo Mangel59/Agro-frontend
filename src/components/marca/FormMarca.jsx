@@ -14,230 +14,210 @@ import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
-/**
- * El componente FormMarca gestiona el formulario para crear, actualizar y eliminar Marcas.
- * 
- * @componente
- * @param {object} props - Propiedades pasadas al componente.
- * @param {function} props.setSelectedRow - Función para establecer la fila seleccionada.
- * @param {object} props.selectedRow - Datos de la Marca seleccionada.
- * @param {function} props.reloadData - Función para recargar los datos después de una operación.
- * @param {function} props.setMessage - Función para establecer un mensaje en el snackbar.
- * @returns {JSX.Element} El formulario de gestión de Marcas.
- */
 export default function FormMarca(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
-  
-  /**
-   * Crea una nueva Marca y abre el diálogo de formulario.
-   */
+  const [empresas, setEmpresas] = React.useState([]); // Estado para las empresas
+
+  // Función para cargar las empresas al abrir el formulario
+  const loadEmpresas = () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Error: Token de autenticación no encontrado.",
+      });
+      return;
+    }
+
+    axios
+      .get(`${SiteProps.urlbasev1}/empresas`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        console.log("Respuesta recibida de /empresas:", response.data);
+        
+        if (response.data && Array.isArray(response.data.data)) {
+          setEmpresas(response.data.data);
+        } else {
+          console.error("La respuesta del servidor no es válida. Respuesta recibida:", response.data);
+          props.setMessage({
+            open: true,
+            severity: "error",
+            text: "Error al cargar empresas: respuesta no válida.",
+          });
+        }
+      })
+      .catch((error) => {
+        const errorMessage = error.response
+          ? `Código de error: ${error.response.status}, Mensaje: ${error.response.data.message || error.response.data}`
+          : error.message;
+        console.error("Error al cargar empresas:", errorMessage);
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al cargar empresas: ${errorMessage}`,
+        });
+      });
+  };
+
   const create = () => {
     const row = {
       id: 0,
-      apellido: "",
       nombre: "",
       descripcion: "",
       estado: 0,
+      empresa: "" // Inicializamos empresa con una cadena vacía
     };
     props.setSelectedRow(row);
     setMethodName("Add");
     setOpen(true);
-    console.log("create() " + JSON.stringify(row));
+    loadEmpresas(); // Cargar empresas al abrir el formulario
   };
 
-  /**
-   * Actualiza la Marca seleccionada y abre el diálogo de formulario.
-   */
   const update = () => {
     if (!props.selectedRow || props.selectedRow.id === 0) {
-      const messageData = {
+      props.setMessage({
         open: true,
         severity: "error",
-        text: "Select row!",
-      };
-      props.setMessage(messageData);
+        text: "Selecciona una fila para actualizar",
+      });
       return;
     }
     setMethodName("Update");
     setOpen(true);
-    console.log("update() " + JSON.stringify(props.selectedRow));
+    loadEmpresas(); // Cargar empresas al abrir el formulario
   };
 
-  /**
-   * Elimina la Marca seleccionada.
-   */
   const deleteRow = () => {
     if (props.selectedRow.id === 0) {
-      const messageData = {
+      props.setMessage({
         open: true,
         severity: "error",
-        text: "Select row!",
-      };
-      props.setMessage(messageData);
+        text: "Selecciona una fila para eliminar",
+      });
       return;
     }
+    
     const id = props.selectedRow.id;
-    const url = `${SiteProps.urlbase}/marcas/${id}`;
+    const url = `${SiteProps.urlbasev1}/marca/${id}`;
+    const token = localStorage.getItem("token");
+  
+    if (!token) {
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Error: Token de autenticación no encontrado.",
+      });
+      return;
+    }
+  
     axios
       .delete(url, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
-        props.setMessage({
-          open: true,
-          severity: "success",
-          text: "Marca eliminada con éxito!",
-        });
-        props.reloadData();
-      })
-      .catch((error) => {
-        const errorMessage = error.response
-          ? error.response.data.message
-          : error.message;
-        props.setMessage({
-          open: true,
-          severity: "error",
-          text: `Error al eliminar Marca! ${errorMessage}`,
-        });
-        console.error(
-          "Error al eliminar Marca!",
-          error.response || error.message
-        );
-      });
-  };
-  const methods = {
-    create,
-    update,
-    deleteRow,
-  };
-  React.useEffect(() => {
-    if (props.selectedRow !== undefined) {
-      console.log("Selected Row ID: " + props.selectedRow.id);
-    }
-  }, [props.selectedRow]);
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-   /**
-   * Maneja el envío del formulario para crear o actualizar una Marca.
-   * 
-   * @param {Event} event - El evento de envío del formulario.
-   */
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const formJson = Object.fromEntries(formData.entries());
-    const id = props.selectedRow?.id || 0;
-    const validatePayload = (data) => {
-      if (
-        !data.nombre ||
-        !data.tipoIdentificacionId ||
-        !data.identificacion ||
-        !data.direccion
-      ) {
-        console.error("Invalid data:", data);
-        props.setMessage({
-          open: true,
-          severity: "error",
-          text: "Invalid data!",
-        });
-        return false;
-      }
-      return true;
-    };
-    if (!validatePayload(formJson)) return;
-    const url = `${SiteProps.urlbasev1}/marcas`;
-    if (methodName === "Add") {
-      axios
-        .post(url, formJson)
-        .then((response) => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: "Marca creada con éxito!",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response
-            ? error.response.data.message
-            : error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al crear Marca! ${errorMessage}`,
-          });
-        });
-    } else if (methodName === "Update") {
-      axios
-        .put(`${url}/${id}`, formJson)
-        .then((response) => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: "Marca actualizada con éxito!",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response
-            ? error.response.data.message
-            : error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al actualizar Marca! ${errorMessage}`,
-          });
-          console.error(
-            "Error al actualizar Marca!",
-            error.response || error.message
-          );
-        });
-    } else if (methodName === "Delete") {
-      axios
-        .delete(`${url}/${id}`)
-        .then((response) => {
+        // Verificamos el status de la respuesta
+        if (response.status === 200 || response.status === 204) {
           props.setMessage({
             open: true,
             severity: "success",
             text: "Marca eliminada con éxito!",
           });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response
-            ? error.response.data.message
-            : error.message;
+          props.reloadData(); // Recargar los datos después de eliminar correctamente
+        } else {
           props.setMessage({
             open: true,
             severity: "error",
-            text: `Error al eliminar Marca! ${errorMessage}`,
+            text: "Error al eliminar Marca: Respuesta inesperada del servidor.",
           });
-          console.error(
-            "Error al eliminar Marca!",
-            error.response || error.message
-          );
+        }
+      })
+      .catch((error) => {
+        const errorMessage = error.response
+          ? `Código de error: ${error.response.status}, Mensaje: ${error.response.data.message || error.response.data}`
+          : error.message;
+        console.error("Error al eliminar Marca:", errorMessage);
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al eliminar Marca: ${errorMessage}`,
         });
-    }
-    handleClose();
+      });
+  };
+  
+  const handleClose = () => {
+    setOpen(false);
   };
 
-  //hacer el post de la Marca
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const formJson = Object.fromEntries(formData.entries());
+    const id = props.selectedRow?.id || 0;
+
+    const validatePayload = (data) => {
+      if (!data.nombre || !data.descripcion || !data.empresa) {
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: "Datos inválidos. Revisa el formulario.",
+        });
+        return false;
+      }
+      return true;
+    };
+
+    if (!validatePayload(formJson)) return;
+
+    const url = methodName === "Add" ? `${SiteProps.urlbasev1}/marca` : `${SiteProps.urlbasev1}/marca/${id}`;
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Error: Token de autenticación no encontrado.",
+      });
+      return;
+    }
+
+    const axiosMethod = methodName === "Add" ? axios.post : axios.put;
+
+    axiosMethod(url, formJson, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then(() => {
+        props.setMessage({
+          open: true,
+          severity: "success",
+          text: methodName === "Add" ? "Marca creada con éxito!" : "Marca actualizada con éxito!",
+        });
+        setOpen(false);
+        props.reloadData();
+      })
+      .catch((error) => {
+        const errorMessage = error.response ? error.response.data.message : error.message;
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} Marca: ${errorMessage}`,
+        });
+      });
+  };
+
   return (
     <React.Fragment>
-      <StackButtons
-        methods={methods}
-        create={create}
-        open={open}
-        setOpen={setOpen}
-      />
+      <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog
         open={open}
         onClose={handleClose}
@@ -273,17 +253,39 @@ export default function FormMarca(props) {
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label"
+            <InputLabel id="empresa-label">Empresa</InputLabel>
+            <Select
+              labelId="empresa-label"
+              id="empresa"
+              name="empresa"
+              value={props.selectedRow?.empresa || ""}
+              label="Empresa"
+              onChange={(event) =>
+                props.setSelectedRow({ ...props.selectedRow, empresa: event.target.value })
+              }
+            >
+              {empresas.map((empresa) => (
+                <MenuItem key={empresa.id} value={empresa.id}>
+                  {empresa.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel
+              id="estado-label"
               sx={{
-                backgroundColor: 'white', 
-                padding: '0 8px',      
+                backgroundColor: "white",
+                padding: "0 8px",
               }}
-            >Estado</InputLabel>
+            >
+              Estado
+            </InputLabel>
             <Select
               labelId="estado-label"
               id="estado"
               name="estado"
-              defaultValue={props.selectedRow?.estado || ''}
+              defaultValue={props.selectedRow?.estado || ""}
               fullWidth
             >
               <MenuItem value={1}>Activo</MenuItem>

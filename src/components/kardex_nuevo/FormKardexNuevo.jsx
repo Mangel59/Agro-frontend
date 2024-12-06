@@ -1,31 +1,38 @@
-// import React, { useState, useEffect } from 'react'; 
+// import React, { useState, useEffect } from 'react';
 // import axios from 'axios';
 // import { Box, Button, Grid, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 // import { SiteProps } from '../dashboard/SiteProps';
 // import GridKardexNuevo from './GridKardexNuevo';
 
+// /**
+//  * @function FormKardexNuevo
+//  * @description Formulario principal para la creación de una entrada en el Kardex.
+//  * @param {Object} props - Propiedades del componente, incluyendo setMessage para mostrar mensajes de estado.
+//  * @returns {JSX.Element} Componente de formulario con campos dependientes y grilla para gestionar items de Kardex.
+//  */
 // export default function FormKardexNuevo(props) {
-//   const [sedes, setSedes] = useState([]);
-//   const [almacenes, setAlmacenes] = useState([]);
+//   // Definición de estados para almacenar datos de opciones de selección y del formulario
+//   const [sedes, setSedes] = useState([]); 
+//   const [almacenes, setAlmacenes] = useState([]); 
 //   const [bloques, setBloques] = useState([]);
-//   const [espacios, setEspacios] = useState([]);
-//   const [producciones, setProducciones] = useState([]);
-//   const [tipoMovimientos, setTipoMovimientos] = useState([]);
-//   const [estados, setEstados] = useState([]);
-//   const [kardexItems, setKardexItems] = useState([]);
+//   const [espacios, setEspacios] = useState([]); 
+//   const [producciones, setProducciones] = useState([]); 
+//   const [tipoMovimientos, setTipoMovimientos] = useState([]); 
+//   const [estados, setEstados] = useState([]); 
+//   const [kardexItems, setKardexItems] = useState([]); 
 //   const [formData, setFormData] = useState({
 //     sedeId: '',
-//     almacenId: '',
-//     bloqueId: '',
-//     espacioId: '',
-//     produccionId: '',
-//     tipoMovimientoId: '',
+//     almacenID: '',
+//     bloqueID: '',
+//     espacioID: '',
+//     produccionID: '',
+//     tipoMovimientoID: '',
 //     descripcion: '',
-//     estadoId: '',
+//     estado: '',
 //     fechaHora: new Date().toISOString().substring(0, 16),
 //   });
 
-//   // Fetch sedes
+//   // Hook para obtener las sedes al cargar el componente
 //   useEffect(() => {
 //     const fetchSedes = async () => {
 //       try {
@@ -41,7 +48,7 @@
 //     fetchSedes();
 //   }, []);
 
-//   // Fetch almacenes based on sedeId
+//   // Hook para obtener almacenes en base a la sede seleccionada
 //   useEffect(() => {
 //     if (formData.sedeId) {
 //       const fetchAlmacenes = async () => {
@@ -49,10 +56,9 @@
 //           const almacenResponse = await axios.get(`${SiteProps.urlbasev1}/almacenes/short/${formData.sedeId}`, {
 //             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
 //           });
-//           const almacenesTransformados = almacenResponse.data.map(almacen => ({
+//           setAlmacenes(almacenResponse.data.map(almacen => ({
 //             id: almacen.Id, nombre: almacen.nombre
-//           }));
-//           setAlmacenes(almacenesTransformados);
+//           })));
 //         } catch (error) {
 //           console.error('Error fetching almacenes:', error);
 //           props.setMessage({ open: true, severity: 'error', text: 'Error al obtener almacenes' });
@@ -67,76 +73,55 @@
 //     }
 //   }, [formData.sedeId]);
 
-//   // // Fetch bloques based on sedeId
-//   // useEffect(() => {
-//   //   if (formData.sedeId) {
-//   //     const fetchBloques = async () => {
-//   //       try {
-//   //         const bloqueResponse = await axios.get(`${SiteProps.urlbasev1}/bloques/short/${formData.sedeId}`, {
-//   //           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-//   //         });
-//   //         setBloques(bloqueResponse.data);
-//   //       } catch (error) {
-//   //         console.error('Error fetching bloques:', error);
-//   //         props.setMessage({ open: true, severity: 'error', text: 'Error al obtener bloques' });
-//   //       }
-//   //     };
-//   //     fetchBloques();
-//   //   } else {
-//   //     setBloques([]);
-//   //     setEspacios([]);
-//   //     setProducciones([]);
-//   //   }
-//   // }, [formData.sedeId]);
-
-//   // // Fetch espacios based on bloqueId
-//   // useEffect(() => {
-//   //   if (formData.bloqueId) {
-//   //     const fetchEspacios = async () => {
-//   //       try {
-//   //         const espacioResponse = await axios.get(`${SiteProps.urlbasev1}/espacios/short/${formData.bloqueId}`, {
-//   //           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-//   //         });
-//   //         setEspacios(espacioResponse.data);
-//   //       } catch (error) {
-//   //         console.error('Error fetching espacios:', error);
-//   //         props.setMessage({ open: true, severity: 'error', text: 'Error al obtener espacios' });
-//   //       }
-//   //     };
-//   //     fetchEspacios();
-//   //   } else {
-//   //     setEspacios([]);
-//   //     setProducciones([]);
-//   //   }
-//   // }, [formData.bloqueId]);
-
-//     // Fetch espacios based on sedeId
-//     useEffect(() => {
-//       if (formData.sedeId) {
-//         const fetchEspacios = async () => {
-//           try {
-//             const espacioResponse = await axios.get(`${SiteProps.urlbasev1}/espacios/short/${formData.sedeId}`, {
-//               headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-//             });
-//             setEspacios(espacioResponse.data);
-//           } catch (error) {
-//             console.error('Error fetching espacios:', error);
-//             props.setMessage({ open: true, severity: 'error', text: 'Error al obtener espacios' });
-//           }
-//         };
-//         fetchEspacios();
-//       } else {
-//         setEspacios([]);
-//         setProducciones([]);
-//       }
-//     }, [formData.sedeId]);
-
-//   // Fetch producciones based on espacioId
+//   // Hook para obtener bloques en base a la sede seleccionada
 //   useEffect(() => {
-//     if (formData.espacioId) {
+//     if (formData.sedeId) {
+//       const fetchBloques = async () => {
+//         try {
+//           const bloqueResponse = await axios.get(`${SiteProps.urlbasev1}/bloques/short/${formData.sedeId}`, {
+//             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+//           });
+//           setBloques(bloqueResponse.data);
+//         } catch (error) {
+//           console.error('Error fetching bloques:', error);
+//           props.setMessage({ open: true, severity: 'error', text: 'Error al obtener bloques' });
+//         }
+//       };
+//       fetchBloques();
+//     } else {
+//       setBloques([]);
+//       setEspacios([]);
+//       setProducciones([]);
+//     }
+//   }, [formData.sedeId]);
+
+//   // Hook para obtener espacios en base al bloque seleccionado
+//   useEffect(() => {
+//     if (formData.bloqueID) {
+//       const fetchEspacios = async () => {
+//         try {
+//           const espacioResponse = await axios.get(`${SiteProps.urlbasev1}/espacios/short/${formData.bloqueID}`, {
+//             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+//           });
+//           setEspacios(espacioResponse.data);
+//         } catch (error) {
+//           console.error('Error fetching espacios:', error);
+//           props.setMessage({ open: true, severity: 'error', text: 'Error al obtener espacios' });
+//         }
+//       };
+//       fetchEspacios();
+//     } else {
+//       setEspacios([]);
+//       setProducciones([]);
+//     }
+//   }, [formData.bloqueID]);
+
+//   // Hook para obtener producciones en base al espacio seleccionado
+//   useEffect(() => {
+//     if (formData.espacioID) {
 //       const fetchProducciones = async () => {
 //         try {
-//           const produccionResponse = await axios.get(`${SiteProps.urlbasev1}/producciones/short/${formData.espacioId}`, {
+//           const produccionResponse = await axios.get(`${SiteProps.urlbasev1}/producciones/short/${formData.espacioID}`, {
 //             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
 //           });
 //           setProducciones(produccionResponse.data);
@@ -149,9 +134,9 @@
 //     } else {
 //       setProducciones([]);
 //     }
-//   }, [formData.espacioId]);
+//   }, [formData.espacioID]);
 
-//   // Fetch tipoMovimientos y estados
+//   // Hook para obtener tipos de movimientos y estados
 //   useEffect(() => {
 //     const fetchTipoMovimientos = async () => {
 //       try {
@@ -181,28 +166,54 @@
 //     fetchEstados();
 //   }, []);
 
+//   /**
+//    * Maneja los cambios en los campos del formulario.
+//    * @function handleInputChange
+//    * @param {Object} e - Evento del input.
+//    */
 //   const handleInputChange = (e) => {
 //     const { name, value } = e.target;
 //     setFormData((prevState) => ({
 //       ...prevState,
-//       [name]: name === 'fechaHora' ? value : parseInt(value) || value, // Asegurar que IDs sean enteros y otros valores se mantengan en su formato correcto
+//       [name]: name === 'fechaHora' ? value : parseInt(value) || value,
 //     }));
 //   };
 
+//   /**
+//    * Agrega un nuevo item al Kardex.
+//    * @function handleAddItem
+//    * @param {Object} item - Objeto del item a agregar.
+//    */
 //   const handleAddItem = (item) => {
 //     setKardexItems((prevItems) => [...prevItems, item]);
 //   };
 
+//   /**
+//    * Actualiza un item existente en el Kardex.
+//    * @function handleUpdateItem
+//    * @param {Object} item - Objeto del item a actualizar.
+//    */
 //   const handleUpdateItem = (item) => {
 //     setKardexItems((prevItems) =>
 //       prevItems.map((i) => (i.id === item.id ? item : i))
 //     );
 //   };
 
+//   /**
+//    * Elimina un item del Kardex.
+//    * @function handleDeleteItem
+//    * @param {Object} item - Objeto del item a eliminar.
+//    */
 //   const handleDeleteItem = (item) => {
 //     setKardexItems((prevItems) => prevItems.filter((i) => i.id !== item.id));
 //   };
 
+//   /**
+//    * Maneja el envío del formulario.
+//    * @async
+//    * @function handleSubmit
+//    * @param {Object} e - Evento del formulario.
+//    */
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
 //     try {
@@ -238,7 +249,7 @@
 //           <Grid item xs={12} sm={6}>
 //             <FormControl fullWidth>
 //               <InputLabel>Almacén</InputLabel>
-//               <Select name="almacenId" value={formData.almacenId || ''} onChange={handleInputChange} required>
+//               <Select name="almacenID" value={formData.almacenID || ''} onChange={handleInputChange} required>
 //                 {almacenes.map((almacen) => (
 //                   <MenuItem key={almacen.id} value={almacen.id}>{almacen.nombre}</MenuItem>
 //                 ))}
@@ -246,21 +257,21 @@
 //             </FormControl>
 //           </Grid>
 
-//           {/* <Grid item xs={12} sm={6}>
+//           <Grid item xs={12} sm={6}>
 //             <FormControl fullWidth>
 //               <InputLabel>Bloque</InputLabel>
-//               <Select name="bloqueId" value={formData.bloqueId || ''} onChange={handleInputChange} required>
+//               <Select name="bloqueID" value={formData.bloqueID || ''} onChange={handleInputChange}>
 //                 {bloques.map((bloque) => (
 //                   <MenuItem key={bloque.id} value={bloque.id}>{bloque.nombre}</MenuItem>
 //                 ))}
 //               </Select>
 //             </FormControl>
-//           </Grid> */}
+//           </Grid>
 
 //           <Grid item xs={12} sm={6}>
 //             <FormControl fullWidth>
 //               <InputLabel>Espacio</InputLabel>
-//               <Select name="espacioId" value={formData.espacioId || ''} onChange={handleInputChange} required>
+//               <Select name="espacioID" value={formData.espacioID || ''} onChange={handleInputChange} required>
 //                 {espacios.map((espacio) => (
 //                   <MenuItem key={espacio.id} value={espacio.id}>{espacio.nombre}</MenuItem>
 //                 ))}
@@ -271,7 +282,7 @@
 //           <Grid item xs={12} sm={6}>
 //             <FormControl fullWidth>
 //               <InputLabel>Producción</InputLabel>
-//               <Select name="produccionId" value={formData.produccionId || ''} onChange={handleInputChange} required>
+//               <Select name="produccionID" value={formData.produccionID || ''} onChange={handleInputChange} required>
 //                 {producciones.map((produccion) => (
 //                   <MenuItem key={produccion.id} value={produccion.id}>{produccion.nombre}</MenuItem>
 //                 ))}
@@ -282,7 +293,7 @@
 //           <Grid item xs={12} sm={6}>
 //             <FormControl fullWidth>
 //               <InputLabel>Tipo de Movimiento</InputLabel>
-//               <Select name="tipoMovimientoId" value={formData.tipoMovimientoId || ''} onChange={handleInputChange} required>
+//               <Select name="tipoMovimientoID" value={formData.tipoMovimientoID || ''} onChange={handleInputChange} required>
 //                 {tipoMovimientos.map((tipo) => (
 //                   <MenuItem key={tipo.id} value={tipo.id}>{tipo.nombre}</MenuItem>
 //                 ))}
@@ -291,13 +302,20 @@
 //           </Grid>
 
 //           <Grid item xs={12}>
-//             <TextField name="descripcion" label="Descripción" fullWidth value={formData.descripcion} onChange={handleInputChange} required />
+//             <TextField
+//               name="descripcion"
+//               label="Descripción"
+//               fullWidth
+//               value={formData.descripcion}
+//               onChange={handleInputChange}
+//               required
+//             />
 //           </Grid>
 
 //           <Grid item xs={12} sm={6}>
 //             <FormControl fullWidth>
 //               <InputLabel>Estado</InputLabel>
-//               <Select name="estadoId" value={formData.estadoId || ''} onChange={handleInputChange} required>
+//               <Select name="estado" value={formData.estado || ''} onChange={handleInputChange} required>
 //                 {estados.map((estado) => (
 //                   <MenuItem key={estado.id} value={estado.id}>{estado.nombre}</MenuItem>
 //                 ))}
@@ -306,7 +324,16 @@
 //           </Grid>
 
 //           <Grid item xs={12} sm={6}>
-//             <TextField name="fechaHora" label="Fecha y Hora" type="datetime-local" fullWidth value={formData.fechaHora} onChange={handleInputChange} required InputLabelProps={{ shrink: true }} />
+//             <TextField
+//               name="fechaHora"
+//               label="Fecha y Hora"
+//               type="datetime-local"
+//               fullWidth
+//               value={formData.fechaHora}
+//               onChange={handleInputChange}
+//               required
+//               InputLabelProps={{ shrink: true }}
+//             />
 //           </Grid>
 
 //           <Grid item xs={12}>
@@ -327,7 +354,6 @@
 //   );
 // }
 
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Box, Button, Grid, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
@@ -342,14 +368,14 @@ import GridKardexNuevo from './GridKardexNuevo';
  */
 export default function FormKardexNuevo(props) {
   // Definición de estados para almacenar datos de opciones de selección y del formulario
-  const [sedes, setSedes] = useState([]); 
-  const [almacenes, setAlmacenes] = useState([]); 
+  const [sedes, setSedes] = useState([]);
+  const [almacenes, setAlmacenes] = useState([]);
   const [bloques, setBloques] = useState([]);
-  const [espacios, setEspacios] = useState([]); 
-  const [producciones, setProducciones] = useState([]); 
-  const [tipoMovimientos, setTipoMovimientos] = useState([]); 
-  const [estados, setEstados] = useState([]); 
-  const [kardexItems, setKardexItems] = useState([]); 
+  const [espacios, setEspacios] = useState([]);
+  const [producciones, setProducciones] = useState([]);
+  const [tipoMovimientos, setTipoMovimientos] = useState([]);
+  const [estados, setEstados] = useState([]);
+  const [kardexItems, setKardexItems] = useState([]);
   const [formData, setFormData] = useState({
     sedeId: '',
     almacenID: '',
@@ -366,13 +392,14 @@ export default function FormKardexNuevo(props) {
   useEffect(() => {
     const fetchSedes = async () => {
       try {
-        const sedeResponse = await axios.get(`${SiteProps.urlbasev1}/sede/short`, {
+        const sedeResponse = await axios.get(`${SiteProps.urlbasev1}/sede`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
-        setSedes(sedeResponse.data);
+        setSedes(sedeResponse.data || []);
       } catch (error) {
         console.error('Error fetching sedes:', error);
         props.setMessage({ open: true, severity: 'error', text: 'Error al obtener sedes' });
+        setSedes([]);
       }
     };
     fetchSedes();
@@ -383,15 +410,14 @@ export default function FormKardexNuevo(props) {
     if (formData.sedeId) {
       const fetchAlmacenes = async () => {
         try {
-          const almacenResponse = await axios.get(`${SiteProps.urlbasev1}/almacenes/short/${formData.sedeId}`, {
+          const almacenResponse = await axios.get(`${SiteProps.urlbasev1}/almacen/minimal/sede/${formData.sedeId}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           });
-          setAlmacenes(almacenResponse.data.map(almacen => ({
-            id: almacen.Id, nombre: almacen.nombre
-          })));
+          setAlmacenes(almacenResponse.data || []);
         } catch (error) {
           console.error('Error fetching almacenes:', error);
           props.setMessage({ open: true, severity: 'error', text: 'Error al obtener almacenes' });
+          setAlmacenes([]);
         }
       };
       fetchAlmacenes();
@@ -408,13 +434,14 @@ export default function FormKardexNuevo(props) {
     if (formData.sedeId) {
       const fetchBloques = async () => {
         try {
-          const bloqueResponse = await axios.get(`${SiteProps.urlbasev1}/bloques/short/${formData.sedeId}`, {
+          const bloqueResponse = await axios.get(`${SiteProps.urlbasev1}/bloque/minimal/sede/${formData.sedeId}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           });
-          setBloques(bloqueResponse.data);
+          setBloques(bloqueResponse.data || []);
         } catch (error) {
           console.error('Error fetching bloques:', error);
           props.setMessage({ open: true, severity: 'error', text: 'Error al obtener bloques' });
+          setBloques([]);
         }
       };
       fetchBloques();
@@ -430,13 +457,14 @@ export default function FormKardexNuevo(props) {
     if (formData.bloqueID) {
       const fetchEspacios = async () => {
         try {
-          const espacioResponse = await axios.get(`${SiteProps.urlbasev1}/espacios/short/${formData.bloqueID}`, {
+          const espacioResponse = await axios.get(`${SiteProps.urlbasev1}/espacio/minimal/bloque/${formData.bloqueID}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           });
-          setEspacios(espacioResponse.data);
+          setEspacios(espacioResponse.data || []);
         } catch (error) {
           console.error('Error fetching espacios:', error);
           props.setMessage({ open: true, severity: 'error', text: 'Error al obtener espacios' });
+          setEspacios([]);
         }
       };
       fetchEspacios();
@@ -451,13 +479,14 @@ export default function FormKardexNuevo(props) {
     if (formData.espacioID) {
       const fetchProducciones = async () => {
         try {
-          const produccionResponse = await axios.get(`${SiteProps.urlbasev1}/producciones/short/${formData.espacioID}`, {
+          const produccionResponse = await axios.get(`${SiteProps.urlbasev1}/producciones/${formData.espacioID}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           });
-          setProducciones(produccionResponse.data);
+          setProducciones(produccionResponse.data || []);
         } catch (error) {
           console.error('Error fetching producciones:', error);
           props.setMessage({ open: true, severity: 'error', text: 'Error al obtener producciones' });
+          setProducciones([]);
         }
       };
       fetchProducciones();
@@ -470,13 +499,14 @@ export default function FormKardexNuevo(props) {
   useEffect(() => {
     const fetchTipoMovimientos = async () => {
       try {
-        const tipoMovimientoResponse = await axios.get(`${SiteProps.urlbasev1}/tipoMovimiento/short`, {
+        const tipoMovimientoResponse = await axios.get(`${SiteProps.urlbasev1}/tipo_movimiento/minimal`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
-        setTipoMovimientos(tipoMovimientoResponse.data);
+        setTipoMovimientos(tipoMovimientoResponse.data || []);
       } catch (error) {
         console.error('Error fetching tipoMovimientos:', error);
         props.setMessage({ open: true, severity: 'error', text: 'Error al obtener tipo de movimientos' });
+        setTipoMovimientos([]);
       }
     };
 
@@ -485,10 +515,11 @@ export default function FormKardexNuevo(props) {
         const estadoResponse = await axios.get(`${SiteProps.urlbasev1}/estados/short`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
-        setEstados(estadoResponse.data);
+        setEstados(estadoResponse.data || []);
       } catch (error) {
         console.error('Error fetching estados:', error);
         props.setMessage({ open: true, severity: 'error', text: 'Error al obtener estados' });
+        setEstados([]);
       }
     };
 
@@ -496,11 +527,7 @@ export default function FormKardexNuevo(props) {
     fetchEstados();
   }, []);
 
-  /**
-   * Maneja los cambios en los campos del formulario.
-   * @function handleInputChange
-   * @param {Object} e - Evento del input.
-   */
+  // Manejadores de eventos
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -509,45 +536,24 @@ export default function FormKardexNuevo(props) {
     }));
   };
 
-  /**
-   * Agrega un nuevo item al Kardex.
-   * @function handleAddItem
-   * @param {Object} item - Objeto del item a agregar.
-   */
   const handleAddItem = (item) => {
     setKardexItems((prevItems) => [...prevItems, item]);
   };
 
-  /**
-   * Actualiza un item existente en el Kardex.
-   * @function handleUpdateItem
-   * @param {Object} item - Objeto del item a actualizar.
-   */
   const handleUpdateItem = (item) => {
     setKardexItems((prevItems) =>
       prevItems.map((i) => (i.id === item.id ? item : i))
     );
   };
 
-  /**
-   * Elimina un item del Kardex.
-   * @function handleDeleteItem
-   * @param {Object} item - Objeto del item a eliminar.
-   */
   const handleDeleteItem = (item) => {
     setKardexItems((prevItems) => prevItems.filter((i) => i.id !== item.id));
   };
 
-  /**
-   * Maneja el envío del formulario.
-   * @async
-   * @function handleSubmit
-   * @param {Object} e - Evento del formulario.
-   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log('Datos enviados:', formData); // Para depuración
+      console.log('Datos enviados:', formData);
       await axios.post(`${SiteProps.urlbasev1}/kardex`, formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,

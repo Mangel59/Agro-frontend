@@ -1,37 +1,22 @@
 import * as React from "react";
 import axios from "axios";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
+import DialogContentText from "@mui/material/DialogContentText"; // Correcto
 import DialogTitle from "@mui/material/DialogTitle";
 import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
-/**
- * El componente Formtipoproducciones gestiona el formulario para crear, actualizar y eliminar tipoproducciones.
- * 
- * @componente
- * @param {object} props - Propiedades pasadas al componente.
- * @param {function} props.setSelectedRow - Función para establecer la fila seleccionada.
- * @param {object} props.selectedRow - Datos de la tipoproducciones seleccionada.
- * @param {function} props.reloadData - Función para recargar los datos después de una operación.
- * @param {function} props.setMessage - Función para establecer un mensaje en el snackbar.
- * @returns {JSX.Element} El formulario de gestión de tipoproducciones.
- */
 export default function FormTipoProduccion(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
-  
-  /**
-   * Crea una nueva TipoProduccion y abre el diálogo de formulario.
-   */
+
   const create = () => {
     const row = {
       id: 0,
@@ -42,201 +27,133 @@ export default function FormTipoProduccion(props) {
     props.setSelectedRow(row);
     setMethodName("Add");
     setOpen(true);
-    console.log("create() " + JSON.stringify(row));
   };
 
-  /**
-   * Actualiza la TipoProduccionseleccionada y abre el diálogo de formulario.
-   */
   const update = () => {
     if (!props.selectedRow || props.selectedRow.id === 0) {
-      const messageData = {
+      props.setMessage({
         open: true,
         severity: "error",
-        text: "Select row!",
-      };
-      props.setMessage(messageData);
+        text: "Selecciona una fila para actualizar",
+      });
       return;
     }
     setMethodName("Update");
     setOpen(true);
-    console.log("update() " + JSON.stringify(props.selectedRow));
   };
 
-  /**
-   * Elimina la TipoProduccion seleccionada.
-   */
   const deleteRow = () => {
     if (props.selectedRow.id === 0) {
-      const messageData = {
+      props.setMessage({
         open: true,
         severity: "error",
-        text: "Select row!",
-      };
-      props.setMessage(messageData);
+        text: "Selecciona una fila para eliminar",
+      });
       return;
     }
     const id = props.selectedRow.id;
-    const url = `${SiteProps.urlbase}/tipoproducciones/${id}`;
+    const url = `${SiteProps.urlbasev1}/tipo_produccion/${id}`;
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Error: Token de autenticación no encontrado.",
+      });
+      return;
+    }
+
     axios
       .delete(url, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => {
+      .then(() => {
         props.setMessage({
           open: true,
           severity: "success",
-          text: "TipoProduccion eliminada con éxito!",
+          text: "Tipo de Producción eliminado con éxito!",
         });
         props.reloadData();
       })
       .catch((error) => {
-        const errorMessage = error.response
-          ? error.response.data.message
-          : error.message;
+        const errorMessage = error.response ? error.response.data.message : error.message;
         props.setMessage({
           open: true,
           severity: "error",
-          text: `Error al eliminar TipoProduccion! ${errorMessage}`,
+          text: `Error al eliminar Tipo de Producción: ${errorMessage}`,
         });
-        console.error(
-          "Error al eliminar TipoProduccion!",
-          error.response || error.message
-        );
       });
   };
-  const methods = {
-    create,
-    update,
-    deleteRow,
-  };
-  React.useEffect(() => {
-    if (props.selectedRow !== undefined) {
-      console.log("Selected Row ID: " + props.selectedRow.id);
-    }
-  }, [props.selectedRow]);
+
   const handleClose = () => {
     setOpen(false);
   };
 
-   /**
-   * Maneja el envío del formulario para crear o actualizar una TipoProduccion.
-   * 
-   * @param {Event} event - El evento de envío del formulario.
-   */
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const formJson = Object.fromEntries(formData.entries());
     const id = props.selectedRow?.id || 0;
+
     const validatePayload = (data) => {
-      if (
-        !data.nombre ||
-        !data.tipoIdentificacionId ||
-        !data.identificacion ||
-        !data.direccion
-      ) {
-        console.error("Invalid data:", data);
+      if (!data.nombre || !data.descripcion) {
         props.setMessage({
           open: true,
           severity: "error",
-          text: "Invalid data!",
+          text: "Datos inválidos. Revisa el formulario.",
         });
         return false;
       }
       return true;
     };
+
     if (!validatePayload(formJson)) return;
-    const url = `${SiteProps.urlbasev1}/tipoproducciones`;
-    if (methodName === "Add") {
-      axios
-        .post(url, formJson)
-        .then((response) => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: "TipoProduccion creada con éxito!",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response
-            ? error.response.data.message
-            : error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al crear TipoProduccion! ${errorMessage}`,
-          });
-        });
-    } else if (methodName === "Update") {
-      axios
-        .put(`${url}/${id}`, formJson)
-        .then((response) => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: "TipoProduccion actualizada con éxito!",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response
-            ? error.response.data.message
-            : error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al actualizar TipoProduccion! ${errorMessage}`,
-          });
-          console.error(
-            "Error al actualizar TipoProduccion!",
-            error.response || error.message
-          );
-        });
-    } else if (methodName === "Delete") {
-      axios
-        .delete(`${url}/${id}`)
-        .then((response) => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: "TipoProduccion eliminada con éxito!",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response
-            ? error.response.data.message
-            : error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al eliminarTipoProduccion! ${errorMessage}`,
-          });
-          console.error(
-            "Error al eliminar TipoProduccion!",
-            error.response || error.message
-          );
-        });
+
+    const url = methodName === "Add" ? `${SiteProps.urlbasev1}/tipo_produccion` : `${SiteProps.urlbasev1}/tipo_produccion/${id}`;
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Error: Token de autenticación no encontrado.",
+      });
+      return;
     }
-    handleClose();
+
+    const axiosMethod = methodName === "Add" ? axios.post : axios.put;
+
+    axiosMethod(url, formJson, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then(() => {
+        props.setMessage({
+          open: true,
+          severity: "success",
+          text: methodName === "Add" ? "Tipo de Producción creado con éxito!" : "Tipo de Producción actualizado con éxito!",
+        });
+        setOpen(false);
+        props.reloadData();
+      })
+      .catch((error) => {
+        const errorMessage = error.response ? error.response.data.message : error.message;
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} Tipo de Producción: ${errorMessage}`,
+        });
+      });
   };
 
-  //hacer el post de la TipoProduccion
   return (
     <React.Fragment>
-      <StackButtons
-        methods={methods}
-        create={create}
-        open={open}
-        setOpen={setOpen}
-      />
+      <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog
         open={open}
         onClose={handleClose}
@@ -245,7 +162,7 @@ export default function FormTipoProduccion(props) {
           onSubmit: handleSubmit,
         }}
       >
-        <DialogTitle>Tipo Produccion</DialogTitle>
+        <DialogTitle>Tipo de Producción</DialogTitle>
         <DialogContent>
           <DialogContentText>Completa el formulario.</DialogContentText>
           <FormControl fullWidth margin="normal">
@@ -272,17 +189,20 @@ export default function FormTipoProduccion(props) {
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label"
+            <InputLabel
+              id="estado-label"
               sx={{
-                backgroundColor: 'white', 
-                padding: '0 8px',      
+                backgroundColor: "white",
+                padding: "0 8px",
               }}
-            >Estado</InputLabel>
+            >
+              Estado
+            </InputLabel>
             <Select
               labelId="estado-label"
               id="estado"
               name="estado"
-              defaultValue={props.selectedRow?.estado || ''}
+              defaultValue={props.selectedRow?.estado || ""}
               fullWidth
             >
               <MenuItem value={1}>Activo</MenuItem>

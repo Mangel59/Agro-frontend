@@ -14,78 +14,114 @@ import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
-/**
- * El componente FormUnidad gestiona el formulario para crear, actualizar y eliminar Unidades.
- * 
- * @componente
- * @param {object} props - Propiedades pasadas al componente.
- * @param {function} props.setSelectedRow - Función para establecer la fila seleccionada.
- * @param {object} props.selectedRow - Datos de la Unidad seleccionada.
- * @param {function} props.reloadData - Función para recargar los datos después de una operación.
- * @param {function} props.setMessage - Función para establecer un mensaje en el snackbar.
- * @returns {JSX.Element} El formulario de gestión de Unidades.
- */
 export default function FormUnidad(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
-  
-  /**
-   * Crea una nueva Unidad y abre el diálogo de formulario.
-   */
+  const [empresas, setEmpresas] = React.useState([]); // Estado para las empresas
+
+  // Función para cargar las empresas al abrir el formulario
+  const loadEmpresas = () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Error: Token de autenticación no encontrado.",
+      });
+      return;
+    }
+
+    axios
+      .get(`${SiteProps.urlbasev1}/empresas`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        console.log("Respuesta recibida de /empresas:", response.data);
+        
+        if (response.data && Array.isArray(response.data.data)) {
+          setEmpresas(response.data.data);
+        } else {
+          console.error("La respuesta del servidor no es válida. Respuesta recibida:", response.data);
+          props.setMessage({
+            open: true,
+            severity: "error",
+            text: "Error al cargar empresas: respuesta no válida.",
+          });
+        }
+      })
+      .catch((error) => {
+        const errorMessage = error.response
+          ? `Código de error: ${error.response.status}, Mensaje: ${error.response.data.message || error.response.data}`
+          : error.message;
+        console.error("Error al cargar empresas:", errorMessage);
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al cargar empresas: ${errorMessage}`,
+        });
+      });
+  };
+
   const create = () => {
     const row = {
       id: 0,
-      apellido: "",
       nombre: "",
       descripcion: "",
       estado: 0,
+      empresa: "" // Inicializamos empresa con una cadena vacía
     };
     props.setSelectedRow(row);
     setMethodName("Add");
     setOpen(true);
-    console.log("create() " + JSON.stringify(row));
+    loadEmpresas(); // Cargar empresas al abrir el formulario
   };
 
-  /**
-   * Actualiza la Unidad seleccionada y abre el diálogo de formulario.
-   */
   const update = () => {
     if (!props.selectedRow || props.selectedRow.id === 0) {
-      const messageData = {
+      props.setMessage({
         open: true,
         severity: "error",
-        text: "Select row!",
-      };
-      props.setMessage(messageData);
+        text: "Selecciona una fila para actualizar",
+      });
       return;
     }
     setMethodName("Update");
     setOpen(true);
-    console.log("update() " + JSON.stringify(props.selectedRow));
+    loadEmpresas(); // Cargar empresas al abrir el formulario
   };
 
-  /**
-   * Elimina la Unidad seleccionada.
-   */
   const deleteRow = () => {
     if (props.selectedRow.id === 0) {
-      const messageData = {
+      props.setMessage({
         open: true,
         severity: "error",
-        text: "Select row!",
-      };
-      props.setMessage(messageData);
+        text: "Selecciona una fila para eliminar",
+      });
       return;
     }
     const id = props.selectedRow.id;
-    const url = `${SiteProps.urlbase}/unidades/${id}`;
+    const url = `${SiteProps.urlbasev1}/unidad/${id}`;
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Error: Token de autenticación no encontrado.",
+      });
+      return;
+    }
+
     axios
       .delete(url, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => {
+      .then(() => {
         props.setMessage({
           open: true,
           severity: "success",
@@ -94,150 +130,81 @@ export default function FormUnidad(props) {
         props.reloadData();
       })
       .catch((error) => {
-        const errorMessage = error.response
-          ? error.response.data.message
-          : error.message;
+        const errorMessage = error.response ? error.response.data.message : error.message;
         props.setMessage({
           open: true,
           severity: "error",
-          text: `Error al eliminar Unidad! ${errorMessage}`,
+          text: `Error al eliminar Unidad: ${errorMessage}`,
         });
-        console.error(
-          "Error al eliminar Unidad!",
-          error.response || error.message
-        );
       });
   };
-  const methods = {
-    create,
-    update,
-    deleteRow,
-  };
-  React.useEffect(() => {
-    if (props.selectedRow !== undefined) {
-      console.log("Selected Row ID: " + props.selectedRow.id);
-    }
-  }, [props.selectedRow]);
+
   const handleClose = () => {
     setOpen(false);
   };
 
-   /**
-   * Maneja el envío del formulario para crear o actualizar una Unidad.
-   * 
-   * @param {Event} event - El evento de envío del formulario.
-   */
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const formJson = Object.fromEntries(formData.entries());
     const id = props.selectedRow?.id || 0;
+
     const validatePayload = (data) => {
-      if (
-        !data.nombre ||
-        !data.tipoIdentificacionId ||
-        !data.identificacion ||
-        !data.direccion
-      ) {
-        console.error("Invalid data:", data);
+      if (!data.nombre || !data.descripcion || !data.empresa) {
         props.setMessage({
           open: true,
           severity: "error",
-          text: "Invalid data!",
+          text: "Datos inválidos. Revisa el formulario.",
         });
         return false;
       }
       return true;
     };
+
     if (!validatePayload(formJson)) return;
-    const url = `${SiteProps.urlbasev1}/unidades`;
-    if (methodName === "Add") {
-      axios
-        .post(url, formJson)
-        .then((response) => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: "Unidad creada con éxito!",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response
-            ? error.response.data.message
-            : error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al crear Unidad! ${errorMessage}`,
-          });
-        });
-    } else if (methodName === "Update") {
-      axios
-        .put(`${url}/${id}`, formJson)
-        .then((response) => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: "Unidad actualizada con éxito!",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response
-            ? error.response.data.message
-            : error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al actualizar Unidad! ${errorMessage}`,
-          });
-          console.error(
-            "Error al actualizar Unidad!",
-            error.response || error.message
-          );
-        });
-    } else if (methodName === "Delete") {
-      axios
-        .delete(`${url}/${id}`)
-        .then((response) => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: "Unidad eliminada con éxito!",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response
-            ? error.response.data.message
-            : error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al eliminar Unidad! ${errorMessage}`,
-          });
-          console.error(
-            "Error al eliminar Unidad!",
-            error.response || error.message
-          );
-        });
+
+    const url = methodName === "Add" ? `${SiteProps.urlbasev1}/unidad` : `${SiteProps.urlbasev1}/unidad/${id}`;
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Error: Token de autenticación no encontrado.",
+      });
+      return;
     }
-    handleClose();
+
+    const axiosMethod = methodName === "Add" ? axios.post : axios.put;
+
+    axiosMethod(url, formJson, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then(() => {
+        props.setMessage({
+          open: true,
+          severity: "success",
+          text: methodName === "Add" ? "Unidad creada con éxito!" : "Unidad actualizada con éxito!",
+        });
+        setOpen(false);
+        props.reloadData();
+      })
+      .catch((error) => {
+        const errorMessage = error.response ? error.response.data.message : error.message;
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} Unidad: ${errorMessage}`,
+        });
+      });
   };
 
-  //hacer el post de la Unidad
   return (
     <React.Fragment>
-      <StackButtons
-        methods={methods}
-        create={create}
-        open={open}
-        setOpen={setOpen}
-      />
+      <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog
         open={open}
         onClose={handleClose}
@@ -273,17 +240,39 @@ export default function FormUnidad(props) {
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label"
+            <InputLabel id="empresa-label">Empresa</InputLabel>
+            <Select
+              labelId="empresa-label"
+              id="empresa"
+              name="empresa"
+              value={props.selectedRow?.empresa || ""}
+              label="Empresa"
+              onChange={(event) =>
+                props.setSelectedRow({ ...props.selectedRow, empresa: event.target.value })
+              }
+            >
+              {empresas.map((empresa) => (
+                <MenuItem key={empresa.id} value={empresa.id}>
+                  {empresa.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel
+              id="estado-label"
               sx={{
-                backgroundColor: 'white', 
-                padding: '0 8px',      
+                backgroundColor: "white",
+                padding: "0 8px",
               }}
-            >Estado</InputLabel>
+            >
+              Estado
+            </InputLabel>
             <Select
               labelId="estado-label"
               id="estado"
               name="estado"
-              defaultValue={props.selectedRow?.estado || ''}
+              defaultValue={props.selectedRow?.estado || ""}
               fullWidth
             >
               <MenuItem value={1}>Activo</MenuItem>

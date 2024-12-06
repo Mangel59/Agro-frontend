@@ -1,24 +1,17 @@
 import * as React from "react";
-import axios from "axios";  // Usa axios directamente
+import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
 import FormTipoMovimiento from "./FormTipoMovimiento";
 import GridTipoMovimiento from "./GridTipoMovimiento";
 import { SiteProps } from "../dashboard/SiteProps";
 
-/**
- * El componente TipoMovimiento gestiona el módulo de tipomovimientoss, integrando el formulario
- * y la tabla de datos.
- * 
- * @componente
- * @param {object} props - Propiedades pasadas al componente.
- * @returns {JSX.Element} El módulo de gestión de TipoMovimientos.
- */
 export default function TipoMovimiento(props) {
   const row = {
     id: 0,
     nombre: "",
     descripcion: "",
     estado: 0,
+    empresa: 0,
   };
 
   const [selectedRow, setSelectedRow] = React.useState(row);
@@ -29,31 +22,69 @@ export default function TipoMovimiento(props) {
   };
 
   const [message, setMessage] = React.useState(messageData);
-  const [tipomovimientos, setTipoMovimientos] = React.useState([]);
+  const [tiposMovimiento, setTiposMovimiento] = React.useState([]);
+  const [paginationModel, setPaginationModel] = React.useState({
+    page: 0,
+    pageSize: 5,
+  });
 
-  /**
-   * Recarga los datos de las TipoMovimientos desde el servidor.
-   */
   const reloadData = () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Error: Token de autenticación no encontrado.",
+      });
+      return;
+    }
+
     axios
-      .get(`${SiteProps.urlbasev1}/tipomovimientos`)
+      .get(`${SiteProps.urlbasev1}/tipo_movimiento`, {
+        params: {
+          page: paginationModel.page,
+          size: paginationModel.pageSize,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then((response) => {
-        const tipomovimientoData = response.data.map((item) => ({
-          ...item,
-          id: item.id,
-        }));
-        setTipoMovimientos(tipomovimientoData);
+        if (response.data && Array.isArray(response.data)) {
+          setTiposMovimiento(response.data);
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          setTiposMovimiento(response.data.data);
+        } else {
+          console.error("La respuesta no es un array válido:", response.data);
+          setMessage({
+            open: true,
+            severity: "error",
+            text: "Error al cargar Tipos de Movimiento: respuesta no válida.",
+          });
+        }
       })
       .catch((error) => {
-        console.error("Error al buscar TipoMovimientos!", error);
+        console.error("Error al cargar Tipos de Movimiento:", error);
+        if (error.response && error.response.status === 403) {
+          setMessage({
+            open: true,
+            severity: "error",
+            text: "Error: No tienes permisos para cargar los Tipos de Movimiento.",
+          });
+        } else {
+          setMessage({
+            open: true,
+            severity: "error",
+            text: `Error al cargar Tipos de Movimiento: ${error.message}`,
+          });
+        }
       });
-
   };
 
   React.useEffect(() => {
-    reloadData();  // Llama a reloadData para cargar los datos iniciales
-  }, []);
-
+    reloadData();
+  }, [paginationModel]);
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
@@ -62,16 +93,16 @@ export default function TipoMovimiento(props) {
         setMessage={setMessage}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        reloadData={reloadData}  // Pasa reloadData como prop a FormTipoMovimiento
-        tipomovimientos={tipomovimientos}
-
+        reloadData={reloadData}
+        tiposMovimiento={tiposMovimiento}
       />
       <GridTipoMovimiento
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        tipomovimientos={tipomovimientos}
+        tiposMovimiento={tiposMovimiento}
+        paginationModel={paginationModel}
+        setPaginationModel={setPaginationModel}
       />
     </div>
   );
 }
-

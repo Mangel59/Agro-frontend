@@ -132,7 +132,23 @@
     "id": "reportes",
     "text": "Reportes",
     "icon": "Settings",
-    "children": []
+    "children": [
+      {
+        "id": "reportes",
+        "text": "Reportes",
+        "icon": "Settings"
+      },
+      {
+        "id": "r_pedido",
+        "text": "Reportes de Pedido",
+        "icon": "Settings"
+      },
+      {
+        "id": "r_orden_compra",
+        "text": "Reportes de Orden de Compra",
+        "icon": "Settings"
+      }
+    ]
   },
   {
     "id": "autenticacion",

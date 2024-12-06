@@ -17,7 +17,7 @@ import { SiteProps } from "../dashboard/SiteProps";
 export default function FormPresentacion(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
-  
+
   // Crear un nuevo producto
   const create = () => {
     const row = {
@@ -30,7 +30,7 @@ export default function FormPresentacion(props) {
     setMethodName("Add");
     setOpen(true);
   };
-  
+
   // Actualizar un producto existente
   const update = () => {
     if (!props.selectedRow || props.selectedRow.id === 0) {
@@ -57,7 +57,7 @@ export default function FormPresentacion(props) {
     }
     const id = props.selectedRow.id;
     const url = `${SiteProps.urlbasev1}/presentaciones/${id}`;
-    
+
     const token = localStorage.getItem("token");
 
     axios
@@ -116,7 +116,7 @@ export default function FormPresentacion(props) {
 
     console.log("Datos del formulario: ", formJson);
     console.log("Token: ", token); // Para verificar si el token es válido
-    
+
     if (!token) {
       console.error("Token no encontrado.");
       props.setMessage({
@@ -132,27 +132,27 @@ export default function FormPresentacion(props) {
       axios.post(url, formJson, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then((response) => {
-        props.setMessage({
-          open: true,
-          severity: "success",
-          text: "Presentacion creado con éxito",
+        .then((response) => {
+          props.setMessage({
+            open: true,
+            severity: "success",
+            text: "Presentacion creado con éxito",
+          });
+          setOpen(false);
+          props.reloadData();  // Actualiza la lista después de agregar
+        })
+        .catch((error) => {
+          const errorMessage = error.response
+            ? error.response.data.message
+            : error.message;
+          props.setMessage({
+            open: true,
+            severity: "error",
+            text: `Error al crear producto: ${errorMessage}`,
+          });
         });
-        setOpen(false);
-        props.reloadData();  // Actualiza la lista después de agregar
-      })
-      .catch((error) => {
-        const errorMessage = error.response
-          ? error.response.data.message
-          : error.message;
-        props.setMessage({
-          open: true,
-          severity: "error",
-          text: `Error al crear producto: ${errorMessage}`,
-        });
-      });
     }
-    
+
     // Lógica para actualizar un producto
     else if (methodName === "Update") {
       axios
@@ -204,53 +204,53 @@ export default function FormPresentacion(props) {
           onSubmit: handleSubmit,
         }}
       >
-<DialogTitle>Presentación</DialogTitle>
-<DialogContent>
-  <DialogContentText>Completa el formulario.</DialogContentText>
+        <DialogTitle>Presentación</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Completa el formulario.</DialogContentText>
 
-  <FormControl fullWidth margin="normal">
-    <TextField
-      autoFocus
-      required
-      id="nombre"
-      name="nombre"
-      label="Nombre"
-      fullWidth
-      variant="standard"
-      defaultValue={props.selectedRow?.nombre || ""}
-    />
-  </FormControl>
+          <FormControl fullWidth margin="normal">
+            <TextField
+              autoFocus
+              required
+              id="nombre"
+              name="nombre"
+              label="Nombre"
+              fullWidth
+              variant="standard"
+              defaultValue={props.selectedRow?.nombre || ""}
+            />
+          </FormControl>
 
-  <FormControl fullWidth margin="normal">
-    <TextField
-      required
-      id="descripcion"
-      name="descripcion"
-      label="Descripción"
-      fullWidth
-      variant="standard"
-      defaultValue={props.selectedRow?.descripcion || ""}
-    />
-  </FormControl>
+          <FormControl fullWidth margin="normal">
+            <TextField
+              required
+              id="descripcion"
+              name="descripcion"
+              label="Descripción"
+              fullWidth
+              variant="standard"
+              defaultValue={props.selectedRow?.descripcion || ""}
+            />
+          </FormControl>
 
-  <FormControl fullWidth margin="normal">
-    <InputLabel id="estado-label">Estado</InputLabel>
-    <Select
-      labelId="estado-label"
-      id="estado"
-      name="estado"
-      defaultValue={props.selectedRow?.estado || 1}
-      fullWidth
-    >
-      <MenuItem value={1}>Activo</MenuItem>
-      <MenuItem value={0}>Inactivo</MenuItem>
-    </Select>
-  </FormControl>
-</DialogContent>
-<DialogActions>
-  <Button onClick={handleClose}>Cancelar</Button>
-  <Button type="submit">{methodName}</Button>
-</DialogActions>
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="estado-label">Estado</InputLabel>
+            <Select
+              labelId="estado-label"
+              id="estado"
+              name="estado"
+              defaultValue={props.selectedRow?.estado || 1}
+              fullWidth
+            >
+              <MenuItem value={1}>Activo</MenuItem>
+              <MenuItem value={0}>Inactivo</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancelar</Button>
+          <Button type="submit">{methodName}</Button>
+        </DialogActions>
 
       </Dialog>
     </React.Fragment>
