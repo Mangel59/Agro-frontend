@@ -1,168 +1,283 @@
 import * as React from "react";
+import axios from "axios";
+import AddIcon from "@mui/icons-material/Add";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import FormControl from "@mui/material/FormControl";
-import StackButtons from "../StackButtons";
-import axios from 'axios';
-import { SiteProps } from '../dashboard/SiteProps';
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import { Box } from "@mui/material";
+import { SiteProps } from "../dashboard/SiteProps";
 
-export default function FormProduccion(props) {
+export default function FormProduccion({ reloadProducciones, setMessage, selectedRow, setSelectedRow }) {
   const [open, setOpen] = React.useState(false);
-  const [methodName, setMethodName] = React.useState("");
+  const [sedes, setSedes] = React.useState([]);
+  const [bloques, setBloques] = React.useState([]);
+  const [espacios, setEspacios] = React.useState([]);
+  const [tiposProduccion, setTiposProduccion] = React.useState([]); // Nueva lista de tipos de producción
+  const [selectedSede, setSelectedSede] = React.useState("");
+  const [selectedBloque, setSelectedBloque] = React.useState("");
+  const [selectedEspacio, setSelectedEspacio] = React.useState("");
+  const [selectedTipoProduccion, setSelectedTipoProduccion] = React.useState(""); // Selección de tipo de producción
+  const [formData, setFormData] = React.useState({
+    nombre: "",
+    descripcion: "",
+    fechaInicio: "",
+    fechaFinal: "",
+    estado: 1,
+  });
 
-  const create = () => {
-    const row = {
-      pro_id: 0,
-      pro_nombre: "",
-      pro_descripcion: "",
-      pro_estado: 0,
-      pro_fecha_inicio: new Date(),
-      pro_fecha_final: new Date()
-    };
-    props.setSelectedRow(row);
-    setMethodName("Add");
-    setOpen(true);
-  };
-
-  const update = () => {
-    if (props.selectedRow.pro_id === 0) {
-      props.setMessage({ open: true, severity: "error", text: "Select row!" });
+  React.useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setMessage({ open: true, severity: "error", text: "No se encontró el token de autenticación." });
       return;
     }
-    setMethodName("Update");
-    setOpen(true);
+
+    // Cargar sedes
+    axios
+      .get(`${SiteProps.urlbasev1}/sede/minimal`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => setSedes(response.data))
+      .catch((error) => {
+        console.error("Error al cargar sedes:", error);
+        setMessage({ open: true, severity: "error", text: "Error al cargar sedes. Verifica tu acceso." });
+      });
+
+    // Cargar tipos de producción
+    axios
+      .get(`${SiteProps.urlbasev1}/tipo_produccion`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => setTiposProduccion(response.data))
+      .catch((error) => {
+        console.error("Error al cargar tipos de producción:", error);
+        setMessage({ open: true, severity: "error", text: "Error al cargar tipos de producción." });
+      });
+  }, [setMessage]);
+
+  const handleSedeChange = (sedeId) => {
+    setSelectedSede(sedeId);
+    setSelectedBloque("");
+    setSelectedEspacio("");
+    const token = localStorage.getItem("token");
+
+    axios
+      .get(`${SiteProps.urlbasev1}/bloque/sede/${sedeId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => setBloques(response.data))
+      .catch((error) => console.error("Error al cargar bloques:", error));
   };
 
-  const deleteRow = () => {
-    if (props.selectedRow.pro_id === 0) {
-      props.setMessage({ open: true, severity: "error", text: "Select row!" });
-      return;
-    }
-    setMethodName("Delete");
-    setOpen(true);
+  const handleBloqueChange = (bloqueId) => {
+    setSelectedBloque(bloqueId);
+    setSelectedEspacio("");
+    const token = localStorage.getItem("token");
+
+    axios
+      .get(`${SiteProps.urlbasev1}/espacio/bloque/${bloqueId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => setEspacios(response.data))
+      .catch((error) => console.error("Error al cargar espacios:", error));
   };
 
-  const methods = { create, update, deleteRow };
-
-  const handleClose = () => setOpen(false);
-
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const formJson = Object.fromEntries(formData.entries());
-    const id = props.selectedRow.pro_id;
 
-    if (methodName === "Add") {
-      axios.post(`${SiteProps.urlbase}/producciones`, formJson)
-        .then(response => {
-          props.setMessage({ open: true, severity: "success", text: "Producción creada con éxito!" });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch(error => {
-          const errorMessage = error.response ? error.response.data.message : error.message;
-          props.setMessage({ open: true, severity: "error", text: `Error al crear producción! ${errorMessage}` });
-        });
-    } else if (methodName === "Update") {
-      axios.put(`${SiteProps.urlbase}/producciones/${id}`, formJson)
-        .then(response => {
-          props.setMessage({ open: true, severity: "success", text: "Producción actualizada con éxito!" });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch(error => {
-          props.setMessage({ open: true, severity: "error", text: "Error al actualizar producción!" });
-        });
-    } else if (methodName === "Delete") {
-      axios.delete(`${SiteProps.urlbase}/producciones/${id}`)
-        .then(response => {
-          props.setMessage({ open: true, severity: "success", text: "Producción eliminada con éxito!" });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch(error => {
-          props.setMessage({ open: true, severity: "error", text: "Error al eliminar producción!" });
-        });
+    if (!selectedEspacio || !selectedTipoProduccion) {
+      setMessage({ open: true, severity: "error", text: "Selecciona un espacio y un tipo de producción." });
+      return;
     }
 
-    handleClose();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setMessage({ open: true, severity: "error", text: "Token no encontrado. Inicia sesión nuevamente." });
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${SiteProps.urlbasev1}/producciones`,
+        {
+          ...formData,
+          espacio: selectedEspacio,
+          tipoProduccion: selectedTipoProduccion, // Usar la selección de tipoProduccion
+        },
+        {
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        }
+      );
+
+      console.log("Respuesta del servidor:", response.data);
+      setMessage({ open: true, severity: "success", text: "Producción creada con éxito!" });
+      reloadProducciones();
+      setOpen(false);
+    } catch (error) {
+      console.error("Error al crear la producción:", error.response || error);
+      setMessage({
+        open: true,
+        severity: "error",
+        text: `Error al crear la producción: ${error.response?.data?.message || "Verifica los datos ingresados."}`,
+      });
+    }
+  };
+
+  // Función para actualizar una fila seleccionada
+  const update = () => {
+    if (!selectedRow || selectedRow.id === 0) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Selecciona una fila para actualizar",
+      });
+      return;
+    }
+    setOpen(true); // Abrir el formulario para edición
+  };
+
+  // Función para eliminar una fila seleccionada
+  const deleteRow = async () => {
+    if (!selectedRow || selectedRow.id === 0) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Selecciona una fila para eliminar",
+      });
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    try {
+      await axios.delete(`${SiteProps.urlbasev1}/producciones/${selectedRow.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMessage({ open: true, severity: "success", text: "Producción eliminada con éxito!" });
+      reloadProducciones();
+    } catch (error) {
+      console.error("Error al eliminar la producción:", error);
+      setMessage({ open: true, severity: "error", text: "Error al eliminar la producción." });
+    }
   };
 
   return (
     <React.Fragment>
-      <StackButtons methods={methods} create={create} open={open} setOpen={setOpen} handleClickOpen={() => setOpen(true)} />
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        PaperProps={{ component: "form", onSubmit: handleSubmit }}
-      >
-        <DialogTitle>Producción</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Completa el formulario.</DialogContentText>
-          <FormControl fullWidth>
-            <TextField
-              autoFocus
-              required
-              id="pro_nombre"
-              name="pro_nombre"
-              label="Nombre"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              defaultValue={props.selectedRow.pro_nombre}
-            />
-          </FormControl>
-          <FormControl fullWidth>
-            <TextField
-              autoFocus
-              required
-              id="pro_descripcion"
-              name="pro_descripcion"
-              label="Descripción"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              defaultValue={props.selectedRow.pro_descripcion}
-            />
-          </FormControl>
-          <FormControl fullWidth>
-            <TextField
-              autoFocus
-              required
-              id="pro_fecha_inicio"
-              name="pro_fecha_inicio"
-              label="Fecha Inicio"
-              type="datetime-local"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              defaultValue={props.selectedRow.pro_fecha_inicio.toISOString().substring(0, 16)}
-            />
-          </FormControl>
-          <FormControl fullWidth>
-            <TextField
-              autoFocus
-              required
-              id="pro_fecha_final"
-              name="pro_fecha_final"
-              label="Fecha Final"
-              type="datetime-local"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              defaultValue={props.selectedRow.pro_fecha_final.toISOString().substring(0, 16)}
-            />
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button type="submit">{methodName}</Button>
-        </DialogActions>
+      <Button  startIcon={<AddIcon />} variant="outlined" onClick={() => setOpen(true)}>
+        Add
+      </Button>
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle> Add</DialogTitle>
+        <form onSubmit={handleSubmit}>
+          <DialogContent>
+          <Box sx={{ width: "100%" }}>
+              <FormControl fullWidth margin="normal">
+                <InputLabel id="sede-label">Sede</InputLabel>
+                <Select
+                  labelId="sede-label"
+                  value={selectedSede}
+                  onChange={(e) => handleSedeChange(e.target.value)}
+                >
+                  {sedes.map((sede) => (
+                    <MenuItem key={sede.id} value={sede.id}>
+                      {sede.nombre}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth margin="normal" disabled={!selectedSede}>
+                <InputLabel id="bloque-label">Bloque</InputLabel>
+                <Select
+                  labelId="bloque-label"
+                  value={selectedBloque}
+                  onChange={(e) => handleBloqueChange(e.target.value)}
+                >
+                  {bloques.map((bloque) => (
+                    <MenuItem key={bloque.id} value={bloque.id}>
+                      {bloque.nombre}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth margin="normal" disabled={!selectedBloque}>
+                <InputLabel id="espacio-label">Espacio</InputLabel>
+                <Select
+                  labelId="espacio-label"
+                  value={selectedEspacio}
+                  onChange={(e) => setSelectedEspacio(e.target.value)}
+                >
+                  {espacios.map((espacio) => (
+                    <MenuItem key={espacio.id} value={espacio.id}>
+                      {espacio.nombre}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl fullWidth margin="normal">
+                <InputLabel id="tipoProduccion-label">Tipo de Producción</InputLabel>
+                <Select
+                  labelId="tipoProduccion-label"
+                  value={selectedTipoProduccion}
+                  onChange={(e) => setSelectedTipoProduccion(e.target.value)}
+                >
+                  {tiposProduccion.map((tipo) => (
+                    <MenuItem key={tipo.id} value={tipo.id}>
+                      {tipo.nombre}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <TextField
+                id="nombre"
+                name="nombre"
+                label="Nombre de Producción"
+                value={formData.nombre}
+                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                id="descripcion"
+                name="descripcion"
+                label="Descripción"
+                value={formData.descripcion}
+                onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                id="fechaInicio"
+                name="fechaInicio"
+                label="Fecha de Inicio"
+                type="datetime-local"
+                value={formData.fechaInicio}
+                onChange={(e) => setFormData({ ...formData, fechaInicio: e.target.value })}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                id="fechaFinal"
+                name="fechaFinal"
+                label="Fecha Final"
+                type="datetime-local"
+                value={formData.fechaFinal}
+                onChange={(e) => setFormData({ ...formData, fechaFinal: e.target.value })}
+                fullWidth
+                margin="normal"
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpen(false)}>Cancelar</Button>
+            <Button type="submit">Guardar</Button>
+          </DialogActions>
+        </form>
       </Dialog>
     </React.Fragment>
   );

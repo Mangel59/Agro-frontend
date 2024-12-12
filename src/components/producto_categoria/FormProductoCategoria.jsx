@@ -1,145 +1,182 @@
 import * as React from "react";
-import axios from "../axiosConfig";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import StackButtons from "../StackButtons";
+import axios from "axios";
+import {
+  Button,
+  Box,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import UpdateIcon from "@mui/icons-material/Update";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { SiteProps } from "../dashboard/SiteProps";
 
 export default function FormProductoCategoria(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
+  const selectedRow = props.selectedRow || {};
 
+  // Método para manejar la creación
   const create = () => {
-    const row = { id: 0, nombre: "", descripcion: "", estado: 0 };
-    props.setSelectedRow(row);
+    const emptyRow = {
+      id: 0,
+      nombre: "",
+      descripcion: "",
+      estado: 1,
+    };
+    props.setSelectedRow(emptyRow);
     setMethodName("Add");
     setOpen(true);
-    console.log("create() " + JSON.stringify(row));
   };
 
+  // Método para manejar la actualización
   const update = () => {
-    if (!props.selectedRow || props.selectedRow.id === 0) {
-      props.setMessage({ open: true, severity: "error", text: "Select row!" });
+    if (!selectedRow || selectedRow.id === 0) {
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Seleccione una fila para actualizar.",
+      });
       return;
     }
     setMethodName("Update");
     setOpen(true);
-    console.log("update() " + JSON.stringify(props.selectedRow));
   };
 
-  React.useEffect(() => {
-    const token = localStorage.getItem("token");
-    console.log("Token almacenado:", token);
-  }, []);
-
+  // Método para manejar la eliminación
   const deleteRow = () => {
-    const token = localStorage.getItem("token");
-    console.log("Token usado para la eliminación:", token);
-
-    if (!token) {
-      props.setMessage({ open: true, severity: "error", text: "Token no disponible. Inicie sesión nuevamente." });
+    if (!selectedRow || selectedRow.id === 0) {
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Seleccione una fila para eliminar.",
+      });
       return;
     }
-
-    if (!props.selectedRow || props.selectedRow.id === 0) {
-      props.setMessage({ open: true, severity: "error", text: "Select row!" });
-      return;
-    }
-
-    const id = props.selectedRow.id;
-    const url = `/api/v1/productoCategorias/${id}`;
-
     axios
-      .delete(url, {
-        headers: { Authorization: `Bearer ${token}` },
+      .delete(`${SiteProps.urlbasev1}/producto_categoria/${selectedRow.id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       })
-      .then((response) => {
-        props.setMessage({ open: true, severity: "success", text: "Producto categoría eliminada con éxito!" });
+      .then(() => {
+        props.setMessage({
+          open: true,
+          severity: "success",
+          text: "Producto categoría eliminada con éxito.",
+        });
         props.reloadData();
       })
       .catch((error) => {
-        const errorMessage = error.response ? error.response.data.message || error.response.statusText : error.message;
-        props.setMessage({ open: true, severity: "error", text: `Error al eliminar producto categoría! ${errorMessage}` });
-        console.error("Detalles completos del error:", error);
+        console.error("Error al eliminar producto categoría:", error);
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al eliminar la categoría. Intente nuevamente.",
+        });
       });
   };
 
-  const handleClose = () => setOpen(false);
+  // Método para manejar el cierre del diálogo
+  const handleClose = () => {
+    setOpen(false);
+  };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const formJson = Object.fromEntries(formData.entries());
+  // Método para manejar el envío del formulario
+  const handleSubmit = () => {
+    const payload = {
+      id: selectedRow.id || null,
+      nombre: selectedRow.nombre,
+      descripcion: selectedRow.descripcion,
+      estado: selectedRow.estado,
+    };
 
-    if (!formJson.nombre || !formJson.descripcion || formJson.estado === undefined) {
-      props.setMessage({ open: true, severity: "error", text: "Invalid data!" });
-      return;
-    }
+    const url = `${SiteProps.urlbasev1}/producto_categoria`;
+    const method = methodName === "Add" ? axios.post : axios.put;
+    const endpoint = methodName === "Add" ? url : `${url}/${selectedRow.id}`;
 
-    const url = `${SiteProps.urlbasev1}/productoCategorias`;
-    const id = props.selectedRow?.id || 0;
-
-    const request = methodName === "Add"
-      ? axios.post(url, formJson)
-      : axios.put(`${url}/${id}`, formJson);
-
-    request
-      .then((response) => {
-        const successMessage = methodName === "Add"
-          ? "Producto categoría creada con éxito!"
-          : "Producto categoría actualizada con éxito!";
-        props.setMessage({ open: true, severity: "success", text: successMessage });
-        setOpen(false);
+    method(endpoint, payload, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
+      .then(() => {
+        props.setMessage({
+          open: true,
+          severity: "success",
+          text: methodName === "Add" ? "Producto categoría creada con éxito." : "Producto categoría actualizada con éxito.",
+        });
         props.reloadData();
+        handleClose();
       })
       .catch((error) => {
-        const errorMessage = error.response ? error.response.data.message : error.message;
-        props.setMessage({ open: true, severity: "error", text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} producto categoría! ${errorMessage}` });
+        console.error("Error al enviar datos:", error);
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al enviar datos. Intente nuevamente.",
+        });
       });
   };
 
   return (
     <React.Fragment>
-      <StackButtons methods={{ create, update, deleteRow }} />
-      <Dialog open={open} onClose={handleClose} PaperProps={{ component: "form", onSubmit: handleSubmit }}>
-        <DialogTitle>{methodName} Producto Categoría</DialogTitle>
+      <Box display="flex" justifyContent="right" mb={2}>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={create}
+          style={{ marginRight: "10px" }}
+        >
+          ADD
+        </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<UpdateIcon />}
+          onClick={update}
+          style={{ marginRight: "10px" }}
+        >
+          UPDATE
+        </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<DeleteIcon />}
+          onClick={deleteRow}
+        >
+          DELETE
+        </Button>
+      </Box>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>{methodName === "Add" ? "Agregar Categoría" : "Actualizar Categoría"}</DialogTitle>
         <DialogContent>
-          <DialogContentText>Completa el formulario.</DialogContentText>
           <FormControl fullWidth margin="normal">
             <TextField
-              autoFocus
-              required
-              id="nombre"
-              name="nombre"
               label="Nombre"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.nombre || ""}
+              value={selectedRow.nombre || ""}
+              onChange={(e) => props.setSelectedRow({ ...selectedRow, nombre: e.target.value })}
+              required
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
             <TextField
-              required
-              id="descripcion"
-              name="descripcion"
               label="Descripción"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.descripcion || ""}
+              value={selectedRow.descripcion || ""}
+              onChange={(e) => props.setSelectedRow({ ...selectedRow, descripcion: e.target.value })}
+              required
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label" sx={{ backgroundColor: 'white', padding: '0 8px' }}>Estado</InputLabel>
-            <Select labelId="estado-label" id="estado" name="estado" defaultValue={props.selectedRow?.estado || ''} fullWidth>
+            <InputLabel>Estado</InputLabel>
+            <Select
+              value={selectedRow.estado || ""}
+              onChange={(e) => props.setSelectedRow({ ...selectedRow, estado: e.target.value })}
+            >
               <MenuItem value={1}>Activo</MenuItem>
               <MenuItem value={0}>Inactivo</MenuItem>
             </Select>
@@ -147,7 +184,7 @@ export default function FormProductoCategoria(props) {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancelar</Button>
-          <Button type="submit">{methodName}</Button>
+          <Button onClick={handleSubmit}>{methodName === "Add" ? "Agregar" : "Actualizar"}</Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>

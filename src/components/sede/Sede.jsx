@@ -1,98 +1,96 @@
-import * as React from 'react';
-import MessageSnackBar from '../MessageSnackBar';
-import FormSede from './FormSede';
-import GridSede from './GridSede';
+import * as React from "react";
+import axios from "axios";
+import MessageSnackBar from "../MessageSnackBar";
+import FormSede from "./FormSede";
+import GridSede from "./GridSede";
+import { SiteProps } from "../dashboard/SiteProps";
 
-export default function Sede() {
+export default function Sede(props) {
   const row = {
-    id: null,
+    id: 0,
+    grupo: "",
+    tipoSede: "",
     nombre: "",
-    descripcion: "",
-    municipioId: 0,
-    geolocalizacion: {
-      type: "Point",
-      coordinates: [0, 0],
-    },
+    municipioId: "",
+    geolocalizacion: "",
+    cooordenadas: "",
     area: 0,
     comuna: "",
-    estado: 0
+    descripcion: "",
+    estado: 1,
   };
 
-  const [selectedRow, setSelectedRow] = React.useState(row);
-  const messageData = {
+  const [selectedRow, setSelectedRow] = React.useState(row); // Fila seleccionada para editar
+  const [message, setMessage] = React.useState({
     open: false,
     severity: "success",
-    text: ""
-  };
+    text: "",
+  });
+  const [sedes, setSedes] = React.useState([]); // Lista de sedes
+  const [loading, setLoading] = React.useState(true); // Estado de carga
+  const [error, setError] = React.useState(null); // Manejo de errores
 
-  const [message, setMessage] = React.useState(messageData);
-  const [sedes, setSedes] = React.useState([]);
-
-  // Función para mapear los datos de Sede.json
-  const mapSedesData = (data) => {
-    return data.map(item => ({
-      id: item.sed_id,
-      nombre: item.sed_nombre,
-      descripcion: item.sed_descripcion,
-      municipioId: item.sed_municipio_id,
-      geolocalizacion: item.sed_geolocalizacion,
-      area: item.sed_area,
-      comuna: item.sed_comuna,
-      estado: item.sed_estado,
-    }));
-  };
-
-  const fetchData = (url, setStateFunction, mapper = null) => {
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        if (mapper) {
-          setStateFunction(mapper(data));
-        } else {
-          setStateFunction(data);
-        }
+  // Función para cargar las sedes desde el backend
+  const reloadData = () => {
+    setLoading(true);
+    axios
+      .get(`${SiteProps.urlbasev1}/sede`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       })
-      .catch(error => console.error(`Error al buscar datos de ${url}`, error));
+      .then((response) => {
+        const sedeData = response.data.map((item) => ({
+          ...item,
+          geolocalizacion: item.geolocalizacion || { type: "Point", coordinates: [0, 0] },
+        }));
+        setSedes(sedeData);
+        setError(null); // Limpiar errores si se cargaron datos correctamente
+      })
+      .catch((error) => {
+        console.error("Error al cargar las sedes!", error);
+        setError("No se pudieron cargar las sedes. Intente nuevamente.");
+        setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al cargar las sedes. Intente nuevamente.",
+        });
+      })
+      .finally(() => {
+        setLoading(false); // Finalizar el estado de carga
+      });
   };
 
   React.useEffect(() => {
-    fetchData('/sede.json', setSedes, mapSedesData);
+    reloadData(); // Cargar los datos al montar el componente
   }, []);
 
-  const addSede = (newData) => {
-    const newSede = { ...newData, id: Date.now() };
-    setSedes((prevData) => [...prevData, newSede]);
-    setMessage({ open: true, severity: "success", text: "Sede creada con éxito!" });
-  };
-
-  const updateSede = (updatedData) => {
-    setSedes((prevData) =>
-      prevData.map((item) => (item.id === updatedData.id ? updatedData : item))
-    );
-    setMessage({ open: true, severity: "success", text: "Sede actualizada con éxito!" });
-  };
-
-  const deleteSede = (id) => {
-    setSedes((prevData) => prevData.filter((item) => item.id !== id));
-    setMessage({ open: true, severity: "success", text: "Sede eliminada con éxito!" });
+  // Manejador de mensaje cerrado
+  const handleMessageClose = () => {
+    setMessage({ ...message, open: false });
   };
 
   return (
-    <div style={{ height: '100%', width: '100%' }}>
+    <div style={{ height: "100%", width: "100%" }}>
       <MessageSnackBar message={message} setMessage={setMessage} />
-      <FormSede
-        setMessage={setMessage}
-        selectedRow={selectedRow}
-        setSelectedRow={setSelectedRow}
-        addSede={addSede}
-        updateSede={updateSede}
-        deleteSede={deleteSede}
-      />
-      <GridSede
-        selectedRow={selectedRow}
-        setSelectedRow={setSelectedRow}
-        sedes={sedes}
-      />
+      {loading ? (
+        <div style={{ textAlign: "center", margin: "20px" }}>Cargando datos...</div>
+      ) : error ? (
+        <div style={{ color: "red", textAlign: "center", margin: "20px" }}>{error}</div>
+      ) : (
+        <>
+          <FormSede
+            setMessage={setMessage}
+            selectedRow={selectedRow}
+            setSelectedRow={setSelectedRow}
+            reloadData={reloadData}
+          />
+          <GridSede
+            selectedRow={selectedRow}
+            setSelectedRow={setSelectedRow}
+            sedes={sedes}
+            reloadData={reloadData}
+          />
+        </>
+      )}
     </div>
   );
 }

@@ -1,45 +1,89 @@
-import * as React from 'react';
-import { DataGrid } from '@mui/x-data-grid';
+import React, { useEffect, useState } from "react";
+import { DataGrid } from "@mui/x-data-grid";
+import axios from "axios";
+import { SiteProps } from "../dashboard/SiteProps";
 
-const columns = [
-  { field: 'id', headerName: 'ID', width: 90, type: 'number' },
-  { field: 'nombre', headerName: 'Nombre', width: 250, type: 'string' },
-  { field: 'descripcion', headerName: 'Descripción', width: 250, type: 'string' },
-  { field: 'sedeId', headerName: 'Sede', width: 150, type: 'number' },
-  { field: 'numeroPisos', headerName: 'Número de Pisos', width: 150, type: 'number' },
-  { field: 'geolocalizacion', headerName: 'Geolocalización', width: 300, type: 'string',
-    valueGetter: (params) => JSON.stringify(params.row.geolocalizacion) || '' },
-  { field: 'latitud', headerName: 'Latitud', width: 150, type: 'number',
-    valueGetter: (params) => params.row.geolocalizacion?.coordinates[1] || '' },
-  { field: 'longitud', headerName: 'Longitud', width: 150, type: 'number',
-    valueGetter: (params) => params.row.geolocalizacion?.coordinates[0] || '' },
-  { field: 'estado', headerName: 'Estado', width: 120, type: 'number' },
-];
+export default function GridBloque({ setSelectedRow, selectedSede }) {
+  const [bloques, setBloques] = useState([]); // Lista de bloques
+  const [loading, setLoading] = useState(false); // Estado para mostrar el cargando
+  const [error, setError] = useState(null); // Estado para manejar errores
 
-export default function GridBloque(props) {
-  const handleRowSelection = (selectionModel) => {
-    if (selectionModel.length > 0) {
-      const selectedRow = props.bloques.find((row) => row.id === selectionModel[0]);
-      props.setSelectedRow(selectedRow); // Actualiza la fila seleccionada en el componente padre
-    } else {
-      props.setSelectedRow(null); // Si no se selecciona ninguna fila
+  // Función para cargar los bloques según la sede seleccionada
+  useEffect(() => {
+    if (!selectedSede) {
+      setBloques([]); // Si no hay sede seleccionada, vaciar la tabla
+      return;
     }
+
+    const fetchBloques = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `${SiteProps.urlbasev1}/bloque/sede/${selectedSede}`,
+          {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          }
+        );
+        setBloques(response.data || []); // Asegúrate de que la respuesta sea un array
+        setError(null); // Limpiar errores si los datos se cargaron correctamente
+      } catch (error) {
+        console.error("Error al cargar los bloques:", error);
+        setError("No se pudieron cargar los bloques. Por favor, intente más tarde.");
+        setBloques([]); // En caso de error, establecer bloques como un array vacío
+      } finally {
+        setLoading(false); // Terminar el estado de carga
+      }
+    };
+
+    fetchBloques();
+  }, [selectedSede]); // Ejecutar cuando cambie la sede seleccionada
+
+  const columns = [
+    { field: "id", headerName: "ID", width: 90 },
+    { field: "sede", headerName: "Sede", width: 180 },
+    { field: "tipoBloque", headerName: "Tipo de Bloque", width: 180 },
+    { field: "nombre", headerName: "Nombre", width: 180 },
+    {
+      field: "geolocalizacion",
+      headerName: "Geolocalización",
+      width: 300,
+      type: "string",
+      valueGetter: (params) =>
+        params.row.geolocalizacion
+          ? JSON.stringify(params.row.geolocalizacion)
+          : "Sin datos",
+    },
+    {
+      field: "cordenadas",
+      headerName: "Coordenadas",
+      width: 150,
+      type: "number",
+      valueGetter: (params) => {
+        const coordinates = params.row.geolocalizacion?.coordinates;
+        return coordinates ? `${coordinates[1]}, ${coordinates[0]}` : "Sin datos";
+      },
+    },
+    { field: "numeroPisos", headerName: "Numero de pisos", width: 150 },
+    { field: "descripcion", headerName: "Descripción", width: 250 },
+    { field: "estado", headerName: "Estado", width: 120 },
+  ];
+
+  const handleRowClick = (params) => {
+    setSelectedRow(params.row);
   };
 
+  if (loading) return <div>Cargando datos...</div>;
+  if (error) return <div style={{ color: "red" }}>{error}</div>;
+
   return (
-    <DataGrid
-      rows={props.bloques || []}  // Si `props.bloques` es undefined, pasa un array vacío
-      getRowId={(row) => row.id}
-      onRowSelectionModelChange={handleRowSelection}
-      columns={columns}
-      initialState={{
-        pagination: {
-          paginationModel: {
-            pageSize: 5,
-          },
-        },
-      }}
-      pageSizeOptions={[5, 10, 20, 50]}
-    />
+    <div style={{ height: 400, width: "100%" }}>
+      <DataGrid
+        rows={bloques} // Cargar los bloques según la sede seleccionada
+        columns={columns}
+        pageSize={5}
+        rowsPerPageOptions={[5]}
+        onRowClick={handleRowClick}
+      />
+    </div>
   );
 }

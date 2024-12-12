@@ -1,94 +1,177 @@
-import * as React from 'react';
-import MessageSnackBar from '../MessageSnackBar';
-import FormEspacio from './FormEspacio';
-import GridEspacio from './GridEspacio';
+import React, { useEffect, useState } from "react";
+import { DataGrid } from "@mui/x-data-grid";
+import axios from "axios";
+import { SiteProps } from "../dashboard/SiteProps";
+import MessageSnackBar from "../MessageSnackBar";
+import FormEspacio from "../espacio/FormEspacio";
 
 export default function Espacio() {
-  const row = {
-    id: null,  // Usamos null en lugar de 0 para evitar conflicto con ids
-    nombre: "",
-    descripcion: "",
-    sedeId: 0,
-    geolocalizacion: {
-      type: "Point",
-      coordinates: [0, 0],
-    },
-    estado: 0
-  };
-
-  const [selectedRow, setSelectedRow] = React.useState(row);
-  const messageData = {
+  const [sedes, setSedes] = useState([]); // Lista de sedes
+  const [selectedSede, setSelectedSede] = useState(null); // Sede seleccionada
+  const [bloques, setBloques] = useState([]); // Lista de bloques
+  const [selectedBloque, setSelectedBloque] = useState(null); // Bloque seleccionado
+  const [espacio, setEspacios] = useState([]); // Lista de espacio
+  const [loading, setLoading] = useState(false); // Estado de carga
+  const [error, setError] = useState(null); // Manejo de errores
+  const [message, setMessage] = useState({
     open: false,
     severity: "success",
-    text: ""
-  };
+    text: "",
+  });
+  const [selectedRow, setSelectedRow] = useState(null); // Fila seleccionada para editar
 
-  const [message, setMessage] = React.useState(messageData);
-  const [espacios, setEspacios] = React.useState([]);
-
-  // Función para mapear los datos de espacio.json
-  const mapEspaciosData = (data) => {
-    return data.map(item => ({
-      id: item.esp_id,
-      nombre: item.esp_nombre,
-      descripcion: item.esp_descripcion,
-      sedeId: item.esp_bloque_id,  // Asumiendo que el bloque es equivalente a la sede
-      geolocalizacion: item.esp_geolocalizacion,
-      estado: item.esp_estado,
-    }));
-  };
-
-  const fetchData = (url, setStateFunction, mapper = null) => {
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        if (mapper) {
-          setStateFunction(mapper(data));
-        } else {
-          setStateFunction(data);
+  // Función para cargar espacios
+  const fetchEspacios = async () => {
+    if (!selectedBloque) {
+      setEspacios([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${SiteProps.urlbasev1}/espacio/bloque/${selectedBloque}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
-      })
-      .catch(error => console.error(`Error al buscar datos de ${url}`, error));
+      );
+      setEspacios(response.data || []);
+      setError(null);
+    } catch (err) {
+      console.error("Error al cargar los espacios:", err);
+      setError("No se pudieron cargar los espacios.");
+      setEspacios([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  React.useEffect(() => {
-    fetchData('/espacio.json', setEspacios, mapEspaciosData);  // Mapeamos los datos
+  // Cargar las sedes al montar el componente
+  useEffect(() => {
+    const fetchSedes = async () => {
+      try {
+        const response = await axios.get(`${SiteProps.urlbasev1}/sede/minimal`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        setSedes(response.data || []);
+      } catch (err) {
+        console.error("Error al cargar las sedes:", err);
+      }
+    };
+
+    fetchSedes();
   }, []);
 
-  const addEspacio = (newData) => {
-    const newEspacio = { ...newData, id: Date.now() };  // Genera un ID único usando Date.now()
-    setEspacios((prevData) => [...prevData, newEspacio]);
-    setMessage({ open: true, severity: "success", text: "Espacio creado con éxito!" });
+  // Cargar los bloques según la sede seleccionada
+  useEffect(() => {
+    if (!selectedSede) {
+      setBloques([]);
+      setEspacios([]);
+      return;
+    }
+
+    const fetchBloques = async () => {
+      try {
+        const response = await axios.get(
+          `${SiteProps.urlbasev1}/bloque/sede/${selectedSede}`,
+          {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          }
+        );
+        setBloques(response.data || []);
+      } catch (err) {
+        console.error("Error al cargar los bloques:", err);
+      }
+    };
+
+    fetchBloques();
+  }, [selectedSede]);
+
+  // Recargar espacios cuando cambie el bloque seleccionado
+  useEffect(() => {
+    fetchEspacios();
+  }, [selectedBloque]);
+
+  const handleSedeChange = (event) => {
+    setSelectedSede(event.target.value);
+    setSelectedBloque(null);
+    setEspacios([]);
   };
 
-  const updateEspacio = (updatedData) => {
-    setEspacios((prevData) =>
-      prevData.map((item) => (item.id === updatedData.id ? updatedData : item))
-    );
-    setMessage({ open: true, severity: "success", text: "Espacio actualizado con éxito!" });
+  const handleBloqueChange = (event) => {
+    setSelectedBloque(event.target.value);
   };
 
-  const deleteEspacio = (id) => {
-    setEspacios((prevData) => prevData.filter((item) => item.id !== id));
-    setMessage({ open: true, severity: "success", text: "Espacio eliminado con éxito!" });
-  };
+  const columns = [
+    { field: "id", headerName: "ID", width: 90 },
+    { field: "bloque", headerName: "Bloque", width: 180 },
+    { field: "tipoEspacio", headerName: "Tipo de Espacio", width: 180 },
+    { field: "nombre", headerName: "Nombre", width: 180 },
+    { field: "geolocalizacion", headerName: "Geolocalización", width: 300 },
+    { field: "coordenadas", headerName: "Coordenadas", width: 150 },
+    { field: "descripcion", headerName: "Descripción", width: 250 },
+    { field: "estado", headerName: "Estado", width: 120 },
+  ];
 
   return (
-    <div style={{ height: '100%', width: '100%' }}>
+    <div style={{ height: "100%", width: "100%" }}>
       <MessageSnackBar message={message} setMessage={setMessage} />
-      <FormEspacio
-        setMessage={setMessage}
-        selectedRow={selectedRow}
-        setSelectedRow={setSelectedRow}
-        addEspacio={addEspacio}
-        updateEspacio={updateEspacio}
-        deleteEspacio={deleteEspacio}
-      />
-      <GridEspacio
-        selectedRow={selectedRow}
-        setSelectedRow={setSelectedRow}
-        espacios={espacios}  
-      />
+      {loading ? (
+        <div style={{ textAlign: "center", margin: "20px" }}>Cargando datos...</div>
+      ) : error ? (
+        <div style={{ color: "red", textAlign: "center", margin: "20px" }}>{error}</div>
+      ) : (
+        <>
+          <div style={{ marginBottom: "20px" }}>
+            <label htmlFor="sede-select">Seleccionar Sede: </label>
+            <select
+              id="sede-select"
+              value={selectedSede || ""}
+              onChange={handleSedeChange}
+            >
+              <option value="">Seleccione una sede</option>
+              {sedes.map((sede) => (
+                <option key={sede.id} value={sede.id}>
+                  {sede.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ marginBottom: "20px" }}>
+            <label htmlFor="bloque-select">Seleccionar Bloque: </label>
+            <select
+              id="bloque-select"
+              value={selectedBloque || ""}
+              onChange={handleBloqueChange}
+            >
+              <option value="">Seleccione un bloque</option>
+              {bloques.map((bloque) => (
+                <option key={bloque.id} value={bloque.id}>
+                  {bloque.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <FormEspacio
+            setMessage={setMessage}
+            selectedRow={selectedRow}
+            setSelectedRow={setSelectedRow}
+            reloadData={fetchEspacios} // Pasar la función para recargar espacios
+            sedes={sedes}
+          />
+
+          <div style={{ height: 400, width: "100%" }}>
+            <DataGrid
+              rows={espacio}
+              columns={columns}
+              pageSize={5}
+              rowsPerPageOptions={[5]}
+              onRowClick={(params) => setSelectedRow(params.row)}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

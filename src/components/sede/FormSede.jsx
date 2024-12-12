@@ -1,69 +1,89 @@
 import * as React from "react";
+import axios from "axios";
+import {
+  Button,
+  Box,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Grid,
+} from "@mui/material";
+import { SiteProps } from "../dashboard/SiteProps";
 import AddIcon from "@mui/icons-material/Add";
 import UpdateIcon from "@mui/icons-material/Update";
 import DeleteIcon from "@mui/icons-material/Delete";
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
 
 export default function FormSede(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
+  const [municipios, setMunicipios] = React.useState([]);
+  const [grupos, setGrupos] = React.useState([]); // Estado para los grupos
+  const [tipoSedes, setTipoSedes] = React.useState([]); // Estado para los tipos de sede
+  const selectedRow = props.selectedRow || {};
 
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    if (name === 'latitud' || name === 'longitud') {
-      props.setSelectedRow((prevRow) => ({
-        ...prevRow,
-        geolocalizacion: {
-          ...prevRow.geolocalizacion,
-          coordinates: name === 'latitud' 
-            ? [prevRow.geolocalizacion.coordinates[0], parseFloat(value)]
-            : [parseFloat(value), prevRow.geolocalizacion.coordinates[1]],
-        },
-      }));
-    } else {
-      props.setSelectedRow((prevRow) => ({
-        ...prevRow,
-        [name]: value,
-      }));
-    }
-  };
+  React.useEffect(() => {
+    // Cargar datos de municipios, grupos y tipo de sede
+    const fetchData = async () => {
+      try {
+        const [municipioRes, grupoRes, tipoSedeRes] = await Promise.all([
+          axios.get(`${SiteProps.urlbasev1}/items/municipio`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          }),
+          axios.get(`${SiteProps.urlbasev1}/grupo/minimal`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          }),
+          axios.get(`${SiteProps.urlbasev1}/tipo_sede/minimal`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          }),
+        ]);
+        setMunicipios(municipioRes.data || []);
+        setGrupos(grupoRes.data || []);
+        setTipoSedes(tipoSedeRes.data || []);
+      } catch (error) {
+        console.error("Error al cargar datos iniciales:", error);
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al cargar datos iniciales.",
+        });
+      }
+    };
 
+    fetchData();
+  }, []);
+
+  // Método para manejar la creación
   const create = () => {
-    const row = {
+    const emptyRow = {
       id: 0,
+      grupo: "",
+      tipoSede: "",
       nombre: "",
-      descripcion: "",
-      municipioId: 0,
-      geolocalizacion: {
-        type: "Point",
-        coordinates: [0, 0],
-      },
+      municipio: "",
+      geolocalizacion: null,
       area: 0,
       comuna: "",
-      estado: 0
+      descripcion: "",
+      estado: 1,
     };
-    props.setSelectedRow(row);
+    props.setSelectedRow(emptyRow);
     setMethodName("Add");
     setOpen(true);
   };
 
+  // Método para manejar la actualización
   const update = () => {
-    if (!props.selectedRow || !props.selectedRow.id) {
+    if (!selectedRow || selectedRow.id === 0) {
       props.setMessage({
         open: true,
         severity: "error",
-        text: "Seleccione una fila para actualizar!",
+        text: "Seleccione una fila para actualizar.",
       });
       return;
     }
@@ -71,35 +91,87 @@ export default function FormSede(props) {
     setOpen(true);
   };
 
+  // Método para manejar la eliminación
   const deleteRow = () => {
-    if (!props.selectedRow || !props.selectedRow.id) {
+    if (!selectedRow || selectedRow.id === 0) {
       props.setMessage({
         open: true,
         severity: "error",
-        text: "Seleccione una fila para eliminar!",
+        text: "Seleccione una fila para eliminar.",
       });
       return;
     }
-    props.deleteSede(props.selectedRow.id);
+    axios
+      .delete(`${SiteProps.urlbasev1}/sede/${selectedRow.id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      })
+      .then(() => {
+        props.setMessage({
+          open: true,
+          severity: "success",
+          text: "Sede eliminada con éxito.",
+        });
+        props.reloadData();
+      })
+      .catch((error) => {
+        console.error("Error al eliminar sede:", error);
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al eliminar la sede. Intente nuevamente.",
+        });
+      });
+  };
+
+  // Método para manejar el cierre del diálogo
+  const handleClose = () => {
     setOpen(false);
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const formData = props.selectedRow;
+  // Método para manejar el envío del formulario
+  const handleSubmit = () => {
+    const payload = {
+      id: selectedRow.id || null,
+      grupo: selectedRow.grupo,
+      tipoSede: selectedRow.tipoSede,
+      nombre: selectedRow.nombre,
+      municipio: selectedRow.municipio,
+      geolocalizacion: selectedRow.geolocalizacion || null,
+      area: selectedRow.area,
+      comuna: selectedRow.comuna,
+      descripcion: selectedRow.descripcion,
+      estado: selectedRow.estado,
+    };
 
-    if (methodName === "Add") {
-      props.addSede(formData);
-    } else if (methodName === "Update") {
-      props.updateSede(formData);
-    }
+    const url = `${SiteProps.urlbasev1}/sede`;
+    const method = methodName === "Add" ? axios.post : axios.put;
+    const endpoint = methodName === "Add" ? url : `${url}/${selectedRow.id}`;
 
-    setOpen(false);
+    method(endpoint, payload, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
+      .then(() => {
+        props.setMessage({
+          open: true,
+          severity: "success",
+          text: methodName === "Add" ? "Sede creada con éxito." : "Sede actualizada con éxito.",
+        });
+        props.reloadData();
+        handleClose();
+      })
+      .catch((error) => {
+        console.error("Error al enviar datos:", error);
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al enviar datos. Intente nuevamente.",
+        });
+      });
   };
 
   return (
     <React.Fragment>
-      <Box display="flex" justifyContent="right" mb={2}>
+     <Box display="flex" justifyContent="right" mb={2}>
         <Button
           variant="outlined"
           color="primary"
@@ -127,130 +199,81 @@ export default function FormSede(props) {
           DELETE
         </Button>
       </Box>
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        PaperProps={{
-          component: "form",
-          onSubmit: handleSubmit,
-        }}
-      >
-        <DialogTitle>Sede</DialogTitle>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>{methodName === "Add" ? "Agregar Sede" : "Actualizar Sede"}</DialogTitle>
         <DialogContent>
-          <DialogContentText>Completa el formulario.</DialogContentText>
-
-          {/* Campos de formulario para los datos del Sede */}
-          <FormControl fullWidth>
-            <TextField
-              autoFocus
-              required  
-              id="nombre"
-              name="nombre"
-              label="Nombre"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              value={props.selectedRow?.nombre || ''} 
-              onChange={handleInputChange}
-            />
-          </FormControl>
-
-          <FormControl fullWidth>
-            <TextField
-              autoFocus
-              required  
-              id="descripcion"
-              name="descripcion"
-              label="Descripción"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              value={props.selectedRow?.descripcion || ''} 
-              onChange={handleInputChange}
-            />
-          </FormControl>
-
-          <FormControl fullWidth>
-            <TextField
-              required
-              id="area"
-              name="area"
-              label="Área"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              value={props.selectedRow?.area || ''}
-              onChange={handleInputChange}
-            />
-          </FormControl>
-
-          <FormControl fullWidth>
-            <TextField
-              required
-              id="comuna"
-              name="comuna"
-              label="Comuna"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              value={props.selectedRow?.comuna || ''}
-              onChange={handleInputChange}
-            />
-          </FormControl>
-
           <FormControl fullWidth margin="normal">
-            <InputLabel id="geolocalizacion-type-label">Tipo de Geolocalización</InputLabel>
+            <InputLabel>Grupo</InputLabel>
             <Select
-              labelId="geolocalizacion-type-label"
-              id="geolocalizacion_type"
-              name="geolocalizacion_type"
-              value={props.selectedRow?.geolocalizacion.type || "Point"}
-              onChange={(event) => {
-                const type = event.target.value;
-                props.setSelectedRow((prevRow) => ({
-                  ...prevRow,
-                  geolocalizacion: {
-                    ...prevRow.geolocalizacion,
-                    type,
-                  },
-                }));
-              }}
+              value={selectedRow.grupo || ""}
+              onChange={(e) => props.setSelectedRow({ ...selectedRow, grupo: e.target.value })}
             >
-              <MenuItem value="Point">Point</MenuItem>
+              {grupos.map((grupo) => (
+                <MenuItem key={grupo.id} value={grupo.id}>
+                  {grupo.nombre}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
-
-          <FormControl fullWidth>
-            <TextField
-              required
-              id="latitud"
-              name="latitud"
-              label="Latitud"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              value={props.selectedRow?.geolocalizacion.coordinates[1] || ''}
-              onChange={handleInputChange}
-            />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Tipo de Sede</InputLabel>
+            <Select
+              value={selectedRow.tipoSede || ""}
+              onChange={(e) => props.setSelectedRow({ ...selectedRow, tipoSede: e.target.value })}
+            >
+              {tipoSedes.map((tipo) => (
+                <MenuItem key={tipo.id} value={tipo.id}>
+                  {tipo.nombre}
+                </MenuItem>
+              ))}
+            </Select>
           </FormControl>
-
-          <FormControl fullWidth>
-            <TextField
-              required
-              id="longitud"
-              name="longitud"
-              label="Longitud"
-              fullWidth
-              variant="standard"
-              margin="normal"
-              value={props.selectedRow?.geolocalizacion.coordinates[0] || ''}
-              onChange={handleInputChange}
-            />
+          <TextField
+            fullWidth
+            label="Nombre"
+            value={selectedRow.nombre || ""}
+            onChange={(e) => props.setSelectedRow({ ...selectedRow, nombre: e.target.value })}
+            required
+          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Municipio</InputLabel>
+            <Select
+              value={selectedRow.municipio || ""}
+              onChange={(e) => props.setSelectedRow({ ...selectedRow, municipio: e.target.value })}
+            >
+              {municipios.map((mun) => (
+                <MenuItem key={mun.id} value={mun.id}>
+                  {`${mun.id} - ${mun.nombre}`}
+                </MenuItem>
+              ))}
+            </Select>
           </FormControl>
+          <TextField
+            fullWidth
+            label="Área"
+            value={selectedRow.area || ""}
+            onChange={(e) => props.setSelectedRow({ ...selectedRow, area: e.target.value })}
+          />
+          <TextField
+            fullWidth
+            label="Comuna"
+            value={selectedRow.comuna || ""}
+            onChange={(e) => props.setSelectedRow({ ...selectedRow, comuna: e.target.value })}
+          />
+          <TextField
+            fullWidth
+            label="Descripción"
+            value={selectedRow.descripcion || ""}
+            onChange={(e) => props.setSelectedRow({ ...selectedRow, descripcion: e.target.value })}
+          />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancelar</Button>
-          <Button type="submit">{methodName}</Button>
+          <Button onClick={handleClose} color="primary">
+            Cancelar
+          </Button>
+          <Button onClick={handleSubmit} color="primary">
+            {methodName === "Add" ? "Agregar" : "Actualizar"}
+          </Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>

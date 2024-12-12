@@ -1,69 +1,65 @@
-import * as React from 'react';
-import { DataGrid, GridToolbarContainer, GridToolbarFilterButton } from '@mui/x-data-grid';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { DataGrid } from "@mui/x-data-grid";
+import axios from "axios";
+import { SiteProps } from "../dashboard/SiteProps";
 
-const columns = [
-  { field: "id", headerName: "ID", width: 70, type: "number" },
-  { field: "nombre", headerName: "Nombre", width: 150, type: "string" },
-  { field: "descripcion", headerName: "Descripción", width: 300, type: "string" },
-  { field: "estado", headerName: "Estado", width: 100, type: "string",
-    valueFormatter: ({ value }) => (value === 1 ? "Activo" : "Inactivo") },
-];
+export default function GridTipoEspacio({ setSelectedRow, reloadData }) {
+  const [iespacios, setIespacios] = useState([]); // Lista de tipos de espacios
+  const [loading, setLoading] = useState(false); // Estado para mostrar el cargando
+  const [error, setError] = useState(null); // Estado para manejar errores
 
-const GridTipoEspacios = React.forwardRef(({ setSelectedRow }, ref) => {
-  const [data, setData] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
-  const [rowCount, setRowCount] = React.useState(0);
-  const [paginationModel, setPaginationModel] = React.useState({
-    pageSize: 10,
-    page: 0,
-  });
+  // Función para cargar los tipos de espacios
+  useEffect(() => {
+    const fetchIespacios = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`${SiteProps.urlbasev1}/tipo_espacio`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        console.log("Datos recibidos del backend:", response.data); // Verificar datos del backend
+        setIespacios(response.data || []); // Asegúrate de que la respuesta sea un array
+        setError(null); // Limpiar errores si los datos se cargaron correctamente
+      } catch (error) {
+        console.error("Error al cargar los tipos de espacio:", error);
+        setError("No se pudieron cargar los tipos de espacio. Por favor, intente más tarde.");
+        setIespacios([]); // En caso de error, establecer tipos de espacios como un array vacío
+      } finally {
+        setLoading(false); // Terminar el estado de carga
+      }
+    };
 
-  const fetchData = async (page = paginationModel.page, pageSize = paginationModel.pageSize) => {
-    setLoading(true);
-    try {
-      const response = await axios.get("http://172.16.79.156:8080/api/v1/tipo_espacio", {
-        params: { page, size: pageSize }
-      });
-      setData(response.data?.content || []);
-      setRowCount(response.data?.page?.totalElements || 0);
-    } catch (error) {
-      console.error('Error al obtener datos:', error);
-    } finally {
-      setLoading(false);
-    }
+    fetchIespacios();
+  }, [reloadData]); // Recargar datos si reloadData cambia
+
+  const columns = [
+    { field: "id", headerName: "ID", width: 90 },
+    { field: "nombre", headerName: "Nombre", width: 180 },
+    { field: "descripcion", headerName: "Descripción", width: 250 },
+    {
+      field: "estado",
+      headerName: "Estado",
+      width: 120,
+      valueGetter: (params) => (params.row.estado === 1 ? "Activo" : "Inactivo"),
+    },
+  ];
+
+  const handleRowClick = (params) => {
+    console.log("Fila seleccionada:", params.row); // Verificar la fila seleccionada
+    setSelectedRow(params.row);
   };
 
-  // Exponer `fetchData` como referencia
-  React.useImperativeHandle(ref, () => fetchData);
-
-  React.useEffect(() => {
-    fetchData();
-  }, [paginationModel]);
-
-  const handlePaginationModelChange = (model) => {
-    setPaginationModel(model);
-    fetchData(model.page, model.pageSize);
-  };
+  if (loading) return <div>Cargando datos...</div>;
+  if (error) return <div style={{ color: "red" }}>{error}</div>;
 
   return (
-    <div style={{ height: 600, width: '100%' }}>
+    <div style={{ height: 400, width: "100%" }}>
       <DataGrid
-        rows={data}
+        rows={iespacios} // Cargar los tipos de espacios
         columns={columns}
-        rowCount={rowCount}
-        loading={loading}
-        paginationMode="server"
-        paginationModel={paginationModel}
-        onPaginationModelChange={handlePaginationModelChange}
-        pageSizeOptions={[5, 10, 15]}
-        components={{
-          Toolbar: GridToolbarContainer,
-        }}
-        onRowClick={(params) => setSelectedRow(params.row)}
+        pageSize={5}
+        rowsPerPageOptions={[5]}
+        onRowClick={handleRowClick}
       />
     </div>
   );
-});
-
-export default GridTipoEspacios;
+}

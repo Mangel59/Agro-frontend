@@ -1,79 +1,134 @@
-import * as React from 'react';
-import axios from 'axios';
-import MessageSnackBar from '../MessageSnackBar';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import FormProduccion from "./FormProduccion";
 import GridProduccion from "./GridProduccion";
-import { SiteProps } from '../dashboard/SiteProps';
+import { SiteProps } from "../dashboard/SiteProps";
+import { FormControl, InputLabel, Select, MenuItem, Button } from "@mui/material";
 
 export default function Produccion() {
-  const row = {
-    pro_id: 0,
-    pro_nombre: "",
-    pro_descripcion: "",
-    pro_estado: 0,
-    pro_fecha_inicio: new Date(),
-    pro_fecha_final: new Date()
-  };
+  const [sedes, setSedes] = useState([]);
+  const [bloques, setBloques] = useState([]);
+  const [espacios, setEspacios] = useState([]);
+  const [selectedSede, setSelectedSede] = useState("");
+  const [selectedBloque, setSelectedBloque] = useState("");
+  const [selectedEspacio, setSelectedEspacio] = useState("");
+  const [message, setMessage] = useState({ open: false, severity: "", text: "" });
 
-  const [selectedRow, setSelectedRow] = React.useState(row);
-  const messageData = {
-    open: false,
-    severity: "success",
-    text: ""
-  };
+  // Cargar las sedes al iniciar
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setMessage({ open: true, severity: "error", text: "No se encontró el token de autenticación." });
+      return;
+    }
 
-  const [message, setMessage] = React.useState(messageData);
-  const [producciones, setProduccion] = React.useState([]);
-
-  // Función para recargar los datos de producciones
-  const reloadData = () => {
-    axios.get(`${SiteProps.urlbasev1}/producciones`)
+    axios
+      .get(`${SiteProps.urlbasev1}/sede/minimal`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then((response) => {
-        if (Array.isArray(response.data)) {
-          const produccionesData = response.data.map((item) => ({
-            ...item,
-            id: item.pro_id,
-            pro_fecha_inicio: new Date(item.pro_fecha_inicio),
-            pro_fecha_final: new Date(item.pro_fecha_final)
-          }));
-          setProduccion(produccionesData);
-        } else {
-          console.error('La respuesta de producciones no es un array:', response.data);
-          setMessage({
-            open: true,
-            severity: 'error',
-            text: 'Error al cargar producciones: respuesta no válida'
-          });
-        }
+        setSedes(response.data);
       })
       .catch((error) => {
-        console.error('Error al cargar producciones:', error);
-        setMessage({
-          open: true,
-          severity: 'error',
-          text: 'Error al cargar producciones'
-        });
+        console.error("Error al cargar sedes:", error);
+        setMessage({ open: true, severity: "error", text: "Error al cargar sedes. Verifica tu conexión." });
       });
-  };
-
-  React.useEffect(() => {
-    reloadData();
   }, []);
 
+  // Manejar cambio de sede
+  const handleSedeChange = (sedeId) => {
+    setSelectedSede(sedeId);
+    setSelectedBloque("");
+    setSelectedEspacio("");
+    const token = localStorage.getItem("token");
+
+    axios
+      .get(`${SiteProps.urlbasev1}/bloque/sede/${sedeId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        setBloques(response.data);
+      })
+      .catch((error) => console.error("Error al cargar bloques:", error));
+  };
+
+  // Manejar cambio de bloque
+  const handleBloqueChange = (bloqueId) => {
+    setSelectedBloque(bloqueId);
+    setSelectedEspacio("");
+    const token = localStorage.getItem("token");
+
+    axios
+      .get(`${SiteProps.urlbasev1}/espacio/bloque/${bloqueId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        setEspacios(response.data);
+      })
+      .catch((error) => console.error("Error al cargar espacios:", error));
+  };
+
+  // Manejar cambio de espacio
+  const handleEspacioChange = (espacioId) => {
+    setSelectedEspacio(espacioId);
+  };
+
   return (
-    <div style={{ height: '100%', width: '100%' }}>
-      <MessageSnackBar message={message} setMessage={setMessage} />
-      <FormProduccion
-        setMessage={setMessage}
-        selectedRow={selectedRow}
-        setSelectedRow={setSelectedRow}
-        reloadData={reloadData}
-      />
-      <GridProduccion
-        selectedRow={selectedRow}
-        setSelectedRow={setSelectedRow}
-        producciones={producciones}
-      />
+    <div>
+      <FormControl fullWidth margin="normal">
+        <InputLabel id="sede-label">Selecciona una Sede</InputLabel>
+        <Select
+          labelId="sede-label"
+          value={selectedSede}
+          onChange={(e) => handleSedeChange(e.target.value)}
+        >
+          {sedes.map((sede) => (
+            <MenuItem key={sede.id} value={sede.id}>
+              {sede.nombre}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth margin="normal" disabled={!selectedSede}>
+        <InputLabel id="bloque-label">Selecciona un Bloque</InputLabel>
+        <Select
+          labelId="bloque-label"
+          value={selectedBloque}
+          onChange={(e) => handleBloqueChange(e.target.value)}
+        >
+          {bloques.map((bloque) => (
+            <MenuItem key={bloque.id} value={bloque.id}>
+              {bloque.nombre}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth margin="normal" disabled={!selectedBloque}>
+        <InputLabel id="espacio-label">Selecciona un Espacio</InputLabel>
+        <Select
+          labelId="espacio-label"
+          value={selectedEspacio}
+          onChange={(e) => handleEspacioChange(e.target.value)}
+        >
+          {espacios.map((espacio) => (
+            <MenuItem key={espacio.id} value={espacio.id}>
+              {espacio.nombre}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormProduccion reloadProducciones={() => {}} setMessage={setMessage} />
+      {selectedEspacio ? (
+        <GridProduccion espacioId={selectedEspacio} />
+      ) : (
+        <p>Selecciona un espacio para ver las producciones.</p>
+      )}
     </div>
   );
 }
+
+
+
