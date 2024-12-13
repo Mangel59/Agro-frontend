@@ -22,12 +22,12 @@ export default function EspacioOcupacion() {
   const [selectedBloque, setSelectedBloque] = useState("");
   const [selectedEspacio, setSelectedEspacio] = useState("");
 
-  const [espacioOcupacion, setEspacioOcupacion] = useState([]);
-  const [selectedRow, setSelectedRow] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null); // Controla la fila seleccionada
+  const [reloadData, setReloadData] = useState(false); // Estado para recargar datos
 
   const [message, setMessage] = useState({ open: false, severity: "info", text: "" });
 
-  // Fetch sedes on component mount
+  // Carga de sedes al montar el componente
   useEffect(() => {
     const fetchSedes = async () => {
       try {
@@ -48,7 +48,7 @@ export default function EspacioOcupacion() {
     fetchSedes();
   }, []);
 
-  // Fetch bloques when a sede is selected
+  // Carga de bloques al seleccionar una sede
   useEffect(() => {
     if (!selectedSede) return;
 
@@ -77,7 +77,7 @@ export default function EspacioOcupacion() {
     fetchBloques();
   }, [selectedSede]);
 
-  // Fetch espacios when a bloque is selected
+  // Carga de espacios al seleccionar un bloque
   useEffect(() => {
     if (!selectedBloque) return;
 
@@ -104,32 +104,6 @@ export default function EspacioOcupacion() {
     fetchEspacios();
   }, [selectedBloque]);
 
-  // Fetch espacio ocupación based on selected espacio
-  useEffect(() => {
-    if (!selectedEspacio) return;
-
-    const fetchEspacioOcupacion = async () => {
-      try {
-        const response = await axios.get(
-          `${SiteProps.urlbasev1}/espacio_ocupacion/espacio/${selectedEspacio}`,
-          {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-          }
-        );
-        setEspacioOcupacion(response.data || []);
-      } catch (err) {
-        console.error("Error al cargar los datos de espacio ocupación:", err);
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al cargar los datos de espacio ocupación.",
-        });
-      }
-    };
-
-    fetchEspacioOcupacion();
-  }, [selectedEspacio]);
-
   return (
     <Box sx={{ height: "100%", width: "100%" }}>
       <MessageSnackBar message={message} setMessage={setMessage} />
@@ -143,7 +117,7 @@ export default function EspacioOcupacion() {
         setMessage={setMessage}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        reloadData={() => setSelectedEspacio(selectedEspacio)} // Actualiza los datos
+        reloadData={() => setReloadData(!reloadData)} // Recarga solo al guardar/actualizar
       />
 
       {/* Selectores */}
@@ -193,8 +167,7 @@ export default function EspacioOcupacion() {
       <GridEspacioOcupacion
         selectedEspacio={selectedEspacio}
         setSelectedRow={setSelectedRow}
-        espacioOcupacion={espacioOcupacion}
-        reloadData={() => setSelectedEspacio(selectedEspacio)}
+        reloadData={reloadData} // Recarga cuando sea necesario
       />
     </Box>
   );

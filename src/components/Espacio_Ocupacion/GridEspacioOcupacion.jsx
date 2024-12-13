@@ -7,6 +7,7 @@ const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadData }) =
   const [espacioOcupacion, setEspacioOcupacion] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedRowId, setSelectedRowId] = useState(null); // Estado para la fila seleccionada
 
   // Cargar datos según el espacio seleccionado
   useEffect(() => {
@@ -70,7 +71,8 @@ const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadData }) =
   ];
 
   const handleRowClick = (params) => {
-    setSelectedRow(params.row);
+    setSelectedRowId(params.id); // Establece el ID de la fila seleccionada
+    setSelectedRow(params.row); // Notifica al componente padre sobre la fila seleccionada
   };
 
   if (loading) return <div>Cargando datos...</div>;
@@ -85,6 +87,9 @@ const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadData }) =
         rowsPerPageOptions={[5]}
         onRowClick={handleRowClick}
         getRowId={(row) => row.id} // Asegurarse de que cada fila tenga un id único
+        getRowClassName={(params) =>
+          params.id === selectedRowId ? "selected-row" : ""
+        } // Aplica la clase CSS si es la fila seleccionada
       />
     </div>
   );
