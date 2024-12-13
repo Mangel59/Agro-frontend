@@ -38,7 +38,7 @@ export default function ProductoCategoria() {
     }
 
     axios
-      .get(`${SiteProps.urlbasev1}/producto_categoria`, {
+      .get(`http://172.16.79.156:8080/api/v1/producto_categoria`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -1,111 +1,191 @@
-import * as React from "react";
-import axios from "axios";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import StackButtons from "../StackButtons";
+import React, { useState } from "react";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel,
+  Box,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import UpdateIcon from "@mui/icons-material/Update";
+import DeleteIcon from "@mui/icons-material/Delete";
+import axios from "../axiosConfig";
 import { SiteProps } from "../dashboard/SiteProps";
 
-export default function FormTipoSedes({ selectedRow, setSelectedRow, reloadData, setMessage }) {
-  const [open, setOpen] = React.useState(false);
-  const [methodName, setMethodName] = React.useState("");
-  const url = `${SiteProps.urlbasev1}/tipo_sede`;
-  const token = localStorage.getItem("token");
+export default function FormTipoSedes({
+  selectedRow,
+  setSelectedRow,
+  reloadData,
+  setMessage,
+}) {
+  const [open, setOpen] = useState(false);
+  const [methodName, setMethodName] = useState("");
 
-  const handleCreate = () => {
+  const handleOpen = (method) => {
+    if (method === "Update" && (!selectedRow || selectedRow.id === null)) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Seleccione un registro para actualizar.",
+      });
+      return;
+    }
+    if (method === "Delete" && (!selectedRow || selectedRow.id === null)) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Seleccione un registro para eliminar.",
+      });
+      return;
+    }
+
+    setMethodName(method);
+    if (method === "Delete") {
+      handleDelete();
+    } else {
+      setOpen(true);
+    }
+  };
+
+  const handleClose = () => {
     setSelectedRow({ id: null, nombre: "", descripcion: "", estado: 1 });
-    setMethodName("Add");
-    setOpen(true);
+    setOpen(false);
   };
 
-  const handleUpdate = () => {
-    if (!selectedRow || !selectedRow.id) {
-      setMessage({ open: true, severity: "error", text: "Seleccione un tipo de Sedes para actualizar!" });
-      return;
-    }
-    setMethodName("Update");
-    setOpen(true);
-  };
+  const handleSubmit = () => {
+    const url = `${SiteProps.urlbasev1}/tipo_sede`;
+    const method = methodName === "Add" ? axios.post : axios.put;
+    const endpoint = methodName === "Add" ? url : `${url}/${selectedRow.id}`;
 
-  const handleDelete = () => {
-    if (!selectedRow || selectedRow.id === null) {
-      setMessage({ open: true, severity: "error", text: "Seleccione un tipo de Sedes para eliminar!" });
-      return;
-    }
-    axios
-      .delete(`${url}/${selectedRow.id}`, { headers: { Authorization: `Bearer ${token}` } })
+    method(endpoint, selectedRow, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
       .then(() => {
-        setMessage({ open: true, severity: "success", text: "Tipo de Sedes eliminado con éxito!" });
+        setMessage({
+          open: true,
+          severity: "success",
+          text:
+            methodName === "Add"
+              ? "Tipo de Sede creado con éxito."
+              : "Tipo de Sede actualizado con éxito.",
+        });
         reloadData();
-        setSelectedRow(null);
+        handleClose();
       })
       .catch((error) => {
-        const errorMessage = error.response ? error.response.data.message : error.message;
-        setMessage({ open: true, severity: "error", text: `Error al eliminar tipo Sedes! ${errorMessage}` });
+        console.error("Error al guardar tipo_sede:", error);
+        setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al guardar los datos. Intente nuevamente.",
+        });
       });
   };
 
-  const handleClose = () => setOpen(false);
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const data = {
-      nombre: selectedRow.nombre,
-      descripcion: selectedRow.descripcion,
-      estado: selectedRow.estado,
-    };
-
-    try {
-      if (methodName === "Add") {
-        await axios.post(url, data, { headers: { Authorization: `Bearer ${token}` } });
-        setMessage({ open: true, severity: "success", text: "Tipo de Sedes creado con éxito!" });
-      } else if (methodName === "Update") {
-        await axios.put(`${url}/${selectedRow.id}`, data, { headers: { Authorization: `Bearer ${token}` } });
-        setMessage({ open: true, severity: "success", text: "Tipo de Sedes actualizado con éxito!" });
-      }
-      setOpen(false);
-      reloadData();
-    } catch (error) {
-      const errorMessage = error.response ? error.response.data.message : error.message;
-      setMessage({ open: true, severity: "error", text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} tipo Sedes! ${errorMessage}` });
-    }
-  };
-
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setSelectedRow((prevRow) => ({ ...prevRow, [name]: value }));
-  };
-
-  const methods = {
-    create: handleCreate,
-    update: handleUpdate,
-    deleteRow: handleDelete,
+  const handleDelete = () => {
+    axios
+      .delete(`${SiteProps.urlbasev1}/tipo_sede/${selectedRow.id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      })
+      .then(() => {
+        setMessage({
+          open: true,
+          severity: "success",
+          text: "Tipo de Sede eliminado con éxito.",
+        });
+        reloadData();
+        setSelectedRow({ id: null, nombre: "", descripcion: "", estado: 1 });
+      })
+      .catch((error) => {
+        console.error("Error al eliminar tipo_sede:", error);
+        setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al eliminar el registro. Intente nuevamente.",
+        });
+      });
   };
 
   return (
-    <React.Fragment>
-      <StackButtons methods={methods} />
+    <>
+      <Box display="flex" justifyContent="flex-end" mb={2}>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpen("Add")}
+          style={{ marginRight: "10px" }}
+        >
+          Nuevo
+        </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<UpdateIcon />}
+          onClick={() => handleOpen("Update")}
+          style={{ marginRight: "10px" }}
+        >
+          Editar
+        </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<DeleteIcon />}
+          onClick={() => handleOpen("Delete")}
+        >
+          Eliminar
+        </Button>
+      </Box>
+
       <Dialog open={open} onClose={handleClose}>
-        <form onSubmit={handleSubmit}>
-          <DialogTitle>{methodName === "Add" ? "Crear Tipo de Sedes" : "Editar Tipo de Sedes"}</DialogTitle>
-          <DialogContent>
-            <DialogContentText>Completa la información del Tipo de Sedes.</DialogContentText>
-            <TextField label="Nombre" name="nombre" fullWidth variant="outlined" margin="normal" value={selectedRow?.nombre || ""} onChange={handleInputChange} required />
-            <TextField label="Descripción" name="descripcion" fullWidth variant="outlined" margin="normal" value={selectedRow?.descripcion || ""} onChange={handleInputChange} required />
-            <TextField label="Estado" name="estado" type="number" fullWidth variant="outlined" margin="normal" value={selectedRow?.estado || 1} onChange={handleInputChange} required />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>Cancelar</Button>
-            <Button type="submit" color="primary" variant="contained">
-              {methodName === "Add" ? "Guardar" : "Actualizar"}
-            </Button>
-          </DialogActions>
-        </form>
+        <DialogTitle>
+          {methodName === "Add" ? "Agregar Tipo de Sede" : "Actualizar Tipo de Sede"}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Nombre"
+            value={selectedRow?.nombre || ""}
+            onChange={(e) =>
+              setSelectedRow({ ...selectedRow, nombre: e.target.value })
+            }
+          />
+          <TextField
+            fullWidth
+            margin="normal"
+            label="Descripción"
+            value={selectedRow?.descripcion || ""}
+            onChange={(e) =>
+              setSelectedRow({ ...selectedRow, descripcion: e.target.value })
+            }
+          />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Estado</InputLabel>
+            <Select
+              value={selectedRow?.estado || 1}
+              onChange={(e) =>
+                setSelectedRow({ ...selectedRow, estado: e.target.value })
+              }
+            >
+              <MenuItem value={1}>Activo</MenuItem>
+              <MenuItem value={0}>Inactivo</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancelar</Button>
+          <Button onClick={handleSubmit}>
+            {methodName === "Add" ? "Agregar" : "Actualizar"}
+          </Button>
+        </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </>
   );
 }
