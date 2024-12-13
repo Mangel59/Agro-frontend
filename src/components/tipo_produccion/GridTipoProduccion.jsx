@@ -1,3 +1,4 @@
+// GridTipoProduccion.jsx
 import * as React from "react";
 import { DataGrid, GridToolbarContainer, GridToolbarFilterButton } from "@mui/x-data-grid";
 import axios from "axios";
@@ -7,7 +8,11 @@ const columns = [
   { field: "id", headerName: "ID", width: 90, type: "number" },
   { field: "nombre", headerName: "Nombre", width: 150, type: "string" },
   { field: "descripcion", headerName: "Descripción", width: 250, type: "string" },
-  { field: "estado", headerName: "Estado", width: 100, type: "number",
+  {
+    field: "estado",
+    headerName: "Estado",
+    width: 100,
+    type: "number",
     valueGetter: (params) => (params.row.estado === 1 ? "Activo" : "Inactivo"),
   },
 ];
@@ -35,15 +40,21 @@ export default function GridTipoProduccion(props) {
         }, {}),
       };
 
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Token de autenticación no encontrado");
+      }
+
       const response = await axios.get(url, {
         params,
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      setData(response.data?.data || []);
-      setRowCount(response.data?.header?.totalElements || 0);
+      const responseData = response.data;
+      setData(responseData?.data || responseData || []);
+      setRowCount(responseData?.header?.totalElements || responseData.length || 0);
     } catch (error) {
       console.error("Error al cargar los datos del backend:", error);
       props.setMessage({
@@ -59,6 +70,10 @@ export default function GridTipoProduccion(props) {
   React.useEffect(() => {
     fetchData(paginationModel.page, paginationModel.pageSize, sortModel, filterModel);
   }, [paginationModel, sortModel, filterModel]);
+
+  React.useImperativeHandle(props.innerRef, () => ({
+    reloadData: () => fetchData(paginationModel.page, paginationModel.pageSize, sortModel, filterModel),
+  }));
 
   function CustomToolbar() {
     return (

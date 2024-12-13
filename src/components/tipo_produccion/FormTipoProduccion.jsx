@@ -1,8 +1,14 @@
+
+
+
+
+// FormTipoProduccion.jsx
 import * as React from "react";
 import axios from "axios";
+import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText"; // Correcto
+import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import InputLabel from "@mui/material/InputLabel";
 import TextField from "@mui/material/TextField";

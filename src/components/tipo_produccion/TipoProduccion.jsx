@@ -1,3 +1,4 @@
+// TipoProduccion.jsx
 import * as React from "react";
 import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
@@ -14,6 +15,7 @@ export default function TipoProduccion(props) {
   };
 
   const [selectedRow, setSelectedRow] = React.useState(row);
+  const [tiposProduccion, setTiposProduccion] = React.useState([]);
   const messageData = {
     open: false,
     severity: "success",
@@ -21,33 +23,28 @@ export default function TipoProduccion(props) {
   };
 
   const [message, setMessage] = React.useState(messageData);
-  const [tiposProduccion, setTiposProduccion] = React.useState([]);
-  const [paginationModel, setPaginationModel] = React.useState({
-    page: 0,
-    pageSize: 5,
-  });
+  const gridRef = React.useRef();
 
   const reloadData = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Error: Token de autenticación no encontrado.",
+      });
+      return;
+    }
+
     axios
       .get(`${SiteProps.urlbasev1}/tipo_produccion`, {
-        params: {
-          page: paginationModel.page,
-          size: paginationModel.pageSize,
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
       })
       .then((response) => {
-        if (response.data && Array.isArray(response.data.data)) {
-          setTiposProduccion(response.data.data);
-        } else if (Array.isArray(response.data)) {
-          setTiposProduccion(response.data);
-        } else {
-          console.error("La respuesta no es un array:", response.data);
-          setMessage({
-            open: true,
-            severity: "error",
-            text: "Error al cargar Tipos de Producción: respuesta no válida",
-          });
-        }
+        setTiposProduccion(response.data || []);
+        gridRef.current.reloadData();
       })
       .catch((error) => {
         console.error("Error al cargar Tipos de Producción:", error);
@@ -61,7 +58,7 @@ export default function TipoProduccion(props) {
 
   React.useEffect(() => {
     reloadData();
-  }, [paginationModel]);
+  }, []);
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
@@ -71,14 +68,12 @@ export default function TipoProduccion(props) {
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
         reloadData={reloadData}
-        tiposProduccion={tiposProduccion}
       />
       <GridTipoProduccion
+        innerRef={gridRef}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        tiposProduccion={tiposProduccion}
-        paginationModel={paginationModel}
-        setPaginationModel={setPaginationModel}
+        reloadData={reloadData}
       />
     </div>
   );
