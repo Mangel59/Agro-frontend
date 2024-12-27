@@ -46,7 +46,7 @@ import TipoBloque from '../Tipo_bloque/Tipo_bloque.jsx';
 import TipoSedes from '../Tipo_Sede/Tipo_Sede.jsx';
 import TipoEspacio from '../Tipo_Espacio/Tipo_Espacio.jsx';
 import EspacioOcupacion from '../Espacio_ocupacion/Espacio_ocupacion.jsx';
-import RPedido from '../r_pedido/ReportPedido.jsx';
+import RPedido from '../r_pedido/Pedido.jsx';
 import ROrdenCompra from '../r_orden_compra/ReportesOrdenCompra.jsx';
 // import DomainIcon from '@mui/icons-material/Domain';
 
