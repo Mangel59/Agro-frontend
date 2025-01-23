@@ -61,7 +61,8 @@ export default function Login(props) {
     }
 
     // Petición al backend para el login
-    axios.post('http://172.16.79.156:8080/auth/login', {
+    // axios.post('http://172.16.79.156:8080/auth/login', {
+    axios.post('http://localhost:8080/auth/login', {
       username,
       password,
     })
