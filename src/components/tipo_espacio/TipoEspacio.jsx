@@ -1,8 +1,8 @@
 import * as React from "react";
 import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
-import FormTipoEspacio from "./FormTipo_Espacio";
-import GridTipoEspacio from "./GridTipo_Espacio";
+import FormTipoEspacio from "./FormTipoEspacio";
+import GridTipoEspacio from "./GridTipoEspacio";
 import { SiteProps } from "../dashboard/SiteProps";
 
 export default function TipoEspacio(props) {
