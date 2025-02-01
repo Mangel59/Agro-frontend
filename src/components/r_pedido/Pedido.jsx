@@ -323,9 +323,7 @@ export default function Pedido() {
     height: '80vh' 
   }}
 >
-      <Typography variant="h4" gutterBottom>
-        Gestión de Pedidos
-      </Typography>
+<h1>Gestión de Pedidos</h1>
 
       <FormPedido
         onAddPedido={fetchPedidos}

@@ -106,12 +106,8 @@ export default function EspacioOcupacion() {
 
   return (
     <Box sx={{ height: "100%", width: "100%" }}>
+      <h1>Espacio ocupación</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
-
-      <Typography variant="h6" gutterBottom>
-        Espacio Ocupación
-      </Typography>
-
       {/* Formulario */}
       <FormEspacioOcuOcupacion
         setMessage={setMessage}

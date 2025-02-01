@@ -62,6 +62,7 @@ export default function TipoProduccion(props) {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
+      <h1>Tipo Producción</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormTipoProduccion
         setMessage={setMessage}

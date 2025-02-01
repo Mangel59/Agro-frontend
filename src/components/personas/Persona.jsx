@@ -64,6 +64,7 @@ export default function Persona(props) {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
+      <h1>Persona</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormPersona
         setMessage={setMessage}

@@ -89,6 +89,7 @@ export default function TipoBloque() {
 
   return (
     <Box sx={{ height: "100%", width: "100%" }}>
+      <h1>Tipo Bloque</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
 
       <FormTipoBloque

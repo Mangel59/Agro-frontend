@@ -77,6 +77,7 @@ export default function ProductoCategoria() {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
+      <h1>Producto Categoria</h1>
       {/* Mensaje de notificación */}
       <MessageSnackBar message={message} setMessage={setMessage} />
 

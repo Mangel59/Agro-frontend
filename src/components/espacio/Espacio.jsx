@@ -114,6 +114,7 @@ export default function Espacio() {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
+       <h1>Espacio</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       {loading ? (
         <div style={{ textAlign: "center", margin: "20px" }}>Cargando datos...</div>

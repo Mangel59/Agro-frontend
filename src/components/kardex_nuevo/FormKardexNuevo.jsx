@@ -655,6 +655,7 @@ const handleSubmit = async (e) => {
 
   return (
     <Box sx={{ marginLeft: "80px", paddingRight: "10px", mt: 50 }}>
+      <h1>Kardex Nuevo</h1>
       <form onSubmit={handleSubmit}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>

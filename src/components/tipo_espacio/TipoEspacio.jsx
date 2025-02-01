@@ -71,6 +71,7 @@ export default function TipoEspacio(props) {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
+      <h1>Tipo Espacio</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       {loading ? (
         <div style={{ textAlign: "center", margin: "20px" }}>Cargando datos...</div>

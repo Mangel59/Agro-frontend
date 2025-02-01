@@ -60,6 +60,7 @@ export default function Empresa() {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
+       <h1>Empresa</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormEmpresa
         setMessage={setMessage}

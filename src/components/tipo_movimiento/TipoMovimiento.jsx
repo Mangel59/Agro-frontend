@@ -88,6 +88,7 @@ export default function TipoMovimiento(props) {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
+      <h1>Tipo Movimiento</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormTipoMovimiento
         setMessage={setMessage}

@@ -72,6 +72,11 @@
         "icon": "ProductionQuantityLimitsIcon"
       },
       {
+        "id": "proveedor",
+        "text": "Proveedor",
+        "icon": "ProductionQuantityLimitsIcon"
+      },
+      {
         "id": "presentacion",
         "text": "Presentacion",
         "icon": "ProductionQuantityLimitsIcon"
@@ -134,6 +139,16 @@
     "icon": "Settings",
     "children": [
       {
+        "id": "evaluacion",
+        "text": "Evaluacion",
+        "icon": "Settings"
+      },
+      {
+        "id": "cliente_evalacion",
+        "text": "ClienteEvaluacion",
+        "icon": "Settings"
+      },
+      {
         "id": "reportes",
         "text": "Reportes",
         "icon": "Settings"
@@ -141,6 +156,11 @@
       {
         "id": "r_pedido",
         "text": "Reportes de Pedido",
+        "icon": "Settings"
+      },
+      {
+        "id": "proveedor_eevaluacion",
+        "text": "ProveedorEvaluacion",
         "icon": "Settings"
       },
       {
@@ -158,6 +178,16 @@
       {
         "id": "persona",
         "text": "Persona",
+        "icon": "PersonIcon" 
+      },
+      {
+        "id": "roll",
+        "text": "Rol",
+        "icon": "PersonIcon" 
+      },
+      {
+        "id": "tipoidentificacion",
+        "text": "TipoIdentificacion",
         "icon": "PersonIcon" 
       },
       {

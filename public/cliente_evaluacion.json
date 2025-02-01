@@ -1,0 +1,75 @@
+[
+    {
+      "cle_id": 1,
+      "cle_fecha": "2023-01-01 08:00:00",
+      "cle_persona_id": 28,
+      "cle_evaluacion_id": 1,
+      "cle_descripcion": "Evaluación de cliente 1",
+      "cle_estado": 1
+    },
+    {
+      "cle_id": 2,
+      "cle_fecha": "2023-02-01 08:00:00",
+      "cle_persona_id": 29,
+      "cle_evaluacion_id": 2,
+      "cle_descripcion": "Evaluación de cliente 2",
+      "cle_estado": 1
+    },
+    {
+      "cle_id": 3,
+      "cle_fecha": "2023-03-01 08:00:00",
+      "cle_persona_id": 30,
+      "cle_evaluacion_id": 3,
+      "cle_descripcion": "Evaluación de cliente 3",
+      "cle_estado": 1
+    },
+    {
+      "cle_id": 4,
+      "cle_fecha": "2023-04-01 08:00:00",
+      "cle_persona_id": 31,
+      "cle_evaluacion_id": 4,
+      "cle_descripcion": "Evaluación de cliente 4",
+      "cle_estado": 1
+    },
+    {
+      "cle_id": 5,
+      "cle_fecha": "2023-05-01 08:00:00",
+      "cle_persona_id": 32,
+      "cle_evaluacion_id": 5,
+      "cle_descripcion": "Evaluación de cliente 5",
+      "cle_estado": 1
+    },
+    {
+      "cle_id": 6,
+      "cle_fecha": "2023-06-01 08:00:00",
+      "cle_persona_id": 33,
+      "cle_evaluacion_id": 6,
+      "cle_descripcion": "Evaluación de cliente 6",
+      "cle_estado": 1
+    },
+    {
+      "cle_id": 7,
+      "cle_fecha": "2023-07-01 08:00:00",
+      "cle_persona_id": 34,
+      "cle_evaluacion_id": 7,
+      "cle_descripcion": "Evaluación de cliente 7",
+      "cle_estado": 1
+    },
+    {
+      "cle_id": 8,
+      "cle_fecha": "2023-08-01 08:00:00",
+      "cle_persona_id": 35,
+      "cle_evaluacion_id": 8,
+      "cle_descripcion": "Evaluación de cliente 8",
+      "cle_estado": 1
+    },
+    {
+      "cle_id": 9,
+      "cle_fecha": "2023-09-01 08:00:00",
+      "cle_persona_id": 36,
+      "cle_evaluacion_id": 9,
+      "cle_descripcion": "Evaluación de cliente 9",
+      "cle_estado": 1
+    }
+  ]
+  

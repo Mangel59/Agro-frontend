@@ -49,7 +49,12 @@ import EspacioOcupacion from '../espacio_ocupacion/EspacioOcupacion.jsx';
 import RPedido from '../r_pedido/Pedido.jsx';
 import ROrdenCompra from '../r_orden_compra/OrdenCompra.jsx';
 // import DomainIcon from '@mui/icons-material/Domain';
-
+import Rol from '../Rol/Rol.jsx';
+import TipoIdentificacion from '../TipoIdentificacion/TipoIdentificacion.jsx';
+import ProveedorEvaluacion from '../Proveedor Evaluacion/ProveedorEvaluacion.jsx';
+import Evaluacion from '../Evaluacion/Evaluacion.jsx';
+import ClienteEvaluacion from '../ClienteEvaluacion/ClienteEvaluacion.jsx';
+import Proveedor from '../Proveedor/Proveedor.jsx';
 
 // Definición de íconos
 const icons = {
@@ -71,6 +76,12 @@ const icons = {
 
 // Mapeo de componentes por menú
 const components = {
+  tipoidentificacion: TipoIdentificacion,
+  proveedor_eevaluacion: ProveedorEvaluacion,
+  roll: Rol,
+  evaluacion: Evaluacion,
+  cliente_evalacion: ClienteEvaluacion,
+  proveedor: Proveedor,
   pais: Pais,
   departamento: Departamento,
   municipio: Municipio,

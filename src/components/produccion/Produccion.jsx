@@ -75,6 +75,7 @@ export default function Produccion() {
 
   return (
     <div>
+      <h1>Produccion</h1>
       <FormControl fullWidth margin="normal">
         <InputLabel id="sede-label">Selecciona una Sede</InputLabel>
         <Select

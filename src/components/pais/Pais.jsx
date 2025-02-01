@@ -53,6 +53,7 @@ export default function Pais() {
 
   return (
     <div style={{ height: '100%', width: '100%' }}>
+      <h1>Pais</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormPais setMessage={setMessage} selectedRow={selectedRow} setSelectedRow={setSelectedRow} pais={pais} />
       <GridPais selectedRow={selectedRow} setSelectedRow={setSelectedRow} pais={pais} />

@@ -40,6 +40,7 @@ export default function Municipio() {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
+      <h1>Municipio</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormMunicipio
         setMessage={setMessage}

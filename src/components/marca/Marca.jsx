@@ -82,6 +82,7 @@ export default function Marca(props) {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
+      <h1>Marca</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormMarca
         setMessage={setMessage}

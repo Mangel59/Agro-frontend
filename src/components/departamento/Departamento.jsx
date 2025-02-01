@@ -51,6 +51,7 @@ export default function Departamento() {
 
   return (
     <div style={{ height: '100%', width: '100%' }}>
+       <h1>Departamentos</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormDepartamento setMessage={setMessage} selectedRow={selectedRow} setSelectedRow={setSelectedRow} departamentos={departamentos}/>
       <GridDepartamento selectedRow={selectedRow} setSelectedRow={setSelectedRow} departamentos={departamentos} />

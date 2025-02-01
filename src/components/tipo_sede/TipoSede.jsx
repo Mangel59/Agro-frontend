@@ -57,6 +57,7 @@ export default function TipoSedes() {
 
   return (
     <Box sx={{ height: "100%", width: "100%" }}>
+      <h1>Tipo Sede</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormTipoSedes
         selectedRow={selectedRow}

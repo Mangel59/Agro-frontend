@@ -210,6 +210,7 @@ export default function Kardex() {
 
   return (
     <div style={{ height: '100%', width: '100%' }}>
+      <h1>Kardex</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <ComboBox
         onAlmacenChange={(almacen) => setSelectedAlmacen(almacen)}
