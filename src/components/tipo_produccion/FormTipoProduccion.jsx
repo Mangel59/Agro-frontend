@@ -4,6 +4,7 @@
 
 // FormTipoProduccion.jsx
 import * as React from "react";
+import PropTypes from "prop-types";
 import axios from "axios";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -223,4 +224,16 @@ export default function FormTipoProduccion(props) {
       </Dialog>
     </React.Fragment>
   );
+  FormTipoProduccion.propTypes = {
+    setSelectedRow: PropTypes.func.isRequired,
+    selectedRow: PropTypes.shape({
+      id: PropTypes.number,
+      nombre: PropTypes.string,
+      descripcion: PropTypes.string,
+      estado: PropTypes.number,
+    }),
+    setMessage: PropTypes.func.isRequired,
+    reloadData: PropTypes.func.isRequired,
+  };
+  
 }

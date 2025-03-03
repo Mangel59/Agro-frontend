@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types"; // Importamos PropTypes
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
@@ -56,8 +57,8 @@ export default function GridEspacio({ setSelectedRow, selectedBloque }) {
 
   const handleRowSelectionChange = (id) => {
     const selectedIDs = new Set(id);
-    const selectedRowData = espacios.filter((row) => selectedIDs.has(row.id));
-    setSelectedRow(selectedRowData[0] || null); // Maneja cuando no hay selección
+    const selectedRowData = espacios.find((row) => selectedIDs.has(row.id)) || null;
+    setSelectedRow(selectedRowData); // Maneja cuando no hay selección
   };
 
   if (loading) return <div>Cargando datos...</div>;
@@ -75,3 +76,9 @@ export default function GridEspacio({ setSelectedRow, selectedBloque }) {
     </div>
   );
 }
+
+// Validación de PropTypes
+GridEspacio.propTypes = {
+  setSelectedRow: PropTypes.func.isRequired, // Debe ser una función
+  selectedBloque: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired, // Puede ser string o número
+};

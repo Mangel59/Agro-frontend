@@ -9,6 +9,8 @@ import { useThemeToggle } from './dashboard/ThemeToggleProvider';
 import FormRegistroPersona from './seguridad/FormRegistroPersona';
 import FormRegistroEmpresa from './seguridad/FormRegistroEmpresa';
 import Contenido from '../components/dashboard/Contenido';
+import PropTypes from "prop-types";
+
 
 export default function Login(props) {
   const { t, i18n } = useTranslation(); // Hook de traducción
@@ -103,7 +105,11 @@ export default function Login(props) {
   const handleLanguageChange = (lng) => {
     i18n.changeLanguage(lng);
   };
-
+// Validación de props
+Login.propTypes = {
+  setIsAuthenticated: PropTypes.func.isRequired,
+  setCurrentModule: PropTypes.func.isRequired,
+};
   return (
     <Container 
       maxWidth={false}  

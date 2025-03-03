@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/tipo_bloque/Tipobloque.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/tipo_bloque/Tipobloque.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React, { useState, useEffect } from "react";
+import { Box } from "@mui/material";
+import axios from "axios";
+import FormTipoBloque from "./FormTipobloque.jsx";
+import GridTipoBloque from "./GridTipoBloque";
+import MessageSnackBar from "../MessageSnackBar";
+import { SiteProps } from "../dashboard/SiteProps";
+
+/**
+ * Componente principal para gestionar Tipo de Bloque
+ */
+export default function TipoBloque() {
+  const initialRow = { id: null, nombre: "", descripcion: "", estado: 1 };
+
+  const [bloques, setBloques] = useState([]);
+  const [selectedRow, setSelectedRow] = useState(initialRow);
+  const [message, setMessage] = useState({ open: false, severity: "info", text: "" });
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Token de autenticación no encontrado.");
+
+      const response = await axios.get(`${SiteProps.urlbasev1}/tipo_bloque`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setBloques(response.data || []);
+    } catch (error) {
+      const errorMessage = error.response ? error.response.data.message : error.message;
+      setMessage({ open: true, severity: "error", text: `Error al cargar datos: ${errorMessage}` });
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const addTipoBloque = async (data) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Token de autenticación no encontrado.");
+
+      await axios.post(`${SiteProps.urlbasev1}/tipo_bloque`, data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setMessage({ open: true, severity: "success", text: "Tipo de Bloque creado con éxito!" });
+      fetchData();
+    } catch (error) {
+      const errorMessage = error.response ? error.response.data.message : error.message;
+      setMessage({ open: true, severity: "error", text: `Error al crear tipo_bloque: ${errorMessage}` });
+    }
+  };
+
+  const updateTipoBloque = async (data) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Token de autenticación no encontrado.");
+
+      await axios.put(`${SiteProps.urlbasev1}/tipo_bloque/${data.id}`, data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setMessage({ open: true, severity: "success", text: "Tipo de Bloque actualizado con éxito!" });
+      fetchData();
+    } catch (error) {
+      const errorMessage = error.response ? error.response.data.message : error.message;
+      setMessage({ open: true, severity: "error", text: `Error al actualizar tipo_bloque: ${errorMessage}` });
+    }
+  };
+
+  const deleteTipoBloque = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Token de autenticación no encontrado.");
+
+      await axios.delete(`${SiteProps.urlbasev1}/tipo_bloque/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setMessage({ open: true, severity: "success", text: "Tipo de Bloque eliminado con éxito!" });
+      fetchData();
+    } catch (error) {
+      const errorMessage = error.response ? error.response.data.message : error.message;
+      setMessage({ open: true, severity: "error", text: `Error al eliminar tipo_bloque: ${errorMessage}` });
+    }
+  };
+
+  return (
+    &lt;Box sx={{ height: "100%", width: "100%" }}>
+      &lt;h1>Tipo Bloque&lt;/h1>
+      &lt;MessageSnackBar message={message} setMessage={setMessage} />
+
+      &lt;FormTipoBloque
+        selectedRow={selectedRow}
+        setSelectedRow={setSelectedRow}
+        addTipoBloque={addTipoBloque}
+        updateTipoBloque={updateTipoBloque}
+        deleteTipoBloque={deleteTipoBloque}
+        reloadData={fetchData}
+      />
+
+      &lt;GridTipoBloque bloques={bloques} setSelectedRow={setSelectedRow} />
+    &lt;/Box>
+  );
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-GridKardexNuevo.html">GridKardexNuevo</a></li></ul><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#KardexNuevo">KardexNuevo</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Mar 03 2025 16:10:35 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

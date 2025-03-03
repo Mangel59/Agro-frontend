@@ -57,7 +57,7 @@ export default function FormProducto(props) {
       return;
     }
     const id = props.selectedRow.id;
-    const url = `${SiteProps.urlbasev1}/productos/${id}`;
+    const url = `${SiteProps.urlbasev1}/producto/${id}`;
     
     const token = localStorage.getItem("token");
 
@@ -112,7 +112,7 @@ export default function FormProducto(props) {
 
     if (!validatePayload(formJson)) return;
 
-    const url = `${SiteProps.urlbasev1}/productos`;
+    const url = `${SiteProps.urlbasev1}/producto`;
     const token = localStorage.getItem("token");
 
     console.log("Datos del formulario: ", formJson);

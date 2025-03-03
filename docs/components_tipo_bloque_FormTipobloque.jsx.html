@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/tipo_bloque/FormTipobloque.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/tipo_bloque/FormTipobloque.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import * as React from "react";
+import PropTypes from "prop-types"; // Importamos PropTypes
+import axios from "axios";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import StackButtons from "../StackButtons";
+import MessageSnackBar from "../MessageSnackBar";
+import { SiteProps } from "../dashboard/SiteProps";
+
+/**
+ * Componente de formulario para crear, actualizar y eliminar tipo_bloque
+ */
+export default function FormTipoBloque({ selectedRow, setSelectedRow, addTipoBloque, updateTipoBloque, reloadData }) {
+  const [open, setOpen] = React.useState(false);
+  const [methodName, setMethodName] = React.useState("");
+  const [message, setMessage] = React.useState({ open: false, severity: "info", text: "" });
+
+  const url = `${SiteProps.urlbasev1}/tipo_bloque`;
+  const token = localStorage.getItem("token");
+
+  const handleCreate = () => {
+    setSelectedRow({ id: null, nombre: "", descripcion: "", estado: 1 });
+    setMethodName("Add");
+    setOpen(true);
+  };
+
+  const handleUpdate = () => {
+    if (!selectedRow || selectedRow.id === null) {
+      setMessage({ open: true, severity: "error", text: "Seleccione un tipo de bloque para actualizar!" });
+      return;
+    }
+    setMethodName("Update");
+    setOpen(true);
+  };
+
+  const handleDelete = () => {
+    if (!selectedRow || selectedRow.id === null) {
+      setMessage({ open: true, severity: "error", text: "Seleccione un tipo de bloque para eliminar!" });
+      return;
+    }
+    axios
+      .delete(`${url}/${selectedRow.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(() => {
+        setMessage({ open: true, severity: "success", text: "Tipo de Bloque eliminado con éxito!" });
+        reloadData();
+      })
+      .catch((error) => {
+        const errorMessage = error.response ? error.response.data.message : error.message;
+        setMessage({ open: true, severity: "error", text: `Error al eliminar tipo_bloque! ${errorMessage}` });
+      });
+  };
+
+  const handleClose = () => setOpen(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (methodName === "Add") {
+      addTipoBloque(selectedRow);
+    } else if (methodName === "Update") {
+      updateTipoBloque(selectedRow);
+    }
+    setOpen(false);
+    reloadData();
+  };
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setSelectedRow((prevRow) => ({ ...prevRow, [name]: value }));
+  };
+
+  const methods = {
+    create: handleCreate,
+    update: handleUpdate,
+    deleteRow: handleDelete,
+  };
+
+  return (
+    &lt;React.Fragment>
+      &lt;StackButtons methods={methods} />
+      &lt;MessageSnackBar message={message} setMessage={setMessage} />
+      &lt;Dialog open={open} onClose={handleClose}>
+        &lt;form onSubmit={handleSubmit}>
+          &lt;DialogTitle>{methodName === "Add" ? "Crear Tipo de Bloque" : "Editar Tipo de Bloque"}&lt;/DialogTitle>
+          &lt;DialogContent>
+            &lt;DialogContentText>Completa la información del Tipo de Bloque.&lt;/DialogContentText>
+            &lt;TextField
+              label="Nombre"
+              name="nombre"
+              fullWidth
+              variant="outlined"
+              margin="normal"
+              value={selectedRow?.nombre || ""}
+              onChange={handleInputChange}
+              required
+            />
+            &lt;TextField
+              label="Descripción"
+              name="descripcion"
+              fullWidth
+              variant="outlined"
+              margin="normal"
+              value={selectedRow?.descripcion || ""}
+              onChange={handleInputChange}
+              required
+            />
+            &lt;TextField
+              label="Estado"
+              name="estado"
+              type="number"
+              fullWidth
+              variant="outlined"
+              margin="normal"
+              value={selectedRow?.estado || 1}
+              onChange={handleInputChange}
+              required
+            />
+          &lt;/DialogContent>
+          &lt;DialogActions>
+            &lt;Button onClick={handleClose}>Cancelar&lt;/Button>
+            &lt;Button type="submit" color="primary" variant="contained">
+              {methodName === "Add" ? "Guardar" : "Actualizar"}
+            &lt;/Button>
+          &lt;/DialogActions>
+        &lt;/form>
+      &lt;/Dialog>
+    &lt;/React.Fragment>
+  );
+}
+
+// Validación de PropTypes para evitar errores
+FormTipoBloque.propTypes = {
+  selectedRow: PropTypes.shape({
+    id: PropTypes.number,
+    nombre: PropTypes.string,
+    descripcion: PropTypes.string,
+    estado: PropTypes.number,
+  }),
+  setSelectedRow: PropTypes.func.isRequired,
+  addTipoBloque: PropTypes.func.isRequired,
+  updateTipoBloque: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired,
+};
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-GridKardexNuevo.html">GridKardexNuevo</a></li></ul><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#KardexNuevo">KardexNuevo</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Mar 03 2025 16:10:35 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

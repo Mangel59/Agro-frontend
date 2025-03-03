@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
-export default function GridBloque({ setSelectedRow, selectedSede }) {
+function GridBloque({ setSelectedRow, selectedSede }) {
   const [bloques, setBloques] = useState([]); // Lista de bloques
   const [loading, setLoading] = useState(false); // Estado para mostrar el cargando
   const [error, setError] = useState(null); // Estado para manejar errores
@@ -24,7 +25,7 @@ export default function GridBloque({ setSelectedRow, selectedSede }) {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
           }
         );
-        setBloques(response.data || []); // Asegúrate de que la respuesta sea un array
+        setBloques(response.data || []); // Asegurar que la respuesta sea un array
         setError(null); // Limpiar errores si los datos se cargaron correctamente
       } catch (error) {
         console.error("Error al cargar los bloques:", error);
@@ -63,7 +64,7 @@ export default function GridBloque({ setSelectedRow, selectedSede }) {
         return coordinates ? `${coordinates[1]}, ${coordinates[0]}` : "Sin datos";
       },
     },
-    { field: "numeroPisos", headerName: "Numero de pisos", width: 150 },
+    { field: "numeroPisos", headerName: "Número de pisos", width: 150 },
     { field: "descripcion", headerName: "Descripción", width: 250 },
     { field: "estado", headerName: "Estado", width: 120 },
   ];
@@ -87,3 +88,11 @@ export default function GridBloque({ setSelectedRow, selectedSede }) {
     </div>
   );
 }
+
+// 📌 Agregamos la validación de props con PropTypes
+GridBloque.propTypes = {
+  setSelectedRow: PropTypes.func.isRequired, // Debe ser una función obligatoria
+  selectedSede: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // Puede ser string o número
+};
+
+export default GridBloque;

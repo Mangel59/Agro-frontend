@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types"; // Importar PropTypes
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -82,3 +83,17 @@ export default function FormRol({ onAdd, onUpdate, onDelete, selectedRow, setSel
     </>
   );
 }
+
+// Validación de PropTypes
+FormRol.propTypes = {
+  onAdd: PropTypes.func.isRequired,
+  onUpdate: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  selectedRow: PropTypes.shape({
+    rol_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    rol_nombre: PropTypes.string,
+    rol_descripcion: PropTypes.string,
+    rol_estado: PropTypes.number,
+  }),
+  setSelectedRow: PropTypes.func.isRequired,
+};

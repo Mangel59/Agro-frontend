@@ -1,4 +1,5 @@
 import * as React from "react";
+import PropTypes from "prop-types";
 import axios from "axios";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -14,361 +15,173 @@ import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
-/**
- * El componente FormEmpresa maneja el formulario para crear, actualizar y eliminar empresas.
- * 
- * @componente
- * @param {object} props - Propiedades pasadas al componente.
- * @param {object} props.selectedRow - Fila seleccionada que contiene los datos de la empresa.
- * @param {function} props.setMessage - Función para establecer el mensaje en el snackbar.
- * @param {function} props.reloadData - Función para recargar los datos después de una operación.
- * @returns {JSX.Element} El formulario de gestión de empresas.
- */
-export default function FormEmpresa(props) {
+export default function FormEmpresa({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
 
-   /**
+  // Valores iniciales de empresa
+  const defaultRow = {
+    id: 0,
+    nombre: "",
+    descripcion: "",
+    estado: 1,
+    celular: "",
+    correo: "",
+    contacto: "",
+    tipoIdentificacionId: "",
+    personaId: "",
+    identificacion: "",
+  };
+
+  /**
    * Crea una nueva empresa y abre el formulario.
    */
   const create = () => {
-    const row = {
-      id: 0,
-      nombre: "",
-      descripcion: "",
-      estado: 0,
-      celular: "",
-      correo: "",
-      contacto: "",
-      tipoIdentificacionId: 0,
-      personaId: 0,
-      identificacion: "",
-    };
-    props.setSelectedRow(row);
+    setSelectedRow(defaultRow);
     setMethodName("Add");
     setOpen(true);
-    console.log("create() " + JSON.stringify(row));
   };
 
   /**
    * Actualiza la empresa seleccionada.
    */
   const update = () => {
-    if (!props.selectedRow || props.selectedRow.id === 0) {
-      const messageData = {
+    if (!selectedRow || !selectedRow.id) {
+      setMessage({
         open: true,
         severity: "error",
-        text: "Select row!",
-      };
-      props.setMessage(messageData);
+        text: "Selecciona una fila para actualizar.",
+      });
       return;
     }
     setMethodName("Update");
     setOpen(true);
-    console.log("update() " + JSON.stringify(props.selectedRow));
   };
 
   /**
    * Elimina la empresa seleccionada.
    */
   const deleteRow = () => {
-    if (props.selectedRow.id === 0) {
-      const messageData = {
+    if (!selectedRow || !selectedRow.id) {
+      setMessage({
         open: true,
         severity: "error",
-        text: "Select row!",
-      };
-      props.setMessage(messageData);
+        text: "Selecciona una fila para eliminar.",
+      });
       return;
     }
-    const id = props.selectedRow.id;
-    const url = `${SiteProps.urlbasev1}/empresas/${id}`;
+
+    const url = `${SiteProps.urlbasev1}/empresas/${selectedRow.id}`;
     axios
-      .delete(url, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-      .then((response) => {
-        props.setMessage({
+      .delete(url, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } })
+      .then(() => {
+        setMessage({
           open: true,
           severity: "success",
           text: "Empresa eliminada con éxito!",
         });
-        setOpen(false);
-        props.reloadData();
+        reloadData();
       })
       .catch((error) => {
-        const errorMessage = error.response
-          ? error.response.data.message
-          : error.message;
-        props.setMessage({
+        setMessage({
           open: true,
           severity: "error",
-          text: `Error al eliminar empresa! ${errorMessage}`,
+          text: `Error al eliminar empresa: ${error.response?.data.message || error.message}`,
         });
-        console.error(
-          "Error al eliminar empresa!",
-          error.response || error.message
-        );
       });
   };
-  const methods = {
-    create,
-    update,
-    deleteRow,
-  };
-  React.useEffect(() => {
-    if (props.selectedRow !== undefined) {
-      console.log("Selected Row ID: " + props.selectedRow.id);
-    }
-  }, [props.selectedRow]);
-  const handleClose = () => {
-    setOpen(false);
-  };
+
+  const handleClose = () => setOpen(false);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const formJson = Object.fromEntries(formData.entries());
-    const id = props.selectedRow?.id || 0;
-    const validatePayload = (data) => {
-      if (
-        !data.nombre ||
-        !data.descripcion ||
-        !data.estado ||
-        !data.celular ||
-        !data.correo ||
-        !data.identificacion
-      ) {
-        console.error("Invalid data:", data);
-        props.setMessage({
+
+    const url = `${SiteProps.urlbasev1}/empresas`;
+    const method = methodName === "Add" ? axios.post : axios.put;
+    const endpoint = methodName === "Add" ? url : `${url}/${selectedRow.id}`;
+
+    method(endpoint, formJson, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } })
+      .then(() => {
+        setMessage({
+          open: true,
+          severity: "success",
+          text: methodName === "Add" ? "Empresa creada con éxito!" : "Empresa actualizada con éxito!",
+        });
+        setOpen(false);
+        reloadData();
+      })
+      .catch((error) => {
+        setMessage({
           open: true,
           severity: "error",
-          text: "Por favor completa todos los campos obligatorios!",
+          text: `Error al guardar empresa: ${error.response?.data.message || error.message}`,
         });
-        return false;
-      }
-      return true;
-    };
-
-    if (!validatePayload(formJson)) return;
-    const url = `${SiteProps.urlbasev1}/empresas`;
-    if (methodName === "Add") {
-      axios
-        .post(url, formJson)
-        .then((response) => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: "Empresa creada con éxito!",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response
-            ? error.response.data.message
-            : error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al crear empresa! ${errorMessage}`,
-          });
-        });
-    } else if (methodName === "Update") {
-      axios
-        .put(`${url}/${id}`, formJson)
-        .then((response) => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: "Empresa actualizada con éxito!",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response
-            ? error.response.data.message
-            : error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al actualizar empresa! ${errorMessage}`,
-          });
-          console.error(
-            "Error al actualizar empresa!",
-            error.response || error.message
-          );
-        });
-    }
-    else if (methodName === "Delete") {
-      axios
-        .delete(`${url}/${id}`)
-        .then((response) => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: "Persona eliminada con éxito!",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response
-            ? error.response.data.message
-            : error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al eliminar persona! ${errorMessage}`,
-          });
-          console.error(
-            "Error al eliminar persona!",
-            error.response || error.message
-          );
-        });
-    }
-    handleClose();
+      });
   };
 
   return (
     <React.Fragment>
-      <StackButtons
-        methods={methods}
-        create={create}
-        open={open}
-        setOpen={setOpen}
-      />
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        PaperProps={{
-          component: "form",
-          onSubmit: handleSubmit,
-        }}
-      >
+      <StackButtons methods={{ create, update, deleteRow }} />
+      <Dialog open={open} onClose={handleClose} PaperProps={{ component: "form", onSubmit: handleSubmit }}>
         <DialogTitle>{methodName} Empresa</DialogTitle>
         <DialogContent>
           <DialogContentText>Completa el formulario.</DialogContentText>
+
+          {/* Nombre */}
           <FormControl fullWidth margin="normal">
-            <TextField
-              autoFocus
-              required
-              id="nombre"
-              name="nombre"
-              label="Nombre de la Empresa"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.nombre || ""}
-            />
+            <TextField required id="nombre" name="nombre" label="Nombre" variant="standard" defaultValue={selectedRow?.nombre || ""} />
           </FormControl>
+
+          {/* Descripción */}
           <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="descripcion"
-              name="descripcion"
-              label="Descripción"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.descripcion || ""}
-            />
+            <TextField required id="descripcion" name="descripcion" label="Descripción" variant="standard" defaultValue={selectedRow?.descripcion || ""} />
           </FormControl>
+
+          {/* Estado */}
           <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label"
-              sx={{
-                backgroundColor: 'white', 
-                padding: '0 8px',      
-              }}
-            >Estado</InputLabel>
-            <Select
-              labelId="estado-label"
-              id="estado"
-              name="estado"
-              defaultValue={props.selectedRow?.estado || ''}
-              fullWidth
-            >
+            <InputLabel id="estado-label">Estado</InputLabel>
+            <Select labelId="estado-label" id="estado" name="estado" defaultValue={selectedRow?.estado || ""} fullWidth>
               <MenuItem value={1}>Activo</MenuItem>
               <MenuItem value={0}>Inactivo</MenuItem>
             </Select>
           </FormControl>
+
+          {/* Celular */}
           <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="celular"
-              name="celular"
-              label="Celular"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.celular || ""}
-            />
+            <TextField required id="celular" name="celular" label="Celular" variant="standard" defaultValue={selectedRow?.celular || ""} />
           </FormControl>
+
+          {/* Correo */}
           <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="correo"
-              name="correo"
-              label="Correo"
-              type="email"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.correo || ""}
-            />
+            <TextField required id="correo" name="correo" label="Correo" type="email" variant="standard" defaultValue={selectedRow?.correo || ""} />
           </FormControl>
+
+          {/* Contacto */}
           <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="contacto"
-              name="contacto"
-              label="Contacto"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.contacto || ""}
-            />
+            <TextField required id="contacto" name="contacto" label="Contacto" variant="standard" defaultValue={selectedRow?.contacto || ""} />
           </FormControl>
+
+          {/* Tipo de Identificación */}
           <FormControl fullWidth margin="normal">
-            <InputLabel id="tipoIdentificacionId-label"
-              sx={{
-                backgroundColor: 'white', 
-                padding: '0 8px',      
-              }}
-            >
-              Tipo de Identificación
-            </InputLabel>
-            <Select
-              labelId="tipoIdentificacionId-label"
-              id="tipoIdentificacionId"
-              name="tipoIdentificacionId"
-              defaultValue={props.selectedRow?.tipoIdentificacionId || ""}
-              fullWidth
-            >
+            <InputLabel id="tipoIdentificacionId-label">Tipo de Identificación</InputLabel>
+            <Select labelId="tipoIdentificacionId-label" id="tipoIdentificacionId" name="tipoIdentificacionId" defaultValue={selectedRow?.tipoIdentificacionId || ""} fullWidth>
               <MenuItem value={1}>Cédula</MenuItem>
               <MenuItem value={2}>Pasaporte</MenuItem>
             </Select>
           </FormControl>
+
+          {/* Persona */}
           <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="identificacion"
-              name="identificacion"
-              label="Número de Identificación"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.identificacion || ""}
-            />
+            <TextField required id="personaId" name="personaId" label="ID Persona" variant="standard" defaultValue={selectedRow?.personaId || ""} />
           </FormControl>
+
+          {/* Número de Identificación */}
           <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="personaId"
-              name="personaId"
-              label="ID Persona"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.personaId || ""}
-            />
+            <TextField required id="identificacion" name="identificacion" label="Número de Identificación" variant="standard" defaultValue={selectedRow?.identificacion || ""} />
           </FormControl>
+
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancelar</Button>
@@ -378,3 +191,11 @@ export default function FormEmpresa(props) {
     </React.Fragment>
   );
 }
+
+// Validación de Props con PropTypes
+FormEmpresa.propTypes = {
+  selectedRow: PropTypes.object.isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+  setMessage: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired,
+};

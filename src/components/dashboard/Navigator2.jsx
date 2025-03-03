@@ -26,8 +26,6 @@ import Departamento from '../departamento/Departamento';
 import Municipio from '../municipio/Municipio';
 import ProductoPresentacion from '../producto_presentacion/ProductoPresentacion';
 import Produccion from '../produccion/Produccion';
-import Kardex from '../kardex/Kardex.jsx';
-import KardexItem from '../kardex_item/KardexItem';
 import Reportes from '../reportes/Reportes';
 import Empresa from '../empresas/Empresa.jsx';
 import Producto from '../producto/Producto.jsx';
@@ -51,9 +49,7 @@ import ROrdenCompra from '../r_orden_compra/OrdenCompra.jsx';
 // import DomainIcon from '@mui/icons-material/Domain';
 import Rol from '../Rol/Rol.jsx';
 import TipoIdentificacion from '../TipoIdentificacion/TipoIdentificacion.jsx';
-import ProveedorEvaluacion from '../Proveedor Evaluacion/ProveedorEvaluacion.jsx';
 import Evaluacion from '../Evaluacion/Evaluacion.jsx';
-import ClienteEvaluacion from '../ClienteEvaluacion/ClienteEvaluacion.jsx';
 import Proveedor from '../Proveedor/Proveedor.jsx';
 
 // Definición de íconos
@@ -77,10 +73,8 @@ const icons = {
 // Mapeo de componentes por menú
 const components = {
   tipoidentificacion: TipoIdentificacion,
-  proveedor_eevaluacion: ProveedorEvaluacion,
   roll: Rol,
   evaluacion: Evaluacion,
-  cliente_evalacion: ClienteEvaluacion,
   proveedor: Proveedor,
   pais: Pais,
   departamento: Departamento,
@@ -98,9 +92,7 @@ const components = {
   producto_categoria: ProductoCategoria,
   producto: Producto,
   produccion: Produccion,
-  kardex: Kardex,
   kardex_nuevo: KardexNuevo,
-  kardex_item: KardexItem,
   marca: Marca,
   unidad: Unidad,
   tipo_movimiento: TipoMovimiento,

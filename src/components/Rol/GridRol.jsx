@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types"; // Importar PropTypes
 import { DataGrid } from "@mui/x-data-grid";
 
 const columns = [
@@ -25,3 +26,16 @@ export default function GridRol({ roles, onEdit }) {
     </div>
   );
 }
+
+// Validación de PropTypes
+GridRol.propTypes = {
+  roles: PropTypes.arrayOf(
+    PropTypes.shape({
+      rol_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+      rol_nombre: PropTypes.string.isRequired,
+      rol_descripcion: PropTypes.string.isRequired,
+      rol_estado: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+  onEdit: PropTypes.func.isRequired,
+};

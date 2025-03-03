@@ -1,4 +1,5 @@
 import * as React from "react";
+import PropTypes from "prop-types"; // Importamos PropTypes
 import axios from "axios";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -20,7 +21,7 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, addTipoBlo
   const [message, setMessage] = React.useState({ open: false, severity: "info", text: "" });
 
   const url = `${SiteProps.urlbasev1}/tipo_bloque`;
-  const token = localStorage.getItem("token"); // Obtén el token de localStorage
+  const token = localStorage.getItem("token");
 
   const handleCreate = () => {
     setSelectedRow({ id: null, nombre: "", descripcion: "", estado: 1 });
@@ -45,7 +46,7 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, addTipoBlo
     axios
       .delete(`${url}/${selectedRow.id}`, {
         headers: {
-          Authorization: `Bearer ${token}`, // Agrega el token de autorización aquí
+          Authorization: `Bearer ${token}`,
         },
       })
       .then(() => {
@@ -134,3 +135,18 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, addTipoBlo
     </React.Fragment>
   );
 }
+
+// Validación de PropTypes para evitar errores
+FormTipoBloque.propTypes = {
+  selectedRow: PropTypes.shape({
+    id: PropTypes.number,
+    nombre: PropTypes.string,
+    descripcion: PropTypes.string,
+    estado: PropTypes.number,
+  }),
+  setSelectedRow: PropTypes.func.isRequired,
+  addTipoBloque: PropTypes.func.isRequired,
+  updateTipoBloque: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired,
+};
+

@@ -38,17 +38,31 @@ export default function ProductoPresentacion() {
   const [presentacionesList, setPresentacionesList] = React.useState([]);
   const [productos, setProductos] = React.useState([]);
 
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    setMessage({
+      open: true,
+      severity: "error",
+      text: "Token no disponible. Inicie sesión nuevamente.",
+    });
+  }
+
+  // Función para recargar datos con paginación
   const reloadData = () => {
     axios.get(`${SiteProps.urlbasev1}/producto-presentacion`, {
       params: {
         page: paginationModel.page,
         size: paginationModel.pageSize,
       },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
     })
       .then((response) => {
         if (response.data && Array.isArray(response.data.content)) {
           setPresentaciones(response.data.content);
-          setRowCount(response.data.page.totalElements);
+          setRowCount(response.data.page?.totalElements || response.data.content.length);
         } else {
           console.error('La respuesta no es un array:', response.data);
           setMessage({
@@ -72,22 +86,44 @@ export default function ProductoPresentacion() {
     reloadData();
   }, [paginationModel]);
 
-  // Cargar marcas, unidades, presentaciones y productos
+  // **Cargar marcas, unidades, presentaciones y productos**
   React.useEffect(() => {
-    axios.get(`${SiteProps.urlbasev1}/marcas`)
-      .then((response) => setMarcas(response.data))
+    axios.get(`${SiteProps.urlbasev1}/marca`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    })
+      .then((response) => setMarcas(Array.isArray(response.data) ? response.data : []))
       .catch((error) => console.error("Error al cargar Marcas:", error));
 
-    axios.get(`${SiteProps.urlbasev1}/unidades`)
-      .then((response) => setUnidades(response.data))
+    axios.get(`${SiteProps.urlbasev1}/unidad`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    })
+      .then((response) => setUnidades(Array.isArray(response.data) ? response.data : []))
       .catch((error) => console.error("Error al cargar Unidades:", error));
 
-    axios.get(`${SiteProps.urlbasev1}/presentaciones`)
-      .then((response) => setPresentacionesList(response.data))
+    axios.get(`${SiteProps.urlbasev1}/presentaciones`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    })
+      .then((response) => setPresentacionesList(Array.isArray(response.data) ? response.data : []))
       .catch((error) => console.error("Error al cargar Presentaciones:", error));
 
-    axios.get(`${SiteProps.urlbasev1}/productos`)
-      .then((response) => setProductos(response.data))
+    axios.get(`${SiteProps.urlbasev1}/producto`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    })
+      .then((response) => {
+        if (response.data && Array.isArray(response.data.content)) {
+          setProductos(response.data.content);
+        } else {
+          console.error("Formato incorrecto en productos:", response.data);
+        }
+      })
       .catch((error) => console.error("Error al cargar Productos:", error));
   }, []);
 

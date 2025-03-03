@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import PropTypes from "prop-types"; // Importamos PropTypes
 import { DataGrid } from "@mui/x-data-grid";
-import axios from "axios";
-import { SiteProps } from "../dashboard/SiteProps";
 
-const GridTipoSedes = ({ tipoSedes, setSelectedRow, deleteTipoSedes }) => {
+const GridTipoSedes = ({ tipoSedes, setSelectedRow }) => {
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
     { field: "nombre", headerName: "Nombre", width: 150 },
@@ -19,7 +18,7 @@ const GridTipoSedes = ({ tipoSedes, setSelectedRow, deleteTipoSedes }) => {
   return (
     <div style={{ height: 400, width: "100%" }}>
       <DataGrid
-        rows={tipoSedes} // Asegúrate de que siempre sea un array
+        rows={tipoSedes || []} // Se asegura de que siempre sea un array
         columns={columns}
         pageSize={5}
         rowsPerPageOptions={[5]}
@@ -27,6 +26,19 @@ const GridTipoSedes = ({ tipoSedes, setSelectedRow, deleteTipoSedes }) => {
       />
     </div>
   );
+};
+
+// ✅ Agregamos PropTypes para evitar errores en la consola
+GridTipoSedes.propTypes = {
+  tipoSedes: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      nombre: PropTypes.string.isRequired,
+      descripcion: PropTypes.string.isRequired,
+      estado: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
 };
 
 export default GridTipoSedes;

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types"; // Importamos PropTypes
 import {
   Button,
   Dialog,
@@ -189,3 +190,16 @@ export default function FormTipoSedes({
     </>
   );
 }
+
+// ✅ Validación de PropTypes para evitar errores en consola
+FormTipoSedes.propTypes = {
+  selectedRow: PropTypes.shape({
+    id: PropTypes.number,
+    nombre: PropTypes.string,
+    descripcion: PropTypes.string,
+    estado: PropTypes.number,
+  }),
+  setSelectedRow: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired,
+  setMessage: PropTypes.func.isRequired,
+};

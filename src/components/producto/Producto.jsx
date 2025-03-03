@@ -22,15 +22,15 @@ export default function Producto(props) {
   };
 
   const [message, setMessage] = React.useState(messageData);
-  const [productos, setProductos] = React.useState([]);
+  const [producto, setProductos] = React.useState([]);
 
   // Función para recargar los datos
   const reloadData = () => {
-    axios.get(`${SiteProps.urlbasev1}/productos`)
+    axios.get(`${SiteProps.urlbasev1}/producto`)
       .then((response) => {
         // Verificar si la respuesta tiene una propiedad 'data' que contiene un array
         if (response.data && Array.isArray(response.data.data)) {
-          setProductos(response.data.data); // Ajustar para acceder al array de productos dentro de 'data'
+          setProductos(response.data.data); // Ajustar para acceder al array de producto dentro de 'data'
         } else if (Array.isArray(response.data)) {
           setProductos(response.data); // Si la respuesta ya es un array directamente
         } else {
@@ -38,16 +38,16 @@ export default function Producto(props) {
           setMessage({
             open: true,
             severity: 'error',
-            text: 'Error al cargar productos: respuesta no válida'
+            text: 'Error al cargar producto: respuesta no válida'
           });
         }
       })
       .catch((error) => {
-        console.error('Error al cargar productos:', error);
+        console.error('Error al cargar producto:', error);
         setMessage({
           open: true,
           severity: 'error',
-          text: 'Error al cargar productos'
+          text: 'Error al cargar producto'
         });
       });
   };  
@@ -64,13 +64,13 @@ export default function Producto(props) {
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
         reloadData={reloadData}  // Pasa reloadData como prop a FormProducto
-        productos={productos}
+        producto={producto}
 
       />
       <GridProducto
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        productos={productos}
+        producto={producto}
       />
     </div>
   );

@@ -11,22 +11,22 @@ const columns = [
 ];
 
 /**
- * El componente GridPersona muestra una tabla con los datos de las productos.
+ * El componente GridPersona muestra una tabla con los datos de las producto.
  * 
  * @componente
  * @param {object} props - Propiedades pasadas al componente.
- * @param {array} props.productos - Lista de productos a mostrar en la tabla.
+ * @param {array} props.producto - Lista de producto a mostrar en la tabla.
  * @param {function} props.setSelectedRow - Función para establecer la fila seleccionada.
- * @returns {JSX.Element} La tabla de datos de productos.
+ * @returns {JSX.Element} La tabla de datos de producto.
  */
 
 export default function GridProducto(props) {
   return (
     <DataGrid
-      rows={props.productos}
+      rows={props.producto}
       onRowSelectionModelChange={(id) => {
         const selectedIDs = new Set(id);
-        const selectedRowData = props.productos.filter((row) =>
+        const selectedRowData = props.producto.filter((row) =>
           selectedIDs.has(row.id)
         );
         props.setSelectedRow(selectedRowData[0]);

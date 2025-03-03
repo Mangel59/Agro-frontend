@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { DataGrid } from '@mui/x-data-grid';
+import PropTypes from 'prop-types';
 
 // Definición de las columnas para el DataGrid
 const columns = [
@@ -9,25 +10,25 @@ const columns = [
 
 /**
  * Componente GridDepartamento que muestra una tabla de departamentos utilizando DataGrid.
- * 
- * @param {Object} props - Props del componente.
- * @param {Array} props.departamentos - Lista de departamentos a mostrar en la tabla.
- * @param {Function} props.setSelectedRow - Función para establecer la fila seleccionada.
- * @returns {JSX.Element} Componente que contiene el DataGrid con los departamentos.
  */
 export default function GridDepartamento(props) {
+  // Manejo de selección de fila
+  const handleRowSelection = (selection) => {
+    if (selection.length > 0) {
+      const selectedRowData = props.departamentos.find((row) => row.id === selection[0]);
+      props.setSelectedRow(selectedRowData);
+      console.log('Fila seleccionada:', selectedRowData);
+    } else {
+      props.setSelectedRow(null);
+    }
+  };
+
   return (
     <DataGrid
       rows={props.departamentos}
-      onRowSelectionModelChange={(id) => {
-        const selectedIDs = new Set(id);
-        const selectedRowData = props.departamentos.filter((row) =>
-          selectedIDs.has(row.id)
-        );
-        props.setSelectedRow(selectedRowData[0]);
-        console.log(props.selectedRow);
-      }}
       columns={columns}
+      getRowId={(row) => row.id || row.uniqueID}  // Asegúrate de que cada fila tenga un ID único
+      onRowSelectionModelChange={(selection) => handleRowSelection(selection)}
       initialState={{
         pagination: {
           paginationModel: {
@@ -39,3 +40,14 @@ export default function GridDepartamento(props) {
     />
   );
 }
+
+// Definición de PropTypes
+GridDepartamento.propTypes = {
+  departamentos: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+      name: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+};

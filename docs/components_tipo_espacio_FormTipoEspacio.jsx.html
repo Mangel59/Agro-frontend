@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/tipo_espacio/FormTipoEspacio.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/tipo_espacio/FormTipoEspacio.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import * as React from "react";
+import axios from "axios";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import { Grid, Box } from "@mui/material";
+import { SiteProps } from "../dashboard/SiteProps";
+
+/**
+ * Formulario para gestionar tipos de espacios: agregar, actualizar y eliminar.
+ */
+export default function FormTipoEspacio({ selectedRow, setSelectedRow, reloadData, setMessage }) {
+  const [open, setOpen] = React.useState(false);
+  const [methodName, setMethodName] = React.useState("");
+  const url = `${SiteProps.urlbasev1}/tipo_espacio`;
+  const token = localStorage.getItem("token");
+
+  // Función para abrir el formulario para crear
+  const create = () => {
+    const row = {
+      id: null,
+      nombre: "",
+      descripcion: "",
+      estado: 1,
+    };
+    setSelectedRow(row);
+    setMethodName("Add");
+    setOpen(true);
+  };
+
+  // Función para abrir el formulario para actualizar
+  const update = () => {
+    if (!selectedRow || selectedRow.id === null) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Seleccione un tipo de espacio para actualizar.",
+      });
+      return;
+    }
+    setMethodName("Update");
+    setOpen(true);
+  };
+
+  // Función para eliminar el registro seleccionado
+  const deleteRow = () => {
+    if (!selectedRow || selectedRow.id === null) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Seleccione un tipo de espacio para eliminar.",
+      });
+      return;
+    }
+    axios
+      .delete(`${url}/${selectedRow.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(() => {
+        setMessage({
+          open: true,
+          severity: "success",
+          text: "Tipo de espacio eliminado con éxito.",
+        });
+        reloadData();
+        setSelectedRow(null);
+      })
+      .catch((error) => {
+        const errorMessage = error.response?.data?.message || error.message;
+        setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al eliminar tipo de espacio: ${errorMessage}`,
+        });
+      });
+  };
+
+  // Función para manejar el cierre del formulario
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  // Función para manejar el envío del formulario
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const payload = {
+      nombre: selectedRow.nombre,
+      descripcion: selectedRow.descripcion,
+      estado: selectedRow.estado,
+    };
+
+    const method = methodName === "Add" ? axios.post : axios.put;
+    const endpoint = methodName === "Add" ? url : `${url}/${selectedRow.id}`;
+
+    method(endpoint, payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(() => {
+        setMessage({
+          open: true,
+          severity: "success",
+          text: methodName === "Add" ? "Tipo de espacio creado con éxito!" : "Tipo de espacio actualizado con éxito!",
+        });
+        reloadData();
+        handleClose();
+      })
+      .catch((error) => {
+        const errorMessage = error.response?.data?.message || error.message;
+        setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} tipo de espacio: ${errorMessage}`,
+        });
+      });
+  };
+
+  // Función para manejar los cambios en los campos del formulario
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setSelectedRow((prevRow) => ({ ...prevRow, [name]: value }));
+  };
+
+  return (
+    &lt;React.Fragment>
+      &lt;Box display="flex" justifyContent="right" mb={2}>
+        &lt;Button variant="outlined" color="primary" onClick={create} style={{ marginRight: "10px" }}>
+          Agregar
+        &lt;/Button>
+        &lt;Button variant="outlined" color="primary" onClick={update} style={{ marginRight: "10px" }}>
+          Actualizar
+        &lt;/Button>
+        &lt;Button variant="outlined" color="primary" onClick={deleteRow}>
+          Eliminar
+        &lt;/Button>
+      &lt;/Box>
+      &lt;Dialog
+        open={open}
+        onClose={handleClose}
+        PaperProps={{
+          component: "form",
+          onSubmit: handleSubmit,
+        }}
+      >
+        &lt;DialogTitle>{methodName === "Add" ? "Agregar Tipo de Espacio" : "Actualizar Tipo de Espacio"}&lt;/DialogTitle>
+        &lt;DialogContent>
+          &lt;DialogContentText>Completa el formulario para gestionar un tipo de espacio.&lt;/DialogContentText>
+          &lt;Box component="div" sx={{ width: "100%", maxWidth: "600px", mx: "auto" }}>
+            &lt;Grid container spacing={2}>
+              &lt;Grid item xs={12}>
+                &lt;TextField
+                  required
+                  id="nombre"
+                  name="nombre"
+                  label="Nombre"
+                  fullWidth
+                  variant="standard"
+                  value={selectedRow?.nombre || ""}
+                  onChange={handleInputChange}
+                />
+              &lt;/Grid>
+              &lt;Grid item xs={12}>
+                &lt;TextField
+                  id="descripcion"
+                  name="descripcion"
+                  label="Descripción"
+                  fullWidth
+                  variant="standard"
+                  value={selectedRow?.descripcion || ""}
+                  onChange={handleInputChange}
+                />
+              &lt;/Grid>
+              &lt;Grid item xs={12}>
+                &lt;TextField
+                  id="estado"
+                  name="estado"
+                  label="Estado"
+                  type="number"
+                  fullWidth
+                  variant="standard"
+                  value={selectedRow?.estado || 1}
+                  onChange={handleInputChange}
+                />
+              &lt;/Grid>
+            &lt;/Grid>
+          &lt;/Box>
+        &lt;/DialogContent>
+        &lt;DialogActions>
+          &lt;Button onClick={handleClose}>Cancelar&lt;/Button>
+          &lt;Button type="submit">{methodName === "Add" ? "Agregar" : "Actualizar"}&lt;/Button>
+        &lt;/DialogActions>
+      &lt;/Dialog>
+    &lt;/React.Fragment>
+  );
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-GridKardexNuevo.html">GridKardexNuevo</a></li></ul><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#KardexNuevo">KardexNuevo</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Mar 03 2025 16:10:35 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

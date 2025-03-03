@@ -1,11 +1,17 @@
 import * as React from 'react';
+import PropTypes from 'prop-types'; // Importar PropTypes
 import { DataGrid } from '@mui/x-data-grid';
 
 const columns = [
   { field: "id", headerName: "ID", width: 70 },
   { field: "nombre", headerName: "Nombre", width: 150 },
   { field: "descripcion", headerName: "Descripción", width: 300 },
-  { field: "estado", headerName: "Estado", width: 100, valueFormatter: ({ value }) => (value === 1 ? "Activo" : "Inactivo") },
+  { 
+    field: "estado", 
+    headerName: "Estado", 
+    width: 100, 
+    valueFormatter: ({ value }) => (value === 1 ? "Activo" : "Inactivo") 
+  },
 ];
 
 export default function GridTipoBloque({ bloques, setSelectedRow }) {
@@ -35,3 +41,16 @@ export default function GridTipoBloque({ bloques, setSelectedRow }) {
     />
   );
 }
+
+// Definición de PropTypes para validar los props
+GridTipoBloque.propTypes = {
+  bloques: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      nombre: PropTypes.string.isRequired,
+      descripcion: PropTypes.string.isRequired,
+      estado: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+};
