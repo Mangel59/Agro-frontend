@@ -1,3 +1,9 @@
+
+/**
+ * Producto componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
 import axios from "../axiosConfig";  // Usa axios directamente
 import MessageSnackBar from "../MessageSnackBar";
@@ -5,7 +11,13 @@ import FormProducto from "./FormProducto";
 import GridProducto from "./GridProducto";
 import { SiteProps } from "../dashboard/SiteProps";
 
-export default function Producto(props) {
+/**
+ * Componente Producto.
+ * @module Producto.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
+export default function Producto() {
   const row = {
     id: 0,
     nombre: "",
@@ -28,11 +40,9 @@ export default function Producto(props) {
   const reloadData = () => {
     axios.get(`${SiteProps.urlbasev1}/producto`)
       .then((response) => {
-        // Verificar si la respuesta tiene una propiedad 'data' que contiene un array
-        if (response.data && Array.isArray(response.data.data)) {
-          setProductos(response.data.data); // Ajustar para acceder al array de producto dentro de 'data'
-        } else if (Array.isArray(response.data)) {
-          setProductos(response.data); // Si la respuesta ya es un array directamente
+        // Ajuste para acceder a 'content'
+        if (response.data && Array.isArray(response.data.content)) {
+          setProductos(response.data.content); // Usa 'content' en lugar de 'data'
         } else {
           console.error('La respuesta no es un array:', response.data);
           setMessage({
@@ -50,7 +60,8 @@ export default function Producto(props) {
           text: 'Error al cargar producto'
         });
       });
-  };  
+  };
+  
   React.useEffect(() => {
     reloadData();  // Llama al cargar el componente
   }, []);

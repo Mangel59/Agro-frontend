@@ -16,6 +16,121 @@ import Inicio from './components/Inicio.jsx';
  * 
  * @component
  */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * App componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 const App = () => {
   const { t } = useTranslation(); // Hook para la internacionalización
   const [currentModule, setCurrentModule] = React.useState(<Inicio />); // Módulo actual que se muestra

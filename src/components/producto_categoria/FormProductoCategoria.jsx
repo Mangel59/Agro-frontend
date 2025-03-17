@@ -1,3 +1,9 @@
+
+/**
+ * FormProductoCategoria componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
 import axios from "axios";
 import {
@@ -18,6 +24,12 @@ import UpdateIcon from "@mui/icons-material/Update";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente FormProductoCategoria.
+ * @module FormProductoCategoria.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormProductoCategoria(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");

@@ -1,3 +1,9 @@
+
+/**
+ * Municipio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
 import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
@@ -6,6 +12,12 @@ import GridMunicipio from "./GridMunicipio";
 import { SiteProps } from "../dashboard/SiteProps";
 
 
+/**
+ * Componente Municipio.
+ * @module Municipio.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Municipio() {
   const row = {
     id: 0,

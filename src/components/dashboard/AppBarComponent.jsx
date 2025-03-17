@@ -1,3 +1,9 @@
+
+/**
+ * AppBarComponent componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useEffect, useState } from 'react';
 import { AppBar, Toolbar, Button, Typography, Switch } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
@@ -6,6 +12,12 @@ import Register from '../Register';
 import ProfileMenu from '../ProfileMenu'; 
 import { useThemeToggle } from './ThemeToggleProvider';
 
+/**
+ * Componente AppBarComponent.
+ * @module AppBarComponent.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function AppBarComponent({ setCurrentModule }) {
   const location = useLocation();
   const toggleTheme = useThemeToggle();

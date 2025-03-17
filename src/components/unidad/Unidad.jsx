@@ -1,3 +1,9 @@
+
+/**
+ * Unidad componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
 import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
@@ -5,7 +11,13 @@ import FormUnidad from "./FormUnidad";
 import GridUnidad from "./GridUnidad";
 import { SiteProps } from "../dashboard/SiteProps";
 
-export default function Unidad(props) {
+/**
+ * Componente Unidad.
+ * @module Unidad.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
+export default function Unidad() {
   const row = {
     id: 0,
     nombre: "",
@@ -15,18 +27,28 @@ export default function Unidad(props) {
   };
 
   const [selectedRow, setSelectedRow] = React.useState(row);
-  const messageData = {
+  const [message, setMessage] = React.useState({
     open: false,
     severity: "success",
     text: "",
-  };
+  });
 
-  const [message, setMessage] = React.useState(messageData);
   const [unidades, setUnidades] = React.useState([]);
+
+  // Estado para filtros
+  const [filterModel, setFilterModel] = React.useState({
+    items: [],
+  });
+
+  // Estado para ordenamiento (AHORA USADO correctamente)
+  const [sortModel, setSortModel] = React.useState([]);
+
+  // Estado para paginación
   const [paginationModel, setPaginationModel] = React.useState({
     page: 0,
     pageSize: 5,
   });
+
   const [rowCount, setRowCount] = React.useState(0);
 
   const reloadData = () => {
@@ -82,6 +104,7 @@ export default function Unidad(props) {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
+      <h1>Unidad</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormUnidad
         setMessage={setMessage}
@@ -97,6 +120,10 @@ export default function Unidad(props) {
         rowCount={rowCount}
         paginationModel={paginationModel}
         setPaginationModel={setPaginationModel}
+        filterModel={filterModel}
+        setFilterModel={setFilterModel}
+        sortModel={sortModel}                // ✅ Añadido
+        setSortModel={setSortModel}
       />
     </div>
   );

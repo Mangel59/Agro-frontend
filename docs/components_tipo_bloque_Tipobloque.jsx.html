@@ -35,7 +35,12 @@ import MessageSnackBar from "../MessageSnackBar";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
- * Componente principal para gestionar Tipo de Bloque
+ * Componente principal para gestionar los tipos de bloque.
+ *
+ * Permite listar, crear, actualizar y eliminar registros del recurso tipo_bloque.
+ * @component
+ * @module TipoBloque
+ * @returns {JSX.Element}
  */
 export default function TipoBloque() {
   const initialRow = { id: null, nombre: "", descripcion: "", estado: 1 };
@@ -44,6 +49,11 @@ export default function TipoBloque() {
   const [selectedRow, setSelectedRow] = useState(initialRow);
   const [message, setMessage] = useState({ open: false, severity: "info", text: "" });
 
+  /**
+   * Carga los tipos de bloque desde la API.
+   * @async
+   * @function fetchData
+   */
   const fetchData = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -64,6 +74,12 @@ export default function TipoBloque() {
     fetchData();
   }, []);
 
+  /**
+   * Crea un nuevo tipo de bloque.
+   * @async
+   * @function addTipoBloque
+   * @param {Object} data - Datos del tipo de bloque a crear.
+   */
   const addTipoBloque = async (data) => {
     try {
       const token = localStorage.getItem("token");
@@ -81,6 +97,12 @@ export default function TipoBloque() {
     }
   };
 
+  /**
+   * Actualiza un tipo de bloque existente.
+   * @async
+   * @function updateTipoBloque
+   * @param {Object} data - Datos actualizados del tipo de bloque.
+   */
   const updateTipoBloque = async (data) => {
     try {
       const token = localStorage.getItem("token");
@@ -98,6 +120,12 @@ export default function TipoBloque() {
     }
   };
 
+  /**
+   * Elimina un tipo de bloque por su ID.
+   * @async
+   * @function deleteTipoBloque
+   * @param {number} id - ID del tipo de bloque a eliminar.
+   */
   const deleteTipoBloque = async (id) => {
     try {
       const token = localStorage.getItem("token");
@@ -143,13 +171,13 @@ export default function TipoBloque() {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-GridKardexNuevo.html">GridKardexNuevo</a></li></ul><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#KardexNuevo">KardexNuevo</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="AppBarComponent.module_jsx.html">jsx</a></li><li><a href="Chart.module_jsx.html">jsx</a></li><li><a href="Chart1.module_jsx.html">jsx</a></li><li><a href="ComboBox.module_jsx.html">jsx</a></li><li><a href="ComboBox1.module_jsx.html">jsx</a></li><li><a href="Contenido.module_jsx.html">jsx</a></li><li><a href="Copyright.module_jsx.html">jsx</a></li><li><a href="Deposits.module_jsx.html">jsx</a></li><li><a href="Espacio.module_jsx.html">jsx</a></li><li><a href="EspacioOcupacion.module_jsx.html">jsx</a></li><li><a href="Evaluacion.module_jsx.html">jsx</a></li><li><a href="FormEspacio.module_jsx.html">jsx</a></li><li><a href="FormEvaluacion.module_jsx.html">jsx</a></li><li><a href="FormKardexNuevo.module_jsx.html">jsx</a></li><li><a href="FormMarca.module_jsx.html">jsx</a></li><li><a href="FormMunicipio.module_jsx.html">jsx</a></li><li><a href="FormOrdenCompra.module_jsx.html">jsx</a></li><li><a href="FormOrdenCompraItem.module_jsx.html">jsx</a></li><li><a href="FormPais.module_jsx.html">jsx</a></li><li><a href="FormPedido.module_jsx.html">jsx</a></li><li><a href="FormPedidoItem.module_jsx.html">jsx</a></li><li><a href="FormPersona.module_jsx.html">jsx</a></li><li><a href="FormPresentacion.module_jsx.html">jsx</a></li><li><a href="FormProducto.module_jsx.html">jsx</a></li><li><a href="FormProductoCategoria.module_jsx.html">jsx</a></li><li><a href="FormProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="FormProveedor.module_jsx.html">jsx</a></li><li><a href="FormRegistroEmpresa.module_jsx.html">jsx</a></li><li><a href="FormRegistroPersona.module_jsx.html">jsx</a></li><li><a href="FormRol.module_jsx.html">jsx</a></li><li><a href="FormSede.module_jsx.html">jsx</a></li><li><a href="FormTipoEspacio.module_jsx.html">jsx</a></li><li><a href="FormTipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="FormTipoMovimiento.module_jsx.html">jsx</a></li><li><a href="FormTipoProduccion.module_jsx.html">jsx</a></li><li><a href="FormTipoSede.module_jsx.html">jsx</a></li><li><a href="FormUnidad.module_jsx.html">jsx</a></li><li><a href="FromEspacioOcupacion.module_jsx.html">jsx</a></li><li><a href="Grid1.module_jsx.html">jsx</a></li><li><a href="GridEspacio.module_jsx.html">jsx</a></li><li><a href="GridEvaluacion.module_jsx.html">jsx</a></li><li><a href="GridKardexNuevo.module_jsx.html">jsx</a></li><li><a href="GridMarca.module_jsx.html">jsx</a></li><li><a href="GridMunicipio.module_jsx.html">jsx</a></li><li><a href="GridOrdenCompra.module_jsx.html">jsx</a></li><li><a href="GridOrdenCompraItem.module_jsx.html">jsx</a></li><li><a href="GridPais.module_jsx.html">jsx</a></li><li><a href="GridPedido.module_jsx.html">jsx</a></li><li><a href="GridPedidoItem.module_jsx.html">jsx</a></li><li><a href="GridPersona.module_jsx.html">jsx</a></li><li><a href="GridPresentacion.html#.module:jsx">jsx</a></li><li><a href="GridProduccion.module_jsx.html">jsx</a></li><li><a href="GridProducto.module_jsx.html">jsx</a></li><li><a href="GridProductoCategoria.module_jsx.html">jsx</a></li><li><a href="GridProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="GridProveedor.module_jsx.html">jsx</a></li><li><a href="GridRol.module_jsx.html">jsx</a></li><li><a href="GridSede.module_jsx.html">jsx</a></li><li><a href="GridTipoEspacio.module_jsx.html">jsx</a></li><li><a href="GridTipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="GridTipoMovimiento.module_jsx.html">jsx</a></li><li><a href="GridTipoProduccion.module_jsx.html">jsx</a></li><li><a href="GridUnidad.module_jsx.html">jsx</a></li><li><a href="Home.module_jsx.html">jsx</a></li><li><a href="KardexNuevo.module_jsx.html">jsx</a></li><li><a href="Login.module_jsx.html">jsx</a></li><li><a href="Marca.module_jsx.html">jsx</a></li><li><a href="MessageSnackBar.module_jsx.html">jsx</a></li><li><a href="Municipio.module_jsx.html">jsx</a></li><li><a href="Navigator2.module_jsx.html">jsx</a></li><li><a href="OrdenCompra.module_jsx.html">jsx</a></li><li><a href="Pais.module_jsx.html">jsx</a></li><li><a href="Pedido.module_jsx.html">jsx</a></li><li><a href="PerfilCard.module_jsx.html">jsx</a></li><li><a href="Persona.module_jsx.html">jsx</a></li><li><a href="Presentacion.module_jsx.html">jsx</a></li><li><a href="Produccion.module_jsx.html">jsx</a></li><li><a href="Producto.module_jsx.html">jsx</a></li><li><a href="ProductoCategoria.module_jsx.html">jsx</a></li><li><a href="ProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="Proveedor.module_jsx.html">jsx</a></li><li><a href="Register.html#.module:jsx">jsx</a></li><li><a href="Rol.module_jsx.html">jsx</a></li><li><a href="Sede.module_jsx.html">jsx</a></li><li><a href="StackButtons.module_jsx.html">jsx</a></li><li><a href="TipoEspacio.module_jsx.html">jsx</a></li><li><a href="TipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="TipoMovimiento.module_jsx.html">jsx</a></li><li><a href="TipoProduccion.module_jsx.html">jsx</a></li><li><a href="TipoSede.module_jsx.html">jsx</a></li><li><a href="Unidad.module_jsx.html">jsx</a></li><li><a href="module-Almacen.html">Almacen</a></li><li><a href="module-Bloque.html">Bloque</a></li><li><a href="module-Departamento.html">Departamento</a></li><li><a href="module-Empresa.html">Empresa</a></li><li><a href="module-FormBloque.html">FormBloque</a></li><li><a href="module-FormDepartamento.html">FormDepartamento</a></li><li><a href="module-FormEmpresa.html">FormEmpresa</a></li><li><a href="module-FormTipoBloque.html">FormTipoBloque</a></li><li><a href="module-GridAlmacen.html">GridAlmacen</a></li><li><a href="module-GridBloque.html">GridBloque</a></li><li><a href="module-GridDepartamento.html">GridDepartamento</a></li><li><a href="module-GridEmpresa.html">GridEmpresa</a></li><li><a href="module-GridEspacioOcupacion.html">GridEspacioOcupacion</a></li><li><a href="module-GridKardexNuevo.html">GridKardexNuevo</a></li><li><a href="module-GridTipoBloque.html">GridTipoBloque</a></li><li><a href="module-GridTipoSede.html">GridTipoSede</a></li><li><a href="module-PerfilGroup.html">PerfilGroup</a></li><li><a href="module-ProfileMenu.html">ProfileMenu</a></li><li><a href="module-TipoBloque.html">TipoBloque</a></li><li><a href="module-main.html">main</a></li></ul><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#FormAlmacen">FormAlmacen</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#KardexNuevo">KardexNuevo</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#columns">columns</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Mar 03 2025 16:10:35 GMT-0500 (hora estándar de Colombia)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Mar 17 2025 14:41:57 GMT-0500 (hora estándar de Colombia)
 </footer>
 
 <script> prettyPrint(); </script>

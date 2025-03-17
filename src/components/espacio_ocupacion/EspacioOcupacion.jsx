@@ -1,3 +1,9 @@
+
+/**
+ * EspacioOcupacion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -13,6 +19,12 @@ import FormEspacioOcuOcupacion from "./FromEspacioOcupacion";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente EspacioOcupacion.
+ * @module EspacioOcupacion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function EspacioOcupacion() {
   const [sedes, setSedes] = useState([]);
   const [bloques, setBloques] = useState([]);

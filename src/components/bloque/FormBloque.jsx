@@ -1,3 +1,18 @@
+/**
+ * FormBloque componente principal.
+ * Permite crear, actualizar y eliminar bloques desde un formulario con validación.
+ * Incluye diálogos modales, selectores de sede y tipo de bloque, y gestión de estado.
+ *
+ * @module FormBloque
+ * @component
+ * @param {Object} props
+ * @param {Object} props.selectedRow - Fila actualmente seleccionada.
+ * @param {Function} props.setSelectedRow - Función para actualizar la fila seleccionada.
+ * @param {Function} props.setMessage - Función para mostrar mensajes de éxito o error.
+ * @param {Function} props.reloadData - Función para recargar los datos tras una operación.
+ * @returns {JSX.Element}
+ */
+
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import AddIcon from "@mui/icons-material/Add";
@@ -25,6 +40,9 @@ function FormBloque({ selectedRow = {}, setSelectedRow, setMessage, reloadData }
   const [sedes, setSedes] = useState([]);
   const [tipoBloques, setTipoBloques] = useState([]);
 
+  /**
+   * Carga las sedes y tipoBloques disponibles al montar el componente.
+   */
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -51,6 +69,9 @@ function FormBloque({ selectedRow = {}, setSelectedRow, setMessage, reloadData }
     fetchData();
   }, [setMessage]);
 
+  /**
+   * Prepara el formulario para crear un nuevo bloque.
+   */
   const create = () => {
     setSelectedRow({
       id: null,
@@ -67,6 +88,9 @@ function FormBloque({ selectedRow = {}, setSelectedRow, setMessage, reloadData }
     setOpen(true);
   };
 
+  /**
+   * Prepara el formulario para actualizar un bloque existente.
+   */
   const update = () => {
     if (!selectedRow || selectedRow.id == null) {
       setMessage({
@@ -80,6 +104,9 @@ function FormBloque({ selectedRow = {}, setSelectedRow, setMessage, reloadData }
     setOpen(true);
   };
 
+  /**
+   * Elimina el bloque actualmente seleccionado.
+   */
   const deleteRow = () => {
     if (!selectedRow || selectedRow.id == null) {
       setMessage({
@@ -113,6 +140,9 @@ function FormBloque({ selectedRow = {}, setSelectedRow, setMessage, reloadData }
 
   const handleClose = () => setOpen(false);
 
+  /**
+   * Envía los datos del formulario para crear o actualizar un bloque.
+   */
   const handleSubmit = () => {
     const payload = {
       id: selectedRow?.id || null,
@@ -184,6 +214,7 @@ function FormBloque({ selectedRow = {}, setSelectedRow, setMessage, reloadData }
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{methodName === "Add" ? "Agregar Bloque" : "Actualizar Bloque"}</DialogTitle>
         <DialogContent>
+          {/* Select de sede */}
           <FormControl fullWidth margin="normal">
             <InputLabel>Sede</InputLabel>
             <Select
@@ -197,6 +228,8 @@ function FormBloque({ selectedRow = {}, setSelectedRow, setMessage, reloadData }
               ))}
             </Select>
           </FormControl>
+
+          {/* Select de tipo de bloque */}
           <FormControl fullWidth margin="normal">
             <InputLabel>Tipo de Bloque</InputLabel>
             <Select
@@ -210,6 +243,8 @@ function FormBloque({ selectedRow = {}, setSelectedRow, setMessage, reloadData }
               ))}
             </Select>
           </FormControl>
+
+          {/* Campo de nombre */}
           <TextField
             fullWidth
             label="Nombre"
@@ -217,6 +252,8 @@ function FormBloque({ selectedRow = {}, setSelectedRow, setMessage, reloadData }
             onChange={(e) => setSelectedRow({ ...selectedRow, nombre: e.target.value })}
             required
           />
+
+          {/* Campo de descripción */}
           <TextField
             fullWidth
             label="Descripción"
@@ -225,9 +262,7 @@ function FormBloque({ selectedRow = {}, setSelectedRow, setMessage, reloadData }
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Cancelar
-          </Button>
+          <Button onClick={handleClose} color="primary">Cancelar</Button>
           <Button onClick={handleSubmit} color="primary">
             {methodName === "Add" ? "Agregar" : "Actualizar"}
           </Button>

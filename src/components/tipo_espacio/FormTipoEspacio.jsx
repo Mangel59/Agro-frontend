@@ -1,3 +1,9 @@
+
+/**
+ * FormTipoEspacio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
 import axios from "axios";
 import Button from "@mui/material/Button";
@@ -9,9 +15,16 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { Grid, Box } from "@mui/material";
 import { SiteProps } from "../dashboard/SiteProps";
+import PropTypes from "prop-types";
 
 /**
  * Formulario para gestionar tipos de espacios: agregar, actualizar y eliminar.
+ */
+/**
+ * Componente FormTipoEspacio.
+ * @module FormTipoEspacio.jsx
+ * @component
+ * @returns {JSX.Element}
  */
 export default function FormTipoEspacio({ selectedRow, setSelectedRow, reloadData, setMessage }) {
   const [open, setOpen] = React.useState(false);
@@ -198,3 +211,14 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, reloadDat
     </React.Fragment>
   );
 }
+FormTipoEspacio.propTypes = {
+  selectedRow: PropTypes.shape({
+    id: PropTypes.number,
+    nombre: PropTypes.string,
+    descripcion: PropTypes.string,
+    estado: PropTypes.number,
+  }),
+  setSelectedRow: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired,
+  setMessage: PropTypes.func.isRequired,
+};

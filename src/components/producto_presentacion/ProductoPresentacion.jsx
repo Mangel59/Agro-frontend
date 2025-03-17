@@ -1,3 +1,9 @@
+
+/**
+ * ProductoPresentacion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from 'react';
 import axios from '../axiosConfig';
 import MessageSnackBar from '../MessageSnackBar';
@@ -5,6 +11,12 @@ import FormProductoPresentacion from '../producto_presentacion/FormProductoPrese
 import GridProductoPresentacion from '../producto_presentacion/GridProductoPresentacion';
 import { SiteProps } from '../dashboard/SiteProps';
 
+/**
+ * Componente ProductoPresentacion.
+ * @module ProductoPresentacion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function ProductoPresentacion() {
   const row = {
     id: 0,

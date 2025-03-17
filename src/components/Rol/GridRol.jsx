@@ -1,3 +1,9 @@
+
+/**
+ * GridRol componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React from "react";
 import PropTypes from "prop-types"; // Importar PropTypes
 import { DataGrid } from "@mui/x-data-grid";
@@ -14,6 +20,12 @@ const columns = [
   },
 ];
 
+/**
+ * Componente GridRol.
+ * @module GridRol.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function GridRol({ roles, onEdit }) {
   return (
     <div style={{ height: 400, width: "100%" }}>

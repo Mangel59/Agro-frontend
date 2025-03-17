@@ -1,3 +1,9 @@
+
+/**
+ * TipoIdentificacion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
@@ -11,6 +17,12 @@ const columns = [
   { field: 'estado', headerName: 'Estado', width: 130 }
 ];
 
+/**
+ * Componente TipoIdentificacion.
+ * @module TipoIdentificacion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function TipoIdentificacion() {
   const [rows, setRows] = React.useState(null);
 

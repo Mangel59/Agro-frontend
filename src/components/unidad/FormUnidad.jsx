@@ -1,3 +1,9 @@
+
+/**
+ * FormUnidad componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
 import axios from "axios";
 import Button from "@mui/material/Button";
@@ -13,7 +19,14 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
+import PropTypes from 'prop-types';
 
+/**
+ * Componente FormUnidad.
+ * @module FormUnidad.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormUnidad(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
@@ -287,4 +300,17 @@ export default function FormUnidad(props) {
       </Dialog>
     </React.Fragment>
   );
+  
 }
+FormUnidad.propTypes = {
+  setMessage: PropTypes.func.isRequired,
+  selectedRow: PropTypes.shape({
+    id: PropTypes.number,
+    nombre: PropTypes.string,
+    descripcion: PropTypes.string,
+    estado: PropTypes.number,
+    empresa: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  }).isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired,
+};

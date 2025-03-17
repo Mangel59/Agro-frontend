@@ -1,3 +1,9 @@
+
+/**
+ * FormProducto componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
 import axios from "../axiosConfig";
 import Button from "@mui/material/Button";
@@ -13,7 +19,14 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
+import PropTypes from "prop-types";
 
+/**
+ * Componente FormProducto.
+ * @module FormProducto.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormProducto(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
@@ -134,6 +147,7 @@ export default function FormProducto(props) {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
+        console.log("Respuesta al actualizar: ", response);
         props.setMessage({
           open: true,
           severity: "success",
@@ -163,7 +177,7 @@ export default function FormProducto(props) {
           },
         })
         .then((response) => {
-          console.log("Respuesta al actualizar: ", response);
+          console.log("Producto creado con éxito:", response.data);
           props.setMessage({
             open: true,
             severity: "success",
@@ -222,16 +236,16 @@ export default function FormProducto(props) {
           </FormControl>
 
           <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="productocategoriaid"
-              name="productocategoriaid"
-              label="ID de categoría del producto"
-              type="number"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.productoCategoriaId || 0}
-            />
+          <TextField
+          required
+          id="productoCategoriaId"
+          name="productoCategoriaId"
+          label="ID de categoría del producto"
+          type="number"
+          fullWidth
+          variant="standard"
+          defaultValue={props.selectedRow?.productoCategoriaId || 0}
+        />
           </FormControl>
 
           <FormControl fullWidth margin="normal">
@@ -268,3 +282,16 @@ export default function FormProducto(props) {
     </React.Fragment>
   );
 }
+
+FormProducto.propTypes = {
+  selectedRow: PropTypes.shape({
+    id: PropTypes.number,
+    nombre: PropTypes.string,
+    productoCategoriaId: PropTypes.number, 
+    descripcion: PropTypes.string,
+    estado: PropTypes.number,
+  }).isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+  setMessage: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired,
+};

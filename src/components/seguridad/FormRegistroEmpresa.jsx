@@ -1,10 +1,23 @@
+
+/**
+ * FormRegistroEmpresa componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+import Contenido from '../dashboard/Contenido.jsx';
 import * as React from 'react';
 import { Button, TextField, FormControl, InputLabel, MenuItem, Select ,Typography, Container, Box } from '@mui/material';
 import { SiteProps } from '../dashboard/SiteProps';
 import axios from '../axiosConfig';
-import Contenido from '../dashboard/Contenido';
 
 
+
+/**
+ * Componente FormRegistroEmpresa.
+ * @module FormRegistroEmpresa.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormRegistroEmpresa(props) {
 
     // Definimos la URL del endpoint

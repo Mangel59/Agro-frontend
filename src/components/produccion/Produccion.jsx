@@ -1,10 +1,22 @@
+
+/**
+ * Produccion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import FormProduccion from "./FormProduccion";
 import GridProduccion from "./GridProduccion";
 import { SiteProps } from "../dashboard/SiteProps";
-import { FormControl, InputLabel, Select, MenuItem, Button } from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material"; // ❌ Se eliminó Button porque no se usa
 
+/**
+ * Componente Produccion.
+ * @module Produccion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Produccion() {
   const [sedes, setSedes] = useState([]);
   const [bloques, setBloques] = useState([]);
@@ -12,6 +24,7 @@ export default function Produccion() {
   const [selectedSede, setSelectedSede] = useState("");
   const [selectedBloque, setSelectedBloque] = useState("");
   const [selectedEspacio, setSelectedEspacio] = useState("");
+  const [selectedRow, setSelectedRow] = useState(null); // ✅ Agregado para pasarlo a FormProduccion
   const [message, setMessage] = useState({ open: false, severity: "", text: "" });
 
   // Cargar las sedes al iniciar
@@ -75,7 +88,9 @@ export default function Produccion() {
 
   return (
     <div>
-      <h1>Produccion</h1>
+      <h1>Producción</h1>
+
+      {/* Select de sede */}
       <FormControl fullWidth margin="normal">
         <InputLabel id="sede-label">Selecciona una Sede</InputLabel>
         <Select
@@ -91,6 +106,7 @@ export default function Produccion() {
         </Select>
       </FormControl>
 
+      {/* Select de bloque */}
       <FormControl fullWidth margin="normal" disabled={!selectedSede}>
         <InputLabel id="bloque-label">Selecciona un Bloque</InputLabel>
         <Select
@@ -106,6 +122,7 @@ export default function Produccion() {
         </Select>
       </FormControl>
 
+      {/* Select de espacio */}
       <FormControl fullWidth margin="normal" disabled={!selectedBloque}>
         <InputLabel id="espacio-label">Selecciona un Espacio</InputLabel>
         <Select
@@ -121,7 +138,15 @@ export default function Produccion() {
         </Select>
       </FormControl>
 
-      <FormProduccion reloadProducciones={() => {}} setMessage={setMessage} />
+      {/* Formulario de creación */}
+      <FormProduccion
+        reloadProducciones={() => {}}
+        setMessage={setMessage}
+        selectedRow={selectedRow} // ✅ ahora sí se lo pasas
+        setSelectedRow={setSelectedRow} // ✅ agregado para que no dé error
+      />
+
+      {/* Grilla */}
       {selectedEspacio ? (
         <GridProduccion espacioId={selectedEspacio} />
       ) : (
@@ -130,6 +155,3 @@ export default function Produccion() {
     </div>
   );
 }
-
-
-

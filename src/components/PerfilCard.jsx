@@ -1,3 +1,9 @@
+
+/**
+ * PerfilCard componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React from 'react';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
@@ -6,6 +12,12 @@ import CardMedia from '@mui/material/CardMedia';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { Box } from '@mui/material';
+/**
+ * Componente PerfilCard.
+ * @module PerfilCard.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function PerfilCard(props) {
   const { title, description, componentId, setCurrentModule } = props;
   const handleOpen = () => {

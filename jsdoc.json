@@ -1,8 +1,13 @@
 {
+  "plugins": ["node_modules/jsdoc-babel"],
+  "recurseDepth": 10,
   "source": {
     "include": ["src"],
     "includePattern": ".+\\.jsx?$",
-    "excludePattern": "(node_modules/|docs)"
+    "excludePattern": "(node_modules|docs)"
+  },
+  "babel": {
+    "extensions": ["js", "jsx"]
   },
   "opts": {
     "destination": "./docs",

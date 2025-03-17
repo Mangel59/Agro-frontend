@@ -1,3 +1,9 @@
+
+/**
+ * Chart1 componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 // import * as React from 'react';
 // import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 // import CssBaseline from '@mui/material/CssBaseline';
@@ -23,6 +29,12 @@ import Deposits from './Deposits';
 // import Orders from '../../Orders';
 
 
+/**
+ * Componente Chart1.
+ * @module Chart1.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Chart1() {
     return (
         <Grid container spacing={3}>

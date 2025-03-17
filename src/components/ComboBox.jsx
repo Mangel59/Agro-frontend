@@ -1,3 +1,9 @@
+
+/**
+ * ComboBox componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useState, useEffect } from 'react';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -5,6 +11,12 @@ import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
 import axios from 'axios';
 
+/**
+ * Componente ComboBox.
+ * @module ComboBox.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function ComboBox({ onAlmacenChange, onProduccionChange, onMovimientoChange, onDescripcionChange, onEstadoChange }) {
   const [almacenes, setAlmacenes] = useState([]);
   const [producciones, setProducciones] = useState([]);

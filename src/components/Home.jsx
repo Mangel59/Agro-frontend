@@ -1,3 +1,9 @@
+
+/**
+ * Home componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
@@ -6,6 +12,12 @@ import TipoIdentificacion from './TipoIdentificacion';
 import Persona from './personas/Persona.jsx';
 import PerfilGroup from './PerfilGroup';
 
+/**
+ * Componente Home.
+ * @module Home.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Home(props) {
   const [currentModule, setCurrentModule] = React.useState(props.currentModule);
 //Tambien debe redirigir a empresa

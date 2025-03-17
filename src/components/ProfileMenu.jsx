@@ -1,9 +1,13 @@
+/**
+ * Componente ProfileMenu.
+ * @module ProfileMenu
+ * @component
+ */
 import React, { useState } from 'react';
-import Button from '@mui/material/Button';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
+import { Button, Menu, MenuItem } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import Login from './Login'; 
+import PerfilGroup from './PerfilGroup';
+import Login from './Login';
 
 const ProfileMenu = ({ setCurrentModule, setIsAuthenticated }) => {
   const [anchorEl, setAnchorEl] = useState(null);

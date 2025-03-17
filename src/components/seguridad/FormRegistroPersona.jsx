@@ -1,3 +1,9 @@
+
+/**
+ * FormRegistroPersona componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from 'react';
 import { Button, TextField, FormControl, InputLabel, MenuItem, Select, Typography, Box, Container } from '@mui/material';
 import { SiteProps } from '../dashboard/SiteProps';
@@ -5,6 +11,12 @@ import axios from '../axiosConfig';
 // import axios from 'axios'
 import FormRegistroEmpresa from './FormRegistroEmpresa';
 
+/**
+ * Componente FormRegistroPersona.
+ * @module FormRegistroPersona.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormRegistroPersona(props) {
   // Definimos la URL del endpoint
   const url = `${SiteProps.urlbasev1}/personas/persona-usuario`;

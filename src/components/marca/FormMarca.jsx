@@ -1,4 +1,11 @@
+
+/**
+ * FormMarca componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
+import PropTypes from "prop-types";
 import axios from "axios";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -14,12 +21,17 @@ import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente FormMarca.
+ * @module FormMarca.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormMarca(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
-  const [empresas, setEmpresas] = React.useState([]); // Estado para las empresas
+  const [empresas, setEmpresas] = React.useState([]);
 
-  // Función para cargar las empresas al abrir el formulario
   const loadEmpresas = () => {
     const token = localStorage.getItem("token");
 
@@ -34,17 +46,12 @@ export default function FormMarca(props) {
 
     axios
       .get(`${SiteProps.urlbasev1}/empresas`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
-        console.log("Respuesta recibida de /empresas:", response.data);
-        
         if (response.data && Array.isArray(response.data.data)) {
           setEmpresas(response.data.data);
         } else {
-          console.error("La respuesta del servidor no es válida. Respuesta recibida:", response.data);
           props.setMessage({
             open: true,
             severity: "error",
@@ -56,7 +63,6 @@ export default function FormMarca(props) {
         const errorMessage = error.response
           ? `Código de error: ${error.response.status}, Mensaje: ${error.response.data.message || error.response.data}`
           : error.message;
-        console.error("Error al cargar empresas:", errorMessage);
         props.setMessage({
           open: true,
           severity: "error",
@@ -71,12 +77,12 @@ export default function FormMarca(props) {
       nombre: "",
       descripcion: "",
       estado: 0,
-      empresa: "" // Inicializamos empresa con una cadena vacía
+      empresa: ""
     };
     props.setSelectedRow(row);
     setMethodName("Add");
     setOpen(true);
-    loadEmpresas(); // Cargar empresas al abrir el formulario
+    loadEmpresas();
   };
 
   const update = () => {
@@ -90,7 +96,7 @@ export default function FormMarca(props) {
     }
     setMethodName("Update");
     setOpen(true);
-    loadEmpresas(); // Cargar empresas al abrir el formulario
+    loadEmpresas();
   };
 
   const deleteRow = () => {
@@ -102,11 +108,11 @@ export default function FormMarca(props) {
       });
       return;
     }
-    
+
     const id = props.selectedRow.id;
     const url = `${SiteProps.urlbasev1}/marca/${id}`;
     const token = localStorage.getItem("token");
-  
+
     if (!token) {
       props.setMessage({
         open: true,
@@ -115,22 +121,19 @@ export default function FormMarca(props) {
       });
       return;
     }
-  
+
     axios
       .delete(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
-        // Verificamos el status de la respuesta
         if (response.status === 200 || response.status === 204) {
           props.setMessage({
             open: true,
             severity: "success",
             text: "Marca eliminada con éxito!",
           });
-          props.reloadData(); // Recargar los datos después de eliminar correctamente
+          props.reloadData();
         } else {
           props.setMessage({
             open: true,
@@ -143,7 +146,6 @@ export default function FormMarca(props) {
         const errorMessage = error.response
           ? `Código de error: ${error.response.status}, Mensaje: ${error.response.data.message || error.response.data}`
           : error.message;
-        console.error("Error al eliminar Marca:", errorMessage);
         props.setMessage({
           open: true,
           severity: "error",
@@ -151,7 +153,7 @@ export default function FormMarca(props) {
         });
       });
   };
-  
+
   const handleClose = () => {
     setOpen(false);
   };
@@ -176,7 +178,10 @@ export default function FormMarca(props) {
 
     if (!validatePayload(formJson)) return;
 
-    const url = methodName === "Add" ? `${SiteProps.urlbasev1}/marca` : `${SiteProps.urlbasev1}/marca/${id}`;
+    const url =
+      methodName === "Add"
+        ? `${SiteProps.urlbasev1}/marca`
+        : `${SiteProps.urlbasev1}/marca/${id}`;
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -200,13 +205,18 @@ export default function FormMarca(props) {
         props.setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Marca creada con éxito!" : "Marca actualizada con éxito!",
+          text:
+            methodName === "Add"
+              ? "Marca creada con éxito!"
+              : "Marca actualizada con éxito!",
         });
         setOpen(false);
         props.reloadData();
       })
       .catch((error) => {
-        const errorMessage = error.response ? error.response.data.message : error.message;
+        const errorMessage = error.response
+          ? error.response.data.message
+          : error.message;
         props.setMessage({
           open: true,
           severity: "error",
@@ -272,15 +282,7 @@ export default function FormMarca(props) {
             </Select>
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel
-              id="estado-label"
-              sx={{
-                backgroundColor: "white",
-                padding: "0 8px",
-              }}
-            >
-              Estado
-            </InputLabel>
+            <InputLabel id="estado-label">Estado</InputLabel>
             <Select
               labelId="estado-label"
               id="estado"
@@ -301,3 +303,17 @@ export default function FormMarca(props) {
     </React.Fragment>
   );
 }
+
+// ✅ PropTypes añadidos para evitar errores
+FormMarca.propTypes = {
+  setMessage: PropTypes.func.isRequired,
+  selectedRow: PropTypes.shape({
+    id: PropTypes.number,
+    nombre: PropTypes.string,
+    descripcion: PropTypes.string,
+    empresa: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    estado: PropTypes.number,
+  }).isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired,
+};

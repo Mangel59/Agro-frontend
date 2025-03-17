@@ -1,3 +1,9 @@
+
+/**
+ * TipoProduccion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 // TipoProduccion.jsx
 import * as React from "react";
 import axios from "axios";
@@ -6,6 +12,12 @@ import FormTipoProduccion from "./FormTipoProduccion";
 import GridTipoProduccion from "./GridTipoProduccion";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente TipoProduccion.
+ * @module TipoProduccion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function TipoProduccion(props) {
   const row = {
     id: 0,

@@ -1,3 +1,9 @@
+
+/**
+ * FormTipoSedes componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useState } from "react";
 import PropTypes from "prop-types"; // Importamos PropTypes
 import {
@@ -19,6 +25,12 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "../axiosConfig";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente FormTipoSedes.
+ * @module FormTipoSede.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormTipoSedes({
   selectedRow,
   setSelectedRow,

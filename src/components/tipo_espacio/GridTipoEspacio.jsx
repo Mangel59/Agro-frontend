@@ -1,8 +1,21 @@
+
+/**
+ * GridTipoEspacio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
+import PropTypes from "prop-types";
 
+/**
+ * Componente GridTipoEspacio.
+ * @module GridTipoEspacio.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function GridTipoEspacio({ setSelectedRow, reloadData }) {
   const [iespacios, setIespacios] = useState([]); // Lista de tipos de espacios
   const [loading, setLoading] = useState(false); // Estado para mostrar el cargando
@@ -63,3 +76,7 @@ export default function GridTipoEspacio({ setSelectedRow, reloadData }) {
     </div>
   );
 }
+GridTipoEspacio.propTypes = {
+  setSelectedRow: PropTypes.func.isRequired,
+  reloadData: PropTypes.any,
+};

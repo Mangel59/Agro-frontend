@@ -1,10 +1,14 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom/client'; // ✅ ESTA ES LA LÍNEA QUE FALTABA
 import { BrowserRouter as Router } from 'react-router-dom';
-import App from './App.jsx';
-import './index.css';
-import { ThemeToggleProvider } from './components/dashboard/ThemeToggleProvider.jsx';
+import App from './App';
+import { ThemeToggleProvider } from './components/dashboard/ThemeToggleProvider';
 
+/**
+ * Componente main.
+ * @module main
+ * @component
+ */
 const Main = () => (
   <React.StrictMode>
     <ThemeToggleProvider>
@@ -16,4 +20,3 @@ const Main = () => (
 );
 
 ReactDOM.createRoot(document.getElementById('root')).render(<Main />);
-

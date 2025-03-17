@@ -1,7 +1,19 @@
+
+/**
+ * GridPedidoItem componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 // FUNCIONAL CRUD
 // import React from 'react';
 // import { DataGrid } from '@mui/x-data-grid';
 
+/**
+ * Componente GridPedidoItem.
+ * @module GridPedidoItem.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 // export default function GridPedidoItem({ items, pedidoId }) {
 //     const columns = [
 //         { field: 'producto', headerName: 'Producto', width: 200 },

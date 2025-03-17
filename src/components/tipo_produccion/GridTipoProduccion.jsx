@@ -1,3 +1,9 @@
+
+/**
+ * GridTipoProduccion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 // GridTipoProduccion.jsx
 import * as React from "react";
 import { DataGrid, GridToolbarContainer, GridToolbarFilterButton } from "@mui/x-data-grid";
@@ -17,6 +23,12 @@ const columns = [
   },
 ];
 
+/**
+ * Componente GridTipoProduccion.
+ * @module GridTipoProduccion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function GridTipoProduccion(props) {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(false);

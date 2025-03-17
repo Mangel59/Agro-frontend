@@ -1,7 +1,19 @@
+
+/**
+ * TipoIdentificacion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useState, useEffect } from "react";
 import FormTipoIdentificacion from "./FormTipoIdentificacion.jsx";
 import GridTipoIdentificacion from "./GridTipoIdentificacion.jsx";
 
+/**
+ * Componente TipoIdentificacion.
+ * @module TipoIdentificacion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function TipoIdentificacion() {
   const [tiposIdentificacion, setTiposIdentificacion] = useState([]);
   const [selectedRow, setSelectedRow] = useState(null);

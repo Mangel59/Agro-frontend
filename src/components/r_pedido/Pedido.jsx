@@ -1,3 +1,9 @@
+
+/**
+ * Pedido componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 // FUNCIONAL CRUD
 // import React, { useState, useEffect } from 'react';
 // import { Box, Typography } from '@mui/material';
@@ -6,6 +12,12 @@
 // import axios from 'axios';
 // import { SiteProps } from '../dashboard/SiteProps';
 
+/**
+ * Componente Pedido.
+ * @module Pedido.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 // export default function Pedido() {
 //   const [pedidos, setPedidos] = useState([]);
 //   const [almacenId, setAlmacenId] = useState(null);

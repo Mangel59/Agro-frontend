@@ -1,24 +1,37 @@
+/**
+ * Componente principal para la gestión de Almacenes.
+ *
+ * Este componente permite seleccionar una sede, visualizar los almacenes
+ * correspondientes, y gestionar los datos mediante un formulario.
+ *
+ * @module Almacen
+ * @component
+ * @returns {JSX.Element} El componente de gestión de almacenes.
+ */
+
 import React, { useState, useEffect } from "react";
-import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
+import { DataGrid } from "@mui/x-data-grid";
 import MessageSnackBar from "../MessageSnackBar";
 import FormAlmacen from "./FormAlmacen";
 import { SiteProps } from "../dashboard/SiteProps";
 
-const Almacen = () => {
-  const [sedes, setSedes] = useState([]); // Lista de sedes
-  const [almacenes, setAlmacenes] = useState([]); // Lista de almacenes
-  const [selectedSede, setSelectedSede] = useState(null); // Sede seleccionada
-  const [selectedRow, setSelectedRow] = useState(null); // Fila seleccionada para editar
-  const [loading, setLoading] = useState(false); // Estado de carga
-  const [error, setError] = useState(null); // Manejo de errores
+export default function Almacen() {
+  const [sedes, setSedes] = useState([]);
+  const [almacenes, setAlmacenes] = useState([]);
+  const [selectedSede, setSelectedSede] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [message, setMessage] = useState({
     open: false,
     severity: "success",
     text: "",
   });
 
-  // Cargar las sedes al montar el componente
+  /**
+   * Carga las sedes al montar el componente.
+   */
   useEffect(() => {
     const fetchSedes = async () => {
       try {
@@ -30,11 +43,12 @@ const Almacen = () => {
         console.error("Error al cargar las sedes:", err);
       }
     };
-
     fetchSedes();
   }, []);
 
-  // Cargar almacenes según la sede seleccionada
+  /**
+   * Carga los almacenes cuando cambia la sede seleccionada.
+   */
   useEffect(() => {
     if (!selectedSede) {
       setAlmacenes([]);
@@ -67,6 +81,9 @@ const Almacen = () => {
     fetchAlmacenes();
   }, [selectedSede]);
 
+  /**
+   * Recarga los datos de almacenes según la sede seleccionada.
+   */
   const reloadAlmacenes = () => {
     if (selectedSede) {
       const fetchAlmacenes = async () => {
@@ -77,7 +94,6 @@ const Almacen = () => {
               headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
             }
           );
-
           const data = response.data?.content || [];
           setAlmacenes(data);
         } catch (err) {
@@ -103,8 +119,8 @@ const Almacen = () => {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
-       <h1>Almacen</h1>
-      {/* Mensajes de notificación */}
+      <h1>Almacen</h1>
+
       <MessageSnackBar message={message} setMessage={setMessage} />
 
       {/* Selector de sede */}
@@ -124,7 +140,7 @@ const Almacen = () => {
         </select>
       </div>
 
-      {/* Formulario para crear/editar almacenes */}
+      {/* Formulario para agregar/editar */}
       <FormAlmacen
         setMessage={setMessage}
         selectedRow={selectedRow}
@@ -133,7 +149,7 @@ const Almacen = () => {
         reloadData={reloadAlmacenes}
       />
 
-      {/* Tabla de almacenes */}
+      {/* Tabla */}
       <div style={{ height: 400, width: "100%" }}>
         {loading ? (
           <div style={{ textAlign: "center", margin: "20px" }}>Cargando datos...</div>
@@ -151,6 +167,4 @@ const Almacen = () => {
       </div>
     </div>
   );
-};
-
-export default Almacen;
+}

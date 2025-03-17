@@ -1,3 +1,9 @@
+
+/**
+ * ProductoCategoria componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
 import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
@@ -5,6 +11,12 @@ import FormProductoCategoria from "./FormProductoCategoria";
 import GridProductoCategoria from "./GridProductoCategoria";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente ProductoCategoria.
+ * @module ProductoCategoria.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function ProductoCategoria() {
   const row = {
     id: 0,

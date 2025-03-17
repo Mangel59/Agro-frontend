@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/espacio_ocupacion/FromEspacioOcupacion.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/espacio_ocupacion/FromEspacioOcupacion.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+/**
+ * FromEspacioOcupacion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+import * as React from "react";
+import PropTypes from "prop-types";
+import AddIcon from "@mui/icons-material/Add";
+import UpdateIcon from "@mui/icons-material/Update";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import axios from "axios";
+import { SiteProps } from "../dashboard/SiteProps";
+
+/**
+ * Componente FromEspacioOcupacion.
+ * @module FromEspacioOcupacion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
+export default function FromEspacioOcupacion(props) {
+  const [open, setOpen] = React.useState(false);
+  const [methodName, setMethodName] = React.useState("");
+  const [sedes, setSedes] = React.useState([]);
+  const [bloques, setBloques] = React.useState([]);
+  const [espacios, setEspacios] = React.useState([]);
+  const [actividades, setActividades] = React.useState([]);
+  const selectedRow = props.selectedRow || {};
+
+  React.useEffect(() => {
+    const fetchSedes = async () => {
+      try {
+        const response = await axios.get(`${SiteProps.urlbasev1}/sede/minimal`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        setSedes(response.data || []);
+      } catch (error) {
+        console.error("Error al cargar sedes:", error);
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al cargar las sedes.",
+        });
+      }
+    };
+
+    fetchSedes();
+  }, []);
+
+  React.useEffect(() => {
+    if (!selectedRow.sede) return;
+
+    const fetchBloques = async () => {
+      try {
+        const response = await axios.get(
+          `${SiteProps.urlbasev1}/bloque/minimal/sede/${selectedRow.sede}`,
+          {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          }
+        );
+        setBloques(response.data || []);
+      } catch (error) {
+        console.error("Error al cargar bloques:", error);
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al cargar los bloques.",
+        });
+      }
+    };
+
+    fetchBloques();
+  }, [selectedRow.sede]);
+
+  React.useEffect(() => {
+    if (!selectedRow.bloque) return;
+
+    const fetchEspacios = async () => {
+      try {
+        const response = await axios.get(
+          `${SiteProps.urlbasev1}/espacio/minimal/bloque/${selectedRow.bloque}`,
+          {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          }
+        );
+        setEspacios(response.data || []);
+      } catch (error) {
+        console.error("Error al cargar espacios:", error);
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al cargar los espacios.",
+        });
+      }
+    };
+
+    fetchEspacios();
+  }, [selectedRow.bloque]);
+
+  React.useEffect(() => {
+    if (open) {
+      const fetchActividades = async () => {
+        try {
+          const actividadesRes = await axios.get(
+            `${SiteProps.urlbasev1}/actividad_ocupacion/minimal`,
+            {
+              headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            }
+          );
+          setActividades(actividadesRes.data || []);
+        } catch (error) {
+          console.error("Error al cargar actividades:", error);
+          props.setMessage({
+            open: true,
+            severity: "error",
+            text: "Error al cargar actividades.",
+          });
+        }
+      };
+
+      fetchActividades();
+    }
+  }, [open]);
+
+  const formatDateTime = (date) => {
+    const d = new Date(date);
+    return d.toISOString().slice(0, 19);
+  };
+
+  const create = () => {
+    const row = {
+      id: 0,
+      espacio: "",
+      actividadOcupacion: "",
+      fechaInicio: "",
+      fechaFin: "",
+      estado: 1,
+    };
+    props.setSelectedRow(row);
+    setMethodName("Add");
+    setOpen(true);
+  };
+
+  const update = () => {
+    if (!selectedRow || selectedRow.id === 0) {
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Seleccione una fila para actualizar.",
+      });
+      return;
+    }
+    setMethodName("Update");
+    setOpen(true);
+  };
+
+  const deleteRow = () => {
+    if (!selectedRow || selectedRow.id === 0) {
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Seleccione una fila para eliminar.",
+      });
+      return;
+    }
+    axios
+      .delete(`${SiteProps.urlbasev1}/espacio_ocupacion/${selectedRow.id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      })
+      .then(() => {
+        props.setMessage({
+          open: true,
+          severity: "success",
+          text: "Registro eliminado con éxito.",
+        });
+        props.reloadData();
+      })
+      .catch((error) => {
+        console.error("Error al eliminar el registro:", error);
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al eliminar el registro. Intente nuevamente.",
+        });
+      });
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleSubmit = () => {
+    const payload = {
+      id: selectedRow.id || null,
+      espacio: selectedRow.espacio,
+      actividadOcupacion: selectedRow.actividad,
+      fechaInicio: formatDateTime(selectedRow.fechaInicio),
+      fechaFin: formatDateTime(selectedRow.fechaFin),
+      estado: selectedRow.estado,
+    };
+
+    const url = `${SiteProps.urlbasev1}/espacio_ocupacion`;
+    const method = methodName === "Add" ? axios.post : axios.put;
+    const endpoint = methodName === "Add" ? url : `${url}/${selectedRow.id}`;
+
+    method(endpoint, payload, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
+      .then(() => {
+        props.setMessage({
+          open: true,
+          severity: "success",
+          text: methodName === "Add" ? "Registro creado con éxito." : "Registro actualizado con éxito.",
+        });
+        props.reloadData();
+        handleClose();
+      })
+      .catch((error) => {
+        console.error("Error al enviar datos:", error);
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al enviar datos. Intente nuevamente.",
+        });
+      });
+  };
+
+  return (
+    &lt;React.Fragment>
+      {/* Botones de acción */}
+      &lt;Box display="flex" justifyContent="flex-end" mb={2}>
+        &lt;Button variant="outlined" color="primary" startIcon={&lt;AddIcon />} onClick={create}>
+          Agregar
+        &lt;/Button>
+        &lt;Button
+          variant="outlined"
+          color="primary"
+          startIcon={&lt;UpdateIcon />}
+          onClick={update}
+          style={{ marginLeft: "10px" }}
+        >
+          Actualizar
+        &lt;/Button>
+        &lt;Button
+          variant="outlined"
+          color="secondary"
+          startIcon={&lt;DeleteIcon />}
+          onClick={deleteRow}
+          style={{ marginLeft: "10px" }}
+        >
+          Eliminar
+        &lt;/Button>
+      &lt;/Box>
+
+      {/* Formulario modal */}
+      &lt;Dialog open={open} onClose={handleClose}>
+        &lt;DialogTitle>{methodName === "Add" ? "Agregar Registro" : "Actualizar Registro"}&lt;/DialogTitle>
+        &lt;DialogContent>
+          {/* Campos de selección y texto */}
+          {/* ... (como en tu código actual) */}
+        &lt;/DialogContent>
+        &lt;DialogActions>
+          &lt;Button onClick={handleClose} color="primary">Cancelar&lt;/Button>
+          &lt;Button onClick={handleSubmit} color="primary">{methodName === "Add" ? "Agregar" : "Actualizar"}&lt;/Button>
+        &lt;/DialogActions>
+      &lt;/Dialog>
+    &lt;/React.Fragment>
+  );
+}
+
+// ✅ Validación de props con PropTypes
+FromEspacioOcupacion.propTypes = {
+  selectedRow: PropTypes.object.isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+  setMessage: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired,
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="AppBarComponent.module_jsx.html">jsx</a></li><li><a href="Chart.module_jsx.html">jsx</a></li><li><a href="Chart1.module_jsx.html">jsx</a></li><li><a href="ComboBox.module_jsx.html">jsx</a></li><li><a href="ComboBox1.module_jsx.html">jsx</a></li><li><a href="Contenido.module_jsx.html">jsx</a></li><li><a href="Copyright.module_jsx.html">jsx</a></li><li><a href="Deposits.module_jsx.html">jsx</a></li><li><a href="Espacio.module_jsx.html">jsx</a></li><li><a href="EspacioOcupacion.module_jsx.html">jsx</a></li><li><a href="Evaluacion.module_jsx.html">jsx</a></li><li><a href="FormEspacio.module_jsx.html">jsx</a></li><li><a href="FormEvaluacion.module_jsx.html">jsx</a></li><li><a href="FormKardexNuevo.module_jsx.html">jsx</a></li><li><a href="FormMarca.module_jsx.html">jsx</a></li><li><a href="FormMunicipio.module_jsx.html">jsx</a></li><li><a href="FormOrdenCompra.module_jsx.html">jsx</a></li><li><a href="FormOrdenCompraItem.module_jsx.html">jsx</a></li><li><a href="FormPais.module_jsx.html">jsx</a></li><li><a href="FormPedido.module_jsx.html">jsx</a></li><li><a href="FormPedidoItem.module_jsx.html">jsx</a></li><li><a href="FormPersona.module_jsx.html">jsx</a></li><li><a href="FormPresentacion.module_jsx.html">jsx</a></li><li><a href="FormProducto.module_jsx.html">jsx</a></li><li><a href="FormProductoCategoria.module_jsx.html">jsx</a></li><li><a href="FormProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="FormProveedor.module_jsx.html">jsx</a></li><li><a href="FormRegistroEmpresa.module_jsx.html">jsx</a></li><li><a href="FormRegistroPersona.module_jsx.html">jsx</a></li><li><a href="FormRol.module_jsx.html">jsx</a></li><li><a href="FormSede.module_jsx.html">jsx</a></li><li><a href="FormTipoEspacio.module_jsx.html">jsx</a></li><li><a href="FormTipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="FormTipoMovimiento.module_jsx.html">jsx</a></li><li><a href="FormTipoProduccion.module_jsx.html">jsx</a></li><li><a href="FormTipoSede.module_jsx.html">jsx</a></li><li><a href="FormUnidad.module_jsx.html">jsx</a></li><li><a href="FromEspacioOcupacion.module_jsx.html">jsx</a></li><li><a href="Grid1.module_jsx.html">jsx</a></li><li><a href="GridEspacio.module_jsx.html">jsx</a></li><li><a href="GridEvaluacion.module_jsx.html">jsx</a></li><li><a href="GridKardexNuevo.module_jsx.html">jsx</a></li><li><a href="GridMarca.module_jsx.html">jsx</a></li><li><a href="GridMunicipio.module_jsx.html">jsx</a></li><li><a href="GridOrdenCompra.module_jsx.html">jsx</a></li><li><a href="GridOrdenCompraItem.module_jsx.html">jsx</a></li><li><a href="GridPais.module_jsx.html">jsx</a></li><li><a href="GridPedido.module_jsx.html">jsx</a></li><li><a href="GridPedidoItem.module_jsx.html">jsx</a></li><li><a href="GridPersona.module_jsx.html">jsx</a></li><li><a href="GridPresentacion.html#.module:jsx">jsx</a></li><li><a href="GridProduccion.module_jsx.html">jsx</a></li><li><a href="GridProducto.module_jsx.html">jsx</a></li><li><a href="GridProductoCategoria.module_jsx.html">jsx</a></li><li><a href="GridProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="GridProveedor.module_jsx.html">jsx</a></li><li><a href="GridRol.module_jsx.html">jsx</a></li><li><a href="GridSede.module_jsx.html">jsx</a></li><li><a href="GridTipoEspacio.module_jsx.html">jsx</a></li><li><a href="GridTipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="GridTipoMovimiento.module_jsx.html">jsx</a></li><li><a href="GridTipoProduccion.module_jsx.html">jsx</a></li><li><a href="GridUnidad.module_jsx.html">jsx</a></li><li><a href="Home.module_jsx.html">jsx</a></li><li><a href="KardexNuevo.module_jsx.html">jsx</a></li><li><a href="Login.module_jsx.html">jsx</a></li><li><a href="Marca.module_jsx.html">jsx</a></li><li><a href="MessageSnackBar.module_jsx.html">jsx</a></li><li><a href="Municipio.module_jsx.html">jsx</a></li><li><a href="Navigator2.module_jsx.html">jsx</a></li><li><a href="OrdenCompra.module_jsx.html">jsx</a></li><li><a href="Pais.module_jsx.html">jsx</a></li><li><a href="Pedido.module_jsx.html">jsx</a></li><li><a href="PerfilCard.module_jsx.html">jsx</a></li><li><a href="Persona.module_jsx.html">jsx</a></li><li><a href="Presentacion.module_jsx.html">jsx</a></li><li><a href="Produccion.module_jsx.html">jsx</a></li><li><a href="Producto.module_jsx.html">jsx</a></li><li><a href="ProductoCategoria.module_jsx.html">jsx</a></li><li><a href="ProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="Proveedor.module_jsx.html">jsx</a></li><li><a href="Register.html#.module:jsx">jsx</a></li><li><a href="Rol.module_jsx.html">jsx</a></li><li><a href="Sede.module_jsx.html">jsx</a></li><li><a href="StackButtons.module_jsx.html">jsx</a></li><li><a href="TipoEspacio.module_jsx.html">jsx</a></li><li><a href="TipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="TipoMovimiento.module_jsx.html">jsx</a></li><li><a href="TipoProduccion.module_jsx.html">jsx</a></li><li><a href="TipoSede.module_jsx.html">jsx</a></li><li><a href="Unidad.module_jsx.html">jsx</a></li><li><a href="module-Almacen.html">Almacen</a></li><li><a href="module-Bloque.html">Bloque</a></li><li><a href="module-Departamento.html">Departamento</a></li><li><a href="module-Empresa.html">Empresa</a></li><li><a href="module-FormBloque.html">FormBloque</a></li><li><a href="module-FormDepartamento.html">FormDepartamento</a></li><li><a href="module-FormEmpresa.html">FormEmpresa</a></li><li><a href="module-FormTipoBloque.html">FormTipoBloque</a></li><li><a href="module-GridAlmacen.html">GridAlmacen</a></li><li><a href="module-GridBloque.html">GridBloque</a></li><li><a href="module-GridDepartamento.html">GridDepartamento</a></li><li><a href="module-GridEmpresa.html">GridEmpresa</a></li><li><a href="module-GridEspacioOcupacion.html">GridEspacioOcupacion</a></li><li><a href="module-GridKardexNuevo.html">GridKardexNuevo</a></li><li><a href="module-GridTipoBloque.html">GridTipoBloque</a></li><li><a href="module-GridTipoSede.html">GridTipoSede</a></li><li><a href="module-PerfilGroup.html">PerfilGroup</a></li><li><a href="module-ProfileMenu.html">ProfileMenu</a></li><li><a href="module-TipoBloque.html">TipoBloque</a></li><li><a href="module-main.html">main</a></li></ul><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#FormAlmacen">FormAlmacen</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#KardexNuevo">KardexNuevo</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#columns">columns</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Mar 17 2025 14:41:57 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

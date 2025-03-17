@@ -1,16 +1,19 @@
-// import * as React from 'react';
-// import ReportOrdenCompraViewer from './ReportOrdenCompraViewer'; // Importamos el componente ReportViewer
 
-// export default function Reportes() {
-//   return (
-//     <ReportOrdenCompraViewer />
-//   );
-// }
-
+/**
+ * GridOrdenCompra componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
 
+/**
+ * Componente GridOrdenCompra.
+ * @module GridOrdenCompra.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function GridOrdenCompra({ ordenesCompra, onSelectOrdenCompra }) {
   const columns = [
     { field: "id", headerName: "ID", width: 100 },

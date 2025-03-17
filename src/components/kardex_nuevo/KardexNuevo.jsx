@@ -1,3 +1,9 @@
+
+/**
+ * KardexNuevo componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useState } from 'react';
 import FormKardexNuevo from './FormKardexNuevo';
 
@@ -6,6 +12,12 @@ import FormKardexNuevo from './FormKardexNuevo';
  * 
  * @function KardexNuevo
  * @returns {JSX.Element} Componente contenedor para el formulario de Kardex.
+ */
+/**
+ * Componente KardexNuevo.
+ * @module KardexNuevo.jsx
+ * @component
+ * @returns {JSX.Element}
  */
 export default function KardexNuevo() {
   // Estado para manejar el mensaje de notificación o alerta

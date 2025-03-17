@@ -1,3 +1,9 @@
+
+/**
+ * FormEspacio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
 import PropTypes from "prop-types"; // Importamos PropTypes
 import AddIcon from "@mui/icons-material/Add";
@@ -18,6 +24,12 @@ import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 import DialogContentText from "@mui/material/DialogContentText";
 
+/**
+ * Componente FormEspacio.
+ * @module FormEspacio.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormEspacio({ sedes, selectedRow, setMessage, reloadData, setSelectedRow }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");

@@ -1,3 +1,9 @@
+
+/**
+ * GridMunicipio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 
@@ -6,6 +12,12 @@ const columns = [
   { field: 'name', headerName: 'Nombre', width: 250, type: 'string' },
 ];
 
+/**
+ * Componente GridMunicipio.
+ * @module GridMunicipio.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function GridMunicipio(props) {
   return (
     <DataGrid

@@ -1,3 +1,9 @@
+
+/**
+ * StackButtons componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from 'react';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -6,6 +12,12 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
+/**
+ * Componente StackButtons.
+ * @module StackButtons.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function StackButtons(props) {
     // props.handleClickOpen
     const handleClickCreate = (event) => {

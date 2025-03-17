@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/produccion/GridProduccion.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/produccion/GridProduccion.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+/**
+ * GridProduccion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import axios from "axios";
+import { DataGrid } from "@mui/x-data-grid";
+import UpdateIcon from "@mui/icons-material/Update";
+import DeleteIcon from "@mui/icons-material/Delete";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Typography,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
+import { SiteProps } from "../dashboard/SiteProps";
+
+/**
+ * Componente GridProduccion.
+ * @module GridProduccion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
+export default function GridProduccion({ espacioId }) {
+  const [producciones, setProducciones] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+
+  const [formData, setFormData] = useState({
+    nombre: "",
+    descripcion: "",
+    fechaInicio: "",
+    fechaFinal: "",
+    estado: 1,
+  });
+
+  const [selectedSede, setSelectedSede] = useState("");
+  const [selectedBloque, setSelectedBloque] = useState("");
+  const [selectedEspacio, setSelectedEspacio] = useState("");
+  const [selectedTipoProduccion, setSelectedTipoProduccion] = useState("");
+  const [sedes, setSedes] = useState([]);
+  const [tiposProduccion, setTiposProduccion] = useState([]);
+
+  useEffect(() => {
+    if (!espacioId) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("No se encontró el token de autenticación.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    axios
+      .get(`${SiteProps.urlbasev1}/producciones/${espacioId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        setProducciones(res.data.content);
+      })
+      .catch((error) => {
+        console.error("Error al cargar producciones:", error);
+        setError("Error al cargar las producciones. Por favor, verifica tu conexión o permisos.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+
+    axios
+      .get(`${SiteProps.urlbasev1}/sede/minimal`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => setSedes(res.data));
+
+    axios
+      .get(`${SiteProps.urlbasev1}/tipo_produccion`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => setTiposProduccion(res.data));
+  }, [espacioId]);
+
+  const handleDelete = () => {
+    if (!selectedRow) return;
+
+    const token = localStorage.getItem("token");
+    axios
+      .delete(`${SiteProps.urlbasev1}/producciones/${selectedRow.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then(() => {
+        setProducciones((prev) => prev.filter((prod) => prod.id !== selectedRow.id));
+        setSelectedRow(null);
+        setSnackbar({ open: true, message: "Producción eliminada correctamente.", severity: "success" });
+      })
+      .catch((error) => {
+        console.error("Error al eliminar producción:", error);
+        setSnackbar({ open: true, message: "Error al eliminar la producción.", severity: "error" });
+      });
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const token = localStorage.getItem("token");
+    axios
+      .put(
+        `${SiteProps.urlbasev1}/producciones/${selectedRow.id}`,
+        {
+          ...formData,
+          sede: selectedSede,
+          bloque: selectedBloque,
+          espacio: selectedEspacio,
+          tipoProduccion: selectedTipoProduccion,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      .then(() => {
+        setProducciones((prev) =>
+          prev.map((prod) =>
+            prod.id === selectedRow.id ? { ...prod, ...formData } : prod
+          )
+        );
+        setOpen(false);
+        setSnackbar({ open: true, message: "Producción actualizada correctamente.", severity: "success" });
+      })
+      .catch((error) => {
+        console.error("Error al actualizar la producción:", error);
+        setSnackbar({ open: true, message: "Error al actualizar la producción.", severity: "error" });
+      });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ open: false, message: "", severity: "success" });
+  };
+
+  const handleEdit = () => {
+    if (!selectedRow) return;
+    setFormData({
+      nombre: selectedRow.nombre || "",
+      descripcion: selectedRow.descripcion || "",
+      fechaInicio: selectedRow.fechaInicio || "",
+      fechaFinal: selectedRow.fechaFinal || "",
+      estado: selectedRow.estado || 1,
+    });
+    setSelectedSede(selectedRow.sede || "");
+    setSelectedBloque(selectedRow.bloque || "");
+    setSelectedEspacio(selectedRow.espacio || "");
+    setSelectedTipoProduccion(selectedRow.tipoProduccion || "");
+    setOpen(true);
+  };
+
+  const columns = [
+    { field: "id", headerName: "ID", width: 90 },
+    { field: "nombre", headerName: "Nombre", width: 150 },
+    { field: "descripcion", headerName: "Descripción", width: 250 },
+    { field: "tipoProduccion", headerName: "Tipo Producción", width: 150 },
+    { field: "espacio", headerName: "Espacio", width: 100 },
+    { field: "estado", headerName: "Estado", width: 120 },
+  ];
+
+  if (!espacioId) {
+    return &lt;Typography>Selecciona un espacio para ver las producciones.&lt;/Typography>;
+  }
+
+  if (loading) {
+    return (
+      &lt;Box display="flex" justifyContent="center" alignItems="center" height="200px">
+        &lt;CircularProgress />
+      &lt;/Box>
+    );
+  }
+
+  if (error) {
+    return &lt;Typography color="error">{error}&lt;/Typography>;
+  }
+
+  if (producciones.length === 0) {
+    return &lt;Typography>No hay producciones disponibles para este espacio.&lt;/Typography>;
+  }
+
+  return (
+    &lt;Box sx={{ width: "100%" }}>
+      &lt;Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mb: 2 }}>
+        &lt;Button
+          startIcon={&lt;UpdateIcon />}
+          variant="outlined"
+          onClick={handleEdit}
+          color="primary"
+          disabled={!selectedRow}
+        >
+          Editar
+        &lt;/Button>
+        &lt;Button
+          variant="outlined"
+          startIcon={&lt;DeleteIcon />}
+          onClick={handleDelete}
+          color="primary"
+          disabled={!selectedRow}
+        >
+          Eliminar
+        &lt;/Button>
+      &lt;/Box>
+      &lt;DataGrid
+        rows={producciones}
+        columns={columns}
+        pageSize={5}
+        rowsPerPageOptions={[5, 10, 20]}
+        getRowId={(row) => row.id}
+        disableSelectionOnClick
+        onRowClick={(params) => setSelectedRow(params.row)}
+      />
+      &lt;Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      >
+        &lt;Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+          {snackbar.message}
+        &lt;/Alert>
+      &lt;/Snackbar>
+      &lt;Dialog open={open} onClose={() => setOpen(false)}>
+        &lt;DialogTitle>Editar Producción&lt;/DialogTitle>
+        &lt;form onSubmit={handleSubmit}>
+          &lt;DialogContent>
+            &lt;Box sx={{ width: "100%" }}>
+              &lt;FormControl fullWidth margin="normal">
+                &lt;InputLabel id="sede-label">Sede&lt;/InputLabel>
+                &lt;Select
+                  labelId="sede-label"
+                  value={selectedSede}
+                  onChange={(e) => setSelectedSede(e.target.value)}
+                >
+                  {sedes.map((sede) => (
+                    &lt;MenuItem key={sede.id} value={sede.id}>
+                      {sede.nombre}
+                    &lt;/MenuItem>
+                  ))}
+                &lt;/Select>
+              &lt;/FormControl>
+
+              &lt;FormControl fullWidth margin="normal">
+                &lt;InputLabel id="tipoProduccion-label">Tipo de Producción&lt;/InputLabel>
+                &lt;Select
+                  labelId="tipoProduccion-label"
+                  value={selectedTipoProduccion}
+                  onChange={(e) => setSelectedTipoProduccion(e.target.value)}
+                >
+                  {tiposProduccion.map((tipo) => (
+                    &lt;MenuItem key={tipo.id} value={tipo.id}>
+                      {tipo.nombre}
+                    &lt;/MenuItem>
+                  ))}
+                &lt;/Select>
+              &lt;/FormControl>
+
+              &lt;TextField
+                id="nombre"
+                name="nombre"
+                label="Nombre de Producción"
+                value={formData.nombre}
+                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                fullWidth
+                margin="normal"
+              />
+              &lt;TextField
+                id="descripcion"
+                name="descripcion"
+                label="Descripción"
+                value={formData.descripcion}
+                onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                fullWidth
+                margin="normal"
+              />
+              &lt;TextField
+                id="fechaInicio"
+                name="fechaInicio"
+                label="Fecha de Inicio"
+                type="datetime-local"
+                value={formData.fechaInicio}
+                onChange={(e) => setFormData({ ...formData, fechaInicio: e.target.value })}
+                fullWidth
+                margin="normal"
+              />
+              &lt;TextField
+                id="fechaFinal"
+                name="fechaFinal"
+                label="Fecha Final"
+                type="datetime-local"
+                value={formData.fechaFinal}
+                onChange={(e) => setFormData({ ...formData, fechaFinal: e.target.value })}
+                fullWidth
+                margin="normal"
+              />
+            &lt;/Box>
+          &lt;/DialogContent>
+          &lt;DialogActions>
+            &lt;Button onClick={() => setOpen(false)}>Cancelar&lt;/Button>
+            &lt;Button type="submit">Guardar&lt;/Button>
+          &lt;/DialogActions>
+        &lt;/form>
+      &lt;/Dialog>
+    &lt;/Box>
+  );
+}
+
+// ✅ Validación de props
+GridProduccion.propTypes = {
+  espacioId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="AppBarComponent.module_jsx.html">jsx</a></li><li><a href="Chart.module_jsx.html">jsx</a></li><li><a href="Chart1.module_jsx.html">jsx</a></li><li><a href="ComboBox.module_jsx.html">jsx</a></li><li><a href="ComboBox1.module_jsx.html">jsx</a></li><li><a href="Contenido.module_jsx.html">jsx</a></li><li><a href="Copyright.module_jsx.html">jsx</a></li><li><a href="Deposits.module_jsx.html">jsx</a></li><li><a href="Espacio.module_jsx.html">jsx</a></li><li><a href="EspacioOcupacion.module_jsx.html">jsx</a></li><li><a href="Evaluacion.module_jsx.html">jsx</a></li><li><a href="FormEspacio.module_jsx.html">jsx</a></li><li><a href="FormEvaluacion.module_jsx.html">jsx</a></li><li><a href="FormKardexNuevo.module_jsx.html">jsx</a></li><li><a href="FormMarca.module_jsx.html">jsx</a></li><li><a href="FormMunicipio.module_jsx.html">jsx</a></li><li><a href="FormOrdenCompra.module_jsx.html">jsx</a></li><li><a href="FormOrdenCompraItem.module_jsx.html">jsx</a></li><li><a href="FormPais.module_jsx.html">jsx</a></li><li><a href="FormPedido.module_jsx.html">jsx</a></li><li><a href="FormPedidoItem.module_jsx.html">jsx</a></li><li><a href="FormPersona.module_jsx.html">jsx</a></li><li><a href="FormPresentacion.module_jsx.html">jsx</a></li><li><a href="FormProducto.module_jsx.html">jsx</a></li><li><a href="FormProductoCategoria.module_jsx.html">jsx</a></li><li><a href="FormProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="FormProveedor.module_jsx.html">jsx</a></li><li><a href="FormRegistroEmpresa.module_jsx.html">jsx</a></li><li><a href="FormRegistroPersona.module_jsx.html">jsx</a></li><li><a href="FormRol.module_jsx.html">jsx</a></li><li><a href="FormSede.module_jsx.html">jsx</a></li><li><a href="FormTipoEspacio.module_jsx.html">jsx</a></li><li><a href="FormTipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="FormTipoMovimiento.module_jsx.html">jsx</a></li><li><a href="FormTipoProduccion.module_jsx.html">jsx</a></li><li><a href="FormTipoSede.module_jsx.html">jsx</a></li><li><a href="FormUnidad.module_jsx.html">jsx</a></li><li><a href="FromEspacioOcupacion.module_jsx.html">jsx</a></li><li><a href="Grid1.module_jsx.html">jsx</a></li><li><a href="GridEspacio.module_jsx.html">jsx</a></li><li><a href="GridEvaluacion.module_jsx.html">jsx</a></li><li><a href="GridKardexNuevo.module_jsx.html">jsx</a></li><li><a href="GridMarca.module_jsx.html">jsx</a></li><li><a href="GridMunicipio.module_jsx.html">jsx</a></li><li><a href="GridOrdenCompra.module_jsx.html">jsx</a></li><li><a href="GridOrdenCompraItem.module_jsx.html">jsx</a></li><li><a href="GridPais.module_jsx.html">jsx</a></li><li><a href="GridPedido.module_jsx.html">jsx</a></li><li><a href="GridPedidoItem.module_jsx.html">jsx</a></li><li><a href="GridPersona.module_jsx.html">jsx</a></li><li><a href="GridPresentacion.html#.module:jsx">jsx</a></li><li><a href="GridProduccion.module_jsx.html">jsx</a></li><li><a href="GridProducto.module_jsx.html">jsx</a></li><li><a href="GridProductoCategoria.module_jsx.html">jsx</a></li><li><a href="GridProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="GridProveedor.module_jsx.html">jsx</a></li><li><a href="GridRol.module_jsx.html">jsx</a></li><li><a href="GridSede.module_jsx.html">jsx</a></li><li><a href="GridTipoEspacio.module_jsx.html">jsx</a></li><li><a href="GridTipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="GridTipoMovimiento.module_jsx.html">jsx</a></li><li><a href="GridTipoProduccion.module_jsx.html">jsx</a></li><li><a href="GridUnidad.module_jsx.html">jsx</a></li><li><a href="Home.module_jsx.html">jsx</a></li><li><a href="KardexNuevo.module_jsx.html">jsx</a></li><li><a href="Login.module_jsx.html">jsx</a></li><li><a href="Marca.module_jsx.html">jsx</a></li><li><a href="MessageSnackBar.module_jsx.html">jsx</a></li><li><a href="Municipio.module_jsx.html">jsx</a></li><li><a href="Navigator2.module_jsx.html">jsx</a></li><li><a href="OrdenCompra.module_jsx.html">jsx</a></li><li><a href="Pais.module_jsx.html">jsx</a></li><li><a href="Pedido.module_jsx.html">jsx</a></li><li><a href="PerfilCard.module_jsx.html">jsx</a></li><li><a href="Persona.module_jsx.html">jsx</a></li><li><a href="Presentacion.module_jsx.html">jsx</a></li><li><a href="Produccion.module_jsx.html">jsx</a></li><li><a href="Producto.module_jsx.html">jsx</a></li><li><a href="ProductoCategoria.module_jsx.html">jsx</a></li><li><a href="ProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="Proveedor.module_jsx.html">jsx</a></li><li><a href="Register.html#.module:jsx">jsx</a></li><li><a href="Rol.module_jsx.html">jsx</a></li><li><a href="Sede.module_jsx.html">jsx</a></li><li><a href="StackButtons.module_jsx.html">jsx</a></li><li><a href="TipoEspacio.module_jsx.html">jsx</a></li><li><a href="TipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="TipoMovimiento.module_jsx.html">jsx</a></li><li><a href="TipoProduccion.module_jsx.html">jsx</a></li><li><a href="TipoSede.module_jsx.html">jsx</a></li><li><a href="Unidad.module_jsx.html">jsx</a></li><li><a href="module-Almacen.html">Almacen</a></li><li><a href="module-Bloque.html">Bloque</a></li><li><a href="module-Departamento.html">Departamento</a></li><li><a href="module-Empresa.html">Empresa</a></li><li><a href="module-FormBloque.html">FormBloque</a></li><li><a href="module-FormDepartamento.html">FormDepartamento</a></li><li><a href="module-FormEmpresa.html">FormEmpresa</a></li><li><a href="module-FormTipoBloque.html">FormTipoBloque</a></li><li><a href="module-GridAlmacen.html">GridAlmacen</a></li><li><a href="module-GridBloque.html">GridBloque</a></li><li><a href="module-GridDepartamento.html">GridDepartamento</a></li><li><a href="module-GridEmpresa.html">GridEmpresa</a></li><li><a href="module-GridEspacioOcupacion.html">GridEspacioOcupacion</a></li><li><a href="module-GridKardexNuevo.html">GridKardexNuevo</a></li><li><a href="module-GridTipoBloque.html">GridTipoBloque</a></li><li><a href="module-GridTipoSede.html">GridTipoSede</a></li><li><a href="module-PerfilGroup.html">PerfilGroup</a></li><li><a href="module-ProfileMenu.html">ProfileMenu</a></li><li><a href="module-TipoBloque.html">TipoBloque</a></li><li><a href="module-main.html">main</a></li></ul><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#FormAlmacen">FormAlmacen</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#KardexNuevo">KardexNuevo</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#columns">columns</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Mar 17 2025 14:41:57 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/Proveedor/FormProveedor.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/Proveedor/FormProveedor.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+/**
+ * FormProveedor componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+// import React, { useState } from "react";
+// import axios from "axios";
+// import Dialog from "@mui/material/Dialog";
+// import DialogActions from "@mui/material/DialogActions";
+// import DialogContent from "@mui/material/DialogContent";
+// import DialogTitle from "@mui/material/DialogTitle";
+// import TextField from "@mui/material/TextField";
+// import Button from "@mui/material/Button";
+// import FormControl from "@mui/material/FormControl";
+// import { SiteProps } from "../dashboard/SiteProps";
+
+/**
+ * Componente FormProveedor.
+ * @module FormProveedor.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
+// export default function FormProveedor(props) {
+//   const [open, setOpen] = useState(false);
+//   const [methodName, setMethodName] = useState("");
+
+//   const create = () => {
+//     const row = {
+//       id: 0,
+//       nombre: "",
+//       descripcion: "",
+//       estado: 0,
+//       empresa: "",
+//     };
+//     props.setSelectedRow(row);
+//     setMethodName("Add");
+//     setOpen(true);
+//   };
+
+//   const update = () => {
+//     if (!props.selectedRow || props.selectedRow.id === 0) {
+//       props.setMessage({
+//         open: true,
+//         severity: "error",
+//         text: "Selecciona una fila para actualizar",
+//       });
+//       return;
+//     }
+//     setMethodName("Update");
+//     setOpen(true);
+//   };
+
+//   const handleSubmit = (event) => {
+//     event.preventDefault();
+//     const formData = new FormData(event.currentTarget);
+//     const formJson = Object.fromEntries(formData.entries());
+//     const id = props.selectedRow?.id || 0;
+
+//     const url =
+//       methodName === "Add"
+//         ? `${SiteProps.urlbasev1}/proveedores`
+//         : `${SiteProps.urlbasev1}/proveedores/${id}`;
+//     const token = localStorage.getItem("token");
+
+//     axios({
+//       method: methodName === "Add" ? "post" : "put",
+//       url,
+//       data: formJson,
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         "Content-Type": "application/json",
+//       },
+//     })
+//       .then(() => {
+//         props.setMessage({
+//           open: true,
+//           severity: "success",
+//           text: `Proveedor ${methodName === "Add" ? "creado" : "actualizado"} con éxito!`,
+//         });
+//         setOpen(false);
+//         props.reloadData();
+//       })
+//       .catch((error) => {
+//         props.setMessage({
+//           open: true,
+//           severity: "error",
+//           text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} proveedor: ${
+//             error.message
+//           }`,
+//         });
+//       });
+//   };
+
+//   const handleClose = () => {
+//     setOpen(false);
+//   };
+
+//   return (
+//     &lt;>
+//       &lt;Button onClick={create}>Agregar&lt;/Button>
+//       &lt;Button onClick={update}>Actualizar&lt;/Button>
+//       &lt;Dialog open={open} onClose={handleClose}>
+//         &lt;DialogTitle>Proveedor&lt;/DialogTitle>
+//         &lt;DialogContent>
+//           &lt;FormControl fullWidth>
+//             &lt;TextField
+//               required
+//               id="nombre"
+//               name="nombre"
+//               label="Nombre"
+//               defaultValue={props.selectedRow?.nombre || ""}
+//             />
+//           &lt;/FormControl>
+//           &lt;FormControl fullWidth>
+//             &lt;TextField
+//               required
+//               id="descripcion"
+//               name="descripcion"
+//               label="Descripción"
+//               defaultValue={props.selectedRow?.descripcion || ""}
+//             />
+//           &lt;/FormControl>
+//         &lt;/DialogContent>
+//         &lt;DialogActions>
+//           &lt;Button onClick={handleClose}>Cancelar&lt;/Button>
+//           &lt;Button type="submit" onClick={handleSubmit}>
+//             {methodName}
+//           &lt;/Button>
+//         &lt;/DialogActions>
+//       &lt;/Dialog>
+//     &lt;/>
+//   );
+// }
+
+
+import React, { useState } from "react";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+
+export default function FormProveedor({
+  onAdd,
+  onUpdate,
+  onDelete,
+  selectedRow,
+  setSelectedRow,
+}) {
+  const [open, setOpen] = useState(false); // Controla si el formulario está visible
+  const [formData, setFormData] = useState({
+    pro_id: "",
+    pro_empresa_id: "",
+    pro_fecha_creacion: "",
+    pro_estado: 1,
+  });
+
+  // Manejo de apertura del formulario para agregar o editar
+  const handleOpen = () => {
+    if (selectedRow) {
+      setFormData(selectedRow); // Carga los datos de la fila seleccionada
+    } else {
+      setFormData({
+        pro_id: "",
+        pro_empresa_id: "",
+        pro_fecha_creacion: "",
+        pro_estado: 1,
+      }); // Limpia los datos si es una nueva creación
+    }
+    setOpen(true);
+  };
+
+  // Manejo de cierre del formulario
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedRow(null);
+    setFormData({
+      pro_id: "",
+      pro_empresa_id: "",
+      pro_fecha_creacion: "",
+      pro_estado: 1,
+    });
+  };
+
+  // Manejo de cambios en los campos
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  // Manejo de envío del formulario (Agregar o Editar)
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (formData.pro_id) {
+      onUpdate(formData); // Actualizar proveedor existente
+    } else {
+      onAdd({ ...formData, pro_id: Date.now() }); // Agregar nuevo proveedor
+    }
+    handleClose();
+  };
+
+  // Manejo de eliminación
+  const handleDelete = () => {
+    if (selectedRow &amp;&amp; selectedRow.pro_id) {
+      onDelete(selectedRow.pro_id);
+      setSelectedRow(null); // Limpiar selección
+    }
+  };
+
+  return (
+    &lt;>
+      {/* Botones visibles en todo momento */}
+      &lt;div style={{ marginBottom: "1rem" }}>
+        &lt;Button
+          variant="contained"
+          color="primary"
+          onClick={handleOpen} // Abre el formulario vacío para agregar
+          style={{ marginRight: "1rem" }}
+        >
+          Agregar
+        &lt;/Button>
+        &lt;Button
+          variant="contained"
+          color="secondary"
+          onClick={handleOpen} // Abre el formulario con datos para editar
+          disabled={!selectedRow} // Desactivado si no hay fila seleccionada
+          style={{ marginRight: "1rem" }}
+        >
+          Editar
+        &lt;/Button>
+        &lt;Button
+          variant="contained"
+          color="error"
+          onClick={handleDelete} // Elimina la fila seleccionada
+          disabled={!selectedRow} // Desactivado si no hay fila seleccionada
+        >
+          Eliminar
+        &lt;/Button>
+      &lt;/div>
+
+      {/* Dialog para Agregar o Editar */}
+      &lt;Dialog open={open} onClose={handleClose}>
+        &lt;DialogTitle>{selectedRow ? "Editar Proveedor" : "Agregar Proveedor"}&lt;/DialogTitle>
+        &lt;DialogContent>
+          &lt;TextField
+            name="pro_empresa_id"
+            label="Empresa ID"
+            value={formData.pro_empresa_id}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+          />
+          &lt;TextField
+            name="pro_fecha_creacion"
+            label="Fecha Creación"
+            value={formData.pro_fecha_creacion}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            type="datetime-local"
+          />
+          &lt;TextField
+            name="pro_estado"
+            label="Estado (1: Activo, 0: Inactivo)"
+            value={formData.pro_estado}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            type="number"
+          />
+        &lt;/DialogContent>
+        &lt;DialogActions>
+          &lt;Button onClick={handleClose}>Cancelar&lt;/Button>
+          &lt;Button type="submit" onClick={handleSubmit}>
+            {selectedRow ? "Actualizar" : "Agregar"}
+          &lt;/Button>
+        &lt;/DialogActions>
+      &lt;/Dialog>
+    &lt;/>
+  );
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="AppBarComponent.module_jsx.html">jsx</a></li><li><a href="Chart.module_jsx.html">jsx</a></li><li><a href="Chart1.module_jsx.html">jsx</a></li><li><a href="ComboBox.module_jsx.html">jsx</a></li><li><a href="ComboBox1.module_jsx.html">jsx</a></li><li><a href="Contenido.module_jsx.html">jsx</a></li><li><a href="Copyright.module_jsx.html">jsx</a></li><li><a href="Deposits.module_jsx.html">jsx</a></li><li><a href="Espacio.module_jsx.html">jsx</a></li><li><a href="EspacioOcupacion.module_jsx.html">jsx</a></li><li><a href="Evaluacion.module_jsx.html">jsx</a></li><li><a href="FormEspacio.module_jsx.html">jsx</a></li><li><a href="FormEvaluacion.module_jsx.html">jsx</a></li><li><a href="FormKardexNuevo.module_jsx.html">jsx</a></li><li><a href="FormMarca.module_jsx.html">jsx</a></li><li><a href="FormMunicipio.module_jsx.html">jsx</a></li><li><a href="FormOrdenCompra.module_jsx.html">jsx</a></li><li><a href="FormOrdenCompraItem.module_jsx.html">jsx</a></li><li><a href="FormPais.module_jsx.html">jsx</a></li><li><a href="FormPedido.module_jsx.html">jsx</a></li><li><a href="FormPedidoItem.module_jsx.html">jsx</a></li><li><a href="FormPersona.module_jsx.html">jsx</a></li><li><a href="FormPresentacion.module_jsx.html">jsx</a></li><li><a href="FormProducto.module_jsx.html">jsx</a></li><li><a href="FormProductoCategoria.module_jsx.html">jsx</a></li><li><a href="FormProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="FormProveedor.module_jsx.html">jsx</a></li><li><a href="FormRegistroEmpresa.module_jsx.html">jsx</a></li><li><a href="FormRegistroPersona.module_jsx.html">jsx</a></li><li><a href="FormRol.module_jsx.html">jsx</a></li><li><a href="FormSede.module_jsx.html">jsx</a></li><li><a href="FormTipoEspacio.module_jsx.html">jsx</a></li><li><a href="FormTipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="FormTipoMovimiento.module_jsx.html">jsx</a></li><li><a href="FormTipoProduccion.module_jsx.html">jsx</a></li><li><a href="FormTipoSede.module_jsx.html">jsx</a></li><li><a href="FormUnidad.module_jsx.html">jsx</a></li><li><a href="FromEspacioOcupacion.module_jsx.html">jsx</a></li><li><a href="Grid1.module_jsx.html">jsx</a></li><li><a href="GridEspacio.module_jsx.html">jsx</a></li><li><a href="GridEvaluacion.module_jsx.html">jsx</a></li><li><a href="GridKardexNuevo.module_jsx.html">jsx</a></li><li><a href="GridMarca.module_jsx.html">jsx</a></li><li><a href="GridMunicipio.module_jsx.html">jsx</a></li><li><a href="GridOrdenCompra.module_jsx.html">jsx</a></li><li><a href="GridOrdenCompraItem.module_jsx.html">jsx</a></li><li><a href="GridPais.module_jsx.html">jsx</a></li><li><a href="GridPedido.module_jsx.html">jsx</a></li><li><a href="GridPedidoItem.module_jsx.html">jsx</a></li><li><a href="GridPersona.module_jsx.html">jsx</a></li><li><a href="GridPresentacion.html#.module:jsx">jsx</a></li><li><a href="GridProduccion.module_jsx.html">jsx</a></li><li><a href="GridProducto.module_jsx.html">jsx</a></li><li><a href="GridProductoCategoria.module_jsx.html">jsx</a></li><li><a href="GridProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="GridProveedor.module_jsx.html">jsx</a></li><li><a href="GridRol.module_jsx.html">jsx</a></li><li><a href="GridSede.module_jsx.html">jsx</a></li><li><a href="GridTipoEspacio.module_jsx.html">jsx</a></li><li><a href="GridTipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="GridTipoMovimiento.module_jsx.html">jsx</a></li><li><a href="GridTipoProduccion.module_jsx.html">jsx</a></li><li><a href="GridUnidad.module_jsx.html">jsx</a></li><li><a href="Home.module_jsx.html">jsx</a></li><li><a href="KardexNuevo.module_jsx.html">jsx</a></li><li><a href="Login.module_jsx.html">jsx</a></li><li><a href="Marca.module_jsx.html">jsx</a></li><li><a href="MessageSnackBar.module_jsx.html">jsx</a></li><li><a href="Municipio.module_jsx.html">jsx</a></li><li><a href="Navigator2.module_jsx.html">jsx</a></li><li><a href="OrdenCompra.module_jsx.html">jsx</a></li><li><a href="Pais.module_jsx.html">jsx</a></li><li><a href="Pedido.module_jsx.html">jsx</a></li><li><a href="PerfilCard.module_jsx.html">jsx</a></li><li><a href="Persona.module_jsx.html">jsx</a></li><li><a href="Presentacion.module_jsx.html">jsx</a></li><li><a href="Produccion.module_jsx.html">jsx</a></li><li><a href="Producto.module_jsx.html">jsx</a></li><li><a href="ProductoCategoria.module_jsx.html">jsx</a></li><li><a href="ProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="Proveedor.module_jsx.html">jsx</a></li><li><a href="Register.html#.module:jsx">jsx</a></li><li><a href="Rol.module_jsx.html">jsx</a></li><li><a href="Sede.module_jsx.html">jsx</a></li><li><a href="StackButtons.module_jsx.html">jsx</a></li><li><a href="TipoEspacio.module_jsx.html">jsx</a></li><li><a href="TipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="TipoMovimiento.module_jsx.html">jsx</a></li><li><a href="TipoProduccion.module_jsx.html">jsx</a></li><li><a href="TipoSede.module_jsx.html">jsx</a></li><li><a href="Unidad.module_jsx.html">jsx</a></li><li><a href="module-Almacen.html">Almacen</a></li><li><a href="module-Bloque.html">Bloque</a></li><li><a href="module-Departamento.html">Departamento</a></li><li><a href="module-Empresa.html">Empresa</a></li><li><a href="module-FormBloque.html">FormBloque</a></li><li><a href="module-FormDepartamento.html">FormDepartamento</a></li><li><a href="module-FormEmpresa.html">FormEmpresa</a></li><li><a href="module-FormTipoBloque.html">FormTipoBloque</a></li><li><a href="module-GridAlmacen.html">GridAlmacen</a></li><li><a href="module-GridBloque.html">GridBloque</a></li><li><a href="module-GridDepartamento.html">GridDepartamento</a></li><li><a href="module-GridEmpresa.html">GridEmpresa</a></li><li><a href="module-GridEspacioOcupacion.html">GridEspacioOcupacion</a></li><li><a href="module-GridKardexNuevo.html">GridKardexNuevo</a></li><li><a href="module-GridTipoBloque.html">GridTipoBloque</a></li><li><a href="module-GridTipoSede.html">GridTipoSede</a></li><li><a href="module-PerfilGroup.html">PerfilGroup</a></li><li><a href="module-ProfileMenu.html">ProfileMenu</a></li><li><a href="module-TipoBloque.html">TipoBloque</a></li><li><a href="module-main.html">main</a></li></ul><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#FormAlmacen">FormAlmacen</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#KardexNuevo">KardexNuevo</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#columns">columns</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Mar 17 2025 14:41:57 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

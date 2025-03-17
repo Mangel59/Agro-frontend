@@ -1,3 +1,9 @@
+
+/**
+ * GridProveedor componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 // import React from "react";
 // import { DataGrid } from "@mui/x-data-grid";
 
@@ -14,6 +20,12 @@
 //   { field: "empresa", headerName: "Empresa", width: 150 },
 // ];
 
+/**
+ * Componente GridProveedor.
+ * @module GridProveedor.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 // export default function GridProveedor(props) {
 //   return (
 //     <div style={{ height: 400, width: "100%" }}>

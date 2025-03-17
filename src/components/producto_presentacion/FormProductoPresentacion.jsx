@@ -1,4 +1,11 @@
+
+/**
+ * FormProductoPresentacion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
+import PropTypes from "prop-types";
 import axios from '../axiosConfig';
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -14,11 +21,16 @@ import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from '../dashboard/SiteProps';
 
+/**
+ * Componente FormProductoPresentacion.
+ * @module FormProductoPresentacion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormProductoPresentacion(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
 
-  // Crear un nuevo registro de Producto Presentación
   const create = () => {
     const row = {
       id: 0,
@@ -36,7 +48,6 @@ export default function FormProductoPresentacion(props) {
     setOpen(true);
   };
 
-  // Actualizar un registro existente de Producto Presentación
   const update = () => {
     if (!props.selectedRow || props.selectedRow.id === 0) {
       props.setMessage({
@@ -50,7 +61,6 @@ export default function FormProductoPresentacion(props) {
     setOpen(true);
   };
 
-  // Eliminar un registro de Producto Presentación
   const deleteRow = () => {
     if (props.selectedRow.id === 0) {
       props.setMessage({
@@ -97,27 +107,22 @@ export default function FormProductoPresentacion(props) {
       });
   };
 
-  // Cerrar el diálogo modal
   const handleClose = () => {
     setOpen(false);
   };
 
-  // Manejar el envío del formulario
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     let formJson = Object.fromEntries(formData.entries());
     const id = props.selectedRow?.id || 0;
 
-    // Asegurarse de incluir el campo "producto" en el JSON a enviar
     if (!formJson.producto) {
       formJson = {
         ...formJson,
-        producto: props.selectedRow?.producto || 1, // Ajustar según sea necesario
+        producto: props.selectedRow?.producto || 1,
       };
     }
-
-    console.log("Datos del formulario enviados:", formJson);
 
     const url = methodName === "Add" ? `${SiteProps.urlbasev1}/producto-presentacion` : `${SiteProps.urlbasev1}/producto-presentacion/${id}`;
     const token = localStorage.getItem("token");
@@ -158,10 +163,7 @@ export default function FormProductoPresentacion(props) {
       });
   };
 
-  // Acceder a los productos en la propiedad `data` si existe, de lo contrario usar un array vacío
-  const productos = Array.isArray(props.productos?.data) ? props.productos.data : [];
-
-  console.log("Productos en FormProductoPresentacion:", productos); // Log para verificar los productos
+  const productos = Array.isArray(props.productos) ? props.productos : [];
 
   return (
     <React.Fragment>
@@ -177,135 +179,55 @@ export default function FormProductoPresentacion(props) {
         <DialogTitle>Producto Presentación</DialogTitle>
         <DialogContent>
           <DialogContentText>Completa el formulario.</DialogContentText>
-          
-          {/* Producto */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="producto-label">Producto</InputLabel>
-            <Select
-              labelId="producto-label"
-              id="producto"
-              name="producto"
-              defaultValue={props.selectedRow?.producto || ""}
-              fullWidth
-            >
+            <Select labelId="producto-label" id="producto" name="producto" defaultValue={props.selectedRow?.producto || ""} fullWidth>
               {productos.map((producto) => (
-                <MenuItem key={producto.id} value={producto.id}>
-                  {producto.nombre}
-                </MenuItem>
+                <MenuItem key={producto.id} value={producto.id}>{producto.nombre}</MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          {/* Nombre */}
-          <FormControl fullWidth margin="normal">
-            <TextField
-              autoFocus
-              required
-              id="nombre"
-              name="nombre"
-              label="Nombre"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.nombre || ""}
-            />
-          </FormControl>
+          <TextField required id="nombre" name="nombre" label="Nombre" fullWidth margin="normal" defaultValue={props.selectedRow?.nombre || ""} />
 
-          {/* Unidad */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="unidad-label">Unidad</InputLabel>
-            <Select
-              labelId="unidad-label"
-              id="unidad"
-              name="unidad"
-              defaultValue={props.selectedRow?.unidad || ""}
-              fullWidth
-            >
+            <Select labelId="unidad-label" id="unidad" name="unidad" defaultValue={props.selectedRow?.unidad || ""} fullWidth>
               {(Array.isArray(props.unidades) ? props.unidades : []).map((unidad) => (
-                <MenuItem key={unidad.id} value={unidad.id}>
-                  {unidad.nombre}
-                </MenuItem>
+                <MenuItem key={unidad.id} value={unidad.id}>{unidad.nombre}</MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          {/* Cantidad */}
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="cantidad"
-              name="cantidad"
-              label="Cantidad"
-              type="number"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.cantidad || 0}
-            />
-          </FormControl>
+          <TextField required id="cantidad" name="cantidad" label="Cantidad" type="number" fullWidth margin="normal" defaultValue={props.selectedRow?.cantidad || 0} />
 
-          {/* Marca */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="marca-label">Marca</InputLabel>
-            <Select
-              labelId="marca-label"
-              id="marca"
-              name="marca"
-              defaultValue={props.selectedRow?.marca || ""}
-              fullWidth
-            >
+            <Select labelId="marca-label" id="marca" name="marca" defaultValue={props.selectedRow?.marca || ""} fullWidth>
               {(Array.isArray(props.marcas) ? props.marcas : []).map((marca) => (
-                <MenuItem key={marca.id} value={marca.id}>
-                  {marca.nombre}
-                </MenuItem>
+                <MenuItem key={marca.id} value={marca.id}>{marca.nombre}</MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          {/* Presentación */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="presentacion-label">Presentación</InputLabel>
-            <Select
-              labelId="presentacion-label"
-              id="presentacion"
-              name="presentacion"
-              defaultValue={props.selectedRow?.presentacion || ""}
-              fullWidth
-            >
+            <Select labelId="presentacion-label" id="presentacion" name="presentacion" defaultValue={props.selectedRow?.presentacion || ""} fullWidth>
               {(Array.isArray(props.presentacionesList) ? props.presentacionesList : []).map((presentacion) => (
-                <MenuItem key={presentacion.id} value={presentacion.id}>
-                  {presentacion.nombre}
-                </MenuItem>
+                <MenuItem key={presentacion.id} value={presentacion.id}>{presentacion.nombre}</MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          {/* Descripción */}
-          <FormControl fullWidth margin="normal">
-            <TextField
-              required
-              id="descripcion"
-              name="descripcion"
-              label="Descripción"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.descripcion || ""}
-            />
-          </FormControl>
+          <TextField required id="descripcion" name="descripcion" label="Descripción" fullWidth margin="normal" defaultValue={props.selectedRow?.descripcion || ""} />
 
-          {/* Estado */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="estado-label">Estado</InputLabel>
-            <Select
-              labelId="estado-label"
-              id="estado"
-              name="estado"
-              defaultValue={props.selectedRow?.estado || 1}
-              fullWidth
-            >
+            <Select labelId="estado-label" id="estado" name="estado" defaultValue={props.selectedRow?.estado || 1} fullWidth>
               <MenuItem value={1}>Activo</MenuItem>
               <MenuItem value={0}>Inactivo</MenuItem>
             </Select>
           </FormControl>
-          
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancelar</Button>
@@ -315,3 +237,14 @@ export default function FormProductoPresentacion(props) {
     </React.Fragment>
   );
 }
+
+FormProductoPresentacion.propTypes = {
+  selectedRow: PropTypes.object.isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+  setMessage: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired,
+  productos: PropTypes.array,
+  unidades: PropTypes.array,
+  marcas: PropTypes.array,
+  presentacionesList: PropTypes.array,
+};

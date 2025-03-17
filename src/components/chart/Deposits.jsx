@@ -1,3 +1,9 @@
+
+/**
+ * preventDefault componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from 'react';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
@@ -7,6 +13,12 @@ function preventDefault(event) {
   event.preventDefault();
 }
 
+/**
+ * Componente Deposits.
+ * @module Deposits.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Deposits() {
   return (
     <React.Fragment>

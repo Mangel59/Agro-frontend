@@ -1,3 +1,9 @@
+
+/**
+ * OrdenCompra componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useState, useEffect } from "react";
 import { Box, Typography, Grid, Select, MenuItem, FormControl, InputLabel, Button } from "@mui/material";
 import axios from "axios";
@@ -5,6 +11,12 @@ import { SiteProps } from "../dashboard/SiteProps";
 import FormOrdenCompra from "./FormOrdenCompra";
 import GridOrdenCompra from "./GridOrdenCompra";
 
+/**
+ * Componente OrdenCompra.
+ * @module OrdenCompra.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function OrdenCompra() {
   const [sedes, setSedes] = useState([]);
   const [almacenes, setAlmacenes] = useState([]);

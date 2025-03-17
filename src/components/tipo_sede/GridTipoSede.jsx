@@ -1,5 +1,10 @@
+/**
+ * Componente GridTipoSede.
+ * @module GridTipoSede
+ * @component
+ */
 import React from "react";
-import PropTypes from "prop-types"; // Importamos PropTypes
+import PropTypes from 'prop-types'; // ✅ Importación necesaria
 import { DataGrid } from "@mui/x-data-grid";
 
 const GridTipoSedes = ({ tipoSedes, setSelectedRow }) => {
@@ -18,7 +23,7 @@ const GridTipoSedes = ({ tipoSedes, setSelectedRow }) => {
   return (
     <div style={{ height: 400, width: "100%" }}>
       <DataGrid
-        rows={tipoSedes || []} // Se asegura de que siempre sea un array
+        rows={tipoSedes || []}
         columns={columns}
         pageSize={5}
         rowsPerPageOptions={[5]}
@@ -28,7 +33,6 @@ const GridTipoSedes = ({ tipoSedes, setSelectedRow }) => {
   );
 };
 
-// ✅ Agregamos PropTypes para evitar errores en la consola
 GridTipoSedes.propTypes = {
   tipoSedes: PropTypes.arrayOf(
     PropTypes.shape({

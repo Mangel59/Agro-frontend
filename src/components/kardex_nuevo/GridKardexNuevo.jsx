@@ -1,3 +1,9 @@
+
+/**
+ * GridKardexNuevo componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 // import React, { useState } from 'react';
 // import { DataGrid } from '@mui/x-data-grid';
 // import { Button, Box, Modal, TextField, MenuItem, FormControl, InputLabel, Select } from '@mui/material';
@@ -31,6 +37,12 @@
 //   estado: '',
 // };
 
+/**
+ * Componente GridKardexNuevo.
+ * @module GridKardexNuevo.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 // export default function GridKardexNuevo({ kardexItems, setKardexItems }) {
 //   const [open, setOpen] = useState(false);
 //   const [formData, setFormData] = useState(initialFormState);

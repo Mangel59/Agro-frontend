@@ -7,7 +7,12 @@ import MessageSnackBar from "../MessageSnackBar";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
- * Componente principal para gestionar Tipo de Bloque
+ * Componente principal para gestionar los tipos de bloque.
+ *
+ * Permite listar, crear, actualizar y eliminar registros del recurso tipo_bloque.
+ * @component
+ * @module TipoBloque
+ * @returns {JSX.Element}
  */
 export default function TipoBloque() {
   const initialRow = { id: null, nombre: "", descripcion: "", estado: 1 };
@@ -16,6 +21,11 @@ export default function TipoBloque() {
   const [selectedRow, setSelectedRow] = useState(initialRow);
   const [message, setMessage] = useState({ open: false, severity: "info", text: "" });
 
+  /**
+   * Carga los tipos de bloque desde la API.
+   * @async
+   * @function fetchData
+   */
   const fetchData = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -36,6 +46,12 @@ export default function TipoBloque() {
     fetchData();
   }, []);
 
+  /**
+   * Crea un nuevo tipo de bloque.
+   * @async
+   * @function addTipoBloque
+   * @param {Object} data - Datos del tipo de bloque a crear.
+   */
   const addTipoBloque = async (data) => {
     try {
       const token = localStorage.getItem("token");
@@ -53,6 +69,12 @@ export default function TipoBloque() {
     }
   };
 
+  /**
+   * Actualiza un tipo de bloque existente.
+   * @async
+   * @function updateTipoBloque
+   * @param {Object} data - Datos actualizados del tipo de bloque.
+   */
   const updateTipoBloque = async (data) => {
     try {
       const token = localStorage.getItem("token");
@@ -70,6 +92,12 @@ export default function TipoBloque() {
     }
   };
 
+  /**
+   * Elimina un tipo de bloque por su ID.
+   * @async
+   * @function deleteTipoBloque
+   * @param {number} id - ID del tipo de bloque a eliminar.
+   */
   const deleteTipoBloque = async (id) => {
     try {
       const token = localStorage.getItem("token");

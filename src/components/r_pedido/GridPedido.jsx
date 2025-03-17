@@ -1,8 +1,20 @@
+
+/**
+ * GridPedido componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 // // FUNCIONAL CRUD
 // import React from "react";
 // import { DataGrid } from "@mui/x-data-grid";
 // import { Box, Button } from "@mui/material";
 
+/**
+ * Componente GridPedido.
+ * @module GridPedido.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 // export default function GridPedido({ pedidos, onGenerateReport, onSelectPedido }) {
 //   const columns = [
 //     { field: "id", headerName: "ID", width: 100 },

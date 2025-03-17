@@ -1,3 +1,9 @@
+
+/**
+ * GridProductocategoria componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 
@@ -9,6 +15,12 @@ const columns = [
     valueGetter: (params) => params.row.estado === 1 ? 'Activo' : 'Inactivo' },
 ];
 
+/**
+ * Componente GridProductocategoria.
+ * @module GridProductoCategoria.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function GridProductocategoria(props) {
   return (
     <DataGrid

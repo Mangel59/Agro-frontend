@@ -1,8 +1,22 @@
+
+/**
+ * GridSede componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
+import PropTypes from 'prop-types';
 
+
+/**
+ * Componente GridSede.
+ * @module GridSede.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function GridSede({ setSelectedRow }) {
   const [sedes, setSedes] = useState([]); // Inicializar sedes como un array vacío
   const [loading, setLoading] = useState(true); // Estado para mostrar el cargando
@@ -79,3 +93,6 @@ export default function GridSede({ setSelectedRow }) {
     </div>
   );
 }
+GridSede.propTypes = {
+  setSelectedRow: PropTypes.func.isRequired,
+};

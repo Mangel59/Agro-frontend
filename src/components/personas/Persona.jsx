@@ -1,85 +1,73 @@
 import * as React from "react";
-import axios from "axios";  // Usa axios directamente
+import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
 import FormPersona from "./FormPersona";
 import GridPersona from "./GridPersona";
 import { SiteProps } from "../dashboard/SiteProps";
 
-/**
- * El componente Persona gestiona el módulo de personas, integrando el formulario
- * y la tabla de datos.
- * 
- * @componente
- * @param {object} props - Propiedades pasadas al componente.
- * @returns {JSX.Element} El módulo de gestión de personas.
- */
-export default function Persona(props) {
-  const row = {
+export default function Persona() {
+  const defaultRow = {
     id: 0,
-    tipoIdentificacionId: 0,
+    tipoIdentificacion: "",
     identificacion: "",
-    apellido: "",
     nombre: "",
+    apellido: "",
     genero: "",
     fechaNacimiento: "",
-    estrato: 0,
+    estrato: "",
     direccion: "",
+    email: "",
     celular: "",
-    estado: 0,
+    estado: 1,
   };
 
-  const [selectedRow, setSelectedRow] = React.useState(row);
-  const messageData = {
-    open: false,
-    severity: "success",
-    text: "",
-  };
-
-  const [message, setMessage] = React.useState(messageData);
+  const [selectedRow, setSelectedRow] = React.useState(defaultRow);
+  const [message, setMessage] = React.useState({ open: false, severity: "success", text: "" });
   const [personas, setPersonas] = React.useState([]);
+  const [pagination, setPagination] = React.useState({
+    page: 0,
+    pageSize: 5,
+    total: 0,
+  });
 
-  /**
-   * Recarga los datos de las personas desde el servidor.
-   */
-  const reloadData = () => {
+  const reloadData = (page = 0, pageSize = 5) => {
     axios
-      .get(`${SiteProps.urlbasev1}/personas`)
+      .get(`${SiteProps.urlbasev1}/persona?page=${page}&size=${pageSize}`)
       .then((response) => {
-        const personaData = response.data.data.map((item) => ({
-          ...item,
-          id: item.id,
-        }));
-        setPersonas(personaData);
+        const content = response.data?.content || response.data?.data || [];
+        setPersonas(content);
+        setPagination({
+          page,
+          pageSize,
+          total: response.data.totalElements || content.length || 0,
+        });
       })
-      .catch((error) => {
-        console.error("Error al buscar personas!", error);
+      .catch((err) => {
+        console.error("Error al cargar personas", err);
       });
-
   };
 
   React.useEffect(() => {
-    reloadData();  // Llama a reloadData para cargar los datos iniciales
+    reloadData();
   }, []);
-
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
-      <h1>Persona</h1>
+      <h1>Personas</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormPersona
-        setMessage={setMessage}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        reloadData={reloadData}  // Pasa reloadData como prop a FormPersona
-        personas={personas}
-
+        setMessage={setMessage}
+        reloadData={() => reloadData(pagination.page, pagination.pageSize)}
       />
       <GridPersona
+        personas={personas}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        personas={personas}
+        pagination={pagination}
+        onPageChange={reloadData}
       />
     </div>
   );
 }
-

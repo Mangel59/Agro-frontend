@@ -1,4 +1,14 @@
-import * as React from "react";
+/**
+ * Componente principal del formulario de empresa.
+ *
+ * Este componente permite crear, actualizar o eliminar una empresa mediante un formulario emergente.
+ *
+ * @module FormEmpresa
+ * @component
+ * @returns {JSX.Element}
+ */
+
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import Button from "@mui/material/Button";
@@ -15,9 +25,39 @@ import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * @typedef {Object} EmpresaRow
+ * @property {number} id
+ * @property {string} nombre
+ * @property {string} descripcion
+ * @property {number} estado
+ * @property {string} celular
+ * @property {string} correo
+ * @property {string} contacto
+ * @property {number|string} tipoIdentificacionId
+ * @property {number|string} personaId
+ * @property {string} identificacion
+ */
+
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open
+ * @property {string} severity
+ * @property {string} text
+ */
+
+/**
+ * @param {{
+ *   selectedRow: EmpresaRow,
+ *   setSelectedRow: Function,
+ *   setMessage: Function,
+ *   reloadData: Function
+ * }} props
+ * @returns {JSX.Element}
+ */
 export default function FormEmpresa({ selectedRow, setSelectedRow, setMessage, reloadData }) {
-  const [open, setOpen] = React.useState(false);
-  const [methodName, setMethodName] = React.useState("");
+  const [open, setOpen] = useState(false);
+  const [methodName, setMethodName] = useState("");
 
   // Valores iniciales de empresa
   const defaultRow = {
@@ -33,18 +73,12 @@ export default function FormEmpresa({ selectedRow, setSelectedRow, setMessage, r
     identificacion: "",
   };
 
-  /**
-   * Crea una nueva empresa y abre el formulario.
-   */
   const create = () => {
     setSelectedRow(defaultRow);
     setMethodName("Add");
     setOpen(true);
   };
 
-  /**
-   * Actualiza la empresa seleccionada.
-   */
   const update = () => {
     if (!selectedRow || !selectedRow.id) {
       setMessage({
@@ -58,9 +92,6 @@ export default function FormEmpresa({ selectedRow, setSelectedRow, setMessage, r
     setOpen(true);
   };
 
-  /**
-   * Elimina la empresa seleccionada.
-   */
   const deleteRow = () => {
     if (!selectedRow || !selectedRow.id) {
       setMessage({
@@ -102,7 +133,9 @@ export default function FormEmpresa({ selectedRow, setSelectedRow, setMessage, r
     const method = methodName === "Add" ? axios.post : axios.put;
     const endpoint = methodName === "Add" ? url : `${url}/${selectedRow.id}`;
 
-    method(endpoint, formJson, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } })
+    method(endpoint, formJson, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
       .then(() => {
         setMessage({
           open: true,
@@ -122,24 +155,21 @@ export default function FormEmpresa({ selectedRow, setSelectedRow, setMessage, r
   };
 
   return (
-    <React.Fragment>
+    <>
       <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog open={open} onClose={handleClose} PaperProps={{ component: "form", onSubmit: handleSubmit }}>
         <DialogTitle>{methodName} Empresa</DialogTitle>
         <DialogContent>
           <DialogContentText>Completa el formulario.</DialogContentText>
 
-          {/* Nombre */}
           <FormControl fullWidth margin="normal">
             <TextField required id="nombre" name="nombre" label="Nombre" variant="standard" defaultValue={selectedRow?.nombre || ""} />
           </FormControl>
 
-          {/* Descripción */}
           <FormControl fullWidth margin="normal">
             <TextField required id="descripcion" name="descripcion" label="Descripción" variant="standard" defaultValue={selectedRow?.descripcion || ""} />
           </FormControl>
 
-          {/* Estado */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="estado-label">Estado</InputLabel>
             <Select labelId="estado-label" id="estado" name="estado" defaultValue={selectedRow?.estado || ""} fullWidth>
@@ -148,22 +178,18 @@ export default function FormEmpresa({ selectedRow, setSelectedRow, setMessage, r
             </Select>
           </FormControl>
 
-          {/* Celular */}
           <FormControl fullWidth margin="normal">
             <TextField required id="celular" name="celular" label="Celular" variant="standard" defaultValue={selectedRow?.celular || ""} />
           </FormControl>
 
-          {/* Correo */}
           <FormControl fullWidth margin="normal">
             <TextField required id="correo" name="correo" label="Correo" type="email" variant="standard" defaultValue={selectedRow?.correo || ""} />
           </FormControl>
 
-          {/* Contacto */}
           <FormControl fullWidth margin="normal">
             <TextField required id="contacto" name="contacto" label="Contacto" variant="standard" defaultValue={selectedRow?.contacto || ""} />
           </FormControl>
 
-          {/* Tipo de Identificación */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="tipoIdentificacionId-label">Tipo de Identificación</InputLabel>
             <Select labelId="tipoIdentificacionId-label" id="tipoIdentificacionId" name="tipoIdentificacionId" defaultValue={selectedRow?.tipoIdentificacionId || ""} fullWidth>
@@ -172,12 +198,10 @@ export default function FormEmpresa({ selectedRow, setSelectedRow, setMessage, r
             </Select>
           </FormControl>
 
-          {/* Persona */}
           <FormControl fullWidth margin="normal">
             <TextField required id="personaId" name="personaId" label="ID Persona" variant="standard" defaultValue={selectedRow?.personaId || ""} />
           </FormControl>
 
-          {/* Número de Identificación */}
           <FormControl fullWidth margin="normal">
             <TextField required id="identificacion" name="identificacion" label="Número de Identificación" variant="standard" defaultValue={selectedRow?.identificacion || ""} />
           </FormControl>
@@ -188,7 +212,7 @@ export default function FormEmpresa({ selectedRow, setSelectedRow, setMessage, r
           <Button type="submit">{methodName}</Button>
         </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </>
   );
 }
 

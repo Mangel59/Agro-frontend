@@ -1,20 +1,46 @@
+/**
+ * Componente principal para la gestión de empresas.
+ *
+ * Este componente maneja la lógica del módulo de empresas, incluyendo la carga de datos,
+ * manejo de mensajes, y renderizado de los formularios y la tabla de empresas.
+ *
+ * @module Empresa
+ * @component
+ * @returns {JSX.Element} El módulo de gestión de empresas.
+ */
+
 import * as React from "react";
-// import axios from "../axiosConfig";
-import axios from "axios"; 
+import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
 import FormEmpresa from "./FormEmpresa";
 import GridEmpresa from "./GridEmpresa";
+import StackButtons from "../StackButtons"; // ✅ Botones principales
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
- * El componente Empresa gestiona el módulo de empresas, incluyendo el formulario
- * y la tabla de datos para crear, actualizar, y eliminar empresas.
- * 
- * @componente
- * @returns {JSX.Element} El módulo de gestión de empresas.
+ * @typedef EmpresaRow
+ * @property {number} id
+ * @property {string} nombre
+ * @property {string} descripcion
+ * @property {number} estado
+ * @property {string} celular
+ * @property {string} correo
+ * @property {string} contacto
+ * @property {number} tipoIdentificacionId
+ * @property {number} personaId
+ * @property {string} identificacion
  */
+
+/**
+ * @typedef SnackbarMessage
+ * @property {boolean} open
+ * @property {string} severity
+ * @property {string} text
+ */
+
 export default function Empresa() {
-  const row = {
+  /** @type {EmpresaRow} */
+  const defaultRow = {
     id: 0,
     nombre: "",
     descripcion: "",
@@ -27,17 +53,16 @@ export default function Empresa() {
     identificacion: "",
   };
 
-  const [selectedRow, setSelectedRow] = React.useState(row);
-  const messageData = {
+  const [selectedRow, setSelectedRow] = React.useState(defaultRow);
+  const [message, setMessage] = React.useState({
     open: false,
     severity: "success",
     text: "",
-  };
-
-  const [message, setMessage] = React.useState(messageData);
+  });
   const [empresas, setEmpresas] = React.useState([]);
+  const [openForm, setOpenForm] = React.useState(false);
+  const [methodName, setMethodName] = React.useState("Add");
 
-  // Función para recargar los datos
   const reloadData = () => {
     axios
       .get(`${SiteProps.urlbasev1}/empresas`)
@@ -51,25 +76,79 @@ export default function Empresa() {
       .catch((error) => {
         console.error("Error al buscar empresas!", error);
       });
-
   };
 
   React.useEffect(() => {
-    reloadData();  // Llama a reloadData para cargar los datos iniciales
+    reloadData();
   }, []);
+
+  const handleAdd = () => {
+    setSelectedRow(defaultRow);
+    setMethodName("Add");
+    setOpenForm(true);
+  };
+
+  const handleUpdate = () => {
+    if (!selectedRow?.id) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Selecciona una fila para actualizar.",
+      });
+      return;
+    }
+    setMethodName("Update");
+    setOpenForm(true);
+  };
+
+  const handleDelete = () => {
+    if (!selectedRow?.id) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Selecciona una fila para eliminar.",
+      });
+      return;
+    }
+
+    axios
+      .delete(`${SiteProps.urlbasev1}/empresas/${selectedRow.id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then(() => {
+        setMessage({
+          open: true,
+          severity: "success",
+          text: "Empresa eliminada con éxito!",
+        });
+        reloadData();
+      })
+      .catch((error) => {
+        setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al eliminar empresa: ${error.response?.data.message || error.message}`,
+        });
+      });
+  };
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
-       <h1>Empresa</h1>
-      <MessageSnackBar message={message} setMessage={setMessage} />
+      <h1>Gestión de Empresas</h1>
+      {/* ✅ Formulario con modal */}
       <FormEmpresa
-        setMessage={setMessage}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        reloadData={reloadData}  // Pasa reloadData como prop a FormProductocategoria
-        empresas={empresas}
-
+        setMessage={setMessage}
+        reloadData={reloadData}
+        open={openForm}
+        setOpen={setOpenForm}
+        methodName={methodName}
       />
+
+      {/* ✅ Grilla de datos */}
       <GridEmpresa
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}

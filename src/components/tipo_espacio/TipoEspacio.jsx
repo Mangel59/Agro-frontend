@@ -1,3 +1,9 @@
+
+/**
+ * TipoEspacio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
 import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
@@ -5,7 +11,13 @@ import FormTipoEspacio from "./FormTipoEspacio";
 import GridTipoEspacio from "./GridTipoEspacio";
 import { SiteProps } from "../dashboard/SiteProps";
 
-export default function TipoEspacio(props) {
+/**
+ * Componente TipoEspacio.
+ * @module TipoEspacio.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
+export default function TipoEspacio() {
   const row = {
     id: 0,
     nombre: "",
@@ -20,33 +32,29 @@ export default function TipoEspacio(props) {
     severity: "success",
     text: "",
   });
-  const [tespacios, setTespacios] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
 
   const reloadData = React.useCallback(() => {
     setLoading(true);
-    console.log("Iniciando carga de datos desde el backend...");
     axios
       .get(`${SiteProps.urlbasev1}/tipo_espacio`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       })
       .then((response) => {
-        console.log("Respuesta del backend:", response.data);
-        const tespaciosData = Array.isArray(response.data)
+        const data = Array.isArray(response.data)
           ? response.data.map((item) => ({
-              id: item.id, // Asegúrate de que el campo 'id' esté presente
+              id: item.id,
               nombre: item.nombre,
               descripcion: item.descripcion,
               estado: item.estado,
             }))
           : [];
-        console.log("Datos procesados para la tabla:", tespaciosData);
-        setTespacios(tespaciosData);
+        console.log("Datos cargados:", data);
+        // Aquí se puede guardar si luego se quiere usar
         setError(null);
       })
       .catch((error) => {
-        console.error("Error al cargar las tespacios!", error);
         const errorMessage = error.response?.data?.message || "Error desconocido.";
         setError(errorMessage);
         setMessage({
@@ -56,7 +64,6 @@ export default function TipoEspacio(props) {
         });
       })
       .finally(() => {
-        console.log("Carga de datos finalizada.");
         setLoading(false);
       });
   }, []);
@@ -64,10 +71,6 @@ export default function TipoEspacio(props) {
   React.useEffect(() => {
     reloadData();
   }, [reloadData]);
-
-  const handleMessageClose = () => {
-    setMessage({ ...message, open: false });
-  };
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
@@ -94,3 +97,4 @@ export default function TipoEspacio(props) {
     </div>
   );
 }
+

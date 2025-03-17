@@ -1,33 +1,46 @@
-import * as React from "react";
+
+/**
+ * Marca componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+import React from "react"; // ✅ Importación necesaria
 import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
 import FormMarca from "./FormMarca";
 import GridMarca from "./GridMarca";
 import { SiteProps } from "../dashboard/SiteProps";
 
-export default function Marca(props) {
+/**
+ * Componente Marca.
+ * @module Marca.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
+export default function Marca() {
   const row = {
     id: 0,
     nombre: "",
     descripcion: "",
     estado: 0,
-    empresa: ""
+    empresa: "",
   };
 
   const [selectedRow, setSelectedRow] = React.useState(row);
-  const messageData = {
+  const [message, setMessage] = React.useState({
     open: false,
     severity: "success",
     text: "",
-  };
+  });
 
-  const [message, setMessage] = React.useState(messageData);
   const [marcas, setMarcas] = React.useState([]);
   const [paginationModel, setPaginationModel] = React.useState({
     page: 0,
     pageSize: 5,
   });
   const [rowCount, setRowCount] = React.useState(0);
+  const [sortModel, setSortModel] = React.useState([]); // ✅ ahora sí lo usas correctamente
+  const [filterModel, setFilterModel] = React.useState({ items: [] });
 
   const reloadData = () => {
     const token = localStorage.getItem("token");
@@ -45,6 +58,8 @@ export default function Marca(props) {
         params: {
           page: paginationModel.page,
           size: paginationModel.pageSize,
+          sort: sortModel[0]?.field,
+          order: sortModel[0]?.sort,
         },
         headers: {
           Authorization: `Bearer ${token}`,
@@ -78,7 +93,7 @@ export default function Marca(props) {
 
   React.useEffect(() => {
     reloadData();
-  }, [paginationModel]);
+  }, [paginationModel, sortModel]);
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
@@ -98,7 +113,11 @@ export default function Marca(props) {
         rowCount={rowCount}
         paginationModel={paginationModel}
         setPaginationModel={setPaginationModel}
+        filterModel={filterModel}
+        setFilterModel={setFilterModel}
+        sortModel={sortModel} 
+        setSortModel={setSortModel}
       />
     </div>
-  );
+  );  
 }

@@ -1,3 +1,14 @@
+/**
+ * Departamento componente principal.
+ *
+ * Este componente se encarga de gestionar y mostrar la información de departamentos.
+ * Incluye un formulario y una tabla para listar los departamentos.
+ *
+ * @module Departamento
+ * @component
+ * @returns {JSX.Element} Componente visual para gestionar departamentos.
+ */
+
 import * as React from 'react';
 import axios from 'axios';
 import MessageSnackBar from '../MessageSnackBar';
@@ -5,44 +16,44 @@ import FormDepartamento from "./FormDepartamento";
 import GridDepartamento from "./GridDepartamento";
 import { SiteProps } from '../dashboard/SiteProps';
 
-/**
- * Componente Departamento que gestiona la lógica y renderizado de departamentos.
- * 
- * @returns {JSX.Element} Componente que contiene el formulario y la cuadrícula de departamentos.
- */
 export default function Departamento() {
-  // Fila inicial seleccionada
+  // Estado inicial
   const row = {
     id: 0,
     name: "",
   };
 
-  // Estado para la fila seleccionada
+  /**
+   * Estado que almacena la fila seleccionada.
+   * @type {{id: number, name: string}}
+   */
   const [selectedRow, setSelectedRow] = React.useState(row);
 
-  // Datos iniciales del mensaje
-  const messageData = {
+  /**
+   * Estado del mensaje que se muestra en el snackbar.
+   * @type {{open: boolean, severity: string, text: string}}
+   */
+  const [message, setMessage] = React.useState({
     open: false,
     severity: "success",
     text: ""
-  };
+  });
 
-  // Estado para el mensaje
-  const [message, setMessage] = React.useState(messageData);
-
-  // Estado para los departamentos
+  /**
+   * Lista de departamentos obtenidos del backend.
+   * @type {Array<{id: number, name: string}>}
+   */
   const [departamentos, setDepartamentos] = React.useState([]);
 
-  // Efecto para obtener los departamentos al cargar el componente
+  // Carga inicial de los departamentos
   React.useEffect(() => {
     axios.get(`${SiteProps.urlbasev1}/items/departamento`)
       .then(response => {
         const departamentoData = response.data.map((item) => ({
           ...item,
-          id: item.id, // Asignar id basado en pai_id
+          id: item.id, // Garantiza que tenga campo `id`
         }));
         setDepartamentos(departamentoData);
-        console.log(departamentoData);
       })
       .catch(error => {
         console.error("Error al buscar departamento!", error);
@@ -51,10 +62,19 @@ export default function Departamento() {
 
   return (
     <div style={{ height: '100%', width: '100%' }}>
-       <h1>Departamentos</h1>
+      <h1>Departamentos</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
-      <FormDepartamento setMessage={setMessage} selectedRow={selectedRow} setSelectedRow={setSelectedRow} departamentos={departamentos}/>
-      <GridDepartamento selectedRow={selectedRow} setSelectedRow={setSelectedRow} departamentos={departamentos} />
+      <FormDepartamento
+        setMessage={setMessage}
+        selectedRow={selectedRow}
+        setSelectedRow={setSelectedRow}
+        departamentos={departamentos}
+      />
+      <GridDepartamento
+        selectedRow={selectedRow}
+        setSelectedRow={setSelectedRow}
+        departamentos={departamentos}
+      />
     </div>
   );
 }

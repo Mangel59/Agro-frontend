@@ -27,6 +27,121 @@ const images = [
  * @param {string} props.direction - La dirección en la que apunta la flecha, ya sea 'prev' o 'next'.
  * @returns {JSX.Element} Un elemento de botón estilizado como una flecha personalizada.
  */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Inicio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 const CustomArrow = (props) => {
     const { onClick, direction } = props;
     return (

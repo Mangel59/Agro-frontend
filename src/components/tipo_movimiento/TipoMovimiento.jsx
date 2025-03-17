@@ -1,3 +1,9 @@
+
+/**
+ * TipoMovimiento componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
 import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
@@ -5,6 +11,12 @@ import FormTipoMovimiento from "./FormTipoMovimiento";
 import GridTipoMovimiento from "./GridTipoMovimiento";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente TipoMovimiento.
+ * @module TipoMovimiento.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function TipoMovimiento(props) {
   const row = {
     id: 0,

@@ -5,6 +5,24 @@ import FormSede from "./FormSede";
 import GridSede from "./GridSede";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente principal para gestionar las sedes.
+ * 
+ * Este componente muestra un formulario para crear o editar sedes, 
+ * y una grilla con la lista de sedes registradas. 
+ * También maneja la carga de datos desde el backend, 
+ * el estado de errores y los mensajes tipo snackbar.
+ * 
+ * @component
+ * @param {Object} props - Props del componente (actualmente no utilizadas directamente).
+ * @returns {JSX.Element} Componente de administración de sedes.
+ */
+/**
+ * Componente Sede.
+ * @module Sede.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Sede(props) {
   const row = {
     id: 0,
@@ -30,7 +48,9 @@ export default function Sede(props) {
   const [loading, setLoading] = React.useState(true); // Estado de carga
   const [error, setError] = React.useState(null); // Manejo de errores
 
-  // Función para cargar las sedes desde el backend
+  /**
+   * Carga las sedes desde el backend y actualiza el estado local.
+   */
   const reloadData = () => {
     setLoading(true);
     axios
@@ -59,11 +79,14 @@ export default function Sede(props) {
       });
   };
 
+  // Cargar los datos al montar el componente
   React.useEffect(() => {
-    reloadData(); // Cargar los datos al montar el componente
+    reloadData();
   }, []);
 
-  // Manejador de mensaje cerrado
+  /**
+   * Manejador para cerrar el snackbar de mensajes.
+   */
   const handleMessageClose = () => {
     setMessage({ ...message, open: false });
   };

@@ -1,3 +1,9 @@
+
+/**
+ * FormTipoMovimiento componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import PropTypes from "prop-types"; // Importa PropTypes
 import * as React from "react";
 import axios from "axios";
@@ -15,6 +21,12 @@ import MenuItem from "@mui/material/MenuItem";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente FormTipoMovimiento.
+ * @module FormTipoMovimiento.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");

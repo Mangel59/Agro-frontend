@@ -1,3 +1,9 @@
+
+/**
+ * Espacio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
@@ -5,6 +11,12 @@ import { SiteProps } from "../dashboard/SiteProps";
 import MessageSnackBar from "../MessageSnackBar";
 import FormEspacio from "../espacio/FormEspacio";
 
+/**
+ * Componente Espacio.
+ * @module Espacio.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Espacio() {
   const [sedes, setSedes] = useState([]); // Lista de sedes
   const [selectedSede, setSelectedSede] = useState(null); // Sede seleccionada

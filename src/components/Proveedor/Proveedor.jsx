@@ -1,3 +1,9 @@
+
+/**
+ * Proveedor componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 // import React, { useState, useEffect } from "react";
 // import axios from "axios";
 // import MessageSnackBar from "../MessageSnackBar";
@@ -5,6 +11,12 @@
 // import GridProveedor from "./GridProveedor";
 // import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente Proveedor.
+ * @module Proveedor.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 // export default function Proveedor() {
 //   const initialRow = {
 //     id: 0,

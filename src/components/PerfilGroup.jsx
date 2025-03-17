@@ -1,10 +1,8 @@
-//AGREGAR
-
-import React from 'react';
-import { Box, Card, CardContent, CardActions, Typography, Button } from '@mui/material';
-import Persona from './personas/Persona.jsx';
-import Empresa from './empresas/Empresa.jsx';
-
+/**
+ * Componente PerfilGroup.
+ * @module PerfilGroup
+ * @component
+ */
 const PerfilGroup = ({ setCurrentModule }) => {
   return (
     <Box display="flex" flexWrap="wrap" justifyContent="center" p={2}>

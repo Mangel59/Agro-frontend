@@ -1,5 +1,12 @@
+
+/**
+ * CustomToolbar componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from 'react';
 import { DataGrid, GridToolbarContainer, GridToolbarFilterButton } from '@mui/x-data-grid';
+import PropTypes from 'prop-types';
 
 const columns = [
   { field: 'id', headerName: 'ID', width: 90, type: 'number' },
@@ -15,37 +22,68 @@ const columns = [
   },
 ];
 
-export default function GridUnidad(props) {
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer>
-        <GridToolbarFilterButton />
-      </GridToolbarContainer>
-    );
-  }
+// ✅ Toolbar personalizada
+function CustomToolbar() {
+  return (
+    <GridToolbarContainer>
+      <GridToolbarFilterButton />
+    </GridToolbarContainer>
+  );
+}
 
+/**
+ * Componente GridUnidad.
+ * @module GridUnidad.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
+export default function GridUnidad({
+  unidades,
+  rowCount,
+  loading,
+  paginationModel,
+  setPaginationModel,
+  filterModel,
+  setFilterModel,
+  sortModel,
+  setSortModel,
+  setSelectedRow,
+}) {
   return (
     <DataGrid
-      rows={props.unidades || []}
+      rows={unidades || []}
       columns={columns}
-      rowCount={props.rowCount} // Añadir rowCount aquí para paginación
-      loading={props.loading}
+      rowCount={rowCount}
+      loading={loading}
       paginationMode="server"
-      paginationModel={props.paginationModel}
-      onPaginationModelChange={props.setPaginationModel}
+      paginationModel={paginationModel}
+      onPaginationModelChange={setPaginationModel}
       sortingMode="server"
-      onSortModelChange={(model) => props.setSortModel(model)}
-      filterMode="server"
-      onFilterModelChange={(model) => props.setFilterModel(model)}
+      sortModel={sortModel} // ✅ añadido
+      onSortModelChange={(model) => setSortModel && setSortModel(model)}
+      filterModel={filterModel}
+      onFilterModelChange={(model) => setFilterModel && setFilterModel(model)}
       pageSizeOptions={[5, 10, 20, 50]}
-      components={{
-        Toolbar: CustomToolbar,
-      }}
+      components={{ Toolbar: CustomToolbar }}
       onRowSelectionModelChange={(newSelection) => {
         const selectedIDs = new Set(newSelection);
-        const selectedRowData = props.unidades.find((row) => selectedIDs.has(row.id));
-        props.setSelectedRow(selectedRowData || {});
+        const selectedRowData = unidades.find((row) => selectedIDs.has(row.id));
+        setSelectedRow(selectedRowData || {});
       }}
     />
   );
 }
+
+// ✅ Validación de props
+GridUnidad.propTypes = {
+  unidades: PropTypes.array.isRequired,
+  rowCount: PropTypes.number.isRequired,
+  loading: PropTypes.bool,
+  paginationModel: PropTypes.object.isRequired,
+  setPaginationModel: PropTypes.func.isRequired,
+  sortModel: PropTypes.array.isRequired,         // ✅ Añadido
+  setSortModel: PropTypes.func.isRequired,
+  filterModel: PropTypes.object.isRequired,
+  setFilterModel: PropTypes.func.isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+};

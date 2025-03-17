@@ -1,3 +1,15 @@
+/**
+ * GridBloque componente principal.
+ * Muestra una tabla con los bloques filtrados por sede y permite seleccionar una fila.
+ *
+ * @module GridBloque
+ * @component
+ * @param {Object} props
+ * @param {function} props.setSelectedRow - Función para seleccionar una fila de la tabla.
+ * @param {string|number} props.selectedSede - ID de la sede seleccionada para filtrar bloques.
+ * @returns {JSX.Element}
+ */
+
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { DataGrid } from "@mui/x-data-grid";
@@ -5,14 +17,16 @@ import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
 function GridBloque({ setSelectedRow, selectedSede }) {
-  const [bloques, setBloques] = useState([]); // Lista de bloques
-  const [loading, setLoading] = useState(false); // Estado para mostrar el cargando
-  const [error, setError] = useState(null); // Estado para manejar errores
+  const [bloques, setBloques] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Función para cargar los bloques según la sede seleccionada
+  /**
+   * Obtiene los bloques de la sede seleccionada desde el backend.
+   */
   useEffect(() => {
     if (!selectedSede) {
-      setBloques([]); // Si no hay sede seleccionada, vaciar la tabla
+      setBloques([]);
       return;
     }
 
@@ -25,20 +39,23 @@ function GridBloque({ setSelectedRow, selectedSede }) {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
           }
         );
-        setBloques(response.data || []); // Asegurar que la respuesta sea un array
-        setError(null); // Limpiar errores si los datos se cargaron correctamente
+        setBloques(response.data || []);
+        setError(null);
       } catch (error) {
         console.error("Error al cargar los bloques:", error);
         setError("No se pudieron cargar los bloques. Por favor, intente más tarde.");
-        setBloques([]); // En caso de error, establecer bloques como un array vacío
+        setBloques([]);
       } finally {
-        setLoading(false); // Terminar el estado de carga
+        setLoading(false);
       }
     };
 
     fetchBloques();
-  }, [selectedSede]); // Ejecutar cuando cambie la sede seleccionada
+  }, [selectedSede]);
 
+  /**
+   * Columnas para la tabla de bloques.
+   */
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
     { field: "sede", headerName: "Sede", width: 180 },
@@ -69,6 +86,10 @@ function GridBloque({ setSelectedRow, selectedSede }) {
     { field: "estado", headerName: "Estado", width: 120 },
   ];
 
+  /**
+   * Maneja el evento de clic en una fila.
+   * @param {object} params - Parámetros del evento de clic.
+   */
   const handleRowClick = (params) => {
     setSelectedRow(params.row);
   };
@@ -79,7 +100,7 @@ function GridBloque({ setSelectedRow, selectedSede }) {
   return (
     <div style={{ height: 400, width: "100%" }}>
       <DataGrid
-        rows={bloques} // Cargar los bloques según la sede seleccionada
+        rows={bloques}
         columns={columns}
         pageSize={5}
         rowsPerPageOptions={[5]}
@@ -89,10 +110,10 @@ function GridBloque({ setSelectedRow, selectedSede }) {
   );
 }
 
-// 📌 Agregamos la validación de props con PropTypes
+// 📌 Validación de props con PropTypes
 GridBloque.propTypes = {
-  setSelectedRow: PropTypes.func.isRequired, // Debe ser una función obligatoria
-  selectedSede: PropTypes.oneOfType([PropTypes.string, PropTypes.number]), // Puede ser string o número
+  setSelectedRow: PropTypes.func.isRequired,
+  selectedSede: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 export default GridBloque;

@@ -1,8 +1,20 @@
+
+/**
+ * ProductoPresentacion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 // import React, { useEffect, useState } from 'react';
 // import { TextField, Autocomplete } from '@mui/material';
 // import axios from 'axios';
 // import { SiteProps } from '../dashboard/SiteProps';
 
+/**
+ * Componente ProductoPresentacion.
+ * @module ProductoPresentacion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 // export default function ProductoPresentacion({ value, setValue }) {
 //   const [options, setOptions] = useState([]);
 

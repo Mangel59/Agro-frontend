@@ -5,6 +5,8 @@
   "proxy": "http://172.16.79.156:8080",
   "type": "module",
   "scripts": {
+    "docs": "jsdoc -c jsdoc.json",
+    "autodoc": "node add-jsdoc.cjs && npm run docs",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
@@ -40,6 +42,8 @@
     "validator": "^13.12.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.26.10",
+    "@babel/preset-react": "^7.26.3",
     "@eslint/js": "^9.19.0",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
@@ -50,6 +54,7 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "globals": "^15.14.0",
     "jsdoc": "^4.0.4",
+    "jsdoc-babel": "^0.5.0",
     "vite": "^5.4.2"
   }
 }

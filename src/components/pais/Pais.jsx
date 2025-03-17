@@ -1,3 +1,9 @@
+
+/**
+ * Pais componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from 'react';
 import axios from 'axios';
 import MessageSnackBar from '../MessageSnackBar';
@@ -6,6 +12,12 @@ import GridPais from "./GridPais";
 import { SiteProps } from '../dashboard/SiteProps';
 
 
+/**
+ * Componente Pais.
+ * @module Pais.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Pais() {
   const row = {
     id: 0,

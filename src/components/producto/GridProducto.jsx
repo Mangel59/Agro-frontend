@@ -1,4 +1,11 @@
+
+/**
+ * GridProducto componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from 'react';
+import PropTypes from 'prop-types'; // ✅ importar PropTypes
 import { DataGrid } from '@mui/x-data-grid';
 
 const columns = [
@@ -6,20 +13,21 @@ const columns = [
   { field: 'nombre', headerName: 'Nombre', width: 150, type: 'string' },
   { field: 'productocategoriaid', headerName: 'ID Categoría de producto', width: 90, type: 'number' },
   { field: 'descripcion', headerName: 'Descripción', width: 250, type: 'string' },
-  { field: 'estado', headerName: 'Estado', width: 100, type: 'number',
-    valueGetter: (params) => params.row.estado === 1 ? 'Activo' : 'Inactivo' },
+  {
+    field: 'estado',
+    headerName: 'Estado',
+    width: 100,
+    type: 'number',
+    valueGetter: (params) => params.row.estado === 1 ? 'Activo' : 'Inactivo'
+  },
 ];
 
 /**
- * El componente GridPersona muestra una tabla con los datos de las producto.
- * 
- * @componente
- * @param {object} props - Propiedades pasadas al componente.
- * @param {array} props.producto - Lista de producto a mostrar en la tabla.
- * @param {function} props.setSelectedRow - Función para establecer la fila seleccionada.
- * @returns {JSX.Element} La tabla de datos de producto.
+ * Componente GridProducto.
+ * @module GridProducto.jsx
+ * @component
+ * @returns {JSX.Element}
  */
-
 export default function GridProducto(props) {
   return (
     <DataGrid
@@ -30,7 +38,6 @@ export default function GridProducto(props) {
           selectedIDs.has(row.id)
         );
         props.setSelectedRow(selectedRowData[0]);
-        console.log(props.selectedRow);
       }}
       columns={columns}
       initialState={{
@@ -44,3 +51,9 @@ export default function GridProducto(props) {
     />
   );
 }
+
+GridProducto.propTypes = {
+  producto: PropTypes.array.isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+  selectedRow: PropTypes.object,
+};

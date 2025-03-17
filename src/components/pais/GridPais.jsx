@@ -1,3 +1,9 @@
+
+/**
+ * GridPais componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 
@@ -6,6 +12,12 @@ const columns = [
   { field: 'name', headerName: 'Nombre', width: 250, type: 'string' },
 ];
 
+/**
+ * Componente GridPais.
+ * @module GridPais.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function GridPais(props) {
   return (
     <DataGrid

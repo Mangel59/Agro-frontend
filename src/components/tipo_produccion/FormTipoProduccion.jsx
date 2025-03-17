@@ -1,4 +1,10 @@
 
+/**
+ * FormTipoProduccion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+
 
 
 
@@ -20,6 +26,12 @@ import MenuItem from "@mui/material/MenuItem";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente FormTipoProduccion.
+ * @module FormTipoProduccion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormTipoProduccion(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");

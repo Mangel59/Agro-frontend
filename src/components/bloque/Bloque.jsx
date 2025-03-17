@@ -1,3 +1,13 @@
+/**
+ * Bloque componente principal.
+ * Gestiona la visualización de bloques según la sede seleccionada,
+ * y permite cargar y editar información con una tabla interactiva.
+ *
+ * @module Bloque
+ * @component
+ * @returns {JSX.Element} El componente de gestión de bloques.
+ */
+
 import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
@@ -18,7 +28,9 @@ export default function Bloque() {
   });
   const [selectedRow, setSelectedRow] = useState(null); // Fila seleccionada para editar
 
-  // Cargar las sedes al montar el componente
+  /**
+   * Carga todas las sedes disponibles al montar el componente.
+   */
   useEffect(() => {
     const fetchSedes = async () => {
       try {
@@ -34,10 +46,12 @@ export default function Bloque() {
     fetchSedes();
   }, []);
 
-  // Cargar los bloques según la sede seleccionada
+  /**
+   * Carga los bloques relacionados con la sede seleccionada.
+   */
   useEffect(() => {
     if (!selectedSede) {
-      setBloques([]); // Si no hay sede seleccionada, vaciar la tabla
+      setBloques([]);
       return;
     }
 
@@ -64,8 +78,12 @@ export default function Bloque() {
     fetchBloques();
   }, [selectedSede]);
 
+  /**
+   * Maneja el cambio de sede seleccionada desde el dropdown.
+   * @param {React.ChangeEvent<HTMLSelectElement>} event - Evento del cambio de selección.
+   */
   const handleSedeChange = (event) => {
-    setSelectedSede(event.target.value); // Actualizar la sede seleccionada
+    setSelectedSede(event.target.value);
   };
 
   const columns = [
@@ -81,7 +99,7 @@ export default function Bloque() {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
-       <h1>Bloque</h1>
+      <h1>Bloque</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       {loading ? (
         <div style={{ textAlign: "center", margin: "20px" }}>Cargando datos...</div>
@@ -109,8 +127,9 @@ export default function Bloque() {
             setMessage={setMessage}
             selectedRow={selectedRow}
             setSelectedRow={setSelectedRow}
-            reloadData={() => setSelectedSede(selectedSede)}
+            reloadData={() => setSelectedSede(selectedSede)} // Triggers useEffect
           />
+
           <div style={{ height: 400, width: "100%" }}>
             <DataGrid
               rows={bloques}

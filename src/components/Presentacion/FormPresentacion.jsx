@@ -1,3 +1,9 @@
+
+/**
+ * FormPresentacion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
 import PropTypes from "prop-types"; // Importamos PropTypes
 import axios from "../axiosConfig";
@@ -15,6 +21,12 @@ import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente FormPresentacion.
+ * @module FormPresentacion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormPresentacion({ setSelectedRow, selectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");

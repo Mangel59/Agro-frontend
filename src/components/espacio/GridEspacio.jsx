@@ -1,9 +1,21 @@
+
+/**
+ * GridEspacio componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types"; // Importamos PropTypes
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente GridEspacio.
+ * @module GridEspacio.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function GridEspacio({ setSelectedRow, selectedBloque }) {
   const [espacios, setEspacios] = useState([]); // Lista de espacios
   const [loading, setLoading] = useState(false); // Estado para mostrar el cargando

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: components/dashboard/Navigator2.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: components/dashboard/Navigator2.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>
+/**
+ * Navigator2 componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+import * as React from 'react';
+import axios from 'axios';
+import { Divider, List, Box, ListItem, ListItemButton, ListItemIcon, ListItemText, Grid, Card, CardContent, CardActions, Typography, Button, IconButton } from "@mui/material";
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '@mui/material/styles';
+
+import MenuIcon from '@mui/icons-material/Menu';
+import DnsRoundedIcon from '@mui/icons-material/DnsRounded';
+import HomeIcon from '@mui/icons-material/Home';
+import PeopleIcon from '@mui/icons-material/People';
+import PublicIcon from '@mui/icons-material/Public';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import SettingsIcon from '@mui/icons-material/Settings';
+import ApartmentIcon from '@mui/icons-material/Apartment';
+import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
+import LockIcon from '@mui/icons-material/Lock';
+import LocationCityIcon from '@mui/icons-material/LocationCity';
+import PersonIcon from '@mui/icons-material/Person';
+import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
+import DomainIcon from '@mui/icons-material/Domain';
+
+import Persona from "../personas/Persona.jsx";
+import Pais from '../pais/Pais';
+import Departamento from '../departamento/Departamento';
+import Municipio from '../municipio/Municipio';
+import ProductoPresentacion from '../producto_presentacion/ProductoPresentacion';
+import Produccion from '../produccion/Produccion';
+import Empresa from '../empresas/Empresa.jsx';
+import Producto from '../producto/Producto.jsx';
+import ProductoCategoria from '../producto_categoria/ProductoCategoria.jsx';
+import Almacen from '../almacen/Almacen.jsx';
+import Espacio from '../espacio/Espacio.jsx';
+import Bloque from '../bloque/Bloque.jsx';
+import Sede from '../sede/Sede.jsx';
+import KardexNuevo from '../kardex_nuevo/KardexNuevo.jsx'
+import Marca from '../marca/Marca.jsx';
+import Unidad from '../unidad/Unidad.jsx';
+import TipoMovimiento from '../tipo_movimiento/TipoMovimiento.jsx';
+import TipoProduccion from '../tipo_produccion/TipoProduccion.jsx';
+import Presentacion from '../Presentacion/Presentacion.jsx';
+import TipoBloque from '../tipo_bloque/Tipobloque.jsx';
+import TipoSedes from '../tipo_sede/TipoSede.jsx';
+import TipoEspacio from '../tipo_espacio/TipoEspacio.jsx';
+import EspacioOcupacion from '../espacio_ocupacion/EspacioOcupacion.jsx';
+import RPedido from '../r_pedido/Pedido.jsx';
+import ROrdenCompra from '../r_orden_compra/OrdenCompra.jsx';
+// import DomainIcon from '@mui/icons-material/Domain';
+import Rol from '../Rol/Rol.jsx';
+import TipoIdentificacion from '../TipoIdentificacion/TipoIdentificacion.jsx';
+import Evaluacion from '../Evaluacion/Evaluacion.jsx';
+import Proveedor from '../Proveedor/Proveedor.jsx';
+
+// Definición de íconos
+const icons = {
+  DnsRounded: &lt;DnsRoundedIcon />,
+  Home: &lt;HomeIcon />,
+  People: &lt;PeopleIcon />,
+  Public: &lt;PublicIcon />,
+  AddShoppingCartIcon: &lt;AddShoppingCartIcon />,
+  Domain: &lt;DomainIcon />,
+  Settings: &lt;SettingsIcon />,
+  Apartment: &lt;ApartmentIcon />,
+  LocationCity: &lt;LocationCityIcon />,
+  ProductionQuantityLimitsIcon: &lt;ProductionQuantityLimitsIcon />,
+  LockIcon: &lt;LockIcon />,
+  PersonIcon: &lt;PersonIcon />,
+  HomeWorkIcon: &lt;HomeWorkIcon />,
+  Warehouse: &lt;WarehouseIcon />
+};
+
+// Mapeo de componentes por menú
+const components = {
+  tipoidentificacion: TipoIdentificacion,
+  roll: Rol,
+  evaluacion: Evaluacion,
+  proveedor: Proveedor,
+  pais: Pais,
+  departamento: Departamento,
+  municipio: Municipio,
+  almacen: Almacen,
+  espacio: Espacio,
+  espacio_ocupacion:EspacioOcupacion,
+  tipo_espacio: TipoEspacio,
+  bloque: Bloque,
+  tipo_bloque: TipoBloque,
+  tipo_sede: TipoSedes,
+  sede: Sede,
+  producto_presentacion: ProductoPresentacion,
+  presentacion: Presentacion,
+  producto_categoria: ProductoCategoria,
+  producto: Producto,
+  produccion: Produccion,
+  kardex_nuevo: KardexNuevo,
+  marca: Marca,
+  unidad: Unidad,
+  tipo_movimiento: TipoMovimiento,
+  tipo_produccion: TipoProduccion,
+  persona: Persona,
+  empresa: Empresa,
+  r_pedido: RPedido,
+  r_orden_compra: ROrdenCompra
+};
+
+/**
+ * Componente Navigator2.
+ * @module Navigator2.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
+export default function Navigator2(props) {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const [menuItems, setMenuItems] = React.useState([]);
+  const [selectedMenu, setSelectedMenu] = React.useState(null);
+  const [breadcrumb, setBreadcrumb] = React.useState([]);
+  const [open, setOpen] = React.useState(true);
+
+  React.useEffect(() => {
+    axios.get('/menu.json')
+      .then((response) => {
+        setMenuItems(response.data);
+        if (response.data.length > 0) {
+          const firstMenuId = response.data[0].id;
+          setSelectedMenu(firstMenuId);
+          setBreadcrumb([firstMenuId]);
+          const firstMenu = response.data[0];
+          if (firstMenu.children &amp;&amp; firstMenu.children.length > 0) {
+            props.setCurrentModuleItem(renderSubmenu(firstMenu.children, firstMenuId));
+          }
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching menu data:', error);
+      });
+  }, []);
+
+  const handleMenuClick = (menuId) => {
+    setSelectedMenu(menuId);
+    const menu = menuItems.find(item => item.id === menuId);
+    setBreadcrumb([menuId]);
+  
+    if (menu &amp;&amp; menu.children &amp;&amp; menu.children.length > 0) {
+      props.setCurrentModuleItem(renderSubmenu(menu.children, menuId));
+    } else {
+      const Component = components[menuId];
+      console.log("Component to render:", Component); // Debugging line
+      if (Component) {
+        props.setCurrentModuleItem(&lt;Component />);
+      } else {
+        console.warn(`No component found for menuId: ${menuId}`);
+        props.setCurrentModuleItem(null);
+      }
+    }
+  };
+  
+
+  const handleSubMenuClick = (subMenuId, parentMenuId) => {
+    console.log("subMenuId:", subMenuId);
+    console.log("components[subMenuId]:", components[subMenuId]);
+    if (!components[subMenuId]) {
+        console.warn(`El componente para subMenuId "${subMenuId}" es undefined.`);
+    }
+    setBreadcrumb([...breadcrumb, subMenuId]);
+    if (components[subMenuId]) {
+        props.setCurrentModuleItem(
+            React.createElement(components[subMenuId], { goBack: () => handleBackToParent(parentMenuId) })
+        );
+    } else {
+        props.setCurrentModuleItem(null);
+    }
+};
+
+const renderSubmenu = (children, parentMenuId) => (
+    &lt;Grid container spacing={3} sx={{ padding: 2, marginTop: '40px' }}>
+      {children.map(({ id, text, icon }) => (
+        &lt;Grid item xs={12} sm={6} md={4} key={id}>
+          &lt;Card sx={{ 
+              minWidth: 275, 
+              height: '100%', 
+              backgroundColor: theme.palette.mode === 'dark' ? '#333' : '#fff', 
+              color: theme.palette.mode === 'dark' ? '#fff' : '#000', 
+              marginBottom: '20px', 
+              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' 
+            }}>
+            &lt;CardContent>
+              &lt;ListItemIcon sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }}>{icons[icon]}&lt;/ListItemIcon>
+              &lt;Typography variant="h6" component="div">
+                {t(text)}
+              &lt;/Typography>
+            &lt;/CardContent>
+            &lt;CardActions>
+              &lt;Button size="small" sx={{ color: theme.palette.mode === 'dark' ? '#90caf9' : '#1976d2' }} onClick={() => handleSubMenuClick(id, parentMenuId)}>
+                {t('see_more')}
+              &lt;/Button>
+            &lt;/CardActions>
+          &lt;/Card>
+        &lt;/Grid>
+      ))}
+    &lt;/Grid>
+  );
+
+  return (
+    &lt;Box sx={{ 
+        position: 'fixed', 
+        top: '65px', 
+        left: '0', 
+        width: open ? '250px' : '70px', 
+        height: '100vh', 
+        overflowY: 'auto', 
+        backgroundColor: theme.palette.mode === 'dark' ? '#212121' : '#fff', 
+        color: theme.palette.mode === 'dark' ? '#fff' : '#000', 
+        boxShadow: '0 0 10px rgba(0,0,0,0.1)', 
+        transition: 'width 0.3s' 
+      }}>
+      {/* Título del menú que funciona como botón de alternancia */}
+      &lt;Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', p: 2 }} onClick={() => setOpen(!open)}>
+        &lt;MenuIcon sx={{ mr: open ? 1 : 0, color: theme.palette.mode === 'dark' ? '#fff' : '#000' }} />
+        {open &amp;&amp; &lt;Typography variant="h6" sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }}>{t('Menú')}&lt;/Typography>}
+      &lt;/Box>
+
+      &lt;List component="nav">
+        {menuItems.map(({ id, text, icon }) => (
+          &lt;ListItem disablePadding key={id} id={id} onClick={() => handleMenuClick(id)}>
+            &lt;ListItemButton selected={selectedMenu === id} sx={{ justifyContent: open ? 'flex-start' : 'center', px: open ? 2 : 0 }}>
+              &lt;ListItemIcon sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000', minWidth: 0, mr: open ? 2 : 0, justifyContent: 'center' }}>
+                {icons[icon]}
+              &lt;/ListItemIcon>
+              {open &amp;&amp; &lt;ListItemText primary={t(text)} sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }} />}
+            &lt;/ListItemButton>
+          &lt;/ListItem>
+        ))}
+        &lt;Divider sx={{ my: 1, backgroundColor: theme.palette.mode === 'dark' ? '#757575' : '#e0e0e0' }} />
+      &lt;/List>
+    &lt;/Box>
+  );
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="AppBarComponent.module_jsx.html">jsx</a></li><li><a href="Chart.module_jsx.html">jsx</a></li><li><a href="Chart1.module_jsx.html">jsx</a></li><li><a href="ComboBox.module_jsx.html">jsx</a></li><li><a href="ComboBox1.module_jsx.html">jsx</a></li><li><a href="Contenido.module_jsx.html">jsx</a></li><li><a href="Copyright.module_jsx.html">jsx</a></li><li><a href="Deposits.module_jsx.html">jsx</a></li><li><a href="Espacio.module_jsx.html">jsx</a></li><li><a href="EspacioOcupacion.module_jsx.html">jsx</a></li><li><a href="Evaluacion.module_jsx.html">jsx</a></li><li><a href="FormEspacio.module_jsx.html">jsx</a></li><li><a href="FormEvaluacion.module_jsx.html">jsx</a></li><li><a href="FormKardexNuevo.module_jsx.html">jsx</a></li><li><a href="FormMarca.module_jsx.html">jsx</a></li><li><a href="FormMunicipio.module_jsx.html">jsx</a></li><li><a href="FormOrdenCompra.module_jsx.html">jsx</a></li><li><a href="FormOrdenCompraItem.module_jsx.html">jsx</a></li><li><a href="FormPais.module_jsx.html">jsx</a></li><li><a href="FormPedido.module_jsx.html">jsx</a></li><li><a href="FormPedidoItem.module_jsx.html">jsx</a></li><li><a href="FormPersona.module_jsx.html">jsx</a></li><li><a href="FormPresentacion.module_jsx.html">jsx</a></li><li><a href="FormProducto.module_jsx.html">jsx</a></li><li><a href="FormProductoCategoria.module_jsx.html">jsx</a></li><li><a href="FormProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="FormProveedor.module_jsx.html">jsx</a></li><li><a href="FormRegistroEmpresa.module_jsx.html">jsx</a></li><li><a href="FormRegistroPersona.module_jsx.html">jsx</a></li><li><a href="FormRol.module_jsx.html">jsx</a></li><li><a href="FormSede.module_jsx.html">jsx</a></li><li><a href="FormTipoEspacio.module_jsx.html">jsx</a></li><li><a href="FormTipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="FormTipoMovimiento.module_jsx.html">jsx</a></li><li><a href="FormTipoProduccion.module_jsx.html">jsx</a></li><li><a href="FormTipoSede.module_jsx.html">jsx</a></li><li><a href="FormUnidad.module_jsx.html">jsx</a></li><li><a href="FromEspacioOcupacion.module_jsx.html">jsx</a></li><li><a href="Grid1.module_jsx.html">jsx</a></li><li><a href="GridEspacio.module_jsx.html">jsx</a></li><li><a href="GridEvaluacion.module_jsx.html">jsx</a></li><li><a href="GridKardexNuevo.module_jsx.html">jsx</a></li><li><a href="GridMarca.module_jsx.html">jsx</a></li><li><a href="GridMunicipio.module_jsx.html">jsx</a></li><li><a href="GridOrdenCompra.module_jsx.html">jsx</a></li><li><a href="GridOrdenCompraItem.module_jsx.html">jsx</a></li><li><a href="GridPais.module_jsx.html">jsx</a></li><li><a href="GridPedido.module_jsx.html">jsx</a></li><li><a href="GridPedidoItem.module_jsx.html">jsx</a></li><li><a href="GridPersona.module_jsx.html">jsx</a></li><li><a href="GridPresentacion.html#.module:jsx">jsx</a></li><li><a href="GridProduccion.module_jsx.html">jsx</a></li><li><a href="GridProducto.module_jsx.html">jsx</a></li><li><a href="GridProductoCategoria.module_jsx.html">jsx</a></li><li><a href="GridProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="GridProveedor.module_jsx.html">jsx</a></li><li><a href="GridRol.module_jsx.html">jsx</a></li><li><a href="GridSede.module_jsx.html">jsx</a></li><li><a href="GridTipoEspacio.module_jsx.html">jsx</a></li><li><a href="GridTipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="GridTipoMovimiento.module_jsx.html">jsx</a></li><li><a href="GridTipoProduccion.module_jsx.html">jsx</a></li><li><a href="GridUnidad.module_jsx.html">jsx</a></li><li><a href="Home.module_jsx.html">jsx</a></li><li><a href="KardexNuevo.module_jsx.html">jsx</a></li><li><a href="Login.module_jsx.html">jsx</a></li><li><a href="Marca.module_jsx.html">jsx</a></li><li><a href="MessageSnackBar.module_jsx.html">jsx</a></li><li><a href="Municipio.module_jsx.html">jsx</a></li><li><a href="Navigator2.module_jsx.html">jsx</a></li><li><a href="OrdenCompra.module_jsx.html">jsx</a></li><li><a href="Pais.module_jsx.html">jsx</a></li><li><a href="Pedido.module_jsx.html">jsx</a></li><li><a href="PerfilCard.module_jsx.html">jsx</a></li><li><a href="Persona.module_jsx.html">jsx</a></li><li><a href="Presentacion.module_jsx.html">jsx</a></li><li><a href="Produccion.module_jsx.html">jsx</a></li><li><a href="Producto.module_jsx.html">jsx</a></li><li><a href="ProductoCategoria.module_jsx.html">jsx</a></li><li><a href="ProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="Proveedor.module_jsx.html">jsx</a></li><li><a href="Register.html#.module:jsx">jsx</a></li><li><a href="Rol.module_jsx.html">jsx</a></li><li><a href="Sede.module_jsx.html">jsx</a></li><li><a href="StackButtons.module_jsx.html">jsx</a></li><li><a href="TipoEspacio.module_jsx.html">jsx</a></li><li><a href="TipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="TipoMovimiento.module_jsx.html">jsx</a></li><li><a href="TipoProduccion.module_jsx.html">jsx</a></li><li><a href="TipoSede.module_jsx.html">jsx</a></li><li><a href="Unidad.module_jsx.html">jsx</a></li><li><a href="module-Almacen.html">Almacen</a></li><li><a href="module-Bloque.html">Bloque</a></li><li><a href="module-Departamento.html">Departamento</a></li><li><a href="module-Empresa.html">Empresa</a></li><li><a href="module-FormBloque.html">FormBloque</a></li><li><a href="module-FormDepartamento.html">FormDepartamento</a></li><li><a href="module-FormEmpresa.html">FormEmpresa</a></li><li><a href="module-FormTipoBloque.html">FormTipoBloque</a></li><li><a href="module-GridAlmacen.html">GridAlmacen</a></li><li><a href="module-GridBloque.html">GridBloque</a></li><li><a href="module-GridDepartamento.html">GridDepartamento</a></li><li><a href="module-GridEmpresa.html">GridEmpresa</a></li><li><a href="module-GridEspacioOcupacion.html">GridEspacioOcupacion</a></li><li><a href="module-GridKardexNuevo.html">GridKardexNuevo</a></li><li><a href="module-GridTipoBloque.html">GridTipoBloque</a></li><li><a href="module-GridTipoSede.html">GridTipoSede</a></li><li><a href="module-PerfilGroup.html">PerfilGroup</a></li><li><a href="module-ProfileMenu.html">ProfileMenu</a></li><li><a href="module-TipoBloque.html">TipoBloque</a></li><li><a href="module-main.html">main</a></li></ul><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#FormAlmacen">FormAlmacen</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#KardexNuevo">KardexNuevo</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#columns">columns</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Mar 17 2025 14:41:57 GMT-0500 (hora estándar de Colombia)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

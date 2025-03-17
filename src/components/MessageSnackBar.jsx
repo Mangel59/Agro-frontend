@@ -1,9 +1,21 @@
+
+/**
+ * MessageSnackBar componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
 
+/**
+ * Componente MessageSnackBar.
+ * @module MessageSnackBar.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function MessageSnackBar(props) {
     console.log(props.message);
 

@@ -1,4 +1,11 @@
+
+/**
+ * GridProduccion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
 import UpdateIcon from "@mui/icons-material/Update";
@@ -22,6 +29,12 @@ import {
 } from "@mui/material";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente GridProduccion.
+ * @module GridProduccion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function GridProduccion({ espacioId }) {
   const [producciones, setProducciones] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +42,7 @@ export default function GridProduccion({ espacioId }) {
   const [selectedRow, setSelectedRow] = useState(null);
   const [open, setOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
+
   const [formData, setFormData] = useState({
     nombre: "",
     descripcion: "",
@@ -36,13 +50,12 @@ export default function GridProduccion({ espacioId }) {
     fechaFinal: "",
     estado: 1,
   });
+
   const [selectedSede, setSelectedSede] = useState("");
   const [selectedBloque, setSelectedBloque] = useState("");
   const [selectedEspacio, setSelectedEspacio] = useState("");
   const [selectedTipoProduccion, setSelectedTipoProduccion] = useState("");
   const [sedes, setSedes] = useState([]);
-  const [bloques, setBloques] = useState([]);
-  const [espacios, setEspacios] = useState([]);
   const [tiposProduccion, setTiposProduccion] = useState([]);
 
   useEffect(() => {
@@ -61,8 +74,8 @@ export default function GridProduccion({ espacioId }) {
       .get(`${SiteProps.urlbasev1}/producciones/${espacioId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then((response) => {
-        setProducciones(response.data.content);
+      .then((res) => {
+        setProducciones(res.data.content);
       })
       .catch((error) => {
         console.error("Error al cargar producciones:", error);
@@ -74,11 +87,11 @@ export default function GridProduccion({ espacioId }) {
 
     axios
       .get(`${SiteProps.urlbasev1}/sede/minimal`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((response) => setSedes(response.data));
+      .then((res) => setSedes(res.data));
 
     axios
       .get(`${SiteProps.urlbasev1}/tipo_produccion`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((response) => setTiposProduccion(response.data));
+      .then((res) => setTiposProduccion(res.data));
   }, [espacioId]);
 
   const handleDelete = () => {
@@ -116,7 +129,7 @@ export default function GridProduccion({ espacioId }) {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      .then((response) => {
+      .then(() => {
         setProducciones((prev) =>
           prev.map((prod) =>
             prod.id === selectedRow.id ? { ...prod, ...formData } : prod
@@ -240,34 +253,7 @@ export default function GridProduccion({ espacioId }) {
                   ))}
                 </Select>
               </FormControl>
-              <FormControl fullWidth margin="normal" disabled={!selectedSede}>
-                <InputLabel id="bloque-label">Bloque</InputLabel>
-                <Select
-                  labelId="bloque-label"
-                  value={selectedBloque}
-                  onChange={(e) => setSelectedBloque(e.target.value)}
-                >
-                  {bloques.map((bloque) => (
-                    <MenuItem key={bloque.id} value={bloque.id}>
-                      {bloque.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth margin="normal" disabled={!selectedBloque}>
-                <InputLabel id="espacio-label">Espacio</InputLabel>
-                <Select
-                  labelId="espacio-label"
-                  value={selectedEspacio}
-                  onChange={(e) => setSelectedEspacio(e.target.value)}
-                >
-                  {espacios.map((espacio) => (
-                    <MenuItem key={espacio.id} value={espacio.id}>
-                      {espacio.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+
               <FormControl fullWidth margin="normal">
                 <InputLabel id="tipoProduccion-label">Tipo de Producción</InputLabel>
                 <Select
@@ -282,6 +268,7 @@ export default function GridProduccion({ espacioId }) {
                   ))}
                 </Select>
               </FormControl>
+
               <TextField
                 id="nombre"
                 name="nombre"
@@ -331,3 +318,8 @@ export default function GridProduccion({ espacioId }) {
     </Box>
   );
 }
+
+// ✅ Validación de props
+GridProduccion.propTypes = {
+  espacioId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+};

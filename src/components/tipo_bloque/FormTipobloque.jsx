@@ -1,5 +1,5 @@
 import * as React from "react";
-import PropTypes from "prop-types"; // Importamos PropTypes
+import PropTypes from "prop-types";
 import axios from "axios";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -13,9 +13,127 @@ import MessageSnackBar from "../MessageSnackBar";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
- * Componente de formulario para crear, actualizar y eliminar tipo_bloque
+ * Formulario para crear, actualizar o eliminar un Tipo de Bloque.
+ *
+ * @module FormTipoBloque
+ * @component
+ *
+ * @param {Object} props - Propiedades del componente.
+ * @param {Object} props.selectedRow - Objeto que representa el tipo de bloque seleccionado.
+ * @param {Function} props.setSelectedRow - Función para actualizar el estado del tipo de bloque seleccionado.
+ * @param {Function} props.addTipoBloque - Función para agregar un nuevo tipo de bloque.
+ * @param {Function} props.updateTipoBloque - Función para actualizar un tipo de bloque existente.
+ * @param {Function} props.reloadData - Función para recargar los datos después de una operación.
+ *
+ * @returns {JSX.Element} Componente React.
  */
-export default function FormTipoBloque({ selectedRow, setSelectedRow, addTipoBloque, updateTipoBloque, reloadData }) {
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * FormTipobloque componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+export default function FormTipoBloque({
+  selectedRow,
+  setSelectedRow,
+  addTipoBloque,
+  updateTipoBloque,
+  reloadData
+}) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
   const [message, setMessage] = React.useState({ open: false, severity: "info", text: "" });
@@ -23,12 +141,18 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, addTipoBlo
   const url = `${SiteProps.urlbasev1}/tipo_bloque`;
   const token = localStorage.getItem("token");
 
+  /**
+   * Abre el formulario para crear un nuevo tipo de bloque.
+   */
   const handleCreate = () => {
     setSelectedRow({ id: null, nombre: "", descripcion: "", estado: 1 });
     setMethodName("Add");
     setOpen(true);
   };
 
+  /**
+   * Abre el formulario para editar un tipo de bloque existente.
+   */
   const handleUpdate = () => {
     if (!selectedRow || selectedRow.id === null) {
       setMessage({ open: true, severity: "error", text: "Seleccione un tipo de bloque para actualizar!" });
@@ -38,6 +162,9 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, addTipoBlo
     setOpen(true);
   };
 
+  /**
+   * Elimina el tipo de bloque seleccionado.
+   */
   const handleDelete = () => {
     if (!selectedRow || selectedRow.id === null) {
       setMessage({ open: true, severity: "error", text: "Seleccione un tipo de bloque para eliminar!" });
@@ -55,12 +182,23 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, addTipoBlo
       })
       .catch((error) => {
         const errorMessage = error.response ? error.response.data.message : error.message;
-        setMessage({ open: true, severity: "error", text: `Error al eliminar tipo_bloque! ${errorMessage}` });
+        setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al eliminar tipo_bloque! ${errorMessage}`
+        });
       });
   };
 
+  /**
+   * Cierra el formulario de diálogo.
+   */
   const handleClose = () => setOpen(false);
 
+  /**
+   * Envía el formulario al hacer clic en Guardar o Actualizar.
+   * @param {React.FormEvent} event - Evento del formulario.
+   */
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (methodName === "Add") {
@@ -72,6 +210,10 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, addTipoBlo
     reloadData();
   };
 
+  /**
+   * Maneja los cambios en los campos del formulario.
+   * @param {React.ChangeEvent<HTMLInputElement>} event
+   */
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setSelectedRow((prevRow) => ({ ...prevRow, [name]: value }));
@@ -84,7 +226,7 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, addTipoBlo
   };
 
   return (
-    <React.Fragment>
+    <>
       <StackButtons methods={methods} />
       <MessageSnackBar message={message} setMessage={setMessage} />
       <Dialog open={open} onClose={handleClose}>
@@ -132,21 +274,34 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, addTipoBlo
           </DialogActions>
         </form>
       </Dialog>
-    </React.Fragment>
+    </>
   );
 }
 
-// Validación de PropTypes para evitar errores
 FormTipoBloque.propTypes = {
+  /**
+   * Objeto que representa el tipo de bloque seleccionado.
+   */
   selectedRow: PropTypes.shape({
     id: PropTypes.number,
     nombre: PropTypes.string,
     descripcion: PropTypes.string,
     estado: PropTypes.number,
   }),
+  /**
+   * Función para actualizar el estado del tipo de bloque seleccionado.
+   */
   setSelectedRow: PropTypes.func.isRequired,
+  /**
+   * Función para agregar un nuevo tipo de bloque.
+   */
   addTipoBloque: PropTypes.func.isRequired,
+  /**
+   * Función para actualizar un tipo de bloque existente.
+   */
   updateTipoBloque: PropTypes.func.isRequired,
+  /**
+   * Función para recargar los datos.
+   */
   reloadData: PropTypes.func.isRequired,
 };
-

@@ -1,3 +1,9 @@
+
+/**
+ * Navigator2 componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from 'react';
 import axios from 'axios';
 import { Divider, List, Box, ListItem, ListItemButton, ListItemIcon, ListItemText, Grid, Card, CardContent, CardActions, Typography, Button, IconButton } from "@mui/material";
@@ -26,7 +32,6 @@ import Departamento from '../departamento/Departamento';
 import Municipio from '../municipio/Municipio';
 import ProductoPresentacion from '../producto_presentacion/ProductoPresentacion';
 import Produccion from '../produccion/Produccion';
-import Reportes from '../reportes/Reportes';
 import Empresa from '../empresas/Empresa.jsx';
 import Producto from '../producto/Producto.jsx';
 import ProductoCategoria from '../producto_categoria/ProductoCategoria.jsx';
@@ -97,13 +102,18 @@ const components = {
   unidad: Unidad,
   tipo_movimiento: TipoMovimiento,
   tipo_produccion: TipoProduccion,
-  reportes: Reportes,
   persona: Persona,
   empresa: Empresa,
   r_pedido: RPedido,
   r_orden_compra: ROrdenCompra
 };
 
+/**
+ * Componente Navigator2.
+ * @module Navigator2.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Navigator2(props) {
   const { t } = useTranslation();
   const theme = useTheme();

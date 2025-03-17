@@ -19,6 +19,12 @@ import Box from '@mui/material/Box';
  * @param {function} onMovimientoChange - Callback para manejar los cambios en la selección de tipo_movimiento.
  * @returns {JSX.Element} Un formulario con selectores de fecha y menús desplegables para almacen, produccion y movimiento.
  */
+/**
+ * Componente ComboBox.
+ * @module ComboBox1.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function ComboBox({ onAlmacenChange, onProduccionChange, onMovimientoChange }) {
   const [movimiento, setMovimiento] = useState([]);
   const [almacen, setAlmacen] = useState([]);

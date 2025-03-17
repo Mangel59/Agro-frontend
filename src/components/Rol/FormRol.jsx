@@ -1,3 +1,9 @@
+
+/**
+ * FormRol componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useState } from "react";
 import PropTypes from "prop-types"; // Importar PropTypes
 import Dialog from "@mui/material/Dialog";
@@ -10,6 +16,12 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
+/**
+ * Componente FormRol.
+ * @module FormRol.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormRol({ onAdd, onUpdate, onDelete, selectedRow, setSelectedRow }) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({

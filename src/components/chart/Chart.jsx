@@ -1,3 +1,9 @@
+
+/**
+ * createData componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from 'react';
 import { useTheme } from '@mui/material/styles';
 import { LineChart, axisClasses } from '@mui/x-charts';
@@ -21,6 +27,12 @@ const data = [
   createData('24:00'),
 ];
 
+/**
+ * Componente Chart.
+ * @module Chart.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Chart() {
   const theme = useTheme();
 

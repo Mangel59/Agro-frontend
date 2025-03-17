@@ -1,8 +1,20 @@
+
+/**
+ * FormOrdenCompraItem componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useState, useEffect } from "react";
 import { Box, TextField, Button, Autocomplete } from "@mui/material";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente FormOrdenCompraItem.
+ * @module FormOrdenCompraItem.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormOrdenCompraItem({ ordenCompraId, fetchOrdenCompraItems, disabled }) {
   const [productos, setProductos] = useState([]);
   const [selectedProducto, setSelectedProducto] = useState(null);

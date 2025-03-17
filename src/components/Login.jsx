@@ -1,3 +1,9 @@
+
+/**
+ * Login componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useState } from 'react';
 import { Container, TextField, Button, Typography, Box, IconButton, InputAdornment, Alert, Link } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
@@ -12,6 +18,12 @@ import Contenido from '../components/dashboard/Contenido';
 import PropTypes from "prop-types";
 
 
+/**
+ * Componente Login.
+ * @module Login.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Login(props) {
   const { t, i18n } = useTranslation(); // Hook de traducción
   const [username, setUsername] = useState(''); // Estado para el nombre de usuario/correo electrónico

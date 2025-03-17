@@ -1,3 +1,9 @@
+
+/**
+ * FormEvaluacion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -9,6 +15,12 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
+/**
+ * Componente FormEvaluacion.
+ * @module FormEvaluacion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormEvaluacion({ onAdd, onUpdate, onDelete, selectedRow, setSelectedRow }) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({

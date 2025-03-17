@@ -1,7 +1,19 @@
+
+/**
+ * Rol componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useState, useEffect } from "react";
 import FormRol from "./FormRol.jsx";
 import GridRol from "./GridRol.jsx";
 
+/**
+ * Componente Rol.
+ * @module Rol.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Rol() {
   const [roles, setRoles] = useState([]);
   const [selectedRow, setSelectedRow] = useState(null);

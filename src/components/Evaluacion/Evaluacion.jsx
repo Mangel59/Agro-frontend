@@ -1,7 +1,19 @@
+
+/**
+ * Evaluacion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useState, useEffect } from "react";
 import FormEvaluacion from "./FormEvaluacion.jsx";
 import GridEvaluacion from "./GridEvaluacion.jsx";
 
+/**
+ * Componente Evaluacion.
+ * @module Evaluacion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Evaluacion() {
   const [evaluaciones, setEvaluaciones] = useState([]);
   const [selectedRow, setSelectedRow] = useState(null);

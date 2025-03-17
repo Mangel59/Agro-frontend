@@ -1,3 +1,9 @@
+
+/**
+ * ForgetPassword componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 // CREADO POR KARLA
 // MODIFICADO POR MARIA
 

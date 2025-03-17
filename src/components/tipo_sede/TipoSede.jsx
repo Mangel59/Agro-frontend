@@ -1,3 +1,9 @@
+
+/**
+ * TipoSedes componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import MessageSnackBar from "../MessageSnackBar";
@@ -5,7 +11,15 @@ import FormTipoSedes from "./FormTipoSede";
 import GridTipoSedes from "./GridTipoSede";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
+import PropTypes from 'prop-types';
 
+
+/**
+ * Componente TipoSedes.
+ * @module TipoSede.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function TipoSedes() {
   const initialRow = { id: null, nombre: "", descripcion: "", estado: 1 };
 
@@ -73,3 +87,10 @@ export default function TipoSedes() {
     </Box>
   );
 }
+GridTipoSedes.propTypes = {
+  setSelectedRow: PropTypes.func.isRequired,
+  tipoSedes: PropTypes.array.isRequired,
+  deleteTipoSedes: PropTypes.func.isRequired,
+};
+
+

@@ -22,6 +22,127 @@ import AppBarComponent from './dashboard/AppBarComponent';
  *   <Register />
  * )
  */
+/**
+ * Componente Register.
+ * @module Register.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+/**
+ * Register componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Register(props) {
   const { t, i18n } = useTranslation(); // Hook de traducción
   const [username, setUsername] = useState('');

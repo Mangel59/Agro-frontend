@@ -1,3 +1,9 @@
+
+/**
+ * FormProveedor componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 // import React, { useState } from "react";
 // import axios from "axios";
 // import Dialog from "@mui/material/Dialog";
@@ -9,6 +15,12 @@
 // import FormControl from "@mui/material/FormControl";
 // import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente FormProveedor.
+ * @module FormProveedor.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 // export default function FormProveedor(props) {
 //   const [open, setOpen] = useState(false);
 //   const [methodName, setMethodName] = useState("");

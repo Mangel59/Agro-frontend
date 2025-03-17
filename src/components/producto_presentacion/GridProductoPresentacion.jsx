@@ -1,3 +1,9 @@
+
+/**
+ * GridProductoPresentacion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from 'react';
 import { DataGrid, GridToolbarContainer, GridToolbarFilterButton } from '@mui/x-data-grid';
 
@@ -19,6 +25,12 @@ const columns = [
   },
 ];
 
+/**
+ * Componente GridProductoPresentacion.
+ * @module GridProductoPresentacion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function GridProductoPresentacion(props) {
   function CustomToolbar() {
     return (

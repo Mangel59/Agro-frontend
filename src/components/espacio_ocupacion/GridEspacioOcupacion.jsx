@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { DataGrid } from "@mui/x-data-grid";
-import axios from "axios";
-import { SiteProps } from "../dashboard/SiteProps";
-
+/**
+ * Componente GridEspacioOcupacion.
+ * @module GridEspacioOcupacion
+ * @component
+ */
+import PropTypes from "prop-types";
 const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadData }) => {
   const [espacioOcupacion, setEspacioOcupacion] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedRowId, setSelectedRowId] = useState(null); // Estado para la fila seleccionada
+  const [selectedRowId, setSelectedRowId] = useState(null);
 
-  // Cargar datos según el espacio seleccionado
   useEffect(() => {
     const fetchEspacioOcupacion = async () => {
       setLoading(true);
@@ -21,15 +21,9 @@ const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadData }) =
           }
         );
         setEspacioOcupacion(response.data || []);
-        setError(null); // Limpiar errores si los datos se cargaron correctamente
+        setError(null);
       } catch (error) {
-        if (error.response) {
-          console.error("Error en la respuesta del servidor:", error.response);
-        } else if (error.request) {
-          console.error("Error en la solicitud al servidor:", error.request);
-        } else {
-          console.error("Error desconocido:", error.message);
-        }
+        console.error("Error al cargar espacio ocupación:", error);
         setError("No se pudieron cargar los datos. Por favor, intente más tarde.");
         setEspacioOcupacion([]);
       } finally {
@@ -71,8 +65,8 @@ const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadData }) =
   ];
 
   const handleRowClick = (params) => {
-    setSelectedRowId(params.id); // Establece el ID de la fila seleccionada
-    setSelectedRow(params.row); // Notifica al componente padre sobre la fila seleccionada
+    setSelectedRowId(params.id);
+    setSelectedRow(params.row);
   };
 
   if (loading) return <div>Cargando datos...</div>;
@@ -86,13 +80,20 @@ const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadData }) =
         pageSize={5}
         rowsPerPageOptions={[5]}
         onRowClick={handleRowClick}
-        getRowId={(row) => row.id} // Asegurarse de que cada fila tenga un id único
+        getRowId={(row) => row.id}
         getRowClassName={(params) =>
           params.id === selectedRowId ? "selected-row" : ""
-        } // Aplica la clase CSS si es la fila seleccionada
+        }
       />
     </div>
   );
+};
+
+// ✅ Validación de props
+GridEspacioOcupacion.propTypes = {
+  setSelectedRow: PropTypes.func.isRequired,
+  selectedEspacio: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  reloadData: PropTypes.func.isRequired,
 };
 
 export default GridEspacioOcupacion;

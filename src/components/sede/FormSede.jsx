@@ -1,3 +1,9 @@
+
+/**
+ * FormSede componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import * as React from "react";
 import axios from "axios";
 import {
@@ -19,6 +25,12 @@ import AddIcon from "@mui/icons-material/Add";
 import UpdateIcon from "@mui/icons-material/Update";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+/**
+ * Componente FormSede.
+ * @module FormSede.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormSede(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");

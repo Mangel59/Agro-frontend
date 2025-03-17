@@ -1,3 +1,9 @@
+
+/**
+ * FormKardexNuevo componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 // import React, { useState, useEffect } from 'react';
 // import axios from 'axios';
 // import { Box, Button, Grid, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
@@ -10,6 +16,12 @@
 //  * @param {Object} props - Propiedades del componente, incluyendo setMessage para mostrar mensajes de estado.
 //  * @returns {JSX.Element} Componente de formulario con campos dependientes y grilla para gestionar items de Kardex.
 //  */
+/**
+ * Componente FormKardexNuevo.
+ * @module FormKardexNuevo.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 // export default function FormKardexNuevo(props) {
 //   // Definición de estados para almacenar datos de opciones de selección y del formulario
 //   const [sedes, setSedes] = useState([]); 
