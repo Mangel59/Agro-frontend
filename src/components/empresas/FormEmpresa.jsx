@@ -37,6 +37,7 @@ import { SiteProps } from "../dashboard/SiteProps";
  * @property {number|string} tipoIdentificacionId
  * @property {number|string} personaId
  * @property {string} identificacion
+ * @property {string} logo
  */
 
 /**
@@ -71,6 +72,7 @@ export default function FormEmpresa({ selectedRow, setSelectedRow, setMessage, r
     tipoIdentificacionId: "",
     personaId: "",
     identificacion: "",
+    logo: "", // ✅ nuevo campo
   };
 
   const create = () => {
@@ -204,6 +206,11 @@ export default function FormEmpresa({ selectedRow, setSelectedRow, setMessage, r
 
           <FormControl fullWidth margin="normal">
             <TextField required id="identificacion" name="identificacion" label="Número de Identificación" variant="standard" defaultValue={selectedRow?.identificacion || ""} />
+          </FormControl>
+
+          {/* ✅ NUEVO CAMPO: URL del Logo */}
+          <FormControl fullWidth margin="normal">
+            <TextField id="logo" name="logo" label="URL del Logo" variant="standard" defaultValue={selectedRow?.logo || ""} />
           </FormControl>
 
         </DialogContent>

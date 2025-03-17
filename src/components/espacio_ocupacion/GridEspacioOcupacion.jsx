@@ -3,8 +3,14 @@
  * @module GridEspacioOcupacion
  * @component
  */
+
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadData }) => {
+import axios from "axios";
+import { DataGrid } from "@mui/x-data-grid";
+import { SiteProps } from "../dashboard/SiteProps";
+
+const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadFlag }) => {
   const [espacioOcupacion, setEspacioOcupacion] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -12,6 +18,8 @@ const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadData }) =
 
   useEffect(() => {
     const fetchEspacioOcupacion = async () => {
+      if (!selectedEspacio) return;
+
       setLoading(true);
       try {
         const response = await axios.get(
@@ -31,8 +39,8 @@ const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadData }) =
       }
     };
 
-    if (selectedEspacio) fetchEspacioOcupacion();
-  }, [selectedEspacio, reloadData]);
+    fetchEspacioOcupacion();
+  }, [selectedEspacio, reloadFlag]); // ✅ Se recarga al cambiar el booleano reloadFlag
 
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
@@ -93,7 +101,7 @@ const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadData }) =
 GridEspacioOcupacion.propTypes = {
   setSelectedRow: PropTypes.func.isRequired,
   selectedEspacio: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  reloadData: PropTypes.func.isRequired,
+  reloadFlag: PropTypes.bool.isRequired, // ✅ cambiado a booleano
 };
 
 export default GridEspacioOcupacion;

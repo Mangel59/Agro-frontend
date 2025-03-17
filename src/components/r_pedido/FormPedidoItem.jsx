@@ -1,20 +1,8 @@
-
-/**
- * FormPedidoItem componente principal.
- * @component
- * @returns {JSX.Element}
- */
 import React, { useState, useEffect } from "react";
 import { Box, TextField, Button, Autocomplete } from "@mui/material";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
-/**
- * Componente FormPedidoItem.
- * @module FormPedidoItem.jsx
- * @component
- * @returns {JSX.Element}
- */
 export default function FormPedidoItem({ pedidoId, fetchPedidoItems, disabled }) {
     const [productos, setProductos] = useState([]);
     const [selectedProducto, setSelectedProducto] = useState(null);
@@ -49,18 +37,18 @@ export default function FormPedidoItem({ pedidoId, fetchPedidoItems, disabled })
             const token = localStorage.getItem("token");
 
             // Verificar si ya existe un ítem asociado al pedido
-            const response = await axios.get(
-                `${SiteProps.urlbasev1}/pedido_item/pedido/${pedidoId}`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
+            // const response = await axios.get(
+            //     `${SiteProps.urlbasev1}/pedido_item/pedido/${pedidoId}`,
+            //     {
+            //         headers: { Authorization: `Bearer ${token}` },
+            //     }
+            // );
 
-            const items = response.data?.content || [];
-            if (items.length > 0) {
-                alert("Este pedido ya tiene un ítem asociado. No se pueden agregar más.");
-                return;
-            }
+            // const items = response.data?.content || [];
+            // if (items.length > 0) {
+            //     alert("Este pedido ya tiene un ítem asociado. No se pueden agregar más.");
+            //     return;
+            // }
 
             // Guardar el nuevo ítem
             await axios.post(

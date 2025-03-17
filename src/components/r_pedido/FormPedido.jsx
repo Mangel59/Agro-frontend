@@ -1,21 +1,8 @@
-
-/**
- * FormPedido componente principal.
- * @component
- * @returns {JSX.Element}
- */
-
 import React, { useState, useEffect } from "react";
 import { Grid, Select, MenuItem, Button, FormControl, InputLabel, Box, Modal, TextField, Autocomplete } from "@mui/material";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
-/**
- * Componente FormPedido.
- * @module FormPedido.jsx
- * @component
- * @returns {JSX.Element}
- */
 export default function FormPedido({
   onAddPedido,
   onUpdatePedido,

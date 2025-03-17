@@ -1,9 +1,10 @@
-
 /**
- * EspacioOcupacion componente principal.
+ * Componente EspacioOcupacion.
+ * @module EspacioOcupacion
  * @component
  * @returns {JSX.Element}
  */
+
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -11,20 +12,13 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  Typography,
 } from "@mui/material";
 import MessageSnackBar from "../MessageSnackBar";
 import GridEspacioOcupacion from "./GridEspacioOcupacion";
-import FormEspacioOcuOcupacion from "./FromEspacioOcupacion";
+import FormEspacioOcupacion from "./FromEspacioOcupacion";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
-/**
- * Componente EspacioOcupacion.
- * @module EspacioOcupacion.jsx
- * @component
- * @returns {JSX.Element}
- */
 export default function EspacioOcupacion() {
   const [sedes, setSedes] = useState([]);
   const [bloques, setBloques] = useState([]);
@@ -34,17 +28,25 @@ export default function EspacioOcupacion() {
   const [selectedBloque, setSelectedBloque] = useState("");
   const [selectedEspacio, setSelectedEspacio] = useState("");
 
-  const [selectedRow, setSelectedRow] = useState(null); // Controla la fila seleccionada
-  const [reloadData, setReloadData] = useState(false); // Estado para recargar datos
+  const [selectedRow, setSelectedRow] = useState({}); // ✅ evitar null
+  const [reloadFlag, setReloadFlag] = useState(false); // ✅ flag booleano interno
 
-  const [message, setMessage] = useState({ open: false, severity: "info", text: "" });
+  const [message, setMessage] = useState({
+    open: false,
+    severity: "info",
+    text: "",
+  });
 
-  // Carga de sedes al montar el componente
+  const triggerReload = () => setReloadFlag(!reloadFlag); // ✅ función para pasar a grid
+
+  // Cargar sedes al inicio
   useEffect(() => {
     const fetchSedes = async () => {
       try {
         const response = await axios.get(`${SiteProps.urlbasev1}/sede/minimal`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         });
         setSedes(response.data || []);
       } catch (err) {
@@ -56,11 +58,10 @@ export default function EspacioOcupacion() {
         });
       }
     };
-
     fetchSedes();
   }, []);
 
-  // Carga de bloques al seleccionar una sede
+  // Cargar bloques cuando cambia la sede
   useEffect(() => {
     if (!selectedSede) return;
 
@@ -69,7 +70,9 @@ export default function EspacioOcupacion() {
         const response = await axios.get(
           `${SiteProps.urlbasev1}/bloque/minimal/sede/${selectedSede}`,
           {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
           }
         );
         setBloques(response.data || []);
@@ -89,7 +92,7 @@ export default function EspacioOcupacion() {
     fetchBloques();
   }, [selectedSede]);
 
-  // Carga de espacios al seleccionar un bloque
+  // Cargar espacios cuando cambia el bloque
   useEffect(() => {
     if (!selectedBloque) return;
 
@@ -98,7 +101,9 @@ export default function EspacioOcupacion() {
         const response = await axios.get(
           `${SiteProps.urlbasev1}/espacio/minimal/bloque/${selectedBloque}`,
           {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
           }
         );
         setEspacios(response.data || []);
@@ -120,12 +125,13 @@ export default function EspacioOcupacion() {
     <Box sx={{ height: "100%", width: "100%" }}>
       <h1>Espacio ocupación</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
+
       {/* Formulario */}
-      <FormEspacioOcuOcupacion
+      <FormEspacioOcupacion
         setMessage={setMessage}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        reloadData={() => setReloadData(!reloadData)} // Recarga solo al guardar/actualizar
+        reloadData={triggerReload} // ✅ ahora sí es función
       />
 
       {/* Selectores */}
@@ -175,7 +181,7 @@ export default function EspacioOcupacion() {
       <GridEspacioOcupacion
         selectedEspacio={selectedEspacio}
         setSelectedRow={setSelectedRow}
-        reloadData={reloadData} // Recarga cuando sea necesario
+        reloadFlag={reloadFlag} // ✅ usar flag como trigger
       />
     </Box>
   );

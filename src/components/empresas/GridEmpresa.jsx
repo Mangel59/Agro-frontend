@@ -22,6 +22,7 @@ import { SiteProps } from "../dashboard/SiteProps";
  * @property {number} tipoIdentificacionId
  * @property {number} personaId
  * @property {string} identificacion
+ * @property {string} logo // ✅ nuevo campo
  */
 
 /**
@@ -64,7 +65,24 @@ export default function GridEmpresa(props) {
     { field: 'contacto', headerName: 'Contacto', width: 150, type: 'string' },
     { field: 'tipoIdentificacionId', headerName: 'Tipo de Identificación', width: 150, type: 'number' },
     { field: 'personaId', headerName: 'Persona', width: 100, type: 'number' },
-    { field: 'identificacion', headerName: 'No. de Identificación', width: 150, type: 'string' }
+    { field: 'identificacion', headerName: 'No. de Identificación', width: 150, type: 'string' },
+
+    // ✅ NUEVO: columna para el logo
+    {
+      field: 'logo',
+      headerName: 'Logo',
+      width: 100,
+      renderCell: (params) =>
+        params.value ? (
+          <img
+            src={params.value}
+            alt="logo"
+            style={{ maxHeight: 40, maxWidth: "100%", objectFit: "contain" }}
+          />
+        ) : (
+          "Sin logo"
+        ),
+    }
   ];
 
   const fetchData = async (page, pageSize, sortModel, filterModel) => {

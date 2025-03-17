@@ -10,6 +10,7 @@ import { Divider, List, Box, ListItem, ListItemButton, ListItemIcon, ListItemTex
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@mui/material/styles';
 
+import TipoEvaluacionReport from '../r_tipo_evaluacion/TipoEvaluacionReport.jsx';
 import MenuIcon from '@mui/icons-material/Menu';
 import DnsRoundedIcon from '@mui/icons-material/DnsRounded';
 import HomeIcon from '@mui/icons-material/Home';
@@ -77,6 +78,7 @@ const icons = {
 
 // Mapeo de componentes por menú
 const components = {
+  TipoEvaluacionReport: TipoEvaluacionReport,
   tipoidentificacion: TipoIdentificacion,
   roll: Rol,
   evaluacion: Evaluacion,

@@ -29,6 +29,7 @@ import { SiteProps } from "../dashboard/SiteProps";
  * @property {number} tipoIdentificacionId
  * @property {number} personaId
  * @property {string} identificacion
+ * @property {string} logo
  */
 
 /**
@@ -51,6 +52,7 @@ export default function Empresa() {
     tipoIdentificacionId: 0,
     personaId: 0,
     identificacion: "",
+    logo: "", // ✅ nuevo campo agregado
   };
 
   const [selectedRow, setSelectedRow] = React.useState(defaultRow);

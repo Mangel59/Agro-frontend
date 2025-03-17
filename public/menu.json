@@ -162,6 +162,11 @@
         "id": "r_orden_compra",
         "text": "Reportes de Orden de Compra",
         "icon": "Settings"
+      },
+      {
+        "id": "TipoEvaluacionReport",
+        "text": "Reportes de TipoEvaluacionReport",
+        "icon": "Settings"
       }
     ]
   },
