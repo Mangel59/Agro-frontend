@@ -1,34 +1,57 @@
-
 /**
- * TipoIdentificacion componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file TipoIdentificacion.jsx
+ * @module TipoIdentificacion
+ * @description Componente principal para la gestión de tipos de identificación. Maneja la carga de datos desde un archivo JSON y permite agregar, actualizar y eliminar registros desde el frontend sin conexión al backend.
+ * @author Karla
  */
+
 import React, { useState, useEffect } from "react";
 import FormTipoIdentificacion from "./FormTipoIdentificacion.jsx";
 import GridTipoIdentificacion from "./GridTipoIdentificacion.jsx";
 
 /**
- * Componente TipoIdentificacion.
- * @module TipoIdentificacion.jsx
+ * Componente principal del módulo TipoIdentificacion.
+ * Permite gestionar los tipos de identificación a través de un formulario y una grilla.
+ *
  * @component
- * @returns {JSX.Element}
+ * @returns {JSX.Element} Componente renderizado de gestión de tipos de identificación.
  */
 export default function TipoIdentificacion() {
+  /** Lista de tipos de identificación cargados.
+   * @type {Array<Object>}
+   */
   const [tiposIdentificacion, setTiposIdentificacion] = useState([]);
+
+  /** Fila actualmente seleccionada.
+   * @type {Object|null}
+   */
   const [selectedRow, setSelectedRow] = useState(null);
 
+  // Cargar datos desde archivo JSON al montar el componente
   useEffect(() => {
-    fetch("/tipo_identificacion .json")
+    fetch("/tipo_identificacion.json")
       .then((response) => response.json())
       .then((data) => setTiposIdentificacion(data))
-      .catch((error) => console.error("Error al cargar tipos de identificación:", error));
+      .catch((error) =>
+        console.error("Error al cargar tipos de identificación:", error)
+      );
   }, []);
 
+  /**
+   * Maneja la adición de un nuevo tipo de identificación.
+   * @param {Object} newTipo - Nuevo objeto de tipo identificación.
+   */
   const handleAdd = (newTipo) => {
-    setTiposIdentificacion([...tiposIdentificacion, { ...newTipo, tii_id: Date.now() }]);
+    setTiposIdentificacion([
+      ...tiposIdentificacion,
+      { ...newTipo, tii_id: Date.now() }, // ID simulado
+    ]);
   };
 
+  /**
+   * Maneja la actualización de un tipo de identificación.
+   * @param {Object} updatedTipo - Objeto actualizado.
+   */
   const handleUpdate = (updatedTipo) => {
     setTiposIdentificacion(
       tiposIdentificacion.map((tipo) =>
@@ -38,8 +61,14 @@ export default function TipoIdentificacion() {
     setSelectedRow(null);
   };
 
+  /**
+   * Maneja la eliminación de un tipo de identificación por ID.
+   * @param {number} id - ID del tipo de identificación a eliminar.
+   */
   const handleDelete = (id) => {
-    setTiposIdentificacion(tiposIdentificacion.filter((tipo) => tipo.tii_id !== id));
+    setTiposIdentificacion(
+      tiposIdentificacion.filter((tipo) => tipo.tii_id !== id)
+    );
     setSelectedRow(null);
   };
 
@@ -53,7 +82,10 @@ export default function TipoIdentificacion() {
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
       />
-      <GridTipoIdentificacion tiposIdentificacion={tiposIdentificacion} onEdit={setSelectedRow} />
+      <GridTipoIdentificacion
+        tiposIdentificacion={tiposIdentificacion}
+        onEdit={setSelectedRow}
+      />
     </div>
   );
 }

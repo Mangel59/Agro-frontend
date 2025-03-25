@@ -1,9 +1,10 @@
-
 /**
- * FormProduccion componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file FormProduccion.jsx
+ * @module FormProduccion
+ * @description Formulario para agregar o editar una producción. Permite seleccionar sede, bloque, espacio y tipo de producción.
+ * @author Karla
  */
+
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
@@ -21,6 +22,18 @@ import MenuItem from "@mui/material/MenuItem";
 import { Box } from "@mui/material";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente FormProduccion.
+ *
+ * Formulario para agregar o editar una producción, permitiendo seleccionar sede, bloque, espacio y tipo de producción.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {Function} props.reloadProducciones - Función para recargar la lista de producciones después de una actualización.
+ * @param {Function} props.setMessage - Función para mostrar mensajes en la interfaz.
+ * @param {Object} props.selectedRow - Fila seleccionada para editar (null si se está creando una nueva producción).
+ * @param {Function} props.setSelectedRow - Función para actualizar la fila seleccionada.
+ * @returns {JSX.Element} Formulario de producción.
+ */
 function FormProduccion({ reloadProducciones, setMessage, selectedRow, setSelectedRow }) {
   const [open, setOpen] = useState(false);
   const [sedes, setSedes] = useState([]);
@@ -43,26 +56,25 @@ function FormProduccion({ reloadProducciones, setMessage, selectedRow, setSelect
 
   const token = localStorage.getItem("token");
 
+  // Cargar sedes y tipos de producción
   useEffect(() => {
     if (!token) {
       setMessage({ open: true, severity: "error", text: "No se encontró el token de autenticación." });
       return;
     }
 
-    axios
-      .get(`${SiteProps.urlbasev1}/sede/minimal`, { headers: { Authorization: `Bearer ${token}` } })
+    axios.get(`${SiteProps.urlbasev1}/sede/minimal`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => setSedes(res.data))
-      .catch((err) => console.error("Error al cargar sedes:", err));
+      .catch(() => console.error("Error al cargar sedes."));
 
-    axios
-      .get(`${SiteProps.urlbasev1}/tipo_produccion`, { headers: { Authorization: `Bearer ${token}` } })
+    axios.get(`${SiteProps.urlbasev1}/tipo_produccion`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => setTiposProduccion(res.data))
-      .catch((err) => console.error("Error al cargar tipos de producción:", err));
+      .catch(() => console.error("Error al cargar tipos de producción."));
   }, []);
 
   // Cargar datos en modo edición
   useEffect(() => {
-    if (selectedRow && selectedRow.id) {
+    if (selectedRow?.id) {
       setFormData({
         nombre: selectedRow.nombre || "",
         descripcion: selectedRow.descripcion || "",
@@ -76,15 +88,13 @@ function FormProduccion({ reloadProducciones, setMessage, selectedRow, setSelect
 
       if (selectedRow.sedeId) {
         setSelectedSede(selectedRow.sedeId);
-        axios
-          .get(`${SiteProps.urlbasev1}/bloque/sede/${selectedRow.sedeId}`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${SiteProps.urlbasev1}/bloque/sede/${selectedRow.sedeId}`, { headers: { Authorization: `Bearer ${token}` } })
           .then((res) => setBloques(res.data));
       }
 
       if (selectedRow.bloqueId) {
         setSelectedBloque(selectedRow.bloqueId);
-        axios
-          .get(`${SiteProps.urlbasev1}/espacio/bloque/${selectedRow.bloqueId}`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${SiteProps.urlbasev1}/espacio/bloque/${selectedRow.bloqueId}`, { headers: { Authorization: `Bearer ${token}` } })
           .then((res) => setEspacios(res.data));
       }
 
@@ -92,25 +102,35 @@ function FormProduccion({ reloadProducciones, setMessage, selectedRow, setSelect
     }
   }, [selectedRow]);
 
+  /**
+   * Maneja el cambio de selección de sede.
+   * @param {string|number} sedeId - ID de la sede seleccionada.
+   */
   const handleSedeChange = (sedeId) => {
     setSelectedSede(sedeId);
     setSelectedBloque("");
     setSelectedEspacio("");
-    axios
-      .get(`${SiteProps.urlbasev1}/bloque/sede/${sedeId}`, { headers: { Authorization: `Bearer ${token}` } })
+    axios.get(`${SiteProps.urlbasev1}/bloque/sede/${sedeId}`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => setBloques(res.data))
-      .catch((err) => console.error("Error al cargar bloques:", err));
+      .catch(() => console.error("Error al cargar bloques."));
   };
 
+  /**
+   * Maneja el cambio de selección de bloque.
+   * @param {string|number} bloqueId - ID del bloque seleccionado.
+   */
   const handleBloqueChange = (bloqueId) => {
     setSelectedBloque(bloqueId);
     setSelectedEspacio("");
-    axios
-      .get(`${SiteProps.urlbasev1}/espacio/bloque/${bloqueId}`, { headers: { Authorization: `Bearer ${token}` } })
+    axios.get(`${SiteProps.urlbasev1}/espacio/bloque/${bloqueId}`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => setEspacios(res.data))
-      .catch((err) => console.error("Error al cargar espacios:", err));
+      .catch(() => console.error("Error al cargar espacios."));
   };
 
+  /**
+   * Maneja el envío del formulario para agregar o actualizar una producción.
+   * @param {React.FormEvent} e - Evento del formulario.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedEspacio || !selectedTipoProduccion) {
@@ -125,7 +145,7 @@ function FormProduccion({ reloadProducciones, setMessage, selectedRow, setSelect
     };
 
     try {
-      if (selectedRow && selectedRow.id) {
+      if (selectedRow?.id) {
         await axios.put(`${SiteProps.urlbasev1}/producciones/${selectedRow.id}`, payload, {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         });
@@ -139,8 +159,8 @@ function FormProduccion({ reloadProducciones, setMessage, selectedRow, setSelect
 
       reloadProducciones();
       setOpen(false);
-      setSelectedRow({}); // Limpiar selección después
-    } catch (error) {
+      setSelectedRow(null);
+    } catch {
       setMessage({ open: true, severity: "error", text: "Error al guardar la producción." });
     }
   };
@@ -156,63 +176,9 @@ function FormProduccion({ reloadProducciones, setMessage, selectedRow, setSelect
         <form onSubmit={handleSubmit}>
           <DialogContent>
             <Box sx={{ width: "100%" }}>
-              {/* Sede */}
-              <FormControl fullWidth margin="normal">
-                <InputLabel id="sede-label">Sede</InputLabel>
-                <Select labelId="sede-label" value={selectedSede} onChange={(e) => handleSedeChange(e.target.value)}>
-                  {sedes.map((sede) => (
-                    <MenuItem key={sede.id} value={sede.id}>
-                      {sede.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              {/* Bloque */}
-              <FormControl fullWidth margin="normal" disabled={!selectedSede}>
-                <InputLabel id="bloque-label">Bloque</InputLabel>
-                <Select labelId="bloque-label" value={selectedBloque} onChange={(e) => handleBloqueChange(e.target.value)}>
-                  {bloques.map((bloque) => (
-                    <MenuItem key={bloque.id} value={bloque.id}>
-                      {bloque.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              {/* Espacio */}
-              <FormControl fullWidth margin="normal" disabled={!selectedBloque}>
-                <InputLabel id="espacio-label">Espacio</InputLabel>
-                <Select labelId="espacio-label" value={selectedEspacio} onChange={(e) => setSelectedEspacio(e.target.value)}>
-                  {espacios.map((espacio) => (
-                    <MenuItem key={espacio.id} value={espacio.id}>
-                      {espacio.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              {/* Tipo de Producción */}
-              <FormControl fullWidth margin="normal">
-                <InputLabel id="tipoProduccion-label">Tipo de Producción</InputLabel>
-                <Select labelId="tipoProduccion-label" value={selectedTipoProduccion} onChange={(e) => setSelectedTipoProduccion(e.target.value)}>
-                  {tiposProduccion.map((tipo) => (
-                    <MenuItem key={tipo.id} value={tipo.id}>
-                      {tipo.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              {/* Nombre */}
               <TextField fullWidth margin="normal" label="Nombre" value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })} required />
-
-              {/* Descripción */}
               <TextField fullWidth margin="normal" label="Descripción" value={formData.descripcion} onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })} required />
-
-              {/* Fechas */}
               <TextField fullWidth margin="normal" label="Fecha de Inicio" type="datetime-local" value={formData.fechaInicio} onChange={(e) => setFormData({ ...formData, fechaInicio: e.target.value })} required />
-
               <TextField fullWidth margin="normal" label="Fecha Final" type="datetime-local" value={formData.fechaFinal} onChange={(e) => setFormData({ ...formData, fechaFinal: e.target.value })} required />
             </Box>
           </DialogContent>

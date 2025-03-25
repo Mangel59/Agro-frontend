@@ -1,3 +1,10 @@
+/**
+ * @file FormPersona.jsx
+ * @module FormPersona
+ * @description Componente formulario para gestionar creación, edición y eliminación lógica de personas. Utiliza Material UI Dialog.
+ * @author Karla
+ */
+
 import * as React from "react";
 import PropTypes from "prop-types";
 import axios from "../axiosConfig";
@@ -9,6 +16,19 @@ import {
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente FormPersona.
+ *
+ * Maneja la creación, edición y eliminación lógica de registros de personas.
+ *
+ * @component
+ * @param {Object} props - Props del componente.
+ * @param {Object} props.selectedRow - Objeto de persona actualmente seleccionada.
+ * @param {Function} props.setSelectedRow - Función para actualizar la persona seleccionada.
+ * @param {Function} props.setMessage - Función para mostrar mensajes en snackbar.
+ * @param {Function} props.reloadData - Función para recargar los datos desde la API.
+ * @returns {JSX.Element} Formulario en diálogo para gestionar personas.
+ */
 export default function FormPersona({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
@@ -28,12 +48,18 @@ export default function FormPersona({ selectedRow, setSelectedRow, setMessage, r
 
   const [formData, setFormData] = React.useState(initialData);
 
+  /**
+   * Abre el diálogo en modo creación.
+   */
   const create = () => {
     setFormData(initialData);
     setMethodName("Add");
     setOpen(true);
   };
 
+  /**
+   * Abre el diálogo en modo edición con datos precargados.
+   */
   const update = () => {
     if (!selectedRow?.id) {
       setMessage({ open: true, severity: "error", text: "Selecciona una fila para actualizar." });
@@ -44,6 +70,9 @@ export default function FormPersona({ selectedRow, setSelectedRow, setMessage, r
     setOpen(true);
   };
 
+  /**
+   * Elimina (de forma lógica) la persona seleccionada.
+   */
   const deleteRow = () => {
     if (!selectedRow?.id) {
       setMessage({ open: true, severity: "error", text: "Selecciona una fila para eliminar." });
@@ -64,11 +93,19 @@ export default function FormPersona({ selectedRow, setSelectedRow, setMessage, r
 
   const handleClose = () => setOpen(false);
 
+  /**
+   * Actualiza los valores del formulario.
+   * @param {React.ChangeEvent} e - Evento de cambio del input.
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  /**
+   * Maneja el envío del formulario para crear o actualizar.
+   * @param {React.FormEvent} event - Evento submit.
+   */
   const handleSubmit = (event) => {
     event.preventDefault();
     const fechaISO = new Date(formData.fechaNacimiento).toISOString().split('T')[0];

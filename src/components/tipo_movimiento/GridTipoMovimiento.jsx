@@ -1,38 +1,83 @@
-
 /**
- * GridTipoMovimiento componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file GridTipoMovimiento.jsx
+ * @module GridTipoMovimiento
+ * @description Componente de grilla para mostrar los Tipos de Movimiento con paginación, filtrado y ordenamiento desde el servidor.
+ * @author Karla
  */
+
 import * as React from "react";
-import { DataGrid, GridToolbarContainer, GridToolbarFilterButton } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridToolbarContainer,
+  GridToolbarFilterButton,
+} from "@mui/x-data-grid";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * @typedef {Object} TipoMovimientoRow
+ * @property {number} id - ID del tipo de movimiento
+ * @property {string} nombre - Nombre del tipo de movimiento
+ * @property {string} descripcion - Descripción del tipo de movimiento
+ * @property {number} estado - Estado (1: Activo, 0: Inactivo)
+ * @property {number} empresa - ID de la empresa relacionada
+ */
+
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open - Si el snackbar está visible
+ * @property {string} severity - Nivel de severidad del mensaje ("success", "error", etc.)
+ * @property {string} text - Contenido del mensaje
+ */
+
+/**
+ * @typedef {Object} GridTipoMovimientoProps
+ * @property {function(TipoMovimientoRow): void} setSelectedRow - Función para establecer la fila seleccionada
+ * @property {function(SnackbarMessage): void} setMessage - Función para mostrar mensajes tipo snackbar
+ */
+
+/**
+ * Columnas de la tabla de tipos de movimiento.
+ */
 const columns = [
   { field: "id", headerName: "ID", width: 90, type: "number" },
   { field: "nombre", headerName: "Nombre", width: 150, type: "string" },
   { field: "descripcion", headerName: "Descripción", width: 250, type: "string" },
-  { field: "estado", headerName: "Estado", width: 100, type: "string",
+  {
+    field: "estado",
+    headerName: "Estado",
+    width: 100,
+    type: "string",
     valueGetter: (params) => (params.row.estado === 1 ? "Activo" : "Inactivo"),
   },
   { field: "empresa", headerName: "Empresa", width: 150, type: "number" },
 ];
 
 /**
- * Componente GridTipoMovimiento.
- * @module GridTipoMovimiento.jsx
- * @component
+ * Componente de grilla que muestra los Tipos de Movimiento desde el backend con paginación, orden y filtro.
+ *
+ * @param {GridTipoMovimientoProps} props - Props del componente
  * @returns {JSX.Element}
  */
 export default function GridTipoMovimiento(props) {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [rowCount, setRowCount] = React.useState(0);
-  const [paginationModel, setPaginationModel] = React.useState({ page: 0, pageSize: 10 });
+  const [paginationModel, setPaginationModel] = React.useState({
+    page: 0,
+    pageSize: 10,
+  });
   const [sortModel, setSortModel] = React.useState([]);
   const [filterModel, setFilterModel] = React.useState({ items: [] });
 
+  /**
+   * Obtiene los datos del backend con paginación, ordenamiento y filtros.
+   *
+   * @param {number} page
+   * @param {number} pageSize
+   * @param {Array<Object>} sortModel
+   * @param {{items: Array<Object>}} filterModel
+   */
   const fetchData = async (page, pageSize, sortModel, filterModel) => {
     setLoading(true);
     try {
@@ -55,8 +100,9 @@ export default function GridTipoMovimiento(props) {
         },
       });
 
-      setData(response.data?.data || response.data || []);
-      setRowCount(response.data?.header?.totalElements || response.data?.length || 0);
+      const responseData = response.data;
+      setData(responseData?.data || responseData || []);
+      setRowCount(responseData?.header?.totalElements || responseData.length || 0);
     } catch (error) {
       console.error("Error al cargar los datos del backend:", error);
       props.setMessage({
@@ -69,10 +115,20 @@ export default function GridTipoMovimiento(props) {
     }
   };
 
+  // Cargar datos al montar y cuando cambian los modelos de paginación, orden o filtro
   React.useEffect(() => {
-    fetchData(paginationModel.page, paginationModel.pageSize, sortModel, filterModel);
+    fetchData(
+      paginationModel.page,
+      paginationModel.pageSize,
+      sortModel,
+      filterModel
+    );
   }, [paginationModel, sortModel, filterModel]);
 
+  /**
+   * Toolbar personalizada para la grilla.
+   * @returns {JSX.Element}
+   */
   function CustomToolbar() {
     return (
       <GridToolbarContainer>
@@ -91,20 +147,18 @@ export default function GridTipoMovimiento(props) {
         rowCount={rowCount}
         paginationModel={paginationModel}
         pageSizeOptions={[5, 10, 15, 20]}
-        onPaginationModelChange={(model) => setPaginationModel(model)}
+        onPaginationModelChange={setPaginationModel}
         sortingMode="server"
-        onSortModelChange={(model) => setSortModel(model)}
+        onSortModelChange={setSortModel}
         filterMode="server"
-        onFilterModelChange={(model) => setFilterModel(model)}
+        onFilterModelChange={setFilterModel}
         getRowId={(row) => row.id}
         onRowSelectionModelChange={(ids) => {
           const selectedID = ids[0];
           const selectedRow = data.find((row) => row.id === selectedID);
           props.setSelectedRow(selectedRow || { id: 0 });
         }}
-        components={{
-          Toolbar: CustomToolbar,
-        }}
+        components={{ Toolbar: CustomToolbar }}
       />
     </div>
   );

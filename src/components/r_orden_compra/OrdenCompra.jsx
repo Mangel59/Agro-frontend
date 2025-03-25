@@ -1,11 +1,20 @@
-
 /**
- * OrdenCompra componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file OrdenCompra.jsx
+ * @module OrdenCompra
+ * @description Componente principal para la gestión de órdenes de compra. Permite filtrar por sede y almacén, ver, seleccionar y gestionar órdenes de compra. Se conecta a la API usando Axios para cargar datos y actualizar la UI.
+ * @author Karla
  */
+
 import React, { useState, useEffect } from "react";
-import { Box, Typography, Grid, Select, MenuItem, FormControl, InputLabel, Button } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Grid,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 import FormOrdenCompra from "./FormOrdenCompra";
@@ -13,9 +22,12 @@ import GridOrdenCompra from "./GridOrdenCompra";
 
 /**
  * Componente OrdenCompra.
- * @module OrdenCompra.jsx
+ *
+ * Este componente permite gestionar órdenes de compra por sede y almacén. Se conecta al backend para obtener
+ * las sedes, almacenes y órdenes de compra, y muestra un formulario y tabla para gestionarlas.
+ *
  * @component
- * @returns {JSX.Element}
+ * @returns {JSX.Element} Componente visual de gestión de órdenes de compra.
  */
 export default function OrdenCompra() {
   const [sedes, setSedes] = useState([]);
@@ -25,7 +37,6 @@ export default function OrdenCompra() {
   const [ordenesCompra, setOrdenesCompra] = useState([]);
   const [selectedOrdenCompra, setSelectedOrdenCompra] = useState(null);
 
-  // Cargar sedes al iniciar
   useEffect(() => {
     const fetchSedes = async () => {
       try {
@@ -41,11 +52,10 @@ export default function OrdenCompra() {
     fetchSedes();
   }, []);
 
-  // Cargar almacenes según la sede seleccionada
   const handleSedeChange = async (e) => {
     const sedeId = e.target.value;
     setSede(sedeId);
-    setAlmacenId(null); // Resetear almacén al cambiar sede
+    setAlmacenId(null);
     setAlmacenes([]);
     setOrdenesCompra([]);
 
@@ -62,7 +72,6 @@ export default function OrdenCompra() {
     }
   };
 
-  // Cargar órdenes de compra según el almacén seleccionado
   const handleAlmacenChange = async (e) => {
     const almacenId = e.target.value;
     setAlmacenId(almacenId);
@@ -88,7 +97,6 @@ export default function OrdenCompra() {
         Gestión de Órdenes de Compra
       </Typography>
 
-      {/* Filtros por Sede y Almacén */}
       <Grid container spacing={2} alignItems="center" mb={2}>
         <Grid item xs={3}>
           <FormControl fullWidth>
@@ -109,7 +117,7 @@ export default function OrdenCompra() {
           <FormControl fullWidth>
             <InputLabel>Almacén</InputLabel>
             <Select
-              value={almacenId}
+              value={almacenId || ""}
               onChange={handleAlmacenChange}
               required
               disabled={!almacenes.length}
@@ -127,7 +135,6 @@ export default function OrdenCompra() {
         </Grid>
       </Grid>
 
-      {/* CRUD de Órdenes de Compra */}
       <FormOrdenCompra
         fetchOrdenesCompra={() => handleAlmacenChange({ target: { value: almacenId } })}
         sedes={sedes}
@@ -138,7 +145,6 @@ export default function OrdenCompra() {
         setSelectedOrdenCompra={setSelectedOrdenCompra}
       />
 
-      {/* Tabla de Órdenes de Compra */}
       <GridOrdenCompra
         ordenesCompra={ordenesCompra}
         onSelectOrdenCompra={(orden) => setSelectedOrdenCompra(orden)}

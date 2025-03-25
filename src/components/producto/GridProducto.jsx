@@ -1,13 +1,19 @@
-
 /**
- * GridProducto componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file GridProducto.jsx
+ * @module GridProducto
+ * @description Componente de grilla para mostrar la lista de productos. Utiliza DataGrid de MUI para paginación, selección y visualización de datos como nombre, categoría, descripción y estado (activo/inactivo).
+ * @author Karla
  */
+
 import * as React from 'react';
-import PropTypes from 'prop-types'; // ✅ importar PropTypes
+import PropTypes from 'prop-types';
 import { DataGrid } from '@mui/x-data-grid';
 
+/**
+ * Definición de las columnas para la grilla de productos.
+ * @constant
+ * @type {Array<Object>}
+ */
 const columns = [
   { field: 'id', headerName: 'ID', width: 90, type: 'number' },
   { field: 'nombre', headerName: 'Nombre', width: 150, type: 'string' },
@@ -24,9 +30,14 @@ const columns = [
 
 /**
  * Componente GridProducto.
- * @module GridProducto.jsx
- * @component
- * @returns {JSX.Element}
+ *
+ * Renderiza una grilla de productos con paginación y selección.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {Array<Object>} props.producto - Lista de productos a mostrar.
+ * @param {Function} props.setSelectedRow - Función para establecer el producto seleccionado.
+ * @param {Object} [props.selectedRow] - Producto actualmente seleccionado.
+ * @returns {JSX.Element} Grilla de productos.
  */
 export default function GridProducto(props) {
   return (
@@ -52,6 +63,7 @@ export default function GridProducto(props) {
   );
 }
 
+// Validación de props con PropTypes
 GridProducto.propTypes = {
   producto: PropTypes.array.isRequired,
   setSelectedRow: PropTypes.func.isRequired,

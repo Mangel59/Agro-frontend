@@ -1,9 +1,10 @@
-
 /**
- * FormOrdenCompraItem componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file FormOrdenCompraItem.jsx
+ * @module FormOrdenCompraItem
+ * @description Componente de formulario para agregar ítems a una orden de compra. Permite seleccionar producto, cantidad y precio. Utiliza Axios para enviar datos al backend y actualizar la lista de ítems. Muestra advertencia si ya existe un ítem en la orden de compra.
+ * @author Karla
  */
+
 import React, { useState, useEffect } from "react";
 import { Box, TextField, Button, Autocomplete } from "@mui/material";
 import axios from "axios";
@@ -11,9 +12,12 @@ import { SiteProps } from "../dashboard/SiteProps";
 
 /**
  * Componente FormOrdenCompraItem.
- * @module FormOrdenCompraItem.jsx
- * @component
- * @returns {JSX.Element}
+ *
+ * @param {Object} props - Props del componente
+ * @param {number|string} props.ordenCompraId - ID de la orden de compra a la cual se asociará el ítem
+ * @param {Function} props.fetchOrdenCompraItems - Función para recargar la lista de ítems desde la API
+ * @param {boolean} props.disabled - Indica si se permite agregar ítems (deshabilitado si ya existe uno)
+ * @returns {JSX.Element} Formulario para añadir un ítem a la orden de compra
  */
 export default function FormOrdenCompraItem({ ordenCompraId, fetchOrdenCompraItems, disabled }) {
   const [productos, setProductos] = useState([]);
@@ -48,7 +52,6 @@ export default function FormOrdenCompraItem({ ordenCompraId, fetchOrdenCompraIte
     try {
       const token = localStorage.getItem("token");
 
-      // Verificar si ya existe un ítem asociado
       const response = await axios.get(
         `${SiteProps.urlbasev1}/orden_compra_item/orden/${ordenCompraId}`,
         {
@@ -62,7 +65,6 @@ export default function FormOrdenCompraItem({ ordenCompraId, fetchOrdenCompraIte
         return;
       }
 
-      // Guardar el nuevo ítem
       await axios.post(
         `${SiteProps.urlbasev1}/orden_compra_item`,
         {
@@ -76,7 +78,7 @@ export default function FormOrdenCompraItem({ ordenCompraId, fetchOrdenCompraIte
       );
 
       alert("Ítem agregado correctamente.");
-      fetchOrdenCompraItems(); // Actualizar lista de ítems
+      fetchOrdenCompraItems();
     } catch (error) {
       console.error("Error al guardar el ítem:", error);
       alert("Hubo un problema al guardar el ítem.");
@@ -97,7 +99,9 @@ export default function FormOrdenCompraItem({ ordenCompraId, fetchOrdenCompraIte
     >
       <h3>Añadir Ítem a la Orden de Compra {ordenCompraId}</h3>
       {disabled ? (
-        <p style={{ color: "red" }}>Esta orden de compra ya tiene un ítem asociado. No puedes agregar más.</p>
+        <p style={{ color: "red" }}>
+          Esta orden de compra ya tiene un ítem asociado. No puedes agregar más.
+        </p>
       ) : (
         <>
           <Autocomplete
@@ -105,7 +109,7 @@ export default function FormOrdenCompraItem({ ordenCompraId, fetchOrdenCompraIte
             getOptionLabel={(option) => `${option.id} - ${option.nombre}`}
             value={selectedProducto}
             onChange={(event, value) => setSelectedProducto(value)}
-            isOptionEqualToValue={(option, value) => option.id === value?.id} // Comparar por ID
+            isOptionEqualToValue={(option, value) => option.id === value?.id}
             renderInput={(params) => <TextField {...params} label="Producto" margin="normal" required />}
             fullWidth
           />

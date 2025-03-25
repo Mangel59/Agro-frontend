@@ -11,9 +11,9 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { DataGrid } from "@mui/x-data-grid";
 import MessageSnackBar from "../MessageSnackBar";
 import FormAlmacen from "./FormAlmacen";
+import GridAlmacen from "./GridAlmacen";
 import { SiteProps } from "../dashboard/SiteProps";
 
 export default function Almacen() {
@@ -105,18 +105,6 @@ export default function Almacen() {
     }
   };
 
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "nombre", headerName: "Nombre", width: 180 },
-    { field: "descripcion", headerName: "Descripción", width: 250 },
-    {
-      field: "estado",
-      headerName: "Estado",
-      width: 120,
-      valueGetter: (params) => (params.row.estado === 1 ? "Activo" : "Inactivo"),
-    },
-  ];
-
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <h1>Almacen</h1>
@@ -149,20 +137,14 @@ export default function Almacen() {
         reloadData={reloadAlmacenes}
       />
 
-      {/* Tabla */}
-      <div style={{ height: 400, width: "100%" }}>
+      {/* Tabla con todos los campos usando GridAlmacen */}
+      <div style={{ height: 500, width: "100%" }}>
         {loading ? (
           <div style={{ textAlign: "center", margin: "20px" }}>Cargando datos...</div>
         ) : error ? (
           <div style={{ color: "red", textAlign: "center", margin: "20px" }}>{error}</div>
         ) : (
-          <DataGrid
-            rows={almacenes}
-            columns={columns}
-            pageSize={5}
-            rowsPerPageOptions={[5]}
-            onRowClick={(params) => setSelectedRow(params.row)}
-          />
+          <GridAlmacen almacenes={almacenes} setSelectedRow={setSelectedRow} />
         )}
       </div>
     </div>

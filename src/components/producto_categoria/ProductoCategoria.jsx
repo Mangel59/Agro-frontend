@@ -1,9 +1,10 @@
-
 /**
- * ProductoCategoria componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file ProductoCategoria.jsx
+ * @module ProductoCategoria
+ * @description Componente principal para gestionar categorías de productos. Permite listar, crear, actualizar y eliminar categorías usando un formulario y una grilla. Usa paginación desde el backend y muestra mensajes con Snackbar.
+ * @author Karla
  */
+
 import * as React from "react";
 import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
@@ -13,37 +14,42 @@ import { SiteProps } from "../dashboard/SiteProps";
 
 /**
  * Componente ProductoCategoria.
- * @module ProductoCategoria.jsx
+ *
+ * Permite la gestión completa de las categorías de productos:
+ * - Cargar datos desde el backend.
+ * - Crear, actualizar y eliminar registros.
+ * - Mostrar notificaciones con Snackbar.
+ *
  * @component
- * @returns {JSX.Element}
+ * @returns {JSX.Element} Interfaz para gestión de categorías de productos
  */
 export default function ProductoCategoria() {
   const row = {
     id: 0,
     nombre: "",
     descripcion: "",
-    estado: 1, // Estado por defecto a activo
+    estado: 1, // Activo por defecto
   };
 
   const [selectedRow, setSelectedRow] = React.useState(row);
-  const messageData = {
+  const [message, setMessage] = React.useState({
     open: false,
     severity: "success",
     text: "",
-  };
-
-  const [message, setMessage] = React.useState(messageData);
-  const [productocategorias, setProductocategorias] = React.useState([]); // Lista de categorías
+  });
+  const [productocategorias, setProductocategorias] = React.useState([]);
   const [paginationModel, setPaginationModel] = React.useState({
     page: 0,
     pageSize: 5,
   });
   const [rowCount, setRowCount] = React.useState(0);
 
-  // Función para recargar los datos desde el backend
+  /**
+   * Recarga los datos de categorías desde la API.
+   */
   const reloadData = () => {
     const token = localStorage.getItem("token");
-    
+
     if (!token) {
       setMessage({
         open: true,
@@ -104,11 +110,11 @@ export default function ProductoCategoria() {
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <h1>Producto Categoría</h1>
-      
-      {/* Mensaje de notificación */}
+
+      {/* Snackbar para mensajes */}
       <MessageSnackBar message={message} setMessage={setMessage} />
 
-      {/* Formulario para crear o editar categorías */}
+      {/* Formulario para agregar o editar */}
       <FormProductoCategoria
         setMessage={setMessage}
         selectedRow={selectedRow}
@@ -116,7 +122,7 @@ export default function ProductoCategoria() {
         reloadData={reloadData}
       />
 
-      {/* Tabla para mostrar las categorías */}
+      {/* Tabla con categorías */}
       <GridProductoCategoria
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}

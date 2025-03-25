@@ -1,68 +1,82 @@
+/**
+ * @file GridTipoBloque.jsx
+ * @module GridTipoBloque
+ * @description Componente de grilla para visualizar los tipos de bloque. Permite seleccionar una fila para edición o eliminación. Utiliza `DataGrid` de MUI y comunica la fila seleccionada al componente padre.
+ * @author Karla
+ */
+
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import { DataGrid } from '@mui/x-data-grid';
 
 /**
- * Columnas de la tabla que define la estructura de datos en el DataGrid.
+ * @typedef {Object} TipoBloqueRow
+ * @property {number} id - ID del tipo de bloque
+ * @property {string} nombre - Nombre del tipo de bloque
+ * @property {string} descripcion - Descripción del tipo de bloque
+ * @property {number} estado - Estado del tipo de bloque (1: activo, 0: inactivo)
  */
+
+/**
+ * @typedef {Object} GridTipoBloqueProps
+ * @property {TipoBloqueRow[]} bloques - Lista de tipos de bloque
+ * @property {Function} setSelectedRow - Función para actualizar la fila seleccionada
+ */
+
+/** @type {import('@mui/x-data-grid').GridColDef[]} */
 const columns = [
-  { field: "id", headerName: "ID", width: 70 },
-  { field: "nombre", headerName: "Nombre", width: 150 },
-  { field: "descripcion", headerName: "Descripción", width: 300 },
-  { 
-    field: "estado", 
-    headerName: "Estado", 
-    width: 100, 
-    valueFormatter: ({ value }) => (value === 1 ? "Activo" : "Inactivo") 
+  { field: 'id', headerName: 'ID', width: 70 },
+  { field: 'nombre', headerName: 'Nombre', width: 200 },
+  { field: 'descripcion', headerName: 'Descripción', width: 400 },
+  {
+    field: 'estado',
+    headerName: 'Estado',
+    width: 120,
+    valueFormatter: ({ value }) => (value === 1 ? 'Activo' : 'Inactivo'),
   },
 ];
 
 /**
- * Muestra una tabla con los tipos de bloque utilizando `DataGrid` de MUI.
- * 
- * @component
- * @module GridTipoBloque
- * @param {Object} props - Propiedades del componente.
- * @param {Array<Object>} props.bloques - Lista de objetos que representan los tipos de bloque.
- * @param {Function} props.setSelectedRow - Función para actualizar la fila seleccionada.
- * @returns {JSX.Element} Componente que muestra una tabla con los datos.
+ * Componente GridTipoBloque.
+ *
+ * Muestra una tabla con los tipos de bloque disponibles, permitiendo la selección de una fila.
+ *
+ * @function GridTipoBloque
+ * @param {GridTipoBloqueProps} props
+ * @returns {JSX.Element} Tabla de tipos de bloque
  */
 export default function GridTipoBloque({ bloques, setSelectedRow }) {
   /**
-   * Maneja la selección de una fila en la tabla y actualiza el estado del componente padre.
-   * @param {Array<number>} selectionModel - ID(s) de la(s) fila(s) seleccionada(s).
+   * Maneja la selección de una fila en la tabla.
+   * @param {Array<number>} selectionModel - IDs seleccionados
    */
   const handleRowSelection = (selectionModel) => {
     if (selectionModel.length > 0) {
-      const selectedRow = bloques.find((row) => row.id === selectionModel[0]);
-      setSelectedRow(selectedRow);
+      const selected = bloques.find((row) => row.id === selectionModel[0]);
+      setSelectedRow(selected);
     } else {
       setSelectedRow(null);
     }
   };
 
   return (
-    <DataGrid
-      rows={bloques || []}
-      getRowId={(row) => row.id}
-      onRowSelectionModelChange={(newSelection) => handleRowSelection(newSelection)}
-      columns={columns}
-      initialState={{
-        pagination: {
-          paginationModel: {
-            pageSize: 5,
-          },
-        },
-      }}
-      pageSizeOptions={[5, 10, 20, 50]}
-    />
+    <div style={{ width: '100%', marginTop: 16 }}>
+      <DataGrid
+        rows={bloques || []}
+        getRowId={(row) => row.id}
+        columns={columns}
+        onRowSelectionModelChange={handleRowSelection}
+        autoHeight
+        initialState={{
+          pagination: { paginationModel: { pageSize: 5 } },
+        }}
+        pageSizeOptions={[5, 10, 20, 50]}
+      />
+    </div>
   );
 }
 
 GridTipoBloque.propTypes = {
-  /**
-   * Lista de objetos tipo bloque a mostrar en la tabla.
-   */
   bloques: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,
@@ -71,9 +85,5 @@ GridTipoBloque.propTypes = {
       estado: PropTypes.number.isRequired,
     })
   ).isRequired,
-
-  /**
-   * Función para actualizar la fila seleccionada.
-   */
   setSelectedRow: PropTypes.func.isRequired,
 };

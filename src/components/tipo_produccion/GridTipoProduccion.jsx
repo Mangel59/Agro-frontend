@@ -1,15 +1,43 @@
-
 /**
- * GridTipoProduccion componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file GridTipoProduccion.jsx
+ * @module GridTipoProduccion
+ * @description Componente de grilla para mostrar los tipos de producción con paginación, filtrado y ordenamiento desde el servidor.
  */
-// GridTipoProduccion.jsx
+
 import * as React from "react";
-import { DataGrid, GridToolbarContainer, GridToolbarFilterButton } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridToolbarContainer,
+  GridToolbarFilterButton
+} from "@mui/x-data-grid";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * @typedef {Object} TipoProduccionRow
+ * @property {number} id - ID del tipo de producción
+ * @property {string} nombre - Nombre del tipo de producción
+ * @property {string} descripcion - Descripción
+ * @property {number} estado - Estado (1: Activo, 0: Inactivo)
+ */
+
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open - Si el snackbar está visible
+ * @property {string} severity - Nivel de severidad del mensaje
+ * @property {string} text - Contenido del mensaje
+ */
+
+/**
+ * @typedef {Object} GridTipoProduccionProps
+ * @property {function} setSelectedRow - Función para establecer la fila seleccionada
+ * @property {Object} innerRef - Referencia imperativa para recargar datos desde el componente padre
+ * @property {function} setMessage - Función para mostrar mensajes tipo snackbar
+ */
+
+/**
+ * Columnas de la grilla
+ */
 const columns = [
   { field: "id", headerName: "ID", width: 90, type: "number" },
   { field: "nombre", headerName: "Nombre", width: 150, type: "string" },
@@ -24,19 +52,28 @@ const columns = [
 ];
 
 /**
- * Componente GridTipoProduccion.
- * @module GridTipoProduccion.jsx
- * @component
- * @returns {JSX.Element}
+ * Componente para mostrar los tipos de producción en una tabla con paginación, ordenamiento y filtrado.
+ * @param {GridTipoProduccionProps} props - Props del componente
+ * @returns {JSX.Element} Componente de tabla.
  */
 export default function GridTipoProduccion(props) {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [rowCount, setRowCount] = React.useState(0);
-  const [paginationModel, setPaginationModel] = React.useState({ page: 0, pageSize: 10 });
+  const [paginationModel, setPaginationModel] = React.useState({
+    page: 0,
+    pageSize: 10,
+  });
   const [sortModel, setSortModel] = React.useState([]);
   const [filterModel, setFilterModel] = React.useState({ items: [] });
 
+  /**
+   * Obtiene los datos del backend.
+   * @param {number} page - Página actual
+   * @param {number} pageSize - Tamaño de la página
+   * @param {Array<Object>} sortModel - Modelo de ordenamiento
+   * @param {Object} filterModel - Modelo de filtrado
+   */
   const fetchData = async (page, pageSize, sortModel, filterModel) => {
     setLoading(true);
     try {
@@ -59,9 +96,7 @@ export default function GridTipoProduccion(props) {
 
       const response = await axios.get(url, {
         params,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const responseData = response.data;
@@ -69,24 +104,32 @@ export default function GridTipoProduccion(props) {
       setRowCount(responseData?.header?.totalElements || responseData.length || 0);
     } catch (error) {
       console.error("Error al cargar los datos del backend:", error);
-      props.setMessage({
-        open: true,
-        severity: "error",
-        text: "Error al cargar los datos del backend",
-      });
+      if (typeof props.setMessage === "function") {
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al cargar los datos del backend",
+        });
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // Recarga los datos cada vez que cambia la paginación, el orden o el filtro
   React.useEffect(() => {
     fetchData(paginationModel.page, paginationModel.pageSize, sortModel, filterModel);
   }, [paginationModel, sortModel, filterModel]);
 
+  // Permite recargar datos desde el componente padre usando ref
   React.useImperativeHandle(props.innerRef, () => ({
     reloadData: () => fetchData(paginationModel.page, paginationModel.pageSize, sortModel, filterModel),
   }));
 
+  /**
+   * Componente personalizado de toolbar
+   * @returns {JSX.Element}
+   */
   function CustomToolbar() {
     return (
       <GridToolbarContainer>
@@ -105,20 +148,18 @@ export default function GridTipoProduccion(props) {
         rowCount={rowCount}
         paginationModel={paginationModel}
         pageSizeOptions={[5, 10, 15, 20]}
-        onPaginationModelChange={(model) => setPaginationModel(model)}
+        onPaginationModelChange={setPaginationModel}
         sortingMode="server"
-        onSortModelChange={(model) => setSortModel(model)}
+        onSortModelChange={setSortModel}
         filterMode="server"
-        onFilterModelChange={(model) => setFilterModel(model)}
+        onFilterModelChange={setFilterModel}
         getRowId={(row) => row.id}
         onRowSelectionModelChange={(ids) => {
           const selectedID = ids[0];
           const selectedRow = data.find((row) => row.id === selectedID);
           props.setSelectedRow(selectedRow || { id: 0 });
         }}
-        components={{
-          Toolbar: CustomToolbar,
-        }}
+        components={{ Toolbar: CustomToolbar }}
       />
     </div>
   );

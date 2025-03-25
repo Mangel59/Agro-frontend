@@ -1,71 +1,94 @@
-
 /**
- * ForgetPassword componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file ForgetPassword.jsx
+ * @module ForgetPassword
+ * @description Componente que permite recuperar la contraseña mediante el envío de un enlace al correo electrónico.
+ * @author Karla
+ * @modified Maria
  */
-// CREADO POR KARLA
-// MODIFICADO POR MARIA
 
 import React, { useState } from 'react';
-import { Container, TextField, Button, Typography, Box, Alert, Switch } from '@mui/material';
+import {
+  Container,
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Alert,
+  Switch
+} from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import axios from './axiosConfig';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useTranslation } from 'react-i18next';
 import { useThemeToggle } from './dashboard/ThemeToggleProvider';
-import AppBarComponent from './dashboard/AppBarComponent'; 
+import AppBarComponent from './dashboard/AppBarComponent';
 
-
-function ForgetPassword() {
-  const { t, i18n } = useTranslation(); // Integrar i18n para la traducción
+/**
+ * Componente ForgetPassword.
+ *
+ * Muestra un formulario que permite al usuario ingresar su correo electrónico
+ * para solicitar un enlace de recuperación de contraseña.
+ *
+ * @function ForgetPassword
+ * @name ForgetPassword
+ * @memberof module:ForgetPassword
+ * @returns {JSX.Element} Vista del formulario de recuperación de contraseña.
+ */
+const ForgetPassword = () => {
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const toggleTheme = useThemeToggle();
 
+  /**
+   * Maneja el envío del formulario y ejecuta la solicitud de recuperación.
+   * @param {React.FormEvent<HTMLFormElement>} event
+   */
   const handleSubmit = (event) => {
     event.preventDefault();
     setError('');
     setSuccess('');
 
-    // Validación del correo electrónico
     if (!email) {
       setError(t('invalid_email'));
       return;
     }
 
     axios.post('http://tu-api.com/auth/forgot-password', { email })
-      .then(response => {
+      .then(() => {
         setSuccess(t('registration_success'));
       })
-      .catch(error => {
+      .catch((error) => {
         setError(t('login_error'));
         console.error('There was an error!', error);
       });
   };
 
+  /**
+   * Cambia el idioma actual de la aplicación.
+   * @param {string} lng - Código de idioma (por ejemplo, 'en' o 'es')
+   */
   const handleLanguageChange = (lng) => {
     i18n.changeLanguage(lng);
   };
 
   return (
-    <Container 
+    <Container
       maxWidth={false}
       disableGutters
-      sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        minHeight: '100vh', 
-        backgroundColor: '#FFF', 
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        backgroundColor: '#FFF',
         padding: 3,
         mt: 5,
       }}
     >
-      <AppBarComponent
-        switchComponent={<Switch onChange={toggleTheme} />} 
-      />
+      <AppBarComponent switchComponent={<Switch onChange={toggleTheme} />} />
+
       <Box
         component="form"
         onSubmit={handleSubmit}
@@ -81,42 +104,38 @@ function ForgetPassword() {
           maxWidth: 400,
         }}
       >
-        {/* cambio hecho por maria 20/08/24*/}
-        {/* Botón para volver a la página de Login */}
         <Button
           component={RouterLink}
           to="/login"
           variant="contained"
           color="primary"
           sx={{
-            padding: '6px',       // Reduce el padding
+            padding: '6px',
             borderRadius: 3,
-            minWidth: 'auto',      // Asegúrate de que el ancho mínimo no se imponga
-            width: '36px',         // Establece un ancho específico para el botón
-            height: '36px',        // Ajusta la altura del botón
+            minWidth: 'auto',
+            width: '36px',
+            height: '36px',
           }}
         >
-        <ArrowBackIcon fontSize="small" />  {/* Ajusta el tamaño del icono si es necesario */}
+          <ArrowBackIcon fontSize="small" />
         </Button>
-        <Typography 
+
+        <Typography
           variant="h4"
-          component="h1" 
-          align="center" 
-          sx={{ 
-            fontWeight: 'bold', 
-            marginBottom: 3, 
+          component="h1"
+          align="center"
+          sx={{
+            fontWeight: 'bold',
+            marginBottom: 3,
             color: '#1a237e',
           }}
         >
           {t('Recover Password')}
         </Typography>
-        {error && (
-          <Alert severity="error">{error}</Alert>
-        )}
-        {success && (
-          <Alert severity="success">{success}</Alert>
-        )}
-        
+
+        {error && <Alert severity="error">{error}</Alert>}
+        {success && <Alert severity="success">{success}</Alert>}
+
         <TextField
           label={t('email')}
           variant="outlined"
@@ -138,6 +157,7 @@ function ForgetPassword() {
             },
           }}
         />
+
         <Button
           type="submit"
           variant="contained"
@@ -156,8 +176,7 @@ function ForgetPassword() {
         >
           {t('Send recovery link')}
         </Button>
-        {/* cambio hecho por maria 21/08/24*/}
-        {/* Botones de cambio de idioma */}
+
         <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
           <Button onClick={() => handleLanguageChange('en')}>English</Button>
           <Button onClick={() => handleLanguageChange('es')}>Español</Button>
@@ -165,6 +184,6 @@ function ForgetPassword() {
       </Box>
     </Container>
   );
-}
+};
 
 export default ForgetPassword;

@@ -1,16 +1,24 @@
+/**
+ * @file Inicio.jsx - Componente de la pantalla de bienvenida con un carrusel de imágenes.
+ * @module Inicio
+ * @component
+ * @returns {JSX.Element} Componente de la pantalla de inicio con un carrusel de imágenes.
+ */
+
 import React from 'react';
-import { Box, Button, Typography, Switch } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Slider from 'react-slick';
-import AppBarComponent from './dashboard/AppBarComponent'; 
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { useThemeToggle } from './dashboard/ThemeToggleProvider';
-import "slick-carousel/slick/slick.css"; 
-import "slick-carousel/slick/slick-theme.css";
 
+/**
+ * Lista de imágenes para el carrusel.
+ * @constant {Array<Object>}
+ */
 const images = [
     { src: '/images/carousel/img1.png' },
     { src: '/images/carousel/img2.png' },
@@ -25,129 +33,13 @@ const images = [
  * @param {Object} props - Las propiedades pasadas al componente de la flecha.
  * @param {function} props.onClick - La función para manejar el evento de clic de la flecha.
  * @param {string} props.direction - La dirección en la que apunta la flecha, ya sea 'prev' o 'next'.
- * @returns {JSX.Element} Un elemento de botón estilizado como una flecha personalizada.
+ * @returns {JSX.Element} Un botón estilizado como flecha personalizada.
  */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * Inicio componente principal.
- * @component
- * @returns {JSX.Element}
- */
-const CustomArrow = (props) => {
-    const { onClick, direction } = props;
+const CustomArrow = ({ onClick, direction }) => {
     return (
         <Button
             onClick={onClick}
-            style={{
+            sx={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -163,9 +55,8 @@ const CustomArrow = (props) => {
                 opacity: 0.5,
                 transition: "opacity 0.3s",
                 borderRadius: 0, 
+                '&:hover': { opacity: 1 }
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
-            onMouseLeave={(e) => (e.currentTarget.style.opacity = 0.5)}
         >
             {direction === 'prev' ? <ArrowBackIosIcon /> : <ArrowForwardIosIcon />}
         </Button>
@@ -173,21 +64,22 @@ const CustomArrow = (props) => {
 };
 
 /**
- * El componente Inicio muestra la pantalla de bienvenida con un carrusel de imágenes y botones
- * para iniciar sesión y registrarse.
+ * Componente de la pantalla de bienvenida con un carrusel de imágenes.
+ * Muestra un título de bienvenida y un slider con imágenes representativas.
  *
- * @componente
- * @ejemplo
+ * @component
+ * @example
  * return (
  *   <Inicio />
  * )
  */
-const Inicio = (props) => {
+const Inicio = () => {
     const navigate = useNavigate();
     const toggleTheme = useThemeToggle();
 
     /**
      * Navega a la página de inicio de sesión.
+     * @function handleLogin
      */
     const handleLogin = () => {
         navigate('/login');
@@ -195,11 +87,16 @@ const Inicio = (props) => {
 
     /**
      * Navega a la página de registro.
+     * @function handleRegister
      */
     const handleRegister = () => {
         navigate('/register');
     };
 
+    /**
+     * Configuración del carrusel de imágenes.
+     * @constant {Object}
+     */
     const settings = {
         dots: true,
         infinite: true,
@@ -212,24 +109,19 @@ const Inicio = (props) => {
 
     return (
         <Box>
-            
-            
             <Typography
                 variant="h3"
                 align="center"
-                className="bienvenidos-title"
+                sx={{
+                    backgroundColor: '#114232',
+                    width: '100%',
+                    color: 'white', 
+                    padding: '1rem', 
+                    display: 'inline-block', 
+                    fontWeight: 'bold'
+                }}
             >
-                <Box
-                    sx={{
-                        backgroundColor: '#114232',
-                        width: '100%',
-                        color: 'white', 
-                        padding: '1rem', 
-                        display: 'inline-block', 
-                    }}
-                >
-                    Bienvenidos
-                </Box>
+                Bienvenidos
             </Typography>
     
             <Box sx={{ backgroundColor: '#114232', padding: '1rem' }}>
@@ -246,7 +138,6 @@ const Inicio = (props) => {
                     ))}
                 </Slider>
             </Box>
-
         </Box>
     );    
 };

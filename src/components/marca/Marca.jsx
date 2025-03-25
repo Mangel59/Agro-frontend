@@ -1,10 +1,11 @@
-
 /**
- * Marca componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file Marca.jsx
+ * @module Marca
+ * @author Karla
+ * @description Componente principal para gestionar marcas. Incluye formulario, grilla, paginación, ordenamiento y filtros.
  */
-import React from "react"; // ✅ Importación necesaria
+
+import React from "react";
 import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
 import FormMarca from "./FormMarca";
@@ -13,11 +14,15 @@ import { SiteProps } from "../dashboard/SiteProps";
 
 /**
  * Componente Marca.
- * @module Marca.jsx
- * @component
- * @returns {JSX.Element}
+ * Muestra el listado de marcas y permite crear, editar y eliminar registros.
+ *
+ * @returns {JSX.Element} Componente principal con formulario y grilla de marcas.
  */
 export default function Marca() {
+  /**
+   * Valor inicial para una marca vacía.
+   * @type {{id: number, nombre: string, descripcion: string, estado: number, empresa: string}}
+   */
   const row = {
     id: 0,
     nombre: "",
@@ -26,22 +31,37 @@ export default function Marca() {
     empresa: "",
   };
 
+  /** Marca seleccionada en la grilla */
   const [selectedRow, setSelectedRow] = React.useState(row);
+
+  /** Estado del mensaje del snackbar */
   const [message, setMessage] = React.useState({
     open: false,
     severity: "success",
     text: "",
   });
 
+  /** Lista de marcas cargadas desde el backend */
   const [marcas, setMarcas] = React.useState([]);
+
+  /** Modelo de paginación */
   const [paginationModel, setPaginationModel] = React.useState({
     page: 0,
     pageSize: 5,
   });
+
+  /** Número total de filas (rowCount) */
   const [rowCount, setRowCount] = React.useState(0);
-  const [sortModel, setSortModel] = React.useState([]); // ✅ ahora sí lo usas correctamente
+
+  /** Modelo de ordenamiento */
+  const [sortModel, setSortModel] = React.useState([]);
+
+  /** Modelo de filtros aplicado a la tabla */
   const [filterModel, setFilterModel] = React.useState({ items: [] });
 
+  /**
+   * Carga los datos de marcas desde el backend, aplicando paginación y ordenamiento.
+   */
   const reloadData = () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -91,6 +111,9 @@ export default function Marca() {
       });
   };
 
+  /**
+   * Efecto que se ejecuta al montar el componente y cada vez que cambian la paginación o el ordenamiento.
+   */
   React.useEffect(() => {
     reloadData();
   }, [paginationModel, sortModel]);
@@ -115,9 +138,9 @@ export default function Marca() {
         setPaginationModel={setPaginationModel}
         filterModel={filterModel}
         setFilterModel={setFilterModel}
-        sortModel={sortModel} 
+        sortModel={sortModel}
         setSortModel={setSortModel}
       />
     </div>
-  );  
+  );
 }

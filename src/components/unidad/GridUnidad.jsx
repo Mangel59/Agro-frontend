@@ -1,13 +1,22 @@
-
 /**
- * CustomToolbar componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file GridUnidad.jsx
+ * @module GridUnidad
+ * @description Componente que muestra la grilla de unidades con paginación, filtrado y ordenamiento desde el servidor.
+ * @author Karla
  */
+
 import * as React from 'react';
-import { DataGrid, GridToolbarContainer, GridToolbarFilterButton } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  GridToolbarContainer,
+  GridToolbarFilterButton,
+} from '@mui/x-data-grid';
 import PropTypes from 'prop-types';
 
+/**
+ * Columnas configuradas para la grilla de unidades.
+ * @constant {Array<Object>}
+ */
 const columns = [
   { field: 'id', headerName: 'ID', width: 90, type: 'number' },
   { field: 'nombre', headerName: 'Nombre', width: 150, type: 'string' },
@@ -22,7 +31,12 @@ const columns = [
   },
 ];
 
-// ✅ Toolbar personalizada
+/**
+ * Barra de herramientas personalizada para la grilla.
+ * Incluye el botón de filtros.
+ * @function
+ * @returns {JSX.Element}
+ */
 function CustomToolbar() {
   return (
     <GridToolbarContainer>
@@ -32,9 +46,20 @@ function CustomToolbar() {
 }
 
 /**
- * Componente GridUnidad.
- * @module GridUnidad.jsx
+ * Componente que renderiza una grilla de unidades con filtros, paginación y ordenamiento.
+ *
  * @component
+ * @param {Object} props
+ * @param {Array<Object>} props.unidades - Lista de unidades a mostrar.
+ * @param {number} props.rowCount - Total de filas en el servidor.
+ * @param {boolean} [props.loading] - Si se está cargando la información.
+ * @param {Object} props.paginationModel - Modelo de paginación `{ page, pageSize }`.
+ * @param {Function} props.setPaginationModel - Función para actualizar la paginación.
+ * @param {Object} props.filterModel - Modelo de filtros.
+ * @param {Function} props.setFilterModel - Función para actualizar el filtro.
+ * @param {Array<Object>} props.sortModel - Modelo de ordenamiento.
+ * @param {Function} props.setSortModel - Función para actualizar el ordenamiento.
+ * @param {Function} props.setSelectedRow - Función para establecer la fila seleccionada.
  * @returns {JSX.Element}
  */
 export default function GridUnidad({
@@ -59,7 +84,7 @@ export default function GridUnidad({
       paginationModel={paginationModel}
       onPaginationModelChange={setPaginationModel}
       sortingMode="server"
-      sortModel={sortModel} // ✅ añadido
+      sortModel={sortModel}
       onSortModelChange={(model) => setSortModel && setSortModel(model)}
       filterModel={filterModel}
       onFilterModelChange={(model) => setFilterModel && setFilterModel(model)}
@@ -81,7 +106,7 @@ GridUnidad.propTypes = {
   loading: PropTypes.bool,
   paginationModel: PropTypes.object.isRequired,
   setPaginationModel: PropTypes.func.isRequired,
-  sortModel: PropTypes.array.isRequired,         // ✅ Añadido
+  sortModel: PropTypes.array.isRequired,
   setSortModel: PropTypes.func.isRequired,
   filterModel: PropTypes.object.isRequired,
   setFilterModel: PropTypes.func.isRequired,

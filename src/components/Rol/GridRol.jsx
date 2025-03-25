@@ -1,12 +1,27 @@
+/**
+ * @file GridRol.jsx
+ * @module GridRol
+ * @description Componente de grilla para visualizar los roles registrados. Utiliza DataGrid de Material UI. Permite seleccionar un rol para su edición mediante clic en fila.
+ * @author Karla
+ */
+
+import React from "react";
+import PropTypes from "prop-types";
+import { DataGrid } from "@mui/x-data-grid";
 
 /**
- * GridRol componente principal.
- * @component
- * @returns {JSX.Element}
+ * @typedef {Object} RolData
+ * @property {number|string} rol_id - ID del rol
+ * @property {string} rol_nombre - Nombre del rol
+ * @property {string} rol_descripcion - Descripción del rol
+ * @property {number} rol_estado - Estado del rol (1: activo, 0: inactivo)
  */
-import React from "react";
-import PropTypes from "prop-types"; // Importar PropTypes
-import { DataGrid } from "@mui/x-data-grid";
+
+/**
+ * @typedef {Object} GridRolProps
+ * @property {Array<RolData>} roles - Lista de roles a mostrar en la grilla
+ * @property {function(RolData): void} onEdit - Función que maneja la selección de un rol para edición
+ */
 
 const columns = [
   { field: "rol_id", headerName: "ID", width: 90 },
@@ -22,9 +37,9 @@ const columns = [
 
 /**
  * Componente GridRol.
- * @module GridRol.jsx
- * @component
- * @returns {JSX.Element}
+ *
+ * @param {GridRolProps} props - Props del componente
+ * @returns {JSX.Element} Grilla con la lista de roles
  */
 export default function GridRol({ roles, onEdit }) {
   return (

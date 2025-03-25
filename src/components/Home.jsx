@@ -1,41 +1,29 @@
-
 /**
- * Home componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file Home.jsx - Componente que centraliza la navegación entre módulos como Persona, Tipo de Identificación y PerfilGroup.
+ * @module Home
+ * @exports Home
  */
+
 import React from 'react';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import TipoIdentificacion from './TipoIdentificacion';
-import Persona from './personas/Persona.jsx';
-import PerfilGroup from './PerfilGroup';
+import { Box } from '@mui/material';
+import PropTypes from 'prop-types';
 
 /**
- * Componente Home.
- * @module Home.jsx
- * @component
- * @returns {JSX.Element}
+ * Componente principal de navegación que muestra el módulo actual renderizado dinámicamente.
+ *
+ * @function Home
+ * @param {Object} props - Props del componente.
+ * @param {JSX.Element} props.currentModule - El componente o módulo actual que debe renderizarse.
+ * @returns {JSX.Element} Vista principal con el módulo seleccionado.
  */
-export default function Home(props) {
-  const [currentModule, setCurrentModule] = React.useState(props.currentModule);
-//Tambien debe redirigir a empresa
-  const components = {
-    perfil_group: <PerfilGroup setCurrentModule={setCurrentModule} />,
-    persona: <Persona />,
-    tipo_identificacion: <TipoIdentificacion />
-  };
-
+export default function Home({ currentModule }) {
   return (
-    <Box sx={{ p: 3 }}>
-      <Paper elevation={3} sx={{ p: 2, mt: 2 }}>
-        <Typography variant="h6" gutterBottom>
-          Current Module: {currentModule}
-        </Typography>
-        {components[currentModule]}
-      </Paper>
+    <Box sx={{ padding: 2 }}>
+      {currentModule}
     </Box>
   );
 }
 
+Home.propTypes = {
+  currentModule: PropTypes.element,
+};

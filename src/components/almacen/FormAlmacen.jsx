@@ -1,3 +1,6 @@
+/**
+ * @module FormAlmacen
+ */
 // ========================
 // TIPOS AUXILIARES PARA JSDOC
 // ========================
@@ -191,7 +194,7 @@ const FormAlmacen = ({ setMessage, selectedRow, setSelectedRow, reloadData }) =>
         <Button variant="outlined" color="primary" startIcon={<UpdateIcon />} onClick={() => handleOpen("Update")} style={{ marginLeft: "10px" }}>
           Actualizar
         </Button>
-        <Button variant="outlined" color="secondary" startIcon={<DeleteIcon />} onClick={handleDelete} style={{ marginLeft: "10px" }}>
+        <Button variant="outlined" color="primary" startIcon={<DeleteIcon />} onClick={handleDelete} style={{ marginLeft: "10px" }}>
           Eliminar
         </Button>
       </Box>

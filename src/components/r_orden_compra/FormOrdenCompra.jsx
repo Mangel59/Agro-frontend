@@ -1,20 +1,36 @@
-
 /**
- * FormOrdenCompra componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file FormOrdenCompra.jsx
+ * @module FormOrdenCompra
+ * @description Componente de formulario para crear, editar o eliminar órdenes de compra. Se comunica con la API usando Axios y permite seleccionar proveedor, descripción y pedido relacionado. Usa un modal para el formulario visual. Incluye validaciones básicas.
+ * @author Karla
  */
 
 import React, { useState, useEffect } from "react";
-import { Box, TextField, Button, Modal, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Button,
+  Modal,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
  * Componente FormOrdenCompra.
- * @module FormOrdenCompra.jsx
- * @component
- * @returns {JSX.Element}
+ *
+ * @param {Object} props
+ * @param {Function} props.fetchOrdenesCompra - Función para recargar las órdenes desde la API.
+ * @param {Array<Object>} props.sedes - Lista de sedes disponibles.
+ * @param {Array<Object>} props.almacenes - Lista de almacenes disponibles.
+ * @param {Function} props.setSede - Setter para sede seleccionada.
+ * @param {Function} props.setAlmacenId - Setter para ID de almacén seleccionado.
+ * @param {Object|null} props.selectedOrdenCompra - Orden seleccionada para editar.
+ * @param {Function} props.setSelectedOrdenCompra - Setter de la orden seleccionada.
+ * @returns {JSX.Element} Formulario de orden de compra
  */
 export default function FormOrdenCompra({
   fetchOrdenesCompra,
@@ -105,39 +121,50 @@ export default function FormOrdenCompra({
     }
   };
 
+  const handleDeleteOrdenCompra = async () => {
+    if (selectedOrdenCompra) {
+      if (window.confirm("¿Estás seguro de eliminar esta orden de compra?")) {
+        try {
+          const token = localStorage.getItem("token");
+          await axios.delete(`${SiteProps.urlbasev1}/orden_compra/${selectedOrdenCompra.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          alert("Orden de compra eliminada correctamente.");
+          fetchOrdenesCompra();
+          setSelectedOrdenCompra(null);
+        } catch (error) {
+          console.error("Error al eliminar la orden de compra:", error);
+          alert("Hubo un problema al eliminar la orden de compra.");
+        }
+      }
+    } else {
+      alert("Selecciona una orden de compra para eliminar.");
+    }
+  };
+
   return (
     <Box mb={2}>
       <Box display="flex" justifyContent="flex-end" mb={2}>
-        <Button variant="contained" color="primary" onClick={handleOpenAddModal} style={{ marginRight: "10px" }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleOpenAddModal}
+          sx={{ mr: 1 }}
+        >
           ADD
         </Button>
-        <Button variant="contained" color="secondary" onClick={handleOpenUpdateModal} style={{ marginRight: "10px" }}>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleOpenUpdateModal}
+          sx={{ mr: 1 }}
+        >
           UPDATE
         </Button>
         <Button
           variant="contained"
           color="error"
-          onClick={() => {
-            if (selectedOrdenCompra) {
-              if (window.confirm("¿Estás seguro de eliminar esta orden de compra?")) {
-                axios
-                  .delete(`${SiteProps.urlbasev1}/orden_compra/${selectedOrdenCompra.id}`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-                  })
-                  .then(() => {
-                    alert("Orden de compra eliminada correctamente.");
-                    fetchOrdenesCompra();
-                    setSelectedOrdenCompra(null);
-                  })
-                  .catch((error) => {
-                    console.error("Error al eliminar la orden de compra:", error);
-                    alert("Hubo un problema al eliminar la orden de compra.");
-                  });
-              }
-            } else {
-              alert("Selecciona una orden de compra para eliminar.");
-            }
-          }}
+          onClick={handleDeleteOrdenCompra}
         >
           DELETE
         </Button>
@@ -157,18 +184,24 @@ export default function FormOrdenCompra({
           }}
         >
           <h2>{isEditing ? "Editar Orden de Compra" : "Añadir Orden de Compra"}</h2>
+
           <TextField
             label="Pedido ID"
             fullWidth
             margin="normal"
             value={newOrdenCompra.pedidoId}
-            onChange={(e) => setNewOrdenCompra({ ...newOrdenCompra, pedidoId: e.target.value })}
+            onChange={(e) =>
+              setNewOrdenCompra({ ...newOrdenCompra, pedidoId: e.target.value })
+            }
           />
+
           <FormControl fullWidth margin="normal">
             <InputLabel>Proveedor</InputLabel>
             <Select
               value={newOrdenCompra.proveedor}
-              onChange={(e) => setNewOrdenCompra({ ...newOrdenCompra, proveedor: e.target.value })}
+              onChange={(e) =>
+                setNewOrdenCompra({ ...newOrdenCompra, proveedor: e.target.value })
+              }
             >
               {proveedores.map((prov) => (
                 <MenuItem key={prov.id} value={prov.id}>
@@ -177,14 +210,23 @@ export default function FormOrdenCompra({
               ))}
             </Select>
           </FormControl>
+
           <TextField
             label="Descripción"
             fullWidth
             margin="normal"
             value={newOrdenCompra.descripcion}
-            onChange={(e) => setNewOrdenCompra({ ...newOrdenCompra, descripcion: e.target.value })}
+            onChange={(e) =>
+              setNewOrdenCompra({ ...newOrdenCompra, descripcion: e.target.value })
+            }
           />
-          <Button variant="contained" color="primary" onClick={handleSaveOrdenCompra} fullWidth>
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSaveOrdenCompra}
+            fullWidth
+          >
             Guardar
           </Button>
         </Box>

@@ -1,9 +1,10 @@
-
 /**
- * TipoMovimiento componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file TipoMovimiento.jsx
+ * @module TipoMovimiento
+ * @description Componente principal para gestionar Tipos de Movimiento: formulario, grilla, mensajes y recarga de datos.
+ * @author Karla
  */
+
 import * as React from "react";
 import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
@@ -12,12 +13,32 @@ import GridTipoMovimiento from "./GridTipoMovimiento";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
- * Componente TipoMovimiento.
- * @module TipoMovimiento.jsx
- * @component
- * @returns {JSX.Element}
+ * @typedef {Object} TipoMovimientoRow
+ * @property {number} id - ID del tipo de movimiento
+ * @property {string} nombre - Nombre del tipo de movimiento
+ * @property {string} descripcion - Descripción del tipo de movimiento
+ * @property {number} estado - Estado (1: activo, 0: inactivo)
+ * @property {number} empresa - ID de la empresa asociada
  */
-export default function TipoMovimiento(props) {
+
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open - Indica si el mensaje snackbar está visible
+ * @property {string} severity - Nivel de severidad del mensaje ("success", "error", etc.)
+ * @property {string} text - Contenido del mensaje que se mostrará
+ */
+
+/**
+ * Componente principal para la gestión de Tipos de Movimiento.
+ *
+ * @component
+ * @returns {JSX.Element} Interfaz de administración para tipos de movimiento.
+ */
+export default function TipoMovimiento() {
+  /**
+   * Fila inicial vacía.
+   * @type {TipoMovimientoRow}
+   */
   const row = {
     id: 0,
     nombre: "",
@@ -26,20 +47,29 @@ export default function TipoMovimiento(props) {
     empresa: 0,
   };
 
+  /** @type {React.MutableRefObject<TipoMovimientoRow>} */
   const [selectedRow, setSelectedRow] = React.useState(row);
-  const messageData = {
+
+  /** @type {React.MutableRefObject<SnackbarMessage>} */
+  const [message, setMessage] = React.useState({
     open: false,
     severity: "success",
     text: "",
-  };
+  });
 
-  const [message, setMessage] = React.useState(messageData);
+  /** @type {Array<TipoMovimientoRow>} */
   const [tiposMovimiento, setTiposMovimiento] = React.useState([]);
+
+  /** @type {{page: number, pageSize: number}} */
   const [paginationModel, setPaginationModel] = React.useState({
     page: 0,
     pageSize: 5,
   });
 
+  /**
+   * Carga los datos desde la API.
+   * @returns {void}
+   */
   const reloadData = () => {
     const token = localStorage.getItem("token");
 
@@ -63,9 +93,9 @@ export default function TipoMovimiento(props) {
         },
       })
       .then((response) => {
-        if (response.data && Array.isArray(response.data)) {
+        if (Array.isArray(response.data)) {
           setTiposMovimiento(response.data);
-        } else if (response.data.data && Array.isArray(response.data.data)) {
+        } else if (Array.isArray(response.data.data)) {
           setTiposMovimiento(response.data.data);
         } else {
           console.error("La respuesta no es un array válido:", response.data);
@@ -94,6 +124,7 @@ export default function TipoMovimiento(props) {
       });
   };
 
+  // Cargar los datos al cambiar la paginación
   React.useEffect(() => {
     reloadData();
   }, [paginationModel]);

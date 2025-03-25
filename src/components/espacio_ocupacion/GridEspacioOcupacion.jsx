@@ -1,25 +1,36 @@
 /**
- * Componente GridEspacioOcupacion.
+ * @file GridEspacioOcupacion.jsx
  * @module GridEspacioOcupacion
- * @component
+ * @description Componente de grilla que muestra la ocupación de espacios según el espacio seleccionado.
+ * Permite seleccionar registros para editar o eliminar.
  */
 
 import React, { useEffect, useState } from "react";
-import PropTypes from "prop-types";
-import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
+import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
-const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadFlag }) => {
+/**
+ * Componente de grilla que lista los registros de ocupación de un espacio específico.
+ *
+ * @component
+ * @param {Object} props - Propiedades del componente.
+ * @param {Function} props.setSelectedRow - Función para establecer la fila seleccionada.
+ * @param {string|number} props.selectedEspacio - ID del espacio seleccionado para filtrar los datos.
+ * @param {boolean} props.reloadData - Bandera que fuerza la recarga de datos cuando cambia.
+ * @returns {JSX.Element} Componente DataGrid con registros de ocupación.
+ */
+const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadData }) => {
   const [espacioOcupacion, setEspacioOcupacion] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedRowId, setSelectedRowId] = useState(null);
 
+  /**
+   * Carga los registros de ocupación del espacio seleccionado.
+   */
   useEffect(() => {
     const fetchEspacioOcupacion = async () => {
-      if (!selectedEspacio) return;
-
       setLoading(true);
       try {
         const response = await axios.get(
@@ -31,7 +42,13 @@ const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadFlag }) =
         setEspacioOcupacion(response.data || []);
         setError(null);
       } catch (error) {
-        console.error("Error al cargar espacio ocupación:", error);
+        if (error.response) {
+          console.error("Error en la respuesta del servidor:", error.response);
+        } else if (error.request) {
+          console.error("Error en la solicitud al servidor:", error.request);
+        } else {
+          console.error("Error desconocido:", error.message);
+        }
         setError("No se pudieron cargar los datos. Por favor, intente más tarde.");
         setEspacioOcupacion([]);
       } finally {
@@ -39,9 +56,14 @@ const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadFlag }) =
       }
     };
 
-    fetchEspacioOcupacion();
-  }, [selectedEspacio, reloadFlag]); // ✅ Se recarga al cambiar el booleano reloadFlag
+    if (selectedEspacio) {
+      fetchEspacioOcupacion();
+    }
+  }, [selectedEspacio, reloadData]);
 
+  /**
+   * Columnas para la grilla de ocupación.
+   */
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
     {
@@ -72,6 +94,10 @@ const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadFlag }) =
     },
   ];
 
+  /**
+   * Maneja el clic en una fila para seleccionarla.
+   * @param {Object} params - Parámetros del evento de fila.
+   */
   const handleRowClick = (params) => {
     setSelectedRowId(params.id);
     setSelectedRow(params.row);
@@ -95,13 +121,6 @@ const GridEspacioOcupacion = ({ setSelectedRow, selectedEspacio, reloadFlag }) =
       />
     </div>
   );
-};
-
-// ✅ Validación de props
-GridEspacioOcupacion.propTypes = {
-  setSelectedRow: PropTypes.func.isRequired,
-  selectedEspacio: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  reloadFlag: PropTypes.bool.isRequired, // ✅ cambiado a booleano
 };
 
 export default GridEspacioOcupacion;

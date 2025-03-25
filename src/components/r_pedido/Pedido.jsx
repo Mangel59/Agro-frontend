@@ -1,3 +1,10 @@
+/**
+ * @file Pedido.jsx
+ * @module Pedido
+ * @description Componente principal para la gestión de pedidos y sus ítems. Permite listar, eliminar y generar reportes PDF. Utiliza Axios para comunicarse con la API.
+ * @author Karla
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
 import FormPedido from './FormPedido';
@@ -7,12 +14,28 @@ import FormPedidoItem from './FormPedidoItem';
 import axios from 'axios';
 import { SiteProps } from '../dashboard/SiteProps';
 
+/**
+ * Componente principal para la gestión de pedidos.
+ *
+ * Permite:
+ * - Cargar pedidos por almacén.
+ * - Seleccionar un pedido y ver sus ítems.
+ * - Eliminar pedidos e ítems asociados.
+ * - Generar reportes PDF por pedido.
+ *
+ * @component
+ * @returns {JSX.Element} Interfaz de gestión de pedidos
+ */
 export default function Pedido() {
   const [pedidos, setPedidos] = useState([]);
   const [almacenId, setAlmacenId] = useState(null);
   const [selectedPedido, setSelectedPedido] = useState(null);
   const [pedidoItems, setPedidoItems] = useState([]);
 
+  /**
+   * Carga pedidos por almacén desde la API.
+   * @async
+   */
   const fetchPedidos = async () => {
     if (!almacenId) return;
     try {
@@ -26,33 +49,29 @@ export default function Pedido() {
     }
   };
 
+  /**
+   * Carga ítems de un pedido específico.
+   * @async
+   */
   const fetchPedidoItems = async () => {
-    if (!selectedPedido || !selectedPedido.id) return;
+    if (!selectedPedido?.id) return;
 
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(
         `${SiteProps.urlbasev1}/pedido_item/pedido/${selectedPedido.id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const items = response.data?.content || [];
-      console.log('Datos crudos obtenidos del backend:', items);
 
-      // Mapea los items y realiza una segunda solicitud para obtener detalles del producto
       const detailedItems = await Promise.all(
         items.map(async (item) => {
           const productoResponse = await axios.get(
             `${SiteProps.urlbasev1}/producto-presentacion/${item.productoPresentacion}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
+            { headers: { Authorization: `Bearer ${token}` } }
           );
-
           const productoData = productoResponse.data;
-
           return {
             id: item.id,
             producto: productoData.nombre || 'Sin nombre',
@@ -62,32 +81,31 @@ export default function Pedido() {
       );
 
       setPedidoItems(detailedItems);
-      console.log('Ítems obtenidos con detalles:', detailedItems);
     } catch (error) {
       console.error('Error al cargar los ítems:', error);
     }
   };
 
-
+  /**
+   * Elimina un pedido y todos sus ítems asociados.
+   * @async
+   */
   const handleDeletePedido = async () => {
     if (!selectedPedido) {
       alert("Selecciona un pedido para eliminar.");
       return;
     }
-  
+
     try {
       const token = localStorage.getItem("token");
-  
-      // Obtener los ítems asociados al pedido
+
       const itemsResponse = await axios.get(
         `${SiteProps.urlbasev1}/pedido_item/pedido/${selectedPedido.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-  
-      // Validar que itemsResponse.data sea un arreglo
-      const items = itemsResponse.data?.content || []; // Ajustar según la estructura exacta del backend
-  
-      // Eliminar ítems asociados (solo si existen)
+
+      const items = itemsResponse.data?.content || [];
+
       if (Array.isArray(items)) {
         await Promise.all(
           items.map((item) =>
@@ -97,25 +115,27 @@ export default function Pedido() {
           )
         );
       }
-  
-      // Eliminar el pedido
+
       await axios.delete(`${SiteProps.urlbasev1}/pedido/${selectedPedido.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-  
+
       alert("Pedido y sus ítems eliminados correctamente.");
       fetchPedidos();
-      setPedidoItems([]); // Limpiar los ítems mostrados
+      setPedidoItems([]);
       setSelectedPedido(null);
     } catch (error) {
       console.error("Error al eliminar el pedido o sus ítems:", error);
       alert("Hubo un problema al eliminar el pedido.");
     }
   };
-  
 
+  /**
+   * Genera y descarga el reporte PDF del pedido seleccionado.
+   * @async
+   */
   const handleGenerateReport = async () => {
-    if (!selectedPedido || !selectedPedido.id) {
+    if (!selectedPedido?.id) {
       alert('Selecciona un pedido para generar el reporte.');
       return;
     }
@@ -124,9 +144,7 @@ export default function Pedido() {
       const token = localStorage.getItem('token');
       const response = await axios.get(
         `${SiteProps.urlbasev1}/pedido_item/pedido/${selectedPedido.id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const items = response.data?.content || [];
@@ -135,7 +153,6 @@ export default function Pedido() {
         return;
       }
 
-      // Generar el reporte
       const reportResponse = await axios.get(`${SiteProps.urlbasev2}/report/pedido`, {
         headers: { Authorization: `Bearer ${token}` },
         params: { pedidoId: selectedPedido.id },
@@ -156,7 +173,6 @@ export default function Pedido() {
     }
   };
 
-
   useEffect(() => {
     fetchPedidos();
   }, [almacenId]);
@@ -166,15 +182,8 @@ export default function Pedido() {
   }, [selectedPedido]);
 
   return (
-    <Box 
-  sx={{ 
-    display: 'flex', 
-    flexDirection: 'column', 
-    overflow: 'auto', 
-    height: '80vh' 
-  }}
->
-<h1>Gestión de Pedidos</h1>
+    <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'auto', height: '80vh' }}>
+      <h1>Gestión de Pedidos</h1>
 
       <FormPedido
         onAddPedido={fetchPedidos}
@@ -189,23 +198,19 @@ export default function Pedido() {
       <GridPedido
         pedidos={pedidos}
         onGenerateReport={handleGenerateReport}
-        onSelectPedido={pedido => {
+        onSelectPedido={(pedido) => {
           setSelectedPedido(pedido);
-          console.log('Pedido seleccionado:', pedido);
         }}
       />
 
       {selectedPedido ? (
         <>
           <GridPedidoItem items={Array.isArray(pedidoItems) ? pedidoItems : []} pedidoId={selectedPedido.id} />
-
           <FormPedidoItem
             pedidoId={selectedPedido.id}
             fetchPedidoItems={fetchPedidoItems}
-            // disabled={pedidoItems.length > 0}
             disabled={false}
           />
-
         </>
       ) : (
         <Typography variant="body1" color="textSecondary" mt={2}>

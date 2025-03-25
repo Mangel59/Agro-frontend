@@ -1,3 +1,6 @@
+/**
+ * @module ThemeToggleProvider
+ */
 // src/components/dashboard/ThemeToggleProvider.jsx
 
 import React, { createContext, useContext, useState } from 'react';

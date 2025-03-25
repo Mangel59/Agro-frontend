@@ -1,9 +1,10 @@
-
 /**
- * AppBarComponent componente principal.
+ * AppBarComponent.jsx
+ * @module AppBarComponent
+ * @description Barra de navegación superior con gestión de autenticación y cambio de tema.
  * @component
- * @returns {JSX.Element}
  */
+
 import React, { useEffect, useState } from 'react';
 import { AppBar, Toolbar, Button, Typography, Switch } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
@@ -13,29 +14,37 @@ import ProfileMenu from '../ProfileMenu';
 import { useThemeToggle } from './ThemeToggleProvider';
 
 /**
- * Componente AppBarComponent.
- * @module AppBarComponent.jsx
- * @component
- * @returns {JSX.Element}
+ * Componente de la barra de navegación superior.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {Function} props.setCurrentModule - Función para cambiar el módulo mostrado.
+ * @returns {JSX.Element} Componente de AppBar.
  */
 export default function AppBarComponent({ setCurrentModule }) {
   const location = useLocation();
   const toggleTheme = useThemeToggle();
 
-  // Estado para el manejo de autenticación
+  /**
+   * Estado que indica si el usuario está autenticado.
+   * @type {boolean}
+   */
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Función que se ejecuta cuando se hace clic en "Login"
+  /**
+   * Redirige al componente Login.
+   */
   const handleLogin = () => {
     setCurrentModule(<Login setIsAuthenticated={setIsAuthenticated} setCurrentModule={setCurrentModule} />);
   };
 
-  // Función que se ejecuta cuando se hace clic en "Register"
+  /**
+   * Redirige al componente Register.
+   */
   const handleRegister = () => {
     setCurrentModule(<Register setCurrentModule={setCurrentModule} />);
   };
 
-  // Redirigir automáticamente a Login o Register según la ruta
+  // Redirección automática si cambia la ruta
   useEffect(() => {
     if (location.pathname === '/login') {
       handleLogin(); 
@@ -61,7 +70,7 @@ export default function AppBarComponent({ setCurrentModule }) {
         {/* Switch para alternar tema */}
         <Switch onChange={toggleTheme} sx={{ mr: 2 }} />
 
-        {/* Mostrar Login y Register si no está autenticado, de lo contrario mostrar el ProfileMenu */}
+        {/* Mostrar Login y Register si no está autenticado, de lo contrario el menú de perfil */}
         {!isAuthenticated ? (
           <>
             <Button color="inherit" onClick={handleLogin}>Login</Button>

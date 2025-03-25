@@ -1,13 +1,19 @@
-
 /**
- * CustomToolbar componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file GridMarca.jsx
+ * @module GridMarca
+ * @description Componente de grilla para mostrar y gestionar las marcas. Soporta paginación, ordenamiento, filtros y selección de filas.
+ * @author Karla
  */
+
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import { DataGrid, GridToolbarContainer, GridToolbarFilterButton } from '@mui/x-data-grid';
 
+/**
+ * Columnas configuradas para la tabla de marcas.
+ * @constant
+ * @type {Array<Object>}
+ */
 const columns = [
   { field: 'id', headerName: 'ID', width: 90, type: 'number' },
   { field: 'nombre', headerName: 'Nombre', width: 150, type: 'string' },
@@ -22,7 +28,11 @@ const columns = [
   },
 ];
 
-// ✅ Toolbar personalizada
+/**
+ * Toolbar personalizada con botón de filtros.
+ *
+ * @returns {JSX.Element} Contenedor de herramientas con botón de filtro.
+ */
 function CustomToolbar() {
   return (
     <GridToolbarContainer>
@@ -33,9 +43,21 @@ function CustomToolbar() {
 
 /**
  * Componente GridMarca.
- * @module GridMarca.jsx
- * @component
- * @returns {JSX.Element}
+ *
+ * Renderiza una tabla de marcas con soporte para ordenamiento, paginación, filtrado y selección de filas.
+ *
+ * @function GridMarca
+ * @param {Object} props - Props del componente.
+ * @param {Array<Object>} props.marcas - Lista de marcas.
+ * @param {number} props.rowCount - Total de filas para paginación.
+ * @param {boolean} [props.loading] - Estado de carga.
+ * @param {Object} props.paginationModel - Modelo de paginación actual.
+ * @param {Function} props.setPaginationModel - Función para actualizar la paginación.
+ * @param {Array<Object>} props.sortModel - Modelo de ordenamiento actual.
+ * @param {Function} props.setSortModel - Función para actualizar el ordenamiento.
+ * @param {Function} props.setFilterModel - Función para actualizar el filtrado.
+ * @param {Function} props.setSelectedRow - Función para establecer la fila seleccionada.
+ * @returns {JSX.Element} Tabla con los datos de marcas.
  */
 export default function GridMarca({
   marcas,
@@ -43,7 +65,7 @@ export default function GridMarca({
   loading,
   paginationModel,
   setPaginationModel,
-  sortModel, // ✅ recibido como prop
+  sortModel,
   setSortModel,
   setFilterModel,
   setSelectedRow,
@@ -58,10 +80,10 @@ export default function GridMarca({
       paginationModel={paginationModel}
       onPaginationModelChange={setPaginationModel}
       sortingMode="server"
-      sortModel={sortModel} // ✅ agregado aquí
-      onSortModelChange={(model) => setSortModel(model)} // ✅ agregado aquí
+      sortModel={sortModel}
+      onSortModelChange={setSortModel}
       filterMode="server"
-      onFilterModelChange={(model) => setFilterModel(model)}
+      onFilterModelChange={setFilterModel}
       pageSizeOptions={[5, 10, 20, 50]}
       components={{
         Toolbar: CustomToolbar,
@@ -82,7 +104,7 @@ GridMarca.propTypes = {
   loading: PropTypes.bool,
   paginationModel: PropTypes.object.isRequired,
   setPaginationModel: PropTypes.func.isRequired,
-  sortModel: PropTypes.array.isRequired, // ✅ validación agregada
+  sortModel: PropTypes.array.isRequired,
   setSortModel: PropTypes.func.isRequired,
   setFilterModel: PropTypes.func.isRequired,
   setSelectedRow: PropTypes.func.isRequired,

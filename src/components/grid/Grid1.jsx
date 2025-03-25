@@ -1,27 +1,20 @@
-
 /**
- * Grid1 componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file Grid1.jsx
+ * @module Grid1
+ * @description Componente contenedor que encapsula la vista principal del sistema, renderizando el componente <Home />.
+ * @author Karla
  */
-import * as React from 'react';
 
+import * as React from 'react';
 import Home from '../Home';
 
 /**
- * Componente Grid1 que organiza y renderiza otros componentes utilizando Material-UI.
- * 
- * @returns {JSX.Element} Componente que contiene la estructura de la interfaz.
- */
-/**
- * Componente Grid1.
- * @module Grid1.jsx
- * @component
- * @returns {JSX.Element}
+ * Componente `Grid1`.
+ * Renderiza el componente principal de la interfaz, el cual se encuentra en `Home.jsx`.
+ *
+ * @function
+ * @returns {JSX.Element} Estructura principal de la interfaz renderizada.
  */
 export default function Grid1() {
-    return (
-
-        <Home />
-    );
+  return <Home />;
 }

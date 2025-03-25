@@ -1,29 +1,31 @@
-
 /**
- * Copyright componente principal.
+ * @file Copyright.jsx
+ * @module Copyright
+ * @description Muestra el pie de página con derechos de autor y nombre de la aplicación.
  * @component
- * @returns {JSX.Element}
  */
+
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
-
-import {SiteProps} from './SiteProps';
+import { SiteProps } from './SiteProps';
 
 /**
  * Componente Copyright.
- * @module Copyright.jsx
- * @component
- * @returns {JSX.Element}
+ *
+ * Muestra el texto de copyright en el pie de página, incluyendo el nombre de la app y el año actual.
+ *
+ * @param {Object} props - Propiedades adicionales que serán pasadas al componente Typography.
+ * @returns {JSX.Element} El componente de copyright renderizado.
  */
 export default function Copyright(props) {
-    return (
-      <Typography variant="body2" color="text.secondary" align="center" {...props}>
-        {'Copyright © '}
-        <Link color="inherit" href="https://www.usco.edu.co/">
-          {SiteProps.appName}
-        </Link>{' '}
-        {new Date().getFullYear()}
-        {'.'}
-      </Typography>
-    );
-  }
+  return (
+    <Typography variant="body2" color="text.secondary" align="center" {...props}>
+      {'Copyright © '}
+      <Link color="inherit" href="https://www.usco.edu.co/">
+        {SiteProps.appName}
+      </Link>{' '}
+      {new Date().getFullYear()}
+      {'.'}
+    </Typography>
+  );
+}

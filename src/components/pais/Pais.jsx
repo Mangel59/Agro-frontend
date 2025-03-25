@@ -1,9 +1,10 @@
-
 /**
- * Pais componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file Pais.jsx
+ * @module Pais
+ * @description Componente principal para gestionar países. Incluye formulario y grilla.
+ * @author Karla
  */
+
 import * as React from 'react';
 import axios from 'axios';
 import MessageSnackBar from '../MessageSnackBar';
@@ -11,28 +12,36 @@ import FormPais from "./FormPais";
 import GridPais from "./GridPais";
 import { SiteProps } from '../dashboard/SiteProps';
 
-
 /**
  * Componente Pais.
- * @module Pais.jsx
+ *
+ * Maneja la visualización y gestión de países.
+ *
  * @component
- * @returns {JSX.Element}
+ * @returns {JSX.Element} Vista principal del componente de país.
  */
 export default function Pais() {
+  /**
+   * Fila seleccionada por defecto.
+   * @type {{ id: number, name: string }}
+   */
   const row = {
     id: 0,
     name: "",
   };
 
-  const [selectedRow, setSelectedRow] = React.useState(row);
+  /**
+   * Mensaje por defecto para Snackbar.
+   * @type {{ open: boolean, severity: string, text: string }}
+   */
   const messageData = {
     open: false,
     severity: "success",
     text: ""
   };
 
-  
-  const [message, setMessage] = React.useState(messageData);;
+  const [selectedRow, setSelectedRow] = React.useState(row);
+  const [message, setMessage] = React.useState(messageData);
   const [pais, setPais] = React.useState([]);
 
   React.useEffect(() => {
@@ -40,38 +49,36 @@ export default function Pais() {
       .then(response => {
         const paisData = response.data.map((item) => ({
           ...item,
-          id: item.id, // Asignar id basado en pai_id
+          id: item.id, // Asegura que el campo `id` esté presente
         }));
         setPais(paisData);
         console.log(paisData);
       })
       .catch(error => {
-        console.error("Error al buscar pais!", error);
+        console.error("Error al buscar país:", error);
+        setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al cargar la lista de países."
+        });
       });
   }, []);
 
-  // React.useEffect(() => {
-  //   axios.get(`${SiteProps.urlbase}/pais` )
-  //     .then(response => {
-  //       setPais(response.data);
-  //       console.log(pais);
-  //     })
-  //     .catch(error => {
-  //       console.error("Error al buscar pais!", error);
-  //     });
-  // }, []);
-
-
-
   return (
     <div style={{ height: '100%', width: '100%' }}>
-      <h1>Pais</h1>
+      <h1>País</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
-      <FormPais setMessage={setMessage} selectedRow={selectedRow} setSelectedRow={setSelectedRow} pais={pais} />
-      <GridPais selectedRow={selectedRow} setSelectedRow={setSelectedRow} pais={pais} />
+      <FormPais
+        setMessage={setMessage}
+        selectedRow={selectedRow}
+        setSelectedRow={setSelectedRow}
+        pais={pais}
+      />
+      <GridPais
+        selectedRow={selectedRow}
+        setSelectedRow={setSelectedRow}
+        pais={pais}
+      />
     </div>
   );
 }
-
-
-

@@ -1,9 +1,9 @@
-
 /**
- * ComboBox componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file ComboBox.jsx - Componente de selección para filtros de Kardex.
+ * @module ComboBox
+ * @exports ComboBox
  */
+
 import React, { useState, useEffect } from 'react';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -13,11 +13,19 @@ import axios from 'axios';
 
 /**
  * Componente ComboBox.
- * @module ComboBox.jsx
- * @component
- * @returns {JSX.Element}
+ *
+ * Permite seleccionar un almacén, producción, tipo de movimiento, descripción y estado,
+ * y notifica estos cambios mediante funciones callback.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {Function} props.onAlmacenChange - Callback para cambiar almacén.
+ * @param {Function} props.onProduccionChange - Callback para cambiar producción.
+ * @param {Function} props.onMovimientoChange - Callback para cambiar movimiento.
+ * @param {Function} props.onDescripcionChange - Callback para cambiar descripción.
+ * @param {Function} props.onEstadoChange - Callback para cambiar estado.
+ * @returns {JSX.Element} Vista del componente.
  */
-export default function ComboBox({ onAlmacenChange, onProduccionChange, onMovimientoChange, onDescripcionChange, onEstadoChange }) {
+function ComboBox({ onAlmacenChange, onProduccionChange, onMovimientoChange, onDescripcionChange, onEstadoChange }) {
   const [almacenes, setAlmacenes] = useState([]);
   const [producciones, setProducciones] = useState([]);
   const [movimientos, setMovimientos] = useState([]);
@@ -27,28 +35,23 @@ export default function ComboBox({ onAlmacenChange, onProduccionChange, onMovimi
   const [descripcion, setDescripcion] = useState('');
   const [estado, setEstado] = useState('');
 
-  // Obtener datos desde kardex.json usando axios
   useEffect(() => {
     axios.get('/kardex.json')
       .then(response => {
         const kardexData = response.data;
 
-        // Extraer almacenes únicos
         const almacenesUnicos = [...new Set(kardexData.map(item => item.kar_almacen_id))];
         setAlmacenes(almacenesUnicos);
 
-        // Extraer producciones únicas
         const produccionesUnicas = [...new Set(kardexData.map(item => item.kar_produccion_id))];
         setProducciones(produccionesUnicas);
 
-        // Extraer movimientos únicos
         const movimientosUnicos = [...new Set(kardexData.map(item => item.kar_tipo_movimiento_id))];
         setMovimientos(movimientosUnicos);
       })
       .catch(error => console.error('Error al cargar kardex.json:', error));
   }, []);
 
-  // Notificar cambios individuales
   useEffect(() => {
     if (onAlmacenChange) onAlmacenChange(selectedAlmacen);
   }, [selectedAlmacen, onAlmacenChange]);
@@ -71,13 +74,12 @@ export default function ComboBox({ onAlmacenChange, onProduccionChange, onMovimi
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 4, pt: 2 }}>
-      {/* Primera fila: Almacén, Producción, Movimiento */}
       <Box sx={{ display: 'flex', gap: 2 }}>
         <Autocomplete
           disablePortal
           id="combo-box-almacen"
           options={almacenes}
-          getOptionLabel={(option) => `Almacén ${option}`}  // Muestra el ID del almacén
+          getOptionLabel={(option) => `Almacén ${option}`}
           sx={{ width: 300 }}
           onChange={(event, newValue) => setSelectedAlmacen(newValue)}
           renderInput={(params) => <TextField {...params} label="Almacén" />}
@@ -87,28 +89,26 @@ export default function ComboBox({ onAlmacenChange, onProduccionChange, onMovimi
           disablePortal
           id="combo-box-produccion"
           options={producciones}
-          getOptionLabel={(option) =>` Producción ${option}`}  // Muestra el ID de la producción
+          getOptionLabel={(option) => `Producción ${option}`}
           sx={{ width: 300 }}
           onChange={(event, newValue) => setSelectedProduccion(newValue)}
           renderInput={(params) => <TextField {...params} label="Producción" />}
-          disabled={!selectedAlmacen}  // Se habilita solo si hay un almacén seleccionado
+          disabled={!selectedAlmacen}
         />
 
         <Autocomplete
           disablePortal
           id="combo-box-tipo-movimiento"
           options={movimientos}
-          getOptionLabel={(option) => `Movimiento ${option}`}  // Muestra el ID del movimiento
+          getOptionLabel={(option) => `Movimiento ${option}`}
           sx={{ width: 300 }}
           onChange={(event, newValue) => setSelectedMovimiento(newValue)}
           renderInput={(params) => <TextField {...params} label="Tipo Movimiento" />}
-          disabled={!selectedProduccion}  // Se habilita solo si hay una producción seleccionada
+          disabled={!selectedProduccion}
         />
       </Box>
 
-      {/* Segunda fila: Descripción y Estado */}
       <Box sx={{ display: 'flex', gap: 2 }}>
-        {/* Campo de Descripción */}
         <TextField
           id="descripcion"
           label="Descripción"
@@ -118,7 +118,6 @@ export default function ComboBox({ onAlmacenChange, onProduccionChange, onMovimi
           onChange={(e) => setDescripcion(e.target.value)}
         />
 
-        {/* ComboBox para seleccionar Estado */}
         <TextField
           id="estado"
           select
@@ -134,3 +133,5 @@ export default function ComboBox({ onAlmacenChange, onProduccionChange, onMovimi
     </Box>
   );
 }
+
+export default ComboBox;

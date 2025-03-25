@@ -1,12 +1,30 @@
 /**
- * Componente GridTipoSede.
+ * @file GridTipoSede.jsx
  * @module GridTipoSede
- * @component
+ * @description Componente para mostrar la lista de Tipos de Sede en una grilla con paginación. Permite seleccionar una fila y mostrar sus datos en un formulario asociado.
  */
+
 import React from "react";
-import PropTypes from 'prop-types'; // ✅ Importación necesaria
+import PropTypes from 'prop-types';
 import { DataGrid } from "@mui/x-data-grid";
 
+/**
+ * @typedef {Object} TipoSedeRow
+ * @property {number} id - ID único del tipo de sede
+ * @property {string} nombre - Nombre del tipo de sede
+ * @property {string} descripcion - Descripción del tipo de sede
+ * @property {number} estado - Estado (1 = Activo, 0 = Inactivo)
+ */
+
+/**
+ * Componente de tabla para visualizar los tipos de sede.
+ *
+ * @component
+ * @param {Object} props - Propiedades del componente
+ * @param {TipoSedeRow[]} props.tipoSedes - Lista de tipos de sede a mostrar
+ * @param {function(TipoSedeRow): void} props.setSelectedRow - Función para actualizar la fila seleccionada
+ * @returns {JSX.Element} Tabla con los datos y opción para seleccionar fila
+ */
 const GridTipoSedes = ({ tipoSedes, setSelectedRow }) => {
   const columns = [
     { field: "id", headerName: "ID", width: 90 },

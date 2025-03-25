@@ -1,3 +1,13 @@
+/**
+ * @file App.jsx
+ * @module App
+ * @description Componente principal de la aplicación.
+ * Renderiza la estructura general de la app incluyendo barra de navegación, 
+ * módulo principal, alternancia de tema e internacionalización.
+ * @component
+ * @returns {JSX.Element} El componente raíz de la aplicación.
+ */
+
 import React from 'react';
 import { Box, CssBaseline, Container, Toolbar, Paper } from '@mui/material';
 import { useThemeToggle } from './components/dashboard/ThemeToggleProvider';
@@ -10,134 +20,15 @@ import Copyright from './components/dashboard/Copyright';
 import Inicio from './components/Inicio.jsx';
 
 /**
- * Componente principal de la aplicación.
- * Renderiza la estructura general de la aplicación, incluyendo la barra de navegación, 
- * la gestión de rutas y la funcionalidad de alternar temas.
- * 
- * @component
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * App componente principal.
- * @component
+ * Componente principal que organiza la estructura visual y funcional de la aplicación.
  * @returns {JSX.Element}
  */
 const App = () => {
-  const { t } = useTranslation(); // Hook para la internacionalización
-  const [currentModule, setCurrentModule] = React.useState(<Inicio />); // Módulo actual que se muestra
-  const toggleTheme = useThemeToggle(); // Función para alternar el tema de la aplicación
+  const { t } = useTranslation(); // Hook para traducción (i18n)
+  const [currentModule, setCurrentModule] = React.useState(<Inicio />); // Módulo principal a mostrar
+  const toggleTheme = useThemeToggle(); // Alternador de tema (oscuro/claro)
 
   React.useEffect(() => {
-    // Simulación de mensaje de bienvenida
     console.log('Bienvenido a la aplicación');
   }, []);
 
@@ -163,7 +54,14 @@ const App = () => {
         <Toolbar />
         <Container
           maxWidth={false}
-          sx={{ mt: 4, mb: 4, display: 'flex', flexDirection: 'column', height: 'calc(100% - 64px)', justifyContent: 'center' }}
+          sx={{
+            mt: 4,
+            mb: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            height: 'calc(100% - 64px)',
+            justifyContent: 'center',
+          }}
         >
           <AppBarComponent setCurrentModule={setCurrentModule} />
           <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>

@@ -1,12 +1,17 @@
-
 /**
- * GridTipoIdentificacion componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file GridTipoIdentificacion.jsx
+ * @module GridTipoIdentificacion
+ * @description Componente de grilla para mostrar los tipos de identificación. Utiliza DataGrid de MUI y permite seleccionar filas para editar.
+ * @author Karla
  */
+
 import React from "react";
 import { DataGrid } from "@mui/x-data-grid";
 
+/**
+ * Columnas utilizadas en el DataGrid para mostrar los tipos de identificación.
+ * @constant {Array<Object>}
+ */
 const columns = [
   { field: "tii_id", headerName: "ID", width: 90 },
   { field: "tii_nombre", headerName: "Nombre", width: 200 },
@@ -20,10 +25,13 @@ const columns = [
 ];
 
 /**
- * Componente GridTipoIdentificacion.
- * @module GridTipoIdentificacion.jsx
+ * Componente que renderiza una tabla de tipos de identificación.
+ *
  * @component
- * @returns {JSX.Element}
+ * @param {Object} props - Propiedades del componente.
+ * @param {Array<Object>} props.tiposIdentificacion - Lista de tipos de identificación.
+ * @param {function(Object): void} props.onEdit - Función que se llama al hacer clic en una fila, recibe el objeto de tipo seleccionado.
+ * @returns {JSX.Element} Tabla renderizada con los datos proporcionados.
  */
 export default function GridTipoIdentificacion({ tiposIdentificacion, onEdit }) {
   return (

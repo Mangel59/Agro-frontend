@@ -16,34 +16,34 @@ import FormDepartamento from "./FormDepartamento";
 import GridDepartamento from "./GridDepartamento";
 import { SiteProps } from '../dashboard/SiteProps';
 
-export default function Departamento() {
-  // Estado inicial
-  const row = {
-    id: 0,
-    name: "",
-  };
+/**
+ * @typedef {Object} DepartamentoRow
+ * @property {number} id - ID del departamento.
+ * @property {string} name - Nombre del departamento.
+ */
 
-  /**
-   * Estado que almacena la fila seleccionada.
-   * @type {{id: number, name: string}}
-   */
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open
+ * @property {string} severity
+ * @property {string} text
+ */
+
+export default function Departamento() {
+  /** @type {DepartamentoRow} */
+  const row = { id: 0, name: "" };
+
+  /** @type {React.MutableRefObject<DepartamentoRow>} */
   const [selectedRow, setSelectedRow] = React.useState(row);
 
-  /**
-   * Estado del mensaje que se muestra en el snackbar.
-   * @type {{open: boolean, severity: string, text: string}}
-   */
-  const [message, setMessage] = React.useState({
-    open: false,
-    severity: "success",
-    text: ""
-  });
+  /** @type {SnackbarMessage} */
+  const initialMessage = { open: false, severity: "success", text: "" };
 
-  /**
-   * Lista de departamentos obtenidos del backend.
-   * @type {Array<{id: number, name: string}>}
-   */
-  const [departamentos, setDepartamentos] = React.useState([]);
+  /** Estado del mensaje que se muestra en el Snackbar */
+  const [message, setMessage] = React.useState(initialMessage);
+
+  /** Lista de departamentos obtenidos del backend */
+  const [departamentos, setDepartamentos] = React.useState(/** @type {DepartamentoRow[]} */ ([]));
 
   // Carga inicial de los departamentos
   React.useEffect(() => {
@@ -51,7 +51,7 @@ export default function Departamento() {
       .then(response => {
         const departamentoData = response.data.map((item) => ({
           ...item,
-          id: item.id, // Garantiza que tenga campo `id`
+          id: item.id,
         }));
         setDepartamentos(departamentoData);
       })

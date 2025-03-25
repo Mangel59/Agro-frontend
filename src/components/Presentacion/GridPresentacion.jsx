@@ -1,7 +1,19 @@
+/**
+ * @file GridPresentacion.jsx
+ * @module GridPresentacion
+ * @description Componente de grilla para mostrar la lista de presentaciones. Utiliza Material UI DataGrid para mostrar, seleccionar y paginar datos.
+ * @author Karla
+ */
+
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import { DataGrid } from '@mui/x-data-grid';
 
+/**
+ * Columnas definidas para el DataGrid.
+ * @constant
+ * @type {Array<Object>}
+ */
 const columns = [
   { field: 'id', headerName: 'ID', width: 90, type: 'number' },
   { field: 'nombre', headerName: 'Nombre', width: 150, type: 'string' },
@@ -16,148 +28,26 @@ const columns = [
 ];
 
 /**
- * El componente GridPresentacion muestra una tabla con los datos de las Presentaciones.
- * 
- * @componente
- * @param {object} props - Propiedades pasadas al componente.
- * @param {array} props.Presentacion - Lista de presentaciones a mostrar en la tabla.
- * @param {function} props.setSelectedRow - Función para establecer la fila seleccionada.
- * @param {object} props.selectedRow - Fila actualmente seleccionada.
- * @returns {JSX.Element} La tabla de datos de Presentacion.
- */
-/**
  * Componente GridPresentacion.
- * @module GridPresentacion.jsx
- * @component
- * @returns {JSX.Element}
+ *
+ * Muestra una tabla con los datos de presentaciones.
+ *
+ * @param {Object} props - Propiedades del componente.
+ * @param {Array<Object>} props.Presentacion - Lista de presentaciones a mostrar.
+ * @param {function(Object): void} props.setSelectedRow - Función para establecer la fila seleccionada.
+ * @param {Object} [props.selectedRow] - La fila actualmente seleccionada (opcional).
+ * @returns {JSX.Element} Componente de tabla con datos de presentaciones.
  */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-/**
- * GridPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
- */
-export default function GridPresentacion(props) {
-  const { Presentacion, setSelectedRow } = props;
-
+export default function GridPresentacion({ Presentacion, setSelectedRow }) {
   return (
     <DataGrid
       rows={Presentacion}
+      columns={columns}
       onRowSelectionModelChange={(ids) => {
         const selectedIDs = new Set(ids);
         const selectedRowData = Presentacion.find((row) => selectedIDs.has(row.id));
         setSelectedRow(selectedRowData || null);
       }}
-      columns={columns}
       initialState={{
         pagination: {
           paginationModel: { pageSize: 5 },
@@ -170,7 +60,6 @@ export default function GridPresentacion(props) {
   );
 }
 
-// ✅ Validación de Props con PropTypes
 GridPresentacion.propTypes = {
   Presentacion: PropTypes.arrayOf(
     PropTypes.shape({

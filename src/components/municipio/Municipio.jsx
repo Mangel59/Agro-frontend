@@ -1,9 +1,10 @@
-
 /**
- * Municipio componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file Municipio.jsx
+ * @module Municipio
+ * @description Componente principal para gestionar municipios. Incluye formulario y grilla de datos, junto con snackbar de mensajes.
+ * @author Karla
  */
+
 import * as React from "react";
 import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
@@ -11,12 +12,12 @@ import FormMunicipio from "./FormMunicipio";
 import GridMunicipio from "./GridMunicipio";
 import { SiteProps } from "../dashboard/SiteProps";
 
-
 /**
  * Componente Municipio.
- * @module Municipio.jsx
- * @component
- * @returns {JSX.Element}
+ *
+ * Muestra y gestiona una lista de municipios, incluyendo formulario de edición y tabla.
+ *
+ * @returns {JSX.Element} El componente de Municipio.
  */
 export default function Municipio() {
   const row = {
@@ -25,13 +26,11 @@ export default function Municipio() {
   };
 
   const [selectedRow, setSelectedRow] = React.useState(row);
-  const messageData = {
+  const [message, setMessage] = React.useState({
     open: false,
     severity: "success",
     text: "",
-  };
-
-  const [message, setMessage] = React.useState(messageData);
+  });
   const [municipios, setMunicipios] = React.useState([]);
 
   React.useEffect(() => {

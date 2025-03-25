@@ -1,3 +1,6 @@
+/**
+ * @module Title
+ */
 
 /**
  * Title componente principal.

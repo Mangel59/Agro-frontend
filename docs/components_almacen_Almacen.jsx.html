@@ -1,23 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
     <meta charset="utf-8">
-    <title>JSDoc: Source: components/almacen/Almacen.jsx</title>
-
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
+    <title>components/almacen/Almacen.jsx - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-
 <body>
 
-<div id="main">
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
 
-    <h1 class="page-title">Source: components/almacen/Almacen.jsx</h1>
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Almacen.html">Almacen</a></li><li><a href="module-App.html">App</a><ul class='methods'><li data-type='method'><a href="module-App.html#~App">App</a></li></ul></li><li><a href="module-AppBarComponent.html">AppBarComponent</a></li><li><a href="module-Bloque.html">Bloque</a></li><li><a href="module-Chart.html">Chart</a><ul class='methods'><li data-type='method'><a href="module-Chart.html#~createData">createData</a></li></ul></li><li><a href="module-Chart1.html">Chart1</a></li><li><a href="module-ComboBox.html">ComboBox</a><ul class='methods'><li data-type='method'><a href="module-ComboBox.html#~ComboBox">ComboBox</a></li></ul></li><li></li><li><a href="module-Contenido.html">Contenido</a></li><li><a href="module-Copyright.html">Copyright</a></li><li><a href="module-Departamento.html">Departamento</a></li><li><a href="module-Deposits.html">Deposits</a><ul class='methods'><li data-type='method'><a href="module-Deposits.html#~preventDefault">preventDefault</a></li></ul></li><li><a href="module-Drawer.html">Drawer</a></li><li><a href="module-Empresa.html">Empresa</a></li><li><a href="module-Espacio.html">Espacio</a></li><li><a href="module-EspacioOcupacion.html">EspacioOcupacion</a></li><li><a href="module-Evaluacion.html">Evaluacion</a></li><li><a href="module-ForgetPassword.html">ForgetPassword</a><ul class='methods'><li data-type='method'><a href="module-ForgetPassword.html#.ForgetPassword">ForgetPassword</a></li></ul></li><li><a href="module-FormAlmacen.html">FormAlmacen</a><ul class='methods'><li data-type='method'><a href="module-FormAlmacen.html#~FormAlmacen">FormAlmacen</a></li></ul></li><li><a href="module-FormBloque.html">FormBloque</a></li><li><a href="module-FormDepartamento.html">FormDepartamento</a></li><li><a href="module-FormEmpresa.html">FormEmpresa</a></li><li><a href="module-FormEspacio.html">FormEspacio</a></li><li><a href="module-FormEvaluacion.html">FormEvaluacion</a></li><li><a href="module-FormKardexNuevo.html">FormKardexNuevo</a></li><li><a href="module-FormMarca.html">FormMarca</a></li><li><a href="module-FormMunicipio.html">FormMunicipio</a></li><li><a href="module-FormOrdenCompra.html">FormOrdenCompra</a></li><li><a href="module-FormOrdenCompraItem.html">FormOrdenCompraItem</a></li><li><a href="module-FormPais.html">FormPais</a></li><li><a href="module-FormPedido.html">FormPedido</a></li><li><a href="module-FormPedidoItem.html">FormPedidoItem</a></li><li><a href="module-FormPersona.html">FormPersona</a></li><li><a href="module-FormPresentacion.html">FormPresentacion</a></li><li><a href="module-FormProduccion.html">FormProduccion</a><ul class='methods'><li data-type='method'><a href="module-FormProduccion.html#~FormProduccion">FormProduccion</a></li></ul></li><li><a href="module-FormProducto.html">FormProducto</a></li><li><a href="module-FormProductoCategoria.html">FormProductoCategoria</a></li><li><a href="module-FormProductoPresentacion.html">FormProductoPresentacion</a></li><li><a href="module-FormProveedor.html">FormProveedor</a></li><li><a href="module-FormRegistroEmpresa.html">FormRegistroEmpresa</a></li><li><a href="module-FormRegistroPersona.html">FormRegistroPersona</a></li><li><a href="module-FormRol.html">FormRol</a></li><li><a href="module-FormSede.html">FormSede</a></li><li><a href="module-FormTipoBloque.html">FormTipoBloque</a><ul class='methods'><li data-type='method'><a href="module-FormTipoBloque.html#~FormTipoBloque">FormTipoBloque</a></li></ul></li><li><a href="module-FormTipoEspacio.html">FormTipoEspacio</a></li><li><a href="module-FormTipoIdentificacion.html">FormTipoIdentificacion</a></li><li><a href="module-FormTipoMovimiento.html">FormTipoMovimiento</a></li><li><a href="module-FormTipoProduccion.html">FormTipoProduccion</a></li><li><a href="module-FormTipoSede.html">FormTipoSede</a></li><li><a href="module-FormUnidad.html">FormUnidad</a></li><li><a href="module-FromEspacioOcupacion.html">FromEspacioOcupacion</a></li><li><a href="module-Grid1.html">Grid1</a></li><li><a href="module-GridAlmacen.html">GridAlmacen</a></li><li><a href="module-GridBloque.html">GridBloque</a></li><li><a href="module-GridDepartamento.html">GridDepartamento</a></li><li><a href="module-GridEmpresa.html">GridEmpresa</a></li><li><a href="module-GridEspacio.html">GridEspacio</a></li><li><a href="module-GridEspacioOcupacion.html">GridEspacioOcupacion</a><ul class='methods'><li data-type='method'><a href="module-GridEspacioOcupacion.html#~GridEspacioOcupacion">GridEspacioOcupacion</a></li></ul></li><li><a href="module-GridEvaluacion.html">GridEvaluacion</a></li><li><a href="module-GridKardexNuevo.html">GridKardexNuevo</a></li><li><a href="module-GridMarca.html">GridMarca</a><ul class='methods'><li data-type='method'><a href="module-GridMarca.html#~CustomToolbar">CustomToolbar</a></li><li data-type='method'><a href="module-GridMarca.html#~GridMarca">GridMarca</a></li></ul></li><li><a href="module-GridMunicipio.html">GridMunicipio</a></li><li><a href="module-GridOrdenCompra.html">GridOrdenCompra</a></li><li><a href="module-GridOrdenCompraItem.html">GridOrdenCompraItem</a></li><li><a href="module-GridPais.html">GridPais</a></li><li><a href="module-GridPedido.html">GridPedido</a></li><li><a href="module-GridPedidoItem.html">GridPedidoItem</a></li><li><a href="module-GridPersona.html">GridPersona</a><ul class='methods'><li data-type='method'><a href="module-GridPersona.html#~CustomToolbar">CustomToolbar</a></li></ul></li><li><a href="module-GridPresentacion.html">GridPresentacion</a></li><li><a href="module-GridProduccion.html">GridProduccion</a></li><li><a href="module-GridProducto.html">GridProducto</a></li><li><a href="module-GridProductoCategoria.html">GridProductoCategoria</a></li><li><a href="module-GridProductoPresentacion.html">GridProductoPresentacion</a></li><li><a href="module-GridProveedor.html">GridProveedor</a></li><li><a href="module-GridRol.html">GridRol</a></li><li><a href="module-GridSede.html">GridSede</a></li><li><a href="module-GridTipoBloque.html">GridTipoBloque</a><ul class='methods'><li data-type='method'><a href="module-GridTipoBloque.html#~GridTipoBloque">GridTipoBloque</a></li></ul></li><li><a href="module-GridTipoEspacio.html">GridTipoEspacio</a></li><li><a href="module-GridTipoIdentificacion.html">GridTipoIdentificacion</a></li><li><a href="module-GridTipoMovimiento.html">GridTipoMovimiento</a></li><li><a href="module-GridTipoProduccion.html">GridTipoProduccion</a></li><li><a href="module-GridTipoSede.html">GridTipoSede</a><ul class='methods'><li data-type='method'><a href="module-GridTipoSede.html#~GridTipoSedes">GridTipoSedes</a></li></ul></li><li><a href="module-GridUnidad.html">GridUnidad</a><ul class='methods'><li data-type='method'><a href="module-GridUnidad.html#~CustomToolbar">CustomToolbar</a></li></ul></li><li><a href="module-Home.html">Home</a><ul class='methods'><li data-type='method'><a href="module-Home.html#~Home">Home</a></li></ul></li><li><a href="module-Inicio.html">Inicio</a><ul class='methods'><li data-type='method'><a href="module-Inicio.html#~CustomArrow">CustomArrow</a></li><li data-type='method'><a href="module-Inicio.html#~Inicio">Inicio</a></li><li data-type='method'><a href="module-Inicio.html#~handleLogin">handleLogin</a></li><li data-type='method'><a href="module-Inicio.html#~handleRegister">handleRegister</a></li></ul></li><li><a href="module-KardexNuevo.html">KardexNuevo</a></li><li><a href="module-Login.html">Login</a><ul class='methods'><li data-type='method'><a href="module-Login.html#~handleClickShowPassword">handleClickShowPassword</a></li><li data-type='method'><a href="module-Login.html#~handleLanguageChange">handleLanguageChange</a></li><li data-type='method'><a href="module-Login.html#~handleMouseDownPassword">handleMouseDownPassword</a></li><li data-type='method'><a href="module-Login.html#~handleSubmit">handleSubmit</a></li><li data-type='method'><a href="module-Login.html#~validateEmail">validateEmail</a></li></ul></li><li><a href="module-Logout.html">Logout</a><ul class='methods'><li data-type='method'><a href="module-Logout.html#.logout">logout</a></li></ul></li><li><a href="module-Marca.html">Marca</a></li><li><a href="module-MessageSnackBar.html">MessageSnackBar</a></li><li><a href="module-Municipio.html">Municipio</a></li><li><a href="module-Navigator2.html">Navigator2</a></li><li><a href="module-OrdenCompra.html">OrdenCompra</a></li><li><a href="module-Pais.html">Pais</a></li><li><a href="module-Pedido.html">Pedido</a></li><li><a href="module-PerfilCard.html">PerfilCard</a><ul class='methods'><li data-type='method'><a href="module-PerfilCard.html#.module.exports">module.exports</a></li></ul></li><li><a href="module-PerfilGroup.html">PerfilGroup</a><ul class='methods'><li data-type='method'><a href="module-PerfilGroup.html#.PerfilGroup">PerfilGroup</a></li></ul></li><li><a href="module-Persona.html">Persona</a></li><li><a href="module-Presentacion.html">Presentacion</a></li><li><a href="module-Produccion.html">Produccion</a></li><li><a href="module-Producto.html">Producto</a></li><li><a href="module-ProductoCategoria.html">ProductoCategoria</a></li><li><a href="module-ProductoPresentacion.html">ProductoPresentacion</a></li><li></li><li><a href="module-ProfileMenu.html">ProfileMenu</a><ul class='methods'><li data-type='method'><a href="module-ProfileMenu.html#.ProfileMenu">ProfileMenu</a></li></ul></li><li><a href="module-Proveedor.html">Proveedor</a></li><li><a href="module-Register.html">Register</a><ul class='methods'><li data-type='method'><a href="module-Register.html#.Register">Register</a></li><li data-type='method'><a href="module-Register.html#~handleClickShowPassword">handleClickShowPassword</a></li><li data-type='method'><a href="module-Register.html#~handleLanguageChange">handleLanguageChange</a></li><li data-type='method'><a href="module-Register.html#~handleMouseDownPassword">handleMouseDownPassword</a></li><li data-type='method'><a href="module-Register.html#~handleSubmit">handleSubmit</a></li><li data-type='method'><a href="module-Register.html#~validateEmail">validateEmail</a></li><li data-type='method'><a href="module-Register.html#~validatePassword">validatePassword</a></li></ul></li><li><a href="module-Rol.html">Rol</a></li><li><a href="module-Sede.html">Sede</a><ul class='methods'><li data-type='method'><a href="module-Sede.html#~Sede">Sede</a></li></ul></li><li><a href="module-SiteProps.html">SiteProps</a></li><li><a href="module-StackButtons.html">StackButtons</a><ul class='methods'><li data-type='method'><a href="module-StackButtons.html#.StackButtons">StackButtons</a></li></ul></li><li><a href="module-ThemeToggleProvider.html">ThemeToggleProvider</a><ul class='methods'><li data-type='method'><a href="module-ThemeToggleProvider.html#.ThemeToggleProvider">ThemeToggleProvider</a></li><li data-type='method'><a href="module-ThemeToggleProvider.html#.useThemeToggle">useThemeToggle</a></li></ul></li><li><a href="module-TipoBloque.html">TipoBloque</a><ul class='methods'><li data-type='method'><a href="module-TipoBloque.html#~TipoBloque">TipoBloque</a></li></ul></li><li><a href="module-TipoEspacio.html">TipoEspacio</a></li><li><a href="module-TipoEvaluacionReport.html">TipoEvaluacionReport</a></li><li><a href="module-TipoIdentificacion.html">TipoIdentificacion</a><ul class='methods'><li data-type='method'><a href="module-TipoIdentificacion.html#.TipoIdentificacion">TipoIdentificacion</a></li></ul></li><li></li><li><a href="module-TipoMovimiento.html">TipoMovimiento</a></li><li><a href="module-TipoProduccion.html">TipoProduccion</a></li><li><a href="module-TipoSede.html">TipoSede</a></li><li><a href="module-Title.html">Title</a><ul class='methods'><li data-type='method'><a href="module-Title.html#~Title">Title</a></li></ul></li><li><a href="module-Unidad.html">Unidad</a><ul class='methods'><li data-type='method'><a href="module-Unidad.html#~Unidad">Unidad</a></li><li data-type='method'><a href="module-Unidad.html#~reloadData">reloadData</a></li></ul></li><li><a href="module-main.html">main</a><ul class='methods'><li data-type='method'><a href="module-main.html#~Main">Main</a></li></ul></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">components/almacen/Almacen.jsx</h1>
+    
 
     
 
@@ -39,9 +58,9 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { DataGrid } from "@mui/x-data-grid";
 import MessageSnackBar from "../MessageSnackBar";
 import FormAlmacen from "./FormAlmacen";
+import GridAlmacen from "./GridAlmacen";
 import { SiteProps } from "../dashboard/SiteProps";
 
 export default function Almacen() {
@@ -133,18 +152,6 @@ export default function Almacen() {
     }
   };
 
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "nombre", headerName: "Nombre", width: 180 },
-    { field: "descripcion", headerName: "Descripción", width: 250 },
-    {
-      field: "estado",
-      headerName: "Estado",
-      width: 120,
-      valueGetter: (params) => (params.row.estado === 1 ? "Activo" : "Inactivo"),
-    },
-  ];
-
   return (
     &lt;div style={{ height: "100%", width: "100%" }}>
       &lt;h1>Almacen&lt;/h1>
@@ -177,20 +184,14 @@ export default function Almacen() {
         reloadData={reloadAlmacenes}
       />
 
-      {/* Tabla */}
-      &lt;div style={{ height: 400, width: "100%" }}>
+      {/* Tabla con todos los campos usando GridAlmacen */}
+      &lt;div style={{ height: 500, width: "100%" }}>
         {loading ? (
           &lt;div style={{ textAlign: "center", margin: "20px" }}>Cargando datos...&lt;/div>
         ) : error ? (
           &lt;div style={{ color: "red", textAlign: "center", margin: "20px" }}>{error}&lt;/div>
         ) : (
-          &lt;DataGrid
-            rows={almacenes}
-            columns={columns}
-            pageSize={5}
-            rowsPerPageOptions={[5]}
-            onRowClick={(params) => setSelectedRow(params.row)}
-          />
+          &lt;GridAlmacen almacenes={almacenes} setSelectedRow={setSelectedRow} />
         )}
       &lt;/div>
     &lt;/div>
@@ -203,19 +204,21 @@ export default function Almacen() {
 
 
 
+    
+    
 </div>
-
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="AppBarComponent.module_jsx.html">jsx</a></li><li><a href="Chart.module_jsx.html">jsx</a></li><li><a href="Chart1.module_jsx.html">jsx</a></li><li><a href="ComboBox.module_jsx.html">jsx</a></li><li><a href="ComboBox1.module_jsx.html">jsx</a></li><li><a href="Contenido.module_jsx.html">jsx</a></li><li><a href="Copyright.module_jsx.html">jsx</a></li><li><a href="Deposits.module_jsx.html">jsx</a></li><li><a href="Espacio.module_jsx.html">jsx</a></li><li><a href="EspacioOcupacion.module_jsx.html">jsx</a></li><li><a href="Evaluacion.module_jsx.html">jsx</a></li><li><a href="FormEspacio.module_jsx.html">jsx</a></li><li><a href="FormEvaluacion.module_jsx.html">jsx</a></li><li><a href="FormKardexNuevo.module_jsx.html">jsx</a></li><li><a href="FormMarca.module_jsx.html">jsx</a></li><li><a href="FormMunicipio.module_jsx.html">jsx</a></li><li><a href="FormOrdenCompra.module_jsx.html">jsx</a></li><li><a href="FormOrdenCompraItem.module_jsx.html">jsx</a></li><li><a href="FormPais.module_jsx.html">jsx</a></li><li><a href="FormPedido.module_jsx.html">jsx</a></li><li><a href="FormPedidoItem.module_jsx.html">jsx</a></li><li><a href="FormPersona.module_jsx.html">jsx</a></li><li><a href="FormPresentacion.module_jsx.html">jsx</a></li><li><a href="FormProducto.module_jsx.html">jsx</a></li><li><a href="FormProductoCategoria.module_jsx.html">jsx</a></li><li><a href="FormProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="FormProveedor.module_jsx.html">jsx</a></li><li><a href="FormRegistroEmpresa.module_jsx.html">jsx</a></li><li><a href="FormRegistroPersona.module_jsx.html">jsx</a></li><li><a href="FormRol.module_jsx.html">jsx</a></li><li><a href="FormSede.module_jsx.html">jsx</a></li><li><a href="FormTipoEspacio.module_jsx.html">jsx</a></li><li><a href="FormTipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="FormTipoMovimiento.module_jsx.html">jsx</a></li><li><a href="FormTipoProduccion.module_jsx.html">jsx</a></li><li><a href="FormTipoSede.module_jsx.html">jsx</a></li><li><a href="FormUnidad.module_jsx.html">jsx</a></li><li><a href="FromEspacioOcupacion.module_jsx.html">jsx</a></li><li><a href="Grid1.module_jsx.html">jsx</a></li><li><a href="GridEspacio.module_jsx.html">jsx</a></li><li><a href="GridEvaluacion.module_jsx.html">jsx</a></li><li><a href="GridKardexNuevo.module_jsx.html">jsx</a></li><li><a href="GridMarca.module_jsx.html">jsx</a></li><li><a href="GridMunicipio.module_jsx.html">jsx</a></li><li><a href="GridOrdenCompra.module_jsx.html">jsx</a></li><li><a href="GridOrdenCompraItem.module_jsx.html">jsx</a></li><li><a href="GridPais.module_jsx.html">jsx</a></li><li><a href="GridPedido.module_jsx.html">jsx</a></li><li><a href="GridPedidoItem.module_jsx.html">jsx</a></li><li><a href="GridPersona.module_jsx.html">jsx</a></li><li><a href="GridPresentacion.html#.module:jsx">jsx</a></li><li><a href="GridProduccion.module_jsx.html">jsx</a></li><li><a href="GridProducto.module_jsx.html">jsx</a></li><li><a href="GridProductoCategoria.module_jsx.html">jsx</a></li><li><a href="GridProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="GridProveedor.module_jsx.html">jsx</a></li><li><a href="GridRol.module_jsx.html">jsx</a></li><li><a href="GridSede.module_jsx.html">jsx</a></li><li><a href="GridTipoEspacio.module_jsx.html">jsx</a></li><li><a href="GridTipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="GridTipoMovimiento.module_jsx.html">jsx</a></li><li><a href="GridTipoProduccion.module_jsx.html">jsx</a></li><li><a href="GridUnidad.module_jsx.html">jsx</a></li><li><a href="Home.module_jsx.html">jsx</a></li><li><a href="KardexNuevo.module_jsx.html">jsx</a></li><li><a href="Login.module_jsx.html">jsx</a></li><li><a href="Marca.module_jsx.html">jsx</a></li><li><a href="MessageSnackBar.module_jsx.html">jsx</a></li><li><a href="Municipio.module_jsx.html">jsx</a></li><li><a href="Navigator2.module_jsx.html">jsx</a></li><li><a href="OrdenCompra.module_jsx.html">jsx</a></li><li><a href="Pais.module_jsx.html">jsx</a></li><li><a href="Pedido.module_jsx.html">jsx</a></li><li><a href="PerfilCard.module_jsx.html">jsx</a></li><li><a href="Persona.module_jsx.html">jsx</a></li><li><a href="Presentacion.module_jsx.html">jsx</a></li><li><a href="Produccion.module_jsx.html">jsx</a></li><li><a href="Producto.module_jsx.html">jsx</a></li><li><a href="ProductoCategoria.module_jsx.html">jsx</a></li><li><a href="ProductoPresentacion.module_jsx.html">jsx</a></li><li><a href="Proveedor.module_jsx.html">jsx</a></li><li><a href="Register.html#.module:jsx">jsx</a></li><li><a href="Rol.module_jsx.html">jsx</a></li><li><a href="Sede.module_jsx.html">jsx</a></li><li><a href="StackButtons.module_jsx.html">jsx</a></li><li><a href="TipoEspacio.module_jsx.html">jsx</a></li><li><a href="TipoIdentificacion.module_jsx.html">jsx</a></li><li><a href="TipoMovimiento.module_jsx.html">jsx</a></li><li><a href="TipoProduccion.module_jsx.html">jsx</a></li><li><a href="TipoSede.module_jsx.html">jsx</a></li><li><a href="Unidad.module_jsx.html">jsx</a></li><li><a href="module-Almacen.html">Almacen</a></li><li><a href="module-Bloque.html">Bloque</a></li><li><a href="module-Departamento.html">Departamento</a></li><li><a href="module-Empresa.html">Empresa</a></li><li><a href="module-FormBloque.html">FormBloque</a></li><li><a href="module-FormDepartamento.html">FormDepartamento</a></li><li><a href="module-FormEmpresa.html">FormEmpresa</a></li><li><a href="module-FormTipoBloque.html">FormTipoBloque</a></li><li><a href="module-GridAlmacen.html">GridAlmacen</a></li><li><a href="module-GridBloque.html">GridBloque</a></li><li><a href="module-GridDepartamento.html">GridDepartamento</a></li><li><a href="module-GridEmpresa.html">GridEmpresa</a></li><li><a href="module-GridEspacioOcupacion.html">GridEspacioOcupacion</a></li><li><a href="module-GridKardexNuevo.html">GridKardexNuevo</a></li><li><a href="module-GridTipoBloque.html">GridTipoBloque</a></li><li><a href="module-GridTipoSede.html">GridTipoSede</a></li><li><a href="module-PerfilGroup.html">PerfilGroup</a></li><li><a href="module-ProfileMenu.html">ProfileMenu</a></li><li><a href="module-TipoBloque.html">TipoBloque</a></li><li><a href="module-main.html">main</a></li></ul><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#CustomArrow">CustomArrow</a></li><li><a href="global.html#Drawer">Drawer</a></li><li><a href="global.html#FormAlmacen">FormAlmacen</a></li><li><a href="global.html#Inicio">Inicio</a></li><li><a href="global.html#KardexNuevo">KardexNuevo</a></li><li><a href="global.html#SiteProps">SiteProps</a></li><li><a href="global.html#ThemeToggleProvider">ThemeToggleProvider</a></li><li><a href="global.html#Title">Title</a></li><li><a href="global.html#columns">columns</a></li><li><a href="global.html#useThemeToggle">useThemeToggle</a></li></ul>
-</nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Mar 17 2025 14:41:57 GMT-0500 (hora estándar de Colombia)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Tue Mar 25 2025 14:45:30 GMT-0500 (hora estándar de Colombia) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
 </body>
 </html>

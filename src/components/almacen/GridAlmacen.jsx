@@ -16,11 +16,17 @@ import { DataGrid } from "@mui/x-data-grid";
 const columns = [
   { field: "id", headerName: "ID", width: 90 },
   { field: "nombre", headerName: "Nombre", width: 150 },
+  { field: "geolocalizacion", headerName: "Geolocalización", width: 200 },
+  { field: "coordenadas", headerName: "Coordenadas", width: 200 },
   { field: "descripcion", headerName: "Descripción", width: 200 },
   {
     field: "sede",
-    headerName: "ID de Sede",
-    width: 100,
+    headerName: "Sede",
+    width: 180,
+    valueGetter: (params) =>
+      typeof params.row.sede === "object"
+        ? params.row.sede?.nombre
+        : params.row.sede,
   },
   {
     field: "estado",

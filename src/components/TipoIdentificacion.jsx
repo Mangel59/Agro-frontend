@@ -1,10 +1,10 @@
-
 /**
- * TipoIdentificacion componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file TipoIdentificacion.jsx
+ * @module TipoIdentificacion
+ * @description Componente que muestra la lista de tipos de identificación en una tabla.
  */
-import React from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -13,37 +13,37 @@ import axios from './axiosConfig';
 const columns = [
   { field: 'id', headerName: 'Id', width: 70 },
   { field: 'nombre', headerName: 'Nombre', width: 130 },
-  { field: 'descripcion', headerName: 'Descripcion', width: 130 },
+  { field: 'descripcion', headerName: 'Descripción', width: 130 },
   { field: 'estado', headerName: 'Estado', width: 130 }
 ];
 
 /**
- * Componente TipoIdentificacion.
- * @module TipoIdentificacion.jsx
- * @component
- * @returns {JSX.Element}
+ * Componente que obtiene y muestra una tabla con los datos de tipo de identificación.
+ * Utiliza MUI DataGrid y obtiene los datos desde una API.
+ *
+ * @function
+ * @memberof module:TipoIdentificacion
+ * @returns {JSX.Element} Tabla con los tipos de identificación.
  */
-export default function TipoIdentificacion() {
-  const [rows, setRows] = React.useState(null);
+function TipoIdentificacion() {
+  const [rows, setRows] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     axios.get('http://172.16.79.156:8080/api/v1/tipo_identificacion/all')
-    .then(response => {
-      console.log("response.data: " +  response.data);
-      setRows(response.data);
-    })
-    .catch(error => {
-      console.error('There was an error fetching the tipo identificacion data!', error);
-    });
-  
+      .then(response => {
+        setRows(response.data);
+      })
+      .catch(error => {
+        console.error('Error al obtener tipo de identificación:', error);
+      });
   }, []);
 
-  if (!rows) return "No rows persona!";
+  if (!rows) return "No hay datos disponibles.";
 
   return (
     <Paper elevation={3} sx={{ p: 2, height: 500 }}>
       <Typography variant="h5" gutterBottom>
-        Persona
+        Tipo de Identificación
       </Typography>
       <div style={{ height: 400, width: '100%' }}>
         <DataGrid
@@ -61,3 +61,5 @@ export default function TipoIdentificacion() {
     </Paper>
   );
 }
+
+export default TipoIdentificacion;

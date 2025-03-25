@@ -1,9 +1,10 @@
-
 /**
- * FormUnidad componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file FormUnidad.jsx
+ * @module FormUnidad
+ * @description Componente principal del formulario de unidades. Maneja la creación, edición y eliminación de unidades, incluyendo la carga dinámica de empresas.
+ * @author Karla
  */
+
 import * as React from "react";
 import axios from "axios";
 import Button from "@mui/material/Button";
@@ -19,23 +20,35 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
 /**
- * Componente FormUnidad.
- * @module FormUnidad.jsx
+ * Formulario que permite crear, editar y eliminar unidades.
+ * Carga empresas dinámicamente y utiliza `StackButtons` para gestionar acciones.
+ *
  * @component
+ * @param {Object} props
+ * @param {Function} props.setMessage - Función para establecer el estado del mensaje snackbar.
+ * @param {Object} props.selectedRow - Fila seleccionada de la grilla.
+ * @param {number} props.selectedRow.id - ID de la unidad.
+ * @param {string} props.selectedRow.nombre - Nombre de la unidad.
+ * @param {string} props.selectedRow.descripcion - Descripción de la unidad.
+ * @param {number} props.selectedRow.estado - Estado de la unidad (1 = activo, 0 = inactivo).
+ * @param {string|number} props.selectedRow.empresa - ID de la empresa asociada.
+ * @param {Function} props.setSelectedRow - Función para actualizar la fila seleccionada.
+ * @param {Function} props.reloadData - Función para recargar los datos de la grilla.
  * @returns {JSX.Element}
  */
 export default function FormUnidad(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
-  const [empresas, setEmpresas] = React.useState([]); // Estado para las empresas
+  const [empresas, setEmpresas] = React.useState([]);
 
-  // Función para cargar las empresas al abrir el formulario
+  /**
+   * Carga las empresas desde el backend.
+   */
   const loadEmpresas = () => {
     const token = localStorage.getItem("token");
-
     if (!token) {
       props.setMessage({
         open: true,
@@ -52,12 +65,9 @@ export default function FormUnidad(props) {
         },
       })
       .then((response) => {
-        console.log("Respuesta recibida de /empresas:", response.data);
-        
         if (response.data && Array.isArray(response.data.data)) {
           setEmpresas(response.data.data);
         } else {
-          console.error("La respuesta del servidor no es válida. Respuesta recibida:", response.data);
           props.setMessage({
             open: true,
             severity: "error",
@@ -69,7 +79,6 @@ export default function FormUnidad(props) {
         const errorMessage = error.response
           ? `Código de error: ${error.response.status}, Mensaje: ${error.response.data.message || error.response.data}`
           : error.message;
-        console.error("Error al cargar empresas:", errorMessage);
         props.setMessage({
           open: true,
           severity: "error",
@@ -78,20 +87,26 @@ export default function FormUnidad(props) {
       });
   };
 
+  /**
+   * Inicializa el formulario para crear una unidad.
+   */
   const create = () => {
     const row = {
       id: 0,
       nombre: "",
       descripcion: "",
       estado: 0,
-      empresa: "" // Inicializamos empresa con una cadena vacía
+      empresa: "",
     };
     props.setSelectedRow(row);
     setMethodName("Add");
     setOpen(true);
-    loadEmpresas(); // Cargar empresas al abrir el formulario
+    loadEmpresas();
   };
 
+  /**
+   * Inicializa el formulario para actualizar una unidad.
+   */
   const update = () => {
     if (!props.selectedRow || props.selectedRow.id === 0) {
       props.setMessage({
@@ -103,9 +118,12 @@ export default function FormUnidad(props) {
     }
     setMethodName("Update");
     setOpen(true);
-    loadEmpresas(); // Cargar empresas al abrir el formulario
+    loadEmpresas();
   };
 
+  /**
+   * Elimina la unidad seleccionada.
+   */
   const deleteRow = () => {
     if (props.selectedRow.id === 0) {
       props.setMessage({
@@ -115,10 +133,7 @@ export default function FormUnidad(props) {
       });
       return;
     }
-    const id = props.selectedRow.id;
-    const url = `${SiteProps.urlbasev1}/unidad/${id}`;
     const token = localStorage.getItem("token");
-
     if (!token) {
       props.setMessage({
         open: true,
@@ -129,7 +144,7 @@ export default function FormUnidad(props) {
     }
 
     axios
-      .delete(url, {
+      .delete(`${SiteProps.urlbasev1}/unidad/${props.selectedRow.id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -143,7 +158,7 @@ export default function FormUnidad(props) {
         props.reloadData();
       })
       .catch((error) => {
-        const errorMessage = error.response ? error.response.data.message : error.message;
+        const errorMessage = error.response?.data?.message || error.message;
         props.setMessage({
           open: true,
           severity: "error",
@@ -152,33 +167,28 @@ export default function FormUnidad(props) {
       });
   };
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const handleClose = () => setOpen(false);
 
+  /**
+   * Envía el formulario al backend.
+   * @param {React.FormEvent} event - Evento del formulario.
+   */
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const formJson = Object.fromEntries(formData.entries());
     const id = props.selectedRow?.id || 0;
 
-    const validatePayload = (data) => {
-      if (!data.nombre || !data.descripcion || !data.empresa) {
-        props.setMessage({
-          open: true,
-          severity: "error",
-          text: "Datos inválidos. Revisa el formulario.",
-        });
-        return false;
-      }
-      return true;
-    };
+    if (!formJson.nombre || !formJson.descripcion || !formJson.empresa) {
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Datos inválidos. Revisa el formulario.",
+      });
+      return;
+    }
 
-    if (!validatePayload(formJson)) return;
-
-    const url = methodName === "Add" ? `${SiteProps.urlbasev1}/unidad` : `${SiteProps.urlbasev1}/unidad/${id}`;
     const token = localStorage.getItem("token");
-
     if (!token) {
       props.setMessage({
         open: true,
@@ -188,6 +198,9 @@ export default function FormUnidad(props) {
       return;
     }
 
+    const url = methodName === "Add"
+      ? `${SiteProps.urlbasev1}/unidad`
+      : `${SiteProps.urlbasev1}/unidad/${id}`;
     const axiosMethod = methodName === "Add" ? axios.post : axios.put;
 
     axiosMethod(url, formJson, {
@@ -206,7 +219,7 @@ export default function FormUnidad(props) {
         props.reloadData();
       })
       .catch((error) => {
-        const errorMessage = error.response ? error.response.data.message : error.message;
+        const errorMessage = error.response?.data?.message || error.message;
         props.setMessage({
           open: true,
           severity: "error",
@@ -216,7 +229,7 @@ export default function FormUnidad(props) {
   };
 
   return (
-    <React.Fragment>
+    <>
       <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog
         open={open}
@@ -260,8 +273,8 @@ export default function FormUnidad(props) {
               name="empresa"
               value={props.selectedRow?.empresa || ""}
               label="Empresa"
-              onChange={(event) =>
-                props.setSelectedRow({ ...props.selectedRow, empresa: event.target.value })
+              onChange={(e) =>
+                props.setSelectedRow({ ...props.selectedRow, empresa: e.target.value })
               }
             >
               {empresas.map((empresa) => (
@@ -274,10 +287,7 @@ export default function FormUnidad(props) {
           <FormControl fullWidth margin="normal">
             <InputLabel
               id="estado-label"
-              sx={{
-                backgroundColor: "white",
-                padding: "0 8px",
-              }}
+              sx={{ backgroundColor: "white", padding: "0 8px" }}
             >
               Estado
             </InputLabel>
@@ -298,10 +308,10 @@ export default function FormUnidad(props) {
           <Button type="submit">{methodName}</Button>
         </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </>
   );
-  
 }
+
 FormUnidad.propTypes = {
   setMessage: PropTypes.func.isRequired,
   selectedRow: PropTypes.shape({

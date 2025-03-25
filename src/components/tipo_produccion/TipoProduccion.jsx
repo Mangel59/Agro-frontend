@@ -1,10 +1,10 @@
-
 /**
- * TipoProduccion componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file TipoProduccion.jsx
+ * @module TipoProduccion
+ * @description Componente principal para gestionar Tipos de Producción: formulario, grilla, mensajes y recarga de datos.
+ * @author Karla
  */
-// TipoProduccion.jsx
+
 import * as React from "react";
 import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
@@ -13,12 +13,27 @@ import GridTipoProduccion from "./GridTipoProduccion";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
- * Componente TipoProduccion.
- * @module TipoProduccion.jsx
- * @component
- * @returns {JSX.Element}
+ * @typedef {Object} TipoProduccionRow
+ * @property {number} id - ID del tipo de producción
+ * @property {string} nombre - Nombre del tipo de producción
+ * @property {string} descripcion - Descripción del tipo de producción
+ * @property {number} estado - Estado (1: activo, 0: inactivo)
  */
-export default function TipoProduccion(props) {
+
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open - Si el snackbar está abierto
+ * @property {string} severity - Severidad del mensaje ("success", "error", "info", etc.)
+ * @property {string} text - Texto a mostrar en el snackbar
+ */
+
+/**
+ * Componente principal para la gestión de Tipos de Producción.
+ * @component
+ * @returns {JSX.Element} Interfaz de administración para tipos de producción.
+ */
+export default function TipoProduccion() {
+  /** @type {TipoProduccionRow} */
   const row = {
     id: 0,
     nombre: "",
@@ -26,17 +41,29 @@ export default function TipoProduccion(props) {
     estado: 0,
   };
 
+  /** Estado: fila actualmente seleccionada */
   const [selectedRow, setSelectedRow] = React.useState(row);
+
+  /** Estado: lista de tipos de producción */
   const [tiposProduccion, setTiposProduccion] = React.useState([]);
+
+  /** @type {SnackbarMessage} */
   const messageData = {
     open: false,
     severity: "success",
     text: "",
   };
 
+  /** Estado: mensaje actual de Snackbar */
   const [message, setMessage] = React.useState(messageData);
-  const gridRef = React.useRef();
 
+  /** Referencia a la grilla de tipos de producción */
+  const gridRef = React.useRef(null);
+
+  /**
+   * Carga los datos desde la API y recarga la grilla.
+   * @function
+   */
   const reloadData = () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -56,7 +83,9 @@ export default function TipoProduccion(props) {
       })
       .then((response) => {
         setTiposProduccion(response.data || []);
-        gridRef.current.reloadData();
+        if (gridRef.current && typeof gridRef.current.reloadData === "function") {
+          gridRef.current.reloadData();
+        }
       })
       .catch((error) => {
         console.error("Error al cargar Tipos de Producción:", error);

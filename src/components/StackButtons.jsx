@@ -1,9 +1,9 @@
-
 /**
- * StackButtons componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file StackButtons.jsx
+ * @module StackButtons
+ * @description Componente que muestra un grupo de botones (Agregar, Editar, Eliminar) para gestionar acciones en una tabla o formulario.
  */
+
 import * as React from 'react';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -13,49 +13,46 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 /**
- * Componente StackButtons.
- * @module StackButtons.jsx
- * @component
- * @returns {JSX.Element}
+ * Componente de botones de acción para crear, actualizar o eliminar registros.
+ *
+ * @function
+ * @memberof module:StackButtons
+ * @param {Object} props - Props del componente.
+ * @param {Object} props.methods - Objeto con funciones para manejar las acciones: create, update, deleteRow.
+ * @param {Function} props.methods.create - Función para crear un nuevo elemento.
+ * @param {Function} props.methods.update - Función para actualizar un elemento existente.
+ * @param {Function} props.methods.deleteRow - Función para eliminar un elemento.
+ * @returns {JSX.Element} Conjunto de botones de acción con íconos.
  */
-export default function StackButtons(props) {
-    // props.handleClickOpen
-    const handleClickCreate = (event) => {
-        props.methods.create();
-        // props.create();
-        // props.setOpen(true);
-        // console.log("create() " + props.selectedRow);
-        // //{props.handleClickOpen};
-    };
+function StackButtons(props) {
+  const handleClickCreate = () => {
+    props.methods.create();
+  };
 
-    const handleClickUpdate = (event) => {
-        props.methods.update();
-        // props.setOpen(true);
-        // console.log("update() " + props.selectedRow);
-        //{props.handleClickOpen};
-    };
+  const handleClickUpdate = () => {
+    props.methods.update();
+  };
 
-    const handleClickDelete = (event) => {
-        props.methods.deleteRow();
-        // props.setOpen(true);
-        // console.log("delete() " + props.selectedRow);
-        //{props.handleClickOpen};
-    };
+  const handleClickDelete = () => {
+    props.methods.deleteRow();
+  };
 
-    return (
-        <React.Fragment>
-            <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={2}>
-                <Button startIcon={<AddIcon />} variant="outlined" onClick={handleClickCreate}>
-                    Add
-                </Button>
-                <Button startIcon={<EditIcon />} variant="outlined" onClick={handleClickUpdate}>
-                    Update
-                </Button>
-                <Button startIcon={<DeleteIcon />} variant="outlined" onClick={handleClickDelete}>
-                    Delete
-                </Button>
-            </Stack>
-            <br/>
-        </React.Fragment>   
-    );
+  return (
+    <React.Fragment>
+      <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={2}>
+        <Button startIcon={<AddIcon />} variant="outlined" onClick={handleClickCreate}>
+          AGREGAR
+        </Button>
+        <Button startIcon={<EditIcon />} variant="outlined" onClick={handleClickUpdate}>
+          ACTUALIZAR
+        </Button>
+        <Button startIcon={<DeleteIcon />} variant="outlined" onClick={handleClickDelete}>
+          ELIMINAR
+        </Button>
+      </Stack>
+      <br />
+    </React.Fragment>
+  );
 }
+
+export default StackButtons;

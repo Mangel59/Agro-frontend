@@ -1,9 +1,10 @@
-
 /**
- * FormProductoCategoria componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file FormProductoCategoria.jsx
+ * @module FormProductoCategoria
+ * @description Componente de formulario para crear, actualizar o eliminar categorías de productos. Utiliza Material UI y Axios para comunicación con la API. Incluye validaciones y mensajes de éxito o error para el usuario.
+ * @author Karla
  */
+
 import * as React from "react";
 import axios from "axios";
 import {
@@ -26,16 +27,22 @@ import { SiteProps } from "../dashboard/SiteProps";
 
 /**
  * Componente FormProductoCategoria.
- * @module FormProductoCategoria.jsx
- * @component
- * @returns {JSX.Element}
+ *
+ * Permite gestionar (crear, editar, eliminar) categorías de productos.
+ *
+ * @param {Object} props - Propiedades del componente
+ * @param {Object} props.selectedRow - Categoría seleccionada actualmente
+ * @param {function(Object): void} props.setSelectedRow - Función para actualizar la categoría seleccionada
+ * @param {function(Object): void} props.setMessage - Función para mostrar mensajes (éxito o error)
+ * @param {function(): void} props.reloadData - Función para recargar la lista de categorías desde la API
+ * @returns {JSX.Element} Formulario de categorías de productos
  */
 export default function FormProductoCategoria(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
   const selectedRow = props.selectedRow || {};
 
-  // Método para manejar la creación
+  // Abrir formulario vacío
   const create = () => {
     const emptyRow = {
       id: 0,
@@ -48,7 +55,7 @@ export default function FormProductoCategoria(props) {
     setOpen(true);
   };
 
-  // Método para manejar la actualización
+  // Abrir formulario con datos seleccionados
   const update = () => {
     if (!selectedRow || selectedRow.id === 0) {
       props.setMessage({
@@ -62,7 +69,7 @@ export default function FormProductoCategoria(props) {
     setOpen(true);
   };
 
-  // Método para manejar la eliminación
+  // Eliminar la fila seleccionada
   const deleteRow = () => {
     if (!selectedRow || selectedRow.id === 0) {
       props.setMessage({
@@ -72,6 +79,7 @@ export default function FormProductoCategoria(props) {
       });
       return;
     }
+
     axios
       .delete(`${SiteProps.urlbasev1}/producto_categoria/${selectedRow.id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -94,12 +102,12 @@ export default function FormProductoCategoria(props) {
       });
   };
 
-  // Método para manejar el cierre del diálogo
+  // Cerrar modal
   const handleClose = () => {
     setOpen(false);
   };
 
-  // Método para manejar el envío del formulario
+  // Guardar (crear o actualizar)
   const handleSubmit = () => {
     const payload = {
       id: selectedRow.id || null,
@@ -119,7 +127,9 @@ export default function FormProductoCategoria(props) {
         props.setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Producto categoría creada con éxito." : "Producto categoría actualizada con éxito.",
+          text: methodName === "Add"
+            ? "Producto categoría creada con éxito."
+            : "Producto categoría actualizada con éxito.",
         });
         props.reloadData();
         handleClose();
@@ -136,6 +146,7 @@ export default function FormProductoCategoria(props) {
 
   return (
     <React.Fragment>
+      {/* Botones de acción */}
       <Box display="flex" justifyContent="right" mb={2}>
         <Button
           variant="outlined"
@@ -164,14 +175,20 @@ export default function FormProductoCategoria(props) {
           DELETE
         </Button>
       </Box>
+
+      {/* Diálogo para agregar o editar */}
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{methodName === "Add" ? "Agregar Categoría" : "Actualizar Categoría"}</DialogTitle>
+        <DialogTitle>
+          {methodName === "Add" ? "Agregar Categoría" : "Actualizar Categoría"}
+        </DialogTitle>
         <DialogContent>
           <FormControl fullWidth margin="normal">
             <TextField
               label="Nombre"
               value={selectedRow.nombre || ""}
-              onChange={(e) => props.setSelectedRow({ ...selectedRow, nombre: e.target.value })}
+              onChange={(e) =>
+                props.setSelectedRow({ ...selectedRow, nombre: e.target.value })
+              }
               required
             />
           </FormControl>
@@ -179,7 +196,12 @@ export default function FormProductoCategoria(props) {
             <TextField
               label="Descripción"
               value={selectedRow.descripcion || ""}
-              onChange={(e) => props.setSelectedRow({ ...selectedRow, descripcion: e.target.value })}
+              onChange={(e) =>
+                props.setSelectedRow({
+                  ...selectedRow,
+                  descripcion: e.target.value,
+                })
+              }
               required
             />
           </FormControl>
@@ -187,7 +209,9 @@ export default function FormProductoCategoria(props) {
             <InputLabel>Estado</InputLabel>
             <Select
               value={selectedRow.estado || ""}
-              onChange={(e) => props.setSelectedRow({ ...selectedRow, estado: e.target.value })}
+              onChange={(e) =>
+                props.setSelectedRow({ ...selectedRow, estado: e.target.value })
+              }
             >
               <MenuItem value={1}>Activo</MenuItem>
               <MenuItem value={0}>Inactivo</MenuItem>
@@ -196,7 +220,9 @@ export default function FormProductoCategoria(props) {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancelar</Button>
-          <Button onClick={handleSubmit}>{methodName === "Add" ? "Agregar" : "Actualizar"}</Button>
+          <Button onClick={handleSubmit}>
+            {methodName === "Add" ? "Agregar" : "Actualizar"}
+          </Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>

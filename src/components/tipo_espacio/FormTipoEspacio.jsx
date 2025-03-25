@@ -1,9 +1,11 @@
-
 /**
- * FormTipoEspacio componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file FormTipoEspacio.jsx
+ * @module FormTipoEspacio
+ * @exports FormTipoEspacio
+ * @description Formulario modal para agregar, actualizar o eliminar tipos de espacio.
+ * Permite ingresar nombre, descripción y estado del tipo de espacio.
  */
+
 import * as React from "react";
 import axios from "axios";
 import Button from "@mui/material/Button";
@@ -13,41 +15,53 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { Grid, Box } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import UpdateIcon from "@mui/icons-material/Update";
+import DeleteIcon from "@mui/icons-material/Delete";
+import {
+  Grid,
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
 import { SiteProps } from "../dashboard/SiteProps";
-import PropTypes from "prop-types";
 
 /**
- * Formulario para gestionar tipos de espacios: agregar, actualizar y eliminar.
+ * Componente de formulario para gestionar tipos de espacio.
+ *
+ * @param {Object} props - Propiedades del componente.
+ * @param {Object} props.selectedRow - Fila actualmente seleccionada.
+ * @param {Function} props.setSelectedRow - Función para actualizar la fila seleccionada.
+ * @param {Function} props.reloadData - Función para recargar los datos desde el backend.
+ * @param {Function} props.setMessage - Función para mostrar mensajes de éxito o error.
+ * @returns {JSX.Element} El componente de formulario.
  */
-/**
- * Componente FormTipoEspacio.
- * @module FormTipoEspacio.jsx
- * @component
- * @returns {JSX.Element}
- */
-export default function FormTipoEspacio({ selectedRow, setSelectedRow, reloadData, setMessage }) {
+export default function FormTipoEspacio({
+  selectedRow,
+  setSelectedRow,
+  reloadData,
+  setMessage,
+}) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
   const url = `${SiteProps.urlbasev1}/tipo_espacio`;
   const token = localStorage.getItem("token");
 
-  // Función para abrir el formulario para crear
   const create = () => {
-    const row = {
+    setSelectedRow({
       id: null,
       nombre: "",
       descripcion: "",
       estado: 1,
-    };
-    setSelectedRow(row);
+    });
     setMethodName("Add");
     setOpen(true);
   };
 
-  // Función para abrir el formulario para actualizar
   const update = () => {
-    if (!selectedRow || selectedRow.id === null) {
+    if (!selectedRow || selectedRow.id == null) {
       setMessage({
         open: true,
         severity: "error",
@@ -59,9 +73,8 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, reloadDat
     setOpen(true);
   };
 
-  // Función para eliminar el registro seleccionado
   const deleteRow = () => {
-    if (!selectedRow || selectedRow.id === null) {
+    if (!selectedRow || selectedRow.id == null) {
       setMessage({
         open: true,
         severity: "error",
@@ -69,11 +82,10 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, reloadDat
       });
       return;
     }
+
     axios
       .delete(`${url}/${selectedRow.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
       .then(() => {
         setMessage({
@@ -94,12 +106,10 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, reloadDat
       });
   };
 
-  // Función para manejar el cierre del formulario
   const handleClose = () => {
     setOpen(false);
   };
 
-  // Función para manejar el envío del formulario
   const handleSubmit = (event) => {
     event.preventDefault();
     const payload = {
@@ -118,7 +128,10 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, reloadDat
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Tipo de espacio creado con éxito!" : "Tipo de espacio actualizado con éxito!",
+          text:
+            methodName === "Add"
+              ? "Tipo de espacio creado con éxito!"
+              : "Tipo de espacio actualizado con éxito!",
         });
         reloadData();
         handleClose();
@@ -133,7 +146,6 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, reloadDat
       });
   };
 
-  // Función para manejar los cambios en los campos del formulario
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setSelectedRow((prevRow) => ({ ...prevRow, [name]: value }));
@@ -142,16 +154,34 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, reloadDat
   return (
     <React.Fragment>
       <Box display="flex" justifyContent="right" mb={2}>
-        <Button variant="outlined" color="primary" onClick={create} style={{ marginRight: "10px" }}>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={create}
+          sx={{ mr: 1 }}
+        >
           Agregar
         </Button>
-        <Button variant="outlined" color="primary" onClick={update} style={{ marginRight: "10px" }}>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<UpdateIcon />}
+          onClick={update}
+          sx={{ mr: 1 }}
+        >
           Actualizar
         </Button>
-        <Button variant="outlined" color="primary" onClick={deleteRow}>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<DeleteIcon />}
+          onClick={deleteRow}
+        >
           Eliminar
         </Button>
       </Box>
+
       <Dialog
         open={open}
         onClose={handleClose}
@@ -160,15 +190,20 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, reloadDat
           onSubmit: handleSubmit,
         }}
       >
-        <DialogTitle>{methodName === "Add" ? "Agregar Tipo de Espacio" : "Actualizar Tipo de Espacio"}</DialogTitle>
+        <DialogTitle>
+          {methodName === "Add"
+            ? "Agregar Tipo de Espacio"
+            : "Actualizar Tipo de Espacio"}
+        </DialogTitle>
         <DialogContent>
-          <DialogContentText>Completa el formulario para gestionar un tipo de espacio.</DialogContentText>
-          <Box component="div" sx={{ width: "100%", maxWidth: "600px", mx: "auto" }}>
+          <DialogContentText>
+            Completa el formulario para gestionar un tipo de espacio.
+          </DialogContentText>
+          <Box sx={{ width: "100%", maxWidth: 600, mx: "auto" }}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
                   required
-                  id="nombre"
                   name="nombre"
                   label="Nombre"
                   fullWidth
@@ -179,7 +214,6 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, reloadDat
               </Grid>
               <Grid item xs={12}>
                 <TextField
-                  id="descripcion"
                   name="descripcion"
                   label="Descripción"
                   fullWidth
@@ -189,36 +223,29 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, reloadDat
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  id="estado"
-                  name="estado"
-                  label="Estado"
-                  type="number"
-                  fullWidth
-                  variant="standard"
-                  value={selectedRow?.estado || 1}
-                  onChange={handleInputChange}
-                />
+                <FormControl fullWidth variant="standard">
+                  <InputLabel id="estado-label">Estado</InputLabel>
+                  <Select
+                    labelId="estado-label"
+                    name="estado"
+                    value={selectedRow?.estado || 1}
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value={1}>Activo</MenuItem>
+                    <MenuItem value={0}>Inactivo</MenuItem>
+                  </Select>
+                </FormControl>
               </Grid>
             </Grid>
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancelar</Button>
-          <Button type="submit">{methodName === "Add" ? "Agregar" : "Actualizar"}</Button>
+          <Button type="submit">
+            {methodName === "Add" ? "Agregar" : "Actualizar"}
+          </Button>
         </DialogActions>
       </Dialog>
     </React.Fragment>
   );
 }
-FormTipoEspacio.propTypes = {
-  selectedRow: PropTypes.shape({
-    id: PropTypes.number,
-    nombre: PropTypes.string,
-    descripcion: PropTypes.string,
-    estado: PropTypes.number,
-  }),
-  setSelectedRow: PropTypes.func.isRequired,
-  reloadData: PropTypes.func.isRequired,
-  setMessage: PropTypes.func.isRequired,
-};

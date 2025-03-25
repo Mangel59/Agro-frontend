@@ -1,4 +1,7 @@
 /**
+ * @module SiteProps
+ */
+/**
  * Objeto que contiene propiedades específicas del sitio.
  */
 export const SiteProps = {

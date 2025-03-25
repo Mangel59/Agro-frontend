@@ -1,12 +1,22 @@
+/**
+ * @file GridProductoPresentacion.jsx
+ * @module GridProductoPresentacion
+ * @description Componente de grilla para visualizar la lista de productos presentación. Soporta paginación, ordenamiento y filtros desde el servidor. Utiliza Material UI DataGrid con barra de herramientas personalizada. Selecciona filas para edición externa usando setSelectedRow.
+ * @author Karla
+ */
+
+import * as React from 'react';
+import {
+  DataGrid,
+  GridToolbarContainer,
+  GridToolbarFilterButton,
+} from '@mui/x-data-grid';
 
 /**
- * GridProductoPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
+ * Columnas definidas para la grilla de productos presentación.
+ * @constant
+ * @type {Array<Object>}
  */
-import * as React from 'react';
-import { DataGrid, GridToolbarContainer, GridToolbarFilterButton } from '@mui/x-data-grid';
-
 const columns = [
   { field: 'id', headerName: 'ID', width: 90, type: 'number' },
   { field: 'nombre', headerName: 'Nombre', width: 150, type: 'string' },
@@ -27,11 +37,22 @@ const columns = [
 
 /**
  * Componente GridProductoPresentacion.
- * @module GridProductoPresentacion.jsx
- * @component
- * @returns {JSX.Element}
+ *
+ * @param {Object} props - Propiedades del componente
+ * @param {Array<Object>} props.presentaciones - Lista de presentaciones a mostrar
+ * @param {number} props.rowCount - Total de filas (para paginación server-side)
+ * @param {Object} props.paginationModel - Modelo de paginación actual
+ * @param {function(Object): void} props.setPaginationModel - Setter del modelo de paginación
+ * @param {function(Object): void} props.setSortModel - Setter del modelo de ordenamiento
+ * @param {function(Object): void} props.setFilterModel - Setter del modelo de filtros
+ * @param {function(Object): void} props.setSelectedRow - Setter del elemento seleccionado
+ * @returns {JSX.Element} Grilla de producto presentación con toolbar y selección de filas
  */
 export default function GridProductoPresentacion(props) {
+  /**
+   * Barra de herramientas personalizada con botón de filtro.
+   * @returns {JSX.Element}
+   */
   function CustomToolbar() {
     return (
       <GridToolbarContainer>
@@ -58,7 +79,9 @@ export default function GridProductoPresentacion(props) {
       }}
       onRowSelectionModelChange={(newSelection) => {
         const selectedIDs = new Set(newSelection);
-        const selectedRowData = props.presentaciones.find((row) => selectedIDs.has(row.id));
+        const selectedRowData = props.presentaciones.find((row) =>
+          selectedIDs.has(row.id)
+        );
         props.setSelectedRow(selectedRowData || {});
       }}
     />

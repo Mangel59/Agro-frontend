@@ -1,30 +1,35 @@
-
 /**
- * GridEspacio componente principal.
+ * @file GridEspacio.jsx
+ * @module GridEspacio
+ * @description Componente que muestra los espacios disponibles por bloque en una tabla.
  * @component
- * @returns {JSX.Element}
  */
+
 import React, { useEffect, useState } from "react";
-import PropTypes from "prop-types"; // Importamos PropTypes
+import PropTypes from "prop-types";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
  * Componente GridEspacio.
- * @module GridEspacio.jsx
- * @component
- * @returns {JSX.Element}
+ *
+ * Muestra los espacios disponibles según el bloque seleccionado en una tabla tipo DataGrid.
+ *
+ * @param {Object} props - Propiedades del componente.
+ * @param {Function} props.setSelectedRow - Función que establece la fila seleccionada.
+ * @param {string|number} props.selectedBloque - ID del bloque seleccionado.
+ * @param {boolean} props.reloadFlag - Bandera para recargar los datos.
+ * @returns {JSX.Element} Componente de grilla con los espacios.
  */
-export default function GridEspacio({ setSelectedRow, selectedBloque }) {
+export default function GridEspacio({ setSelectedRow, selectedBloque, reloadFlag }) {
   const [espacios, setEspacios] = useState([]); // Lista de espacios
-  const [loading, setLoading] = useState(false); // Estado para mostrar el cargando
-  const [error, setError] = useState(null); // Estado para manejar errores
+  const [loading, setLoading] = useState(false); // Estado de carga
+  const [error, setError] = useState(null); // Estado de error
 
-  // Función para cargar los espacios según el bloque seleccionado
   useEffect(() => {
     if (!selectedBloque) {
-      setEspacios([]); // Si no hay bloque seleccionado, vaciar la tabla
+      setEspacios([]);
       return;
     }
 
@@ -34,27 +39,39 @@ export default function GridEspacio({ setSelectedRow, selectedBloque }) {
         const response = await axios.get(
           `${SiteProps.urlbasev1}/espacio/bloque/${selectedBloque}`,
           {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
           }
         );
-        setEspacios(response.data || []); // Asegúrate de que la respuesta sea un array
-        setError(null); // Limpiar errores si los datos se cargaron correctamente
+        setEspacios(response.data || []);
+        setError(null);
       } catch (error) {
         console.error("Error al cargar los espacios:", error);
         setError("No se pudieron cargar los espacios. Por favor, intente más tarde.");
-        setEspacios([]); // En caso de error, establecer espacios como un array vacío
+        setEspacios([]);
       } finally {
-        setLoading(false); // Terminar el estado de carga
+        setLoading(false);
       }
     };
 
     fetchEspacios();
-  }, [selectedBloque]); // Ejecutar cuando cambie el bloque seleccionado
+  }, [selectedBloque, reloadFlag]);
 
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
-    { field: "bloque", headerName: "Bloque", width: 180 },
-    { field: "tipoEspacio", headerName: "Tipo de Espacio", width: 180 },
+    {
+      field: "bloque",
+      headerName: "Bloque",
+      width: 180,
+      valueGetter: (params) => params.row.bloque?.nombre || "",
+    },
+    {
+      field: "tipoEspacio",
+      headerName: "Tipo de Espacio",
+      width: 180,
+      valueGetter: (params) => params.row.tipoEspacio?.nombre || "",
+    },
     { field: "nombre", headerName: "Nombre", width: 180 },
     { field: "geolocalizacion", headerName: "Geolocalización", width: 300 },
     { field: "coordenadas", headerName: "Coordenadas", width: 150 },
@@ -67,10 +84,10 @@ export default function GridEspacio({ setSelectedRow, selectedBloque }) {
     },
   ];
 
-  const handleRowSelectionChange = (id) => {
-    const selectedIDs = new Set(id);
+  const handleRowSelectionChange = (ids) => {
+    const selectedIDs = new Set(ids);
     const selectedRowData = espacios.find((row) => selectedIDs.has(row.id)) || null;
-    setSelectedRow(selectedRowData); // Maneja cuando no hay selección
+    setSelectedRow(selectedRowData);
   };
 
   if (loading) return <div>Cargando datos...</div>;
@@ -79,18 +96,23 @@ export default function GridEspacio({ setSelectedRow, selectedBloque }) {
   return (
     <div style={{ height: 400, width: "100%" }}>
       <DataGrid
-        rows={espacios} // Cargar los espacios según el bloque seleccionado
+        rows={espacios}
         columns={columns}
         pageSize={5}
         rowsPerPageOptions={[5, 10, 20, 50]}
         onRowSelectionModelChange={(ids) => handleRowSelectionChange(ids)}
+        getRowId={(row) => row.id}
       />
     </div>
   );
 }
 
-// Validación de PropTypes
+// Validación de tipos con PropTypes
 GridEspacio.propTypes = {
-  setSelectedRow: PropTypes.func.isRequired, // Debe ser una función
-  selectedBloque: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired, // Puede ser string o número
+  setSelectedRow: PropTypes.func.isRequired,
+  selectedBloque: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+  ]).isRequired,
+  reloadFlag: PropTypes.bool,
 };

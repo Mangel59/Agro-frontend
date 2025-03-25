@@ -1,23 +1,30 @@
-
 /**
- * preventDefault componente principal.
+ * @file Deposits.jsx
+ * @module Deposits
+ * @description Componente que muestra los depósitos recientes con una opción para ver el balance.
  * @component
- * @returns {JSX.Element}
  */
+
 import * as React from 'react';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import Title from '../../codes/Title';
 
+/**
+ * Función para prevenir el comportamiento por defecto del enlace.
+ *
+ * @param {React.MouseEvent} event - El evento del clic.
+ */
 function preventDefault(event) {
   event.preventDefault();
 }
 
 /**
  * Componente Deposits.
- * @module Deposits.jsx
- * @component
- * @returns {JSX.Element}
+ *
+ * Muestra un resumen de los depósitos recientes y un enlace para ver el balance.
+ *
+ * @returns {JSX.Element} El componente renderizado.
  */
 export default function Deposits() {
   return (

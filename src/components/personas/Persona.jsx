@@ -1,3 +1,10 @@
+/**
+ * @file Persona.jsx
+ * @module Persona
+ * @description Componente principal para gestionar personas. Incluye formulario y grilla con paginación.
+ * @author Karla
+ */
+
 import * as React from "react";
 import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
@@ -5,7 +12,19 @@ import FormPersona from "./FormPersona";
 import GridPersona from "./GridPersona";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente Persona.
+ *
+ * Muestra una lista de personas y permite su gestión (crear, actualizar, eliminar).
+ *
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Persona() {
+  /**
+   * Valor por defecto para una persona.
+   * @type {Object}
+   */
   const defaultRow = {
     id: 0,
     tipoIdentificacion: "",
@@ -30,6 +49,11 @@ export default function Persona() {
     total: 0,
   });
 
+  /**
+   * Carga los datos de personas desde la API.
+   * @param {number} [page=0] - Página actual.
+   * @param {number} [pageSize=5] - Tamaño de página.
+   */
   const reloadData = (page = 0, pageSize = 5) => {
     axios
       .get(`${SiteProps.urlbasev1}/persona?page=${page}&size=${pageSize}`)

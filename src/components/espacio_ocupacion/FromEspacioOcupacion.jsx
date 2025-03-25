@@ -1,35 +1,43 @@
-
 /**
- * FromEspacioOcupacion componente principal.
+ * @file FromEspacioOcupacion.jsx
+ * @module FromEspacioOcupacion
+ * @description Formulario modal para crear, actualizar o eliminar ocupaciones de espacios.
+ * Permite seleccionar sede, bloque, espacio, actividad, fechas y estado.
+ *
  * @component
- * @returns {JSX.Element}
+ * @name FromEspacioOcupacion
+ * @exports FromEspacioOcupacion
+ *
+ * @param {Object} props - Props del componente.
+ * @param {Object} props.selectedRow - Fila seleccionada con datos del registro.
+ * @param {Function} props.setSelectedRow - Función para actualizar la fila seleccionada.
+ * @param {Function} props.setMessage - Función para mostrar mensajes en Snackbar.
+ * @param {Function} props.reloadData - Función para recargar datos de la tabla.
+ * @returns {JSX.Element} Formulario de ocupación de espacio.
  */
-import * as React from "react";
-import PropTypes from "prop-types";
+import React from "react"; // ✅ ¡Esta línea es necesaria!
+import axios from "axios";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import UpdateIcon from "@mui/icons-material/Update";
 import DeleteIcon from "@mui/icons-material/Delete";
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
-/**
- * Componente FromEspacioOcupacion.
- * @module FromEspacioOcupacion.jsx
- * @component
- * @returns {JSX.Element}
- */
+
 export default function FromEspacioOcupacion(props) {
+
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
   const [sedes, setSedes] = React.useState([]);
@@ -46,65 +54,39 @@ export default function FromEspacioOcupacion(props) {
         });
         setSedes(response.data || []);
       } catch (error) {
-        console.error("Error al cargar sedes:", error);
-        props.setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al cargar las sedes.",
-        });
+        props.setMessage({ open: true, severity: "error", text: "Error al cargar las sedes." });
       }
     };
-
     fetchSedes();
   }, []);
 
   React.useEffect(() => {
     if (!selectedRow.sede) return;
-
     const fetchBloques = async () => {
       try {
-        const response = await axios.get(
-          `${SiteProps.urlbasev1}/bloque/minimal/sede/${selectedRow.sede}`,
-          {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-          }
-        );
+        const response = await axios.get(`${SiteProps.urlbasev1}/bloque/minimal/sede/${selectedRow.sede}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
         setBloques(response.data || []);
       } catch (error) {
-        console.error("Error al cargar bloques:", error);
-        props.setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al cargar los bloques.",
-        });
+        props.setMessage({ open: true, severity: "error", text: "Error al cargar los bloques." });
       }
     };
-
     fetchBloques();
   }, [selectedRow.sede]);
 
   React.useEffect(() => {
     if (!selectedRow.bloque) return;
-
     const fetchEspacios = async () => {
       try {
-        const response = await axios.get(
-          `${SiteProps.urlbasev1}/espacio/minimal/bloque/${selectedRow.bloque}`,
-          {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-          }
-        );
+        const response = await axios.get(`${SiteProps.urlbasev1}/espacio/minimal/bloque/${selectedRow.bloque}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
         setEspacios(response.data || []);
       } catch (error) {
-        console.error("Error al cargar espacios:", error);
-        props.setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al cargar los espacios.",
-        });
+        props.setMessage({ open: true, severity: "error", text: "Error al cargar los espacios." });
       }
     };
-
     fetchEspacios();
   }, [selectedRow.bloque]);
 
@@ -112,54 +94,29 @@ export default function FromEspacioOcupacion(props) {
     if (open) {
       const fetchActividades = async () => {
         try {
-          const actividadesRes = await axios.get(
-            `${SiteProps.urlbasev1}/actividad_ocupacion/minimal`,
-            {
-              headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-            }
-          );
-          setActividades(actividadesRes.data || []);
-        } catch (error) {
-          console.error("Error al cargar actividades:", error);
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: "Error al cargar actividades.",
+          const response = await axios.get(`${SiteProps.urlbasev1}/actividad_ocupacion/minimal`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
           });
+          setActividades(response.data || []);
+        } catch (error) {
+          props.setMessage({ open: true, severity: "error", text: "Error al cargar actividades." });
         }
       };
-
       fetchActividades();
     }
   }, [open]);
 
-  const formatDateTime = (date) => {
-    const d = new Date(date);
-    return d.toISOString().slice(0, 19);
-  };
+  const formatDateTime = (date) => new Date(date).toISOString().slice(0, 19);
 
   const create = () => {
-    const row = {
-      id: 0,
-      espacio: "",
-      actividadOcupacion: "",
-      fechaInicio: "",
-      fechaFin: "",
-      estado: 1,
-    };
-    props.setSelectedRow(row);
+    props.setSelectedRow({ id: 0, espacio: "", actividad: "", fechaInicio: "", fechaFin: "", estado: 1 });
     setMethodName("Add");
     setOpen(true);
   };
 
   const update = () => {
     if (!selectedRow || selectedRow.id === 0) {
-      props.setMessage({
-        open: true,
-        severity: "error",
-        text: "Seleccione una fila para actualizar.",
-      });
-      return;
+      return props.setMessage({ open: true, severity: "error", text: "Seleccione una fila para actualizar." });
     }
     setMethodName("Update");
     setOpen(true);
@@ -167,37 +124,18 @@ export default function FromEspacioOcupacion(props) {
 
   const deleteRow = () => {
     if (!selectedRow || selectedRow.id === 0) {
-      props.setMessage({
-        open: true,
-        severity: "error",
-        text: "Seleccione una fila para eliminar.",
-      });
-      return;
+      return props.setMessage({ open: true, severity: "error", text: "Seleccione una fila para eliminar." });
     }
-    axios
-      .delete(`${SiteProps.urlbasev1}/espacio_ocupacion/${selectedRow.id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
+    axios.delete(`${SiteProps.urlbasev1}/espacio_ocupacion/${selectedRow.id}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
       .then(() => {
-        props.setMessage({
-          open: true,
-          severity: "success",
-          text: "Registro eliminado con éxito.",
-        });
+        props.setMessage({ open: true, severity: "success", text: "Registro eliminado con éxito." });
         props.reloadData();
       })
-      .catch((error) => {
-        console.error("Error al eliminar el registro:", error);
-        props.setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al eliminar el registro. Intente nuevamente.",
-        });
+      .catch(() => {
+        props.setMessage({ open: true, severity: "error", text: "Error al eliminar el registro." });
       });
-  };
-
-  const handleClose = () => {
-    setOpen(false);
   };
 
   const handleSubmit = () => {
@@ -214,9 +152,7 @@ export default function FromEspacioOcupacion(props) {
     const method = methodName === "Add" ? axios.post : axios.put;
     const endpoint = methodName === "Add" ? url : `${url}/${selectedRow.id}`;
 
-    method(endpoint, payload, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    })
+    method(endpoint, payload, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } })
       .then(() => {
         props.setMessage({
           open: true,
@@ -224,65 +160,62 @@ export default function FromEspacioOcupacion(props) {
           text: methodName === "Add" ? "Registro creado con éxito." : "Registro actualizado con éxito.",
         });
         props.reloadData();
-        handleClose();
+        setOpen(false);
       })
-      .catch((error) => {
-        console.error("Error al enviar datos:", error);
-        props.setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al enviar datos. Intente nuevamente.",
-        });
+      .catch(() => {
+        props.setMessage({ open: true, severity: "error", text: "Error al enviar datos." });
       });
   };
 
   return (
-    <React.Fragment>
-      {/* Botones de acción */}
+    <>
       <Box display="flex" justifyContent="flex-end" mb={2}>
-        <Button variant="outlined" color="primary" startIcon={<AddIcon />} onClick={create}>
-          Agregar
-        </Button>
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<UpdateIcon />}
-          onClick={update}
-          style={{ marginLeft: "10px" }}
-        >
-          Actualizar
-        </Button>
-        <Button
-          variant="outlined"
-          color="secondary"
-          startIcon={<DeleteIcon />}
-          onClick={deleteRow}
-          style={{ marginLeft: "10px" }}
-        >
-          Eliminar
-        </Button>
+        <Button variant="outlined" startIcon={<AddIcon />} onClick={create}>Agregar</Button>
+        <Button variant="outlined" startIcon={<UpdateIcon />} onClick={update} sx={{ mx: 1 }}>Actualizar</Button>
+        <Button variant="outlined" startIcon={<DeleteIcon />} onClick={deleteRow} >Eliminar</Button>
       </Box>
-
-      {/* Formulario modal */}
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogTitle>{methodName === "Add" ? "Agregar Registro" : "Actualizar Registro"}</DialogTitle>
         <DialogContent>
-          {/* Campos de selección y texto */}
-          {/* ... (como en tu código actual) */}
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Sede</InputLabel>
+            <Select value={selectedRow.sede || ""} onChange={(e) => props.setSelectedRow({ ...selectedRow, sede: e.target.value })}>
+              {sedes.map((sede) => <MenuItem key={sede.id} value={sede.id}>{sede.nombre}</MenuItem>)}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Bloque</InputLabel>
+            <Select value={selectedRow.bloque || ""} onChange={(e) => props.setSelectedRow({ ...selectedRow, bloque: e.target.value })}>
+              {bloques.map((bloque) => <MenuItem key={bloque.id} value={bloque.id}>{bloque.nombre}</MenuItem>)}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Espacio</InputLabel>
+            <Select value={selectedRow.espacio || ""} onChange={(e) => props.setSelectedRow({ ...selectedRow, espacio: e.target.value })}>
+              {espacios.map((espacio) => <MenuItem key={espacio.id} value={espacio.id}>{espacio.nombre}</MenuItem>)}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Actividad</InputLabel>
+            <Select value={selectedRow.actividad || ""} onChange={(e) => props.setSelectedRow({ ...selectedRow, actividad: e.target.value })}>
+              {actividades.map((actividad) => <MenuItem key={actividad.id} value={actividad.id}>{actividad.nombre}</MenuItem>)}
+            </Select>
+          </FormControl>
+          <TextField fullWidth label="Fecha de Inicio" type="datetime-local" InputLabelProps={{ shrink: true }} value={selectedRow.fechaInicio || ""} onChange={(e) => props.setSelectedRow({ ...selectedRow, fechaInicio: e.target.value })} margin="normal" />
+          <TextField fullWidth label="Fecha de Fin" type="datetime-local" InputLabelProps={{ shrink: true }} value={selectedRow.fechaFin || ""} onChange={(e) => props.setSelectedRow({ ...selectedRow, fechaFin: e.target.value })} margin="normal" />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Estado</InputLabel>
+            <Select value={selectedRow.estado || 1} onChange={(e) => props.setSelectedRow({ ...selectedRow, estado: e.target.value })}>
+              <MenuItem value={1}>Activo</MenuItem>
+              <MenuItem value={0}>Inactivo</MenuItem>
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">Cancelar</Button>
-          <Button onClick={handleSubmit} color="primary">{methodName === "Add" ? "Agregar" : "Actualizar"}</Button>
+          <Button onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button onClick={handleSubmit}>{methodName === "Add" ? "Agregar" : "Actualizar"}</Button>
         </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </>
   );
 }
-
-// ✅ Validación de props con PropTypes
-FromEspacioOcupacion.propTypes = {
-  selectedRow: PropTypes.object.isRequired,
-  setSelectedRow: PropTypes.func.isRequired,
-  setMessage: PropTypes.func.isRequired,
-  reloadData: PropTypes.func.isRequired,
-};

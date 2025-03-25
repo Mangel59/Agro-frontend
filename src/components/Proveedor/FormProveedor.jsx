@@ -1,138 +1,9 @@
-
 /**
- * FormProveedor componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file FormProveedor.jsx
+ * @module FormProveedor
+ * @description Componente de formulario para agregar, editar o eliminar proveedores. Usa Material UI y funciona con JSON local. Ideal para CRUDs simples sin backend complejo.
+ * @author Karla
  */
-// import React, { useState } from "react";
-// import axios from "axios";
-// import Dialog from "@mui/material/Dialog";
-// import DialogActions from "@mui/material/DialogActions";
-// import DialogContent from "@mui/material/DialogContent";
-// import DialogTitle from "@mui/material/DialogTitle";
-// import TextField from "@mui/material/TextField";
-// import Button from "@mui/material/Button";
-// import FormControl from "@mui/material/FormControl";
-// import { SiteProps } from "../dashboard/SiteProps";
-
-/**
- * Componente FormProveedor.
- * @module FormProveedor.jsx
- * @component
- * @returns {JSX.Element}
- */
-// export default function FormProveedor(props) {
-//   const [open, setOpen] = useState(false);
-//   const [methodName, setMethodName] = useState("");
-
-//   const create = () => {
-//     const row = {
-//       id: 0,
-//       nombre: "",
-//       descripcion: "",
-//       estado: 0,
-//       empresa: "",
-//     };
-//     props.setSelectedRow(row);
-//     setMethodName("Add");
-//     setOpen(true);
-//   };
-
-//   const update = () => {
-//     if (!props.selectedRow || props.selectedRow.id === 0) {
-//       props.setMessage({
-//         open: true,
-//         severity: "error",
-//         text: "Selecciona una fila para actualizar",
-//       });
-//       return;
-//     }
-//     setMethodName("Update");
-//     setOpen(true);
-//   };
-
-//   const handleSubmit = (event) => {
-//     event.preventDefault();
-//     const formData = new FormData(event.currentTarget);
-//     const formJson = Object.fromEntries(formData.entries());
-//     const id = props.selectedRow?.id || 0;
-
-//     const url =
-//       methodName === "Add"
-//         ? `${SiteProps.urlbasev1}/proveedores`
-//         : `${SiteProps.urlbasev1}/proveedores/${id}`;
-//     const token = localStorage.getItem("token");
-
-//     axios({
-//       method: methodName === "Add" ? "post" : "put",
-//       url,
-//       data: formJson,
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//         "Content-Type": "application/json",
-//       },
-//     })
-//       .then(() => {
-//         props.setMessage({
-//           open: true,
-//           severity: "success",
-//           text: `Proveedor ${methodName === "Add" ? "creado" : "actualizado"} con éxito!`,
-//         });
-//         setOpen(false);
-//         props.reloadData();
-//       })
-//       .catch((error) => {
-//         props.setMessage({
-//           open: true,
-//           severity: "error",
-//           text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} proveedor: ${
-//             error.message
-//           }`,
-//         });
-//       });
-//   };
-
-//   const handleClose = () => {
-//     setOpen(false);
-//   };
-
-//   return (
-//     <>
-//       <Button onClick={create}>Agregar</Button>
-//       <Button onClick={update}>Actualizar</Button>
-//       <Dialog open={open} onClose={handleClose}>
-//         <DialogTitle>Proveedor</DialogTitle>
-//         <DialogContent>
-//           <FormControl fullWidth>
-//             <TextField
-//               required
-//               id="nombre"
-//               name="nombre"
-//               label="Nombre"
-//               defaultValue={props.selectedRow?.nombre || ""}
-//             />
-//           </FormControl>
-//           <FormControl fullWidth>
-//             <TextField
-//               required
-//               id="descripcion"
-//               name="descripcion"
-//               label="Descripción"
-//               defaultValue={props.selectedRow?.descripcion || ""}
-//             />
-//           </FormControl>
-//         </DialogContent>
-//         <DialogActions>
-//           <Button onClick={handleClose}>Cancelar</Button>
-//           <Button type="submit" onClick={handleSubmit}>
-//             {methodName}
-//           </Button>
-//         </DialogActions>
-//       </Dialog>
-//     </>
-//   );
-// }
-
 
 import React, { useState } from "react";
 import Dialog from "@mui/material/Dialog";
@@ -141,6 +12,19 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import PropTypes from "prop-types";
+
+/**
+ * Componente FormProveedor.
+ *
+ * @param {Object} props - Props del componente
+ * @param {Function} props.onAdd - Función para agregar un nuevo proveedor
+ * @param {Function} props.onUpdate - Función para actualizar un proveedor existente
+ * @param {Function} props.onDelete - Función para eliminar un proveedor por ID
+ * @param {Object|null} props.selectedRow - Fila seleccionada (proveedor a editar)
+ * @param {Function} props.setSelectedRow - Función para actualizar la fila seleccionada
+ * @returns {JSX.Element}
+ */
 
 export default function FormProveedor({
   onAdd,
@@ -149,7 +33,7 @@ export default function FormProveedor({
   selectedRow,
   setSelectedRow,
 }) {
-  const [open, setOpen] = useState(false); // Controla si el formulario está visible
+  const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     pro_id: "",
     pro_empresa_id: "",
@@ -157,22 +41,20 @@ export default function FormProveedor({
     pro_estado: 1,
   });
 
-  // Manejo de apertura del formulario para agregar o editar
   const handleOpen = () => {
     if (selectedRow) {
-      setFormData(selectedRow); // Carga los datos de la fila seleccionada
+      setFormData(selectedRow);
     } else {
       setFormData({
         pro_id: "",
         pro_empresa_id: "",
         pro_fecha_creacion: "",
         pro_estado: 1,
-      }); // Limpia los datos si es una nueva creación
+      });
     }
     setOpen(true);
   };
 
-  // Manejo de cierre del formulario
   const handleClose = () => {
     setOpen(false);
     setSelectedRow(null);
@@ -184,39 +66,35 @@ export default function FormProveedor({
     });
   };
 
-  // Manejo de cambios en los campos
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // Manejo de envío del formulario (Agregar o Editar)
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.pro_id) {
-      onUpdate(formData); // Actualizar proveedor existente
+      onUpdate(formData);
     } else {
-      onAdd({ ...formData, pro_id: Date.now() }); // Agregar nuevo proveedor
+      onAdd({ ...formData, pro_id: Date.now() });
     }
     handleClose();
   };
 
-  // Manejo de eliminación
   const handleDelete = () => {
-    if (selectedRow && selectedRow.pro_id) {
+    if (selectedRow?.pro_id) {
       onDelete(selectedRow.pro_id);
-      setSelectedRow(null); // Limpiar selección
+      setSelectedRow(null);
     }
   };
 
   return (
     <>
-      {/* Botones visibles en todo momento */}
       <div style={{ marginBottom: "1rem" }}>
         <Button
           variant="contained"
           color="primary"
-          onClick={handleOpen} // Abre el formulario vacío para agregar
+          onClick={handleOpen}
           style={{ marginRight: "1rem" }}
         >
           Agregar
@@ -224,8 +102,8 @@ export default function FormProveedor({
         <Button
           variant="contained"
           color="secondary"
-          onClick={handleOpen} // Abre el formulario con datos para editar
-          disabled={!selectedRow} // Desactivado si no hay fila seleccionada
+          onClick={handleOpen}
+          disabled={!selectedRow}
           style={{ marginRight: "1rem" }}
         >
           Editar
@@ -233,14 +111,13 @@ export default function FormProveedor({
         <Button
           variant="contained"
           color="error"
-          onClick={handleDelete} // Elimina la fila seleccionada
-          disabled={!selectedRow} // Desactivado si no hay fila seleccionada
+          onClick={handleDelete}
+          disabled={!selectedRow}
         >
           Eliminar
         </Button>
       </div>
 
-      {/* Dialog para Agregar o Editar */}
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{selectedRow ? "Editar Proveedor" : "Agregar Proveedor"}</DialogTitle>
         <DialogContent>
@@ -281,3 +158,12 @@ export default function FormProveedor({
     </>
   );
 }
+
+// Validación de tipos con PropTypes
+FormProveedor.propTypes = {
+  onAdd: PropTypes.func.isRequired,
+  onUpdate: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  selectedRow: PropTypes.object,
+  setSelectedRow: PropTypes.func.isRequired,
+};

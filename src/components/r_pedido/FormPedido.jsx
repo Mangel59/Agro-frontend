@@ -1,8 +1,41 @@
+/**
+ * @file FormPedido.jsx
+ * @module FormPedido
+ * @description Componente de formulario para crear o editar pedidos. Permite seleccionar sede, almacén y producción, además de ingresar descripción y fecha. Incluye validación básica y manejo de modales para agregar/editar pedidos. Utiliza Axios para comunicarse con el backend.
+ * @author Karla
+ */
+
 import React, { useState, useEffect } from "react";
-import { Grid, Select, MenuItem, Button, FormControl, InputLabel, Box, Modal, TextField, Autocomplete } from "@mui/material";
+import {
+  Grid,
+  Select,
+  MenuItem,
+  Button,
+  FormControl,
+  InputLabel,
+  Box,
+  Modal,
+  TextField,
+  Autocomplete,
+} from "@mui/material";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * Componente de formulario para crear o editar pedidos.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {function(): void} props.onAddPedido - Función para agregar un nuevo pedido.
+ * @param {function(): void} props.onUpdatePedido - Función para actualizar un pedido.
+ * @param {function(): void} props.onDeletePedido - Función para eliminar un pedido.
+ * @param {function(string): void} props.setAlmacenId - Setter del ID de almacén.
+ * @param {Object|null} props.selectedPedido - Pedido actualmente seleccionado.
+ * @param {function(Object): void} props.setSelectedPedido - Setter del pedido seleccionado (puede ser null).
+ * @param {function(): void} props.fetchPedidos - Función para obtener la lista de pedidos.
+ *
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function FormPedido({
   onAddPedido,
   onUpdatePedido,
@@ -66,6 +99,7 @@ export default function FormPedido({
   useEffect(() => {
     const fetchProducciones = async () => {
       if (!almacen) return;
+
       setSelectedPedido(null);
       setNewPedido({
         fechaHora: "",
@@ -75,6 +109,7 @@ export default function FormPedido({
         estado: 1,
       });
       setSelectedProduccion(null);
+
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(`${SiteProps.urlbasev1}/producciones/short/${almacen}`, {
@@ -153,7 +188,6 @@ export default function FormPedido({
 
       const currentProduccion = producciones.find((p) => p.id === selectedPedido.produccion);
       setSelectedProduccion(currentProduccion || null);
-
       setModalOpen(true);
     } else {
       alert("Selecciona un pedido para actualizar.");
@@ -202,10 +236,10 @@ export default function FormPedido({
           </FormControl>
         </Grid>
         <Grid item xs={6} display="flex" justifyContent="flex-end">
-          <Button variant="contained" color="primary" onClick={handleOpenAddModal} style={{ marginRight: "10px" }}>
+          <Button variant="contained" color="primary" onClick={handleOpenAddModal} sx={{ mr: 1 }}>
             ADD
           </Button>
-          <Button variant="contained" color="secondary" onClick={handleOpenUpdateModal} style={{ marginRight: "10px" }}>
+          <Button variant="contained" color="secondary" onClick={handleOpenUpdateModal} sx={{ mr: 1 }}>
             UPDATE
           </Button>
           <Button variant="contained" color="error" onClick={onDeletePedido}>
@@ -241,7 +275,9 @@ export default function FormPedido({
             getOptionLabel={(option) => option.nombre}
             value={selectedProduccion}
             onChange={(event, value) => setSelectedProduccion(value)}
-            renderInput={(params) => <TextField {...params} label="Producción" margin="normal" required />}
+            renderInput={(params) => (
+              <TextField {...params} label="Producción" margin="normal" required />
+            )}
           />
           <TextField
             label="Descripción"

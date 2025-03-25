@@ -7,6 +7,7 @@
  * @param {Object} props
  * @param {function} props.setSelectedRow - Función para seleccionar una fila de la tabla.
  * @param {string|number} props.selectedSede - ID de la sede seleccionada para filtrar bloques.
+ * @param {boolean} props.reloadData - Permite forzar recarga externa de los datos.
  * @returns {JSX.Element}
  */
 
@@ -16,21 +17,18 @@ import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
-function GridBloque({ setSelectedRow, selectedSede }) {
+function GridBloque({ setSelectedRow, selectedSede, reloadData }) {
   const [bloques, setBloques] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  /**
-   * Obtiene los bloques de la sede seleccionada desde el backend.
-   */
   useEffect(() => {
-    if (!selectedSede) {
-      setBloques([]);
-      return;
-    }
-
     const fetchBloques = async () => {
+      if (!selectedSede) {
+        setBloques([]);
+        return;
+      }
+
       setLoading(true);
       try {
         const response = await axios.get(
@@ -51,69 +49,69 @@ function GridBloque({ setSelectedRow, selectedSede }) {
     };
 
     fetchBloques();
-  }, [selectedSede]);
+  }, [selectedSede, reloadData]);
 
-  /**
-   * Columnas para la tabla de bloques.
-   */
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
-    { field: "sede", headerName: "Sede", width: 180 },
-    { field: "tipoBloque", headerName: "Tipo de Bloque", width: 180 },
-    { field: "nombre", headerName: "Nombre", width: 180 },
+    { field: "sede", headerName: "Sede", width: 100 },
+    { field: "tipoBloque", headerName: "Tipo de Bloque", width: 130 },
+    { field: "nombre", headerName: "Nombre", width: 150 },
     {
       field: "geolocalizacion",
       headerName: "Geolocalización",
-      width: 300,
-      type: "string",
-      valueGetter: (params) =>
-        params.row.geolocalizacion
-          ? JSON.stringify(params.row.geolocalizacion)
-          : "Sin datos",
-    },
-    {
-      field: "cordenadas",
-      headerName: "Coordenadas",
-      width: 150,
-      type: "number",
+      width: 180,
       valueGetter: (params) => {
-        const coordinates = params.row.geolocalizacion?.coordinates;
-        return coordinates ? `${coordinates[1]}, ${coordinates[0]}` : "Sin datos";
+        const geo = params.row.geolocalizacion;
+        return geo ? String(geo) : "Sin datos";
       },
     },
-    { field: "numeroPisos", headerName: "Número de pisos", width: 150 },
+    {
+      field: "coordenadas",
+      headerName: "Coordenadas",
+      width: 150,
+      valueGetter: (params) => {
+        const coords = params.row.coordenadas;
+        return coords && typeof coords === "string" ? coords : "Sin datos";
+      },
+    },
+    { field: "numeroPisos", headerName: "Número de Pisos", width: 150 },
     { field: "descripcion", headerName: "Descripción", width: 250 },
-    { field: "estado", headerName: "Estado", width: 120 },
+    {
+      field: "estado",
+      headerName: "Estado",
+      width: 120,
+      valueGetter: (params) => (params.row.estado === 1 ? "Activo" : "Inactivo"),
+    },
   ];
 
-  /**
-   * Maneja el evento de clic en una fila.
-   * @param {object} params - Parámetros del evento de clic.
-   */
   const handleRowClick = (params) => {
     setSelectedRow(params.row);
   };
 
-  if (loading) return <div>Cargando datos...</div>;
-  if (error) return <div style={{ color: "red" }}>{error}</div>;
-
   return (
     <div style={{ height: 400, width: "100%" }}>
-      <DataGrid
-        rows={bloques}
-        columns={columns}
-        pageSize={5}
-        rowsPerPageOptions={[5]}
-        onRowClick={handleRowClick}
-      />
+      {loading ? (
+        <div>Cargando datos...</div>
+      ) : error ? (
+        <div style={{ color: "red" }}>{error}</div>
+      ) : (
+        <DataGrid
+          rows={bloques}
+          columns={columns}
+          pageSize={5}
+          rowsPerPageOptions={[5, 10]}
+          onRowClick={handleRowClick}
+          getRowId={(row) => row.id}
+        />
+      )}
     </div>
   );
 }
 
-// 📌 Validación de props con PropTypes
 GridBloque.propTypes = {
   setSelectedRow: PropTypes.func.isRequired,
   selectedSede: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  reloadData: PropTypes.bool.isRequired,
 };
 
 export default GridBloque;

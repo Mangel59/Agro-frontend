@@ -1,14 +1,13 @@
 {
-    "source": {
-      "include": ["src"],
-      "includePattern": ".+\\.(js|jsx)$",
-      "excludePattern": "(node_modules/|docs)"
-    },
-    "opts": {
-      "destination": "./docs",
-      "recurse": true,
-      "verbose": true
-    },
-    "plugins": []
-  }
-  
+  "source": {
+    "include": ["src"],
+    "includePattern": ".+\\.jsx?$",
+    "excludePattern": "(node_modules|docs)"
+  },
+  "opts": {
+    "destination": "docs",
+    "template": "node_modules/docdash",
+    "recurse": true
+  },
+  "plugins": []
+}

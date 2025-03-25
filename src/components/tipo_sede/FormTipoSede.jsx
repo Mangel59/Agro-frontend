@@ -1,11 +1,12 @@
-
 /**
- * FormTipoSedes componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file FormTipoSede.jsx
+ * @module FormTipoSede
+ * @description Formulario modal para agregar, editar o eliminar Tipos de Sede. Utiliza MUI Dialog y comunica cambios al backend mediante Axios.
+ * @author Karla
  */
+
 import React, { useState } from "react";
-import PropTypes from "prop-types"; // Importamos PropTypes
+import PropTypes from "prop-types";
 import {
   Button,
   Dialog,
@@ -26,10 +27,15 @@ import axios from "../axiosConfig";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
- * Componente FormTipoSedes.
- * @module FormTipoSede.jsx
+ * Componente de formulario para la gestión de tipos de sede.
+ *
  * @component
- * @returns {JSX.Element}
+ * @param {Object} props - Propiedades del componente
+ * @param {Object} props.selectedRow - Objeto que representa la fila seleccionada
+ * @param {function(Object): void} props.setSelectedRow - Función para actualizar la fila seleccionada
+ * @param {function(): void} props.reloadData - Función para recargar los datos desde la API
+ * @param {function(Object): void} props.setMessage - Función para mostrar mensajes en Snackbar
+ * @returns {JSX.Element} Formulario para crear, actualizar o eliminar tipos de sede
  */
 export default function FormTipoSedes({
   selectedRow,
@@ -40,8 +46,12 @@ export default function FormTipoSedes({
   const [open, setOpen] = useState(false);
   const [methodName, setMethodName] = useState("");
 
+  /**
+   * Abre el modal según la acción (Add, Update, Delete).
+   * @param {string} method - Tipo de acción a ejecutar
+   */
   const handleOpen = (method) => {
-    if (method === "Update" && (!selectedRow || selectedRow.id === null)) {
+    if (method === "Update" && (!selectedRow || selectedRow.id == null)) {
       setMessage({
         open: true,
         severity: "error",
@@ -49,7 +59,7 @@ export default function FormTipoSedes({
       });
       return;
     }
-    if (method === "Delete" && (!selectedRow || selectedRow.id === null)) {
+    if (method === "Delete" && (!selectedRow || selectedRow.id == null)) {
       setMessage({
         open: true,
         severity: "error",
@@ -66,11 +76,17 @@ export default function FormTipoSedes({
     }
   };
 
+  /**
+   * Cierra el diálogo y reinicia la fila seleccionada.
+   */
   const handleClose = () => {
     setSelectedRow({ id: null, nombre: "", descripcion: "", estado: 1 });
     setOpen(false);
   };
 
+  /**
+   * Maneja el envío del formulario para crear o actualizar.
+   */
   const handleSubmit = () => {
     const url = `${SiteProps.urlbasev1}/tipo_sede`;
     const method = methodName === "Add" ? axios.post : axios.put;
@@ -101,6 +117,9 @@ export default function FormTipoSedes({
       });
   };
 
+  /**
+   * Elimina el tipo de sede seleccionado.
+   */
   const handleDelete = () => {
     axios
       .delete(`${SiteProps.urlbasev1}/tipo_sede/${selectedRow.id}`, {
@@ -203,7 +222,6 @@ export default function FormTipoSedes({
   );
 }
 
-// ✅ Validación de PropTypes para evitar errores en consola
 FormTipoSedes.propTypes = {
   selectedRow: PropTypes.shape({
     id: PropTypes.number,

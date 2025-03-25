@@ -1,14 +1,25 @@
-
 /**
- * FormTipoProduccion componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file FormTipoProduccion.jsx
+ * @module FormTipoProduccion
+ * @description Componente para crear, editar o eliminar Tipos de Producción.
+ * @author Karla
  */
 
+/**
+ * @typedef {Object} TipoProduccionRow
+ * @property {number} id - ID del tipo de producción
+ * @property {string} nombre - Nombre del tipo de producción
+ * @property {string} descripcion - Descripción del tipo de producción
+ * @property {number} estado - Estado (1: activo, 0: inactivo)
+ */
 
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open - Si el snackbar está visible
+ * @property {string} severity - Nivel de severidad del mensaje ("success", "error", etc.)
+ * @property {string} text - Contenido del mensaje que se mostrará
+ */
 
-
-// FormTipoProduccion.jsx
 import * as React from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
@@ -28,21 +39,21 @@ import { SiteProps } from "../dashboard/SiteProps";
 
 /**
  * Componente FormTipoProduccion.
- * @module FormTipoProduccion.jsx
+ *
  * @component
- * @returns {JSX.Element}
+ * @param {Object} props - Props del componente.
+ * @param {function} props.setSelectedRow - Establece la fila seleccionada.
+ * @param {TipoProduccionRow} props.selectedRow - Fila actualmente seleccionada.
+ * @param {function} props.setMessage - Muestra un mensaje de estado.
+ * @param {function} props.reloadData - Recarga los datos del backend.
+ * @returns {JSX.Element} Componente de formulario para Tipo de Producción.
  */
 export default function FormTipoProduccion(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
 
   const create = () => {
-    const row = {
-      id: 0,
-      nombre: "",
-      descripcion: "",
-      estado: 0,
-    };
+    const row = { id: 0, nombre: "", descripcion: "", estado: 0 };
     props.setSelectedRow(row);
     setMethodName("Add");
     setOpen(true);
@@ -70,10 +81,8 @@ export default function FormTipoProduccion(props) {
       });
       return;
     }
-    const id = props.selectedRow.id;
-    const url = `${SiteProps.urlbasev1}/tipo_produccion/${id}`;
-    const token = localStorage.getItem("token");
 
+    const token = localStorage.getItem("token");
     if (!token) {
       props.setMessage({
         open: true,
@@ -84,10 +93,8 @@ export default function FormTipoProduccion(props) {
     }
 
     axios
-      .delete(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      .delete(`${SiteProps.urlbasev1}/tipo_produccion/${props.selectedRow.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
       .then(() => {
         props.setMessage({
@@ -98,11 +105,11 @@ export default function FormTipoProduccion(props) {
         props.reloadData();
       })
       .catch((error) => {
-        const errorMessage = error.response ? error.response.data.message : error.message;
+        const msg = error.response?.data?.message || error.message;
         props.setMessage({
           open: true,
           severity: "error",
-          text: `Error al eliminar Tipo de Producción: ${errorMessage}`,
+          text: `Error al eliminar Tipo de Producción: ${msg}`,
         });
       });
   };
@@ -117,23 +124,22 @@ export default function FormTipoProduccion(props) {
     const formJson = Object.fromEntries(formData.entries());
     const id = props.selectedRow?.id || 0;
 
-    const validatePayload = (data) => {
-      if (!data.nombre || !data.descripcion) {
-        props.setMessage({
-          open: true,
-          severity: "error",
-          text: "Datos inválidos. Revisa el formulario.",
-        });
-        return false;
-      }
-      return true;
-    };
+    if (!formJson.nombre || !formJson.descripcion) {
+      props.setMessage({
+        open: true,
+        severity: "error",
+        text: "Datos inválidos. Revisa el formulario.",
+      });
+      return;
+    }
 
-    if (!validatePayload(formJson)) return;
+    const url =
+      methodName === "Add"
+        ? `${SiteProps.urlbasev1}/tipo_produccion`
+        : `${SiteProps.urlbasev1}/tipo_produccion/${id}`;
+    const axiosMethod = methodName === "Add" ? axios.post : axios.put;
 
-    const url = methodName === "Add" ? `${SiteProps.urlbasev1}/tipo_produccion` : `${SiteProps.urlbasev1}/tipo_produccion/${id}`;
     const token = localStorage.getItem("token");
-
     if (!token) {
       props.setMessage({
         open: true,
@@ -142,8 +148,6 @@ export default function FormTipoProduccion(props) {
       });
       return;
     }
-
-    const axiosMethod = methodName === "Add" ? axios.post : axios.put;
 
     axiosMethod(url, formJson, {
       headers: {
@@ -155,31 +159,33 @@ export default function FormTipoProduccion(props) {
         props.setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Tipo de Producción creado con éxito!" : "Tipo de Producción actualizado con éxito!",
+          text:
+            methodName === "Add"
+              ? "Tipo de Producción creado con éxito!"
+              : "Tipo de Producción actualizado con éxito!",
         });
         setOpen(false);
         props.reloadData();
       })
       .catch((error) => {
-        const errorMessage = error.response ? error.response.data.message : error.message;
+        const msg = error.response?.data?.message || error.message;
         props.setMessage({
           open: true,
           severity: "error",
-          text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} Tipo de Producción: ${errorMessage}`,
+          text: `Error al ${
+            methodName === "Add" ? "crear" : "actualizar"
+          } Tipo de Producción: ${msg}`,
         });
       });
   };
 
   return (
-    <React.Fragment>
+    <>
       <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog
         open={open}
         onClose={handleClose}
-        PaperProps={{
-          component: "form",
-          onSubmit: handleSubmit,
-        }}
+        PaperProps={{ component: "form", onSubmit: handleSubmit }}
       >
         <DialogTitle>Tipo de Producción</DialogTitle>
         <DialogContent>
@@ -208,20 +214,14 @@ export default function FormTipoProduccion(props) {
             />
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <InputLabel
-              id="estado-label"
-              sx={{
-                backgroundColor: "white",
-                padding: "0 8px",
-              }}
-            >
+            <InputLabel id="estado-label" sx={{ backgroundColor: "white", padding: "0 8px" }}>
               Estado
             </InputLabel>
             <Select
               labelId="estado-label"
               id="estado"
               name="estado"
-              defaultValue={props.selectedRow?.estado || ""}
+              defaultValue={props.selectedRow?.estado ?? 1}
               fullWidth
             >
               <MenuItem value={1}>Activo</MenuItem>
@@ -234,18 +234,18 @@ export default function FormTipoProduccion(props) {
           <Button type="submit">{methodName}</Button>
         </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </>
   );
-  FormTipoProduccion.propTypes = {
-    setSelectedRow: PropTypes.func.isRequired,
-    selectedRow: PropTypes.shape({
-      id: PropTypes.number,
-      nombre: PropTypes.string,
-      descripcion: PropTypes.string,
-      estado: PropTypes.number,
-    }),
-    setMessage: PropTypes.func.isRequired,
-    reloadData: PropTypes.func.isRequired,
-  };
-  
 }
+
+FormTipoProduccion.propTypes = {
+  setSelectedRow: PropTypes.func.isRequired,
+  selectedRow: PropTypes.shape({
+    id: PropTypes.number,
+    nombre: PropTypes.string,
+    descripcion: PropTypes.string,
+    estado: PropTypes.number,
+  }),
+  setMessage: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired,
+};

@@ -1,6 +1,18 @@
+/**
+ * @file GridPersona.jsx
+ * @module GridPersona
+ * @description Componente de grilla para mostrar la lista de personas con paginación y filtro. Utiliza MUI DataGrid.
+ * @author Karla
+ */
+
 import * as React from "react";
 import { DataGrid, GridToolbarContainer, GridToolbarFilterButton } from "@mui/x-data-grid";
+import PropTypes from "prop-types";
 
+/**
+ * Columnas definidas para mostrar los datos de personas en la tabla.
+ * @type {Array<Object>}
+ */
 const columns = [
   { field: "id", headerName: "ID", width: 80 },
   { field: "tipoIdentificacion", headerName: "Tipo ID", width: 130 },
@@ -21,6 +33,32 @@ const columns = [
   },
 ];
 
+/**
+ * Componente de barra de herramientas personalizada con filtro.
+ * @returns {JSX.Element} Toolbar personalizada.
+ */
+function CustomToolbar() {
+  return (
+    <GridToolbarContainer>
+      <GridToolbarFilterButton />
+    </GridToolbarContainer>
+  );
+}
+
+/**
+ * Componente GridPersona.
+ *
+ * Muestra una tabla de personas con paginación, filtros y selección de fila.
+ *
+ * @component
+ * @param {Object} props - Props del componente.
+ * @param {Array<Object>} props.personas - Lista de personas para mostrar en la tabla.
+ * @param {Object} props.selectedRow - Persona seleccionada actualmente.
+ * @param {Function} props.setSelectedRow - Función para actualizar la persona seleccionada.
+ * @param {Object} props.pagination - Objeto de paginación con `page`, `pageSize` y `total`.
+ * @param {Function} props.onPageChange - Función para manejar el cambio de página.
+ * @returns {JSX.Element} Tabla de personas con paginación y selección.
+ */
 export default function GridPersona({
   personas,
   selectedRow,
@@ -31,14 +69,6 @@ export default function GridPersona({
   const handlePageChange = (newPage, newPageSize) => {
     onPageChange(newPage, newPageSize);
   };
-
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer>
-        <GridToolbarFilterButton />
-      </GridToolbarContainer>
-    );
-  }
 
   return (
     <div style={{ height: 600, width: "100%" }}>
@@ -66,3 +96,15 @@ export default function GridPersona({
     </div>
   );
 }
+
+GridPersona.propTypes = {
+  personas: PropTypes.arrayOf(PropTypes.object).isRequired,
+  selectedRow: PropTypes.object,
+  setSelectedRow: PropTypes.func.isRequired,
+  pagination: PropTypes.shape({
+    page: PropTypes.number.isRequired,
+    pageSize: PropTypes.number.isRequired,
+    total: PropTypes.number.isRequired,
+  }).isRequired,
+  onPageChange: PropTypes.func.isRequired,
+};

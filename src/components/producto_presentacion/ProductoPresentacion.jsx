@@ -1,9 +1,12 @@
-
 /**
- * ProductoPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file ProductoPresentacion.jsx
+ * @module ProductoPresentacion
+ * @description Componente principal para gestionar la entidad Producto Presentación.
+ * Muestra un formulario para agregar/editar y una grilla con paginación.
+ * Utiliza Axios para obtener datos del backend como marcas, unidades, productos y presentaciones.
+ * @author Karla
  */
+
 import * as React from 'react';
 import axios from '../axiosConfig';
 import MessageSnackBar from '../MessageSnackBar';
@@ -12,10 +15,10 @@ import GridProductoPresentacion from '../producto_presentacion/GridProductoPrese
 import { SiteProps } from '../dashboard/SiteProps';
 
 /**
- * Componente ProductoPresentacion.
- * @module ProductoPresentacion.jsx
+ * Componente principal para la gestión de producto presentación.
+ *
  * @component
- * @returns {JSX.Element}
+ * @returns {JSX.Element} Interfaz para gestionar producto-presentación
  */
 export default function ProductoPresentacion() {
   const row = {
@@ -60,7 +63,9 @@ export default function ProductoPresentacion() {
     });
   }
 
-  // Función para recargar datos con paginación
+  /**
+   * Carga la lista paginada de producto-presentación desde la API.
+   */
   const reloadData = () => {
     axios.get(`${SiteProps.urlbasev1}/producto-presentacion`, {
       params: {
@@ -98,36 +103,30 @@ export default function ProductoPresentacion() {
     reloadData();
   }, [paginationModel]);
 
-  // **Cargar marcas, unidades, presentaciones y productos**
+  /**
+   * Carga datos relacionados (marcas, unidades, presentaciones, productos).
+   */
   React.useEffect(() => {
     axios.get(`${SiteProps.urlbasev1}/marca`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      }
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then((response) => setMarcas(Array.isArray(response.data) ? response.data : []))
       .catch((error) => console.error("Error al cargar Marcas:", error));
 
     axios.get(`${SiteProps.urlbasev1}/unidad`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      }
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then((response) => setUnidades(Array.isArray(response.data) ? response.data : []))
       .catch((error) => console.error("Error al cargar Unidades:", error));
 
     axios.get(`${SiteProps.urlbasev1}/presentaciones`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      }
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then((response) => setPresentacionesList(Array.isArray(response.data) ? response.data : []))
       .catch((error) => console.error("Error al cargar Presentaciones:", error));
 
     axios.get(`${SiteProps.urlbasev1}/producto`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      }
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then((response) => {
         if (response.data && Array.isArray(response.data.content)) {

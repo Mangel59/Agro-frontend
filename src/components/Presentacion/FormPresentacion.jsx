@@ -1,50 +1,52 @@
-
 /**
- * FormPresentacion componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file FormPresentacion.jsx
+ * @module FormPresentacion
+ * @description Componente de formulario para crear, actualizar o eliminar una presentación.
+ * Utiliza Material UI Dialog y campos de entrada para manejar datos de presentación.
+ * @author Karla
  */
+
 import * as React from "react";
-import PropTypes from "prop-types"; // Importamos PropTypes
+import PropTypes from "prop-types";
 import axios from "../axiosConfig";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
+import {
+  Button,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  InputLabel,
+  MenuItem,
+  FormControl,
+  Select,
+} from "@mui/material";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
  * Componente FormPresentacion.
- * @module FormPresentacion.jsx
- * @component
+ *
+ * Maneja la creación, actualización y eliminación de presentaciones.
+ *
+ * @param {Object} props - Propiedades del componente.
+ * @param {function(Object):void} props.setSelectedRow - Función para establecer la fila seleccionada.
+ * @param {Object} props.selectedRow - Fila actualmente seleccionada.
+ * @param {function(Object):void} props.setMessage - Función para mostrar mensajes de éxito o error.
+ * @param {function():void} props.reloadData - Función para recargar la lista de presentaciones.
  * @returns {JSX.Element}
  */
 export default function FormPresentacion({ setSelectedRow, selectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
 
-  // Crear un nuevo producto
   const create = () => {
-    const row = {
-      id: 0,
-      nombre: "",
-      descripcion: "",
-      estado: 0,
-    };
-    setSelectedRow(row);
+    setSelectedRow({ id: 0, nombre: "", descripcion: "", estado: 0 });
     setMethodName("Add");
     setOpen(true);
   };
 
-  // Actualizar un producto existente
   const update = () => {
     if (!selectedRow || selectedRow.id === 0) {
       setMessage({
@@ -58,7 +60,6 @@ export default function FormPresentacion({ setSelectedRow, selectedRow, setMessa
     setOpen(true);
   };
 
-  // Eliminar un producto
   const deleteRow = () => {
     if (!selectedRow || selectedRow.id === 0) {
       setMessage({
@@ -68,12 +69,12 @@ export default function FormPresentacion({ setSelectedRow, selectedRow, setMessa
       });
       return;
     }
-    const id = selectedRow.id;
-    const url = `${SiteProps.urlbasev1}/presentaciones/${id}`;
-    const token = localStorage.getItem("token");
 
+    const token = localStorage.getItem("token");
     axios
-      .delete(url, { headers: { Authorization: `Bearer ${token}` } })
+      .delete(`${SiteProps.urlbasev1}/presentaciones/${selectedRow.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then(() => {
         setMessage({ open: true, severity: "success", text: "Presentación eliminada con éxito" });
         reloadData();
@@ -91,7 +92,6 @@ export default function FormPresentacion({ setSelectedRow, selectedRow, setMessa
     setOpen(false);
   };
 
-  // Enviar el formulario para crear o actualizar un producto
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -107,9 +107,7 @@ export default function FormPresentacion({ setSelectedRow, selectedRow, setMessa
       return;
     }
 
-    const url = `${SiteProps.urlbasev1}/presentaciones`;
     const token = localStorage.getItem("token");
-
     if (!token) {
       setMessage({
         open: true,
@@ -119,7 +117,10 @@ export default function FormPresentacion({ setSelectedRow, selectedRow, setMessa
       return;
     }
 
-    const request = methodName === "Add" ? axios.post(url, formJson) : axios.put(`${url}/${id}`, formJson);
+    const url = `${SiteProps.urlbasev1}/presentaciones`;
+    const request = methodName === "Add"
+      ? axios.post(url, formJson, { headers: { Authorization: `Bearer ${token}` } })
+      : axios.put(`${url}/${id}`, formJson, { headers: { Authorization: `Bearer ${token}` } });
 
     request
       .then(() => {
@@ -138,17 +139,16 @@ export default function FormPresentacion({ setSelectedRow, selectedRow, setMessa
           text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} presentación: ${error.response?.data?.message || error.message}`,
         });
       });
-
-    handleClose();
   };
 
   return (
     <React.Fragment>
-      <StackButtons methods={{ create, update, deleteRow }} create={create} open={open} setOpen={setOpen} />
+      <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog open={open} onClose={handleClose} PaperProps={{ component: "form", onSubmit: handleSubmit }}>
         <DialogTitle>Presentación</DialogTitle>
         <DialogContent>
           <DialogContentText>Completa el formulario.</DialogContentText>
+
           <FormControl fullWidth margin="normal">
             <TextField
               autoFocus
@@ -176,7 +176,13 @@ export default function FormPresentacion({ setSelectedRow, selectedRow, setMessa
 
           <FormControl fullWidth margin="normal">
             <InputLabel id="estado-label">Estado</InputLabel>
-            <Select labelId="estado-label" id="estado" name="estado" defaultValue={selectedRow?.estado || 1} fullWidth>
+            <Select
+              labelId="estado-label"
+              id="estado"
+              name="estado"
+              defaultValue={selectedRow?.estado || 1}
+              fullWidth
+            >
               <MenuItem value={1}>Activo</MenuItem>
               <MenuItem value={0}>Inactivo</MenuItem>
             </Select>
@@ -191,9 +197,9 @@ export default function FormPresentacion({ setSelectedRow, selectedRow, setMessa
   );
 }
 
-// **Validación de PropTypes**
+// Validación de props
 FormPresentacion.propTypes = {
-  setSelectedRow: PropTypes.func.isRequired, // Debe ser una función
+  setSelectedRow: PropTypes.func.isRequired,
   selectedRow: PropTypes.shape({
     id: PropTypes.number,
     nombre: PropTypes.string,

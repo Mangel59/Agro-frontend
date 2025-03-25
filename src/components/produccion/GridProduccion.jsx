@@ -1,9 +1,10 @@
-
 /**
- * GridProduccion componente principal.
- * @component
- * @returns {JSX.Element}
+ * @file GridProduccion.jsx
+ * @module GridProduccion
+ * @description Componente que muestra una grilla de producciones asociadas a un espacio. Permite editar o eliminar producciones usando DataGrid de Material UI. Incluye manejo de formularios y notificaciones con Snackbar.
+ * @author Karla
  */
+
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
@@ -31,9 +32,13 @@ import { SiteProps } from "../dashboard/SiteProps";
 
 /**
  * Componente GridProduccion.
- * @module GridProduccion.jsx
- * @component
- * @returns {JSX.Element}
+ *
+ * Muestra una tabla de producciones relacionadas con un espacio específico.
+ * Permite editar o eliminar una producción seleccionada.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {number|string} props.espacioId - ID del espacio seleccionado.
+ * @returns {JSX.Element} Tabla con producciones.
  */
 export default function GridProduccion({ espacioId }) {
   const [producciones, setProducciones] = useState([]);
@@ -52,12 +57,13 @@ export default function GridProduccion({ espacioId }) {
   });
 
   const [selectedSede, setSelectedSede] = useState("");
-  const [selectedBloque, setSelectedBloque] = useState("");
-  const [selectedEspacio, setSelectedEspacio] = useState("");
+  const [selectedBloque] = useState(""); // No usado directamente
+  const [selectedEspacio] = useState(""); // No usado directamente
   const [selectedTipoProduccion, setSelectedTipoProduccion] = useState("");
   const [sedes, setSedes] = useState([]);
   const [tiposProduccion, setTiposProduccion] = useState([]);
 
+  // Cargar datos al cambiar el espacioId
   useEffect(() => {
     if (!espacioId) return;
 
@@ -70,65 +76,63 @@ export default function GridProduccion({ espacioId }) {
     setLoading(true);
     setError(null);
 
-    axios
-      .get(`${SiteProps.urlbasev1}/producciones/${espacioId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        setProducciones(res.data.content);
-      })
-      .catch((error) => {
-        console.error("Error al cargar producciones:", error);
-        setError("Error al cargar las producciones. Por favor, verifica tu conexión o permisos.");
+    axios.get(`${SiteProps.urlbasev1}/producciones/${espacioId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => setProducciones(res.data.content))
+      .catch(() => {
+        setError("Error al cargar las producciones. Verifica tu conexión o permisos.");
       })
       .finally(() => {
         setLoading(false);
       });
 
-    axios
-      .get(`${SiteProps.urlbasev1}/sede/minimal`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => setSedes(res.data));
+    axios.get(`${SiteProps.urlbasev1}/sede/minimal`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then((res) => setSedes(res.data));
 
-    axios
-      .get(`${SiteProps.urlbasev1}/tipo_produccion`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((res) => setTiposProduccion(res.data));
+    axios.get(`${SiteProps.urlbasev1}/tipo_produccion`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then((res) => setTiposProduccion(res.data));
   }, [espacioId]);
 
+  /**
+   * Maneja la eliminación de una producción.
+   */
   const handleDelete = () => {
     if (!selectedRow) return;
-
     const token = localStorage.getItem("token");
-    axios
-      .delete(`${SiteProps.urlbasev1}/producciones/${selectedRow.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+
+    axios.delete(`${SiteProps.urlbasev1}/producciones/${selectedRow.id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then(() => {
         setProducciones((prev) => prev.filter((prod) => prod.id !== selectedRow.id));
         setSelectedRow(null);
         setSnackbar({ open: true, message: "Producción eliminada correctamente.", severity: "success" });
       })
-      .catch((error) => {
-        console.error("Error al eliminar producción:", error);
+      .catch(() => {
         setSnackbar({ open: true, message: "Error al eliminar la producción.", severity: "error" });
       });
   };
 
+  /**
+   * Maneja el envío del formulario para actualizar una producción.
+   * @param {React.FormEvent} event - Evento del formulario.
+   */
   const handleSubmit = (event) => {
     event.preventDefault();
-
     const token = localStorage.getItem("token");
-    axios
-      .put(
-        `${SiteProps.urlbasev1}/producciones/${selectedRow.id}`,
-        {
-          ...formData,
-          sede: selectedSede,
-          bloque: selectedBloque,
-          espacio: selectedEspacio,
-          tipoProduccion: selectedTipoProduccion,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
+
+    axios.put(`${SiteProps.urlbasev1}/producciones/${selectedRow.id}`, {
+      ...formData,
+      sede: selectedSede,
+      bloque: selectedBloque,
+      espacio: selectedEspacio,
+      tipoProduccion: selectedTipoProduccion,
+    }, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then(() => {
         setProducciones((prev) =>
           prev.map((prod) =>
@@ -138,16 +142,21 @@ export default function GridProduccion({ espacioId }) {
         setOpen(false);
         setSnackbar({ open: true, message: "Producción actualizada correctamente.", severity: "success" });
       })
-      .catch((error) => {
-        console.error("Error al actualizar la producción:", error);
+      .catch(() => {
         setSnackbar({ open: true, message: "Error al actualizar la producción.", severity: "error" });
       });
   };
 
+  /**
+   * Cierra el snackbar de mensajes.
+   */
   const handleCloseSnackbar = () => {
     setSnackbar({ open: false, message: "", severity: "success" });
   };
 
+  /**
+   * Abre el formulario para editar una producción.
+   */
   const handleEdit = () => {
     if (!selectedRow) return;
     setFormData({
@@ -158,8 +167,6 @@ export default function GridProduccion({ espacioId }) {
       estado: selectedRow.estado || 1,
     });
     setSelectedSede(selectedRow.sede || "");
-    setSelectedBloque(selectedRow.bloque || "");
-    setSelectedEspacio(selectedRow.espacio || "");
     setSelectedTipoProduccion(selectedRow.tipoProduccion || "");
     setOpen(true);
   };
@@ -173,45 +180,22 @@ export default function GridProduccion({ espacioId }) {
     { field: "estado", headerName: "Estado", width: 120 },
   ];
 
-  if (!espacioId) {
-    return <Typography>Selecciona un espacio para ver las producciones.</Typography>;
-  }
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="200px">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return <Typography color="error">{error}</Typography>;
-  }
-
-  if (producciones.length === 0) {
-    return <Typography>No hay producciones disponibles para este espacio.</Typography>;
-  }
+  if (!espacioId) return <Typography>Selecciona un espacio para ver las producciones.</Typography>;
+  if (loading) return (
+    <Box display="flex" justifyContent="center" alignItems="center" height="200px">
+      <CircularProgress />
+    </Box>
+  );
+  if (error) return <Typography color="error">{error}</Typography>;
+  if (producciones.length === 0) return <Typography>No hay producciones disponibles para este espacio.</Typography>;
 
   return (
     <Box sx={{ width: "100%" }}>
       <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mb: 2 }}>
-        <Button
-          startIcon={<UpdateIcon />}
-          variant="outlined"
-          onClick={handleEdit}
-          color="primary"
-          disabled={!selectedRow}
-        >
+        <Button startIcon={<UpdateIcon />} variant="outlined" onClick={handleEdit} color="primary" disabled={!selectedRow}>
           Editar
         </Button>
-        <Button
-          variant="outlined"
-          startIcon={<DeleteIcon />}
-          onClick={handleDelete}
-          color="primary"
-          disabled={!selectedRow}
-        >
+        <Button variant="outlined" startIcon={<DeleteIcon />} onClick={handleDelete} color="primary" disabled={!selectedRow}>
           Eliminar
         </Button>
       </Box>
@@ -253,7 +237,6 @@ export default function GridProduccion({ espacioId }) {
                   ))}
                 </Select>
               </FormControl>
-
               <FormControl fullWidth margin="normal">
                 <InputLabel id="tipoProduccion-label">Tipo de Producción</InputLabel>
                 <Select
@@ -268,45 +251,10 @@ export default function GridProduccion({ espacioId }) {
                   ))}
                 </Select>
               </FormControl>
-
-              <TextField
-                id="nombre"
-                name="nombre"
-                label="Nombre de Producción"
-                value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                id="descripcion"
-                name="descripcion"
-                label="Descripción"
-                value={formData.descripcion}
-                onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                id="fechaInicio"
-                name="fechaInicio"
-                label="Fecha de Inicio"
-                type="datetime-local"
-                value={formData.fechaInicio}
-                onChange={(e) => setFormData({ ...formData, fechaInicio: e.target.value })}
-                fullWidth
-                margin="normal"
-              />
-              <TextField
-                id="fechaFinal"
-                name="fechaFinal"
-                label="Fecha Final"
-                type="datetime-local"
-                value={formData.fechaFinal}
-                onChange={(e) => setFormData({ ...formData, fechaFinal: e.target.value })}
-                fullWidth
-                margin="normal"
-              />
+              <TextField label="Nombre de Producción" value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })} fullWidth margin="normal" />
+              <TextField label="Descripción" value={formData.descripcion} onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })} fullWidth margin="normal" />
+              <TextField label="Fecha de Inicio" type="datetime-local" value={formData.fechaInicio} onChange={(e) => setFormData({ ...formData, fechaInicio: e.target.value })} fullWidth margin="normal" />
+              <TextField label="Fecha Final" type="datetime-local" value={formData.fechaFinal} onChange={(e) => setFormData({ ...formData, fechaFinal: e.target.value })} fullWidth margin="normal" />
             </Box>
           </DialogContent>
           <DialogActions>
@@ -319,7 +267,6 @@ export default function GridProduccion({ espacioId }) {
   );
 }
 
-// ✅ Validación de props
 GridProduccion.propTypes = {
   espacioId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 };

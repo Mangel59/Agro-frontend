@@ -1,27 +1,33 @@
-
 /**
- * GridTipoEspacio componente principal.
+ * @file GridTipoEspacio.jsx
+ * @module GridTipoEspacio
+ * @description Componente que renderiza una grilla con los tipos de espacio registrados.
+ * Permite seleccionar un tipo de espacio para su edición o eliminación.
+ *
  * @component
- * @returns {JSX.Element}
+ * @param {Object} props - Props del componente.
+ * @param {Function} props.setSelectedRow - Función para establecer la fila seleccionada.
+ * @param {boolean} props.reloadData - Valor que activa la recarga de datos cuando cambia.
+ * @returns {JSX.Element} Grilla con los tipos de espacio disponibles.
  */
+
 import React, { useEffect, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
-import PropTypes from "prop-types";
 
 /**
- * Componente GridTipoEspacio.
- * @module GridTipoEspacio.jsx
- * @component
- * @returns {JSX.Element}
+ * Componente que muestra una tabla con los tipos de espacio disponibles.
+ * Los datos se cargan desde un endpoint y se actualizan al cambiar `reloadData`.
  */
 export default function GridTipoEspacio({ setSelectedRow, reloadData }) {
   const [iespacios, setIespacios] = useState([]); // Lista de tipos de espacios
-  const [loading, setLoading] = useState(false); // Estado para mostrar el cargando
-  const [error, setError] = useState(null); // Estado para manejar errores
+  const [loading, setLoading] = useState(false); // Estado de carga
+  const [error, setError] = useState(null); // Estado para errores
 
-  // Función para cargar los tipos de espacios
+  /**
+   * Carga los datos desde la API al montar el componente o cambiar reloadData.
+   */
   useEffect(() => {
     const fetchIespacios = async () => {
       setLoading(true);
@@ -29,21 +35,24 @@ export default function GridTipoEspacio({ setSelectedRow, reloadData }) {
         const response = await axios.get(`${SiteProps.urlbasev1}/tipo_espacio`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
-        console.log("Datos recibidos del backend:", response.data); // Verificar datos del backend
-        setIespacios(response.data || []); // Asegúrate de que la respuesta sea un array
-        setError(null); // Limpiar errores si los datos se cargaron correctamente
+        console.log("Datos recibidos del backend:", response.data);
+        setIespacios(response.data || []);
+        setError(null);
       } catch (error) {
         console.error("Error al cargar los tipos de espacio:", error);
         setError("No se pudieron cargar los tipos de espacio. Por favor, intente más tarde.");
-        setIespacios([]); // En caso de error, establecer tipos de espacios como un array vacío
+        setIespacios([]);
       } finally {
-        setLoading(false); // Terminar el estado de carga
+        setLoading(false);
       }
     };
 
     fetchIespacios();
-  }, [reloadData]); // Recargar datos si reloadData cambia
+  }, [reloadData]);
 
+  /**
+   * Columnas a mostrar en la grilla de tipos de espacio.
+   */
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
     { field: "nombre", headerName: "Nombre", width: 180 },
@@ -56,8 +65,12 @@ export default function GridTipoEspacio({ setSelectedRow, reloadData }) {
     },
   ];
 
+  /**
+   * Maneja la selección de una fila y envía la fila seleccionada al componente padre.
+   * @param {object} params - Datos de la fila seleccionada.
+   */
   const handleRowClick = (params) => {
-    console.log("Fila seleccionada:", params.row); // Verificar la fila seleccionada
+    console.log("Fila seleccionada:", params.row);
     setSelectedRow(params.row);
   };
 
@@ -67,7 +80,7 @@ export default function GridTipoEspacio({ setSelectedRow, reloadData }) {
   return (
     <div style={{ height: 400, width: "100%" }}>
       <DataGrid
-        rows={iespacios} // Cargar los tipos de espacios
+        rows={iespacios}
         columns={columns}
         pageSize={5}
         rowsPerPageOptions={[5]}
@@ -76,7 +89,3 @@ export default function GridTipoEspacio({ setSelectedRow, reloadData }) {
     </div>
   );
 }
-GridTipoEspacio.propTypes = {
-  setSelectedRow: PropTypes.func.isRequired,
-  reloadData: PropTypes.any,
-};

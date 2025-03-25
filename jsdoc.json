@@ -1,16 +1,21 @@
 {
-  "plugins": ["node_modules/jsdoc-babel"],
-  "recurseDepth": 10,
+  "tags": {
+    "allowUnknownTags": true
+  },
   "source": {
     "include": ["src"],
     "includePattern": ".+\\.jsx?$",
     "excludePattern": "(node_modules|docs)"
   },
-  "babel": {
-    "extensions": ["js", "jsx"]
+  "plugins": ["plugins/markdown"],
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": false
   },
   "opts": {
     "destination": "./docs",
-    "recurse": true
+    "encoding": "utf8",
+    "recurse": true,
+    "template": "node_modules/docdash"
   }
 }
