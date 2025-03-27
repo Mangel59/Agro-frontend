@@ -16,6 +16,7 @@ import FormRegistroPersona from './seguridad/FormRegistroPersona';
 import FormRegistroEmpresa from './seguridad/FormRegistroEmpresa';
 import Contenido from '../components/dashboard/Contenido';
 import PropTypes from "prop-types";
+import ForgetPassword from './ForgetPassword';
 
 
 /**
@@ -64,7 +65,7 @@ export default function Login(props) {
    * Dependiendo de la respuesta, redirige al usuario al módulo correspondiente.
    *
    * @param {Event} event - El evento de envío del formulario.
-   */  
+   */
   const handleSubmit = (event) => {
     event.preventDefault(); // Previene la recarga de la página al enviar el formulario
     setError(''); // Reinicia cualquier mensaje de error
@@ -80,33 +81,33 @@ export default function Login(props) {
       username,
       password,
     })
-    .then(response => {
-      // Guardar el token en el almacenamiento local para manejar la sesión
-      localStorage.setItem('token', response.data.token);
+      .then(response => {
+        // Guardar el token en el almacenamiento local para manejar la sesión
+        localStorage.setItem('token', response.data.token);
 
-      // Verificar si props.setIsAuthenticated existe y es una función
-      if (props.setIsAuthenticated && typeof props.setIsAuthenticated === 'function') {
-        // Actualizar el estado de autenticación global
-        props.setIsAuthenticated(true);
-      } else {
-        console.warn('setIsAuthenticated no está disponible o no es una función.');
-      }
+        // Verificar si props.setIsAuthenticated existe y es una función
+        if (props.setIsAuthenticated && typeof props.setIsAuthenticated === 'function') {
+          // Actualizar el estado de autenticación global
+          props.setIsAuthenticated(true);
+        } else {
+          console.warn('setIsAuthenticated no está disponible o no es una función.');
+        }
 
-      const usuarioEstado = response.data.usuarioEstado;
+        const usuarioEstado = response.data.usuarioEstado;
 
-      // Según el estado del usuario, redirigir a los módulos correspondientes
-      if (usuarioEstado === 2) {
-        props.setCurrentModule(<FormRegistroPersona setCurrentModule={props.setCurrentModule} />);
-      } else if (usuarioEstado === 3) {
-        props.setCurrentModule(<FormRegistroEmpresa setCurrentModule={props.setCurrentModule} />);
-      } else if (usuarioEstado === 4) {
-        props.setCurrentModule(<Contenido setCurrentModule={props.setCurrentModule} />);
-      }
-    })
-    .catch(error => {
-      setError(t('login_error')); // Mostrar error si la autenticación falla
-      console.error('There was an error logging in!', error);
-    });
+        // Según el estado del usuario, redirigir a los módulos correspondientes
+        if (usuarioEstado === 2) {
+          props.setCurrentModule(<FormRegistroPersona setCurrentModule={props.setCurrentModule} />);
+        } else if (usuarioEstado === 3) {
+          props.setCurrentModule(<FormRegistroEmpresa setCurrentModule={props.setCurrentModule} />);
+        } else if (usuarioEstado === 4) {
+          props.setCurrentModule(<Contenido setCurrentModule={props.setCurrentModule} />);
+        }
+      })
+      .catch(error => {
+        setError(t('login_error')); // Mostrar error si la autenticación falla
+        console.error('There was an error logging in!', error);
+      });
   };
 
   /**
@@ -117,20 +118,20 @@ export default function Login(props) {
   const handleLanguageChange = (lng) => {
     i18n.changeLanguage(lng);
   };
-// Validación de props
-Login.propTypes = {
-  setIsAuthenticated: PropTypes.func.isRequired,
-  setCurrentModule: PropTypes.func.isRequired,
-};
+  // Validación de props
+  Login.propTypes = {
+    setIsAuthenticated: PropTypes.func.isRequired,
+    setCurrentModule: PropTypes.func.isRequired,
+  };
   return (
-    <Container 
-      maxWidth={false}  
-      disableGutters  
+    <Container
+      maxWidth={false}
+      disableGutters
       sx={{
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        minHeight: '100vh',  
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
         backgroundColor: '#FFF',
         padding: 3,
         mt: 15,
@@ -151,13 +152,13 @@ Login.propTypes = {
           maxWidth: 400,
         }}
       >
-        <Typography 
-          variant="h4"  
-          component="h1" 
-          align="center" 
-          sx={{ 
-            fontWeight: 'bold', 
-            marginBottom: 3, 
+        <Typography
+          variant="h4"
+          component="h1"
+          align="center"
+          sx={{
+            fontWeight: 'bold',
+            marginBottom: 3,
             color: '#1a237e',
           }}
         >
@@ -166,7 +167,7 @@ Login.propTypes = {
         {error && (
           <Alert severity="error">{error}</Alert>
         )}
-        
+
         <TextField
           label={t("email")}
           variant="outlined"
@@ -225,22 +226,22 @@ Login.propTypes = {
           }}
         />
 
-        <Link
-          component={RouterLink}
-          to="/forgetpassword"  
-          variant="body2"
-          align="center"
-          sx={{ 
-            color: '#1e88e5',  
-            textDecoration: 'none',
-            marginBottom: 2,  
+        <Button
+          variant="text"
+          onClick={() => props.setCurrentModule(<ForgetPassword setCurrentModule={props.setCurrentModule} />)}
+          sx={{
+            color: '#1e88e5',
+            textTransform: 'none',
             fontWeight: 'bold',
-            alignSelf: 'flex-end'  
+            alignSelf: 'flex-end',
+            padding: 0,
+            minWidth: 'unset'
           }}
         >
-          {t('Forgot your password?')} 
-        </Link>
-        
+          ¿Olvidaste tu contraseña?
+        </Button>
+
+
         <Button
           type="submit"
           variant="contained"
@@ -261,19 +262,19 @@ Login.propTypes = {
           {t('login')}
         </Button>
 
-        <Typography 
-          variant="body2" 
-          align="center" 
+        <Typography
+          variant="body2"
+          align="center"
           sx={{ marginTop: 3, color: '#666' }}
         >
           {t("no_account")}{" "}
-          <Link 
-            component={RouterLink} 
-            to="/register" 
-            sx={{ 
+          <Link
+            component={RouterLink}
+            to="/register"
+            sx={{
               color: '#1e88e5',
-              textDecoration: 'none', 
-              fontWeight: 'bold' 
+              textDecoration: 'none',
+              fontWeight: 'bold'
             }}
           >
             {t('register_here')}

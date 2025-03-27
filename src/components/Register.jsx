@@ -213,8 +213,8 @@ export default function Register(props) {
       return;
     }
     
-    axios.post('http://172.16.79.156:8080/auth/register', {
-    //axios.post('http://localhost:8080/auth/register', {
+    // axios.post('http://172.16.79.156:8080/auth/register', {
+    axios.post('http://localhost:8080/auth/register', {
       username,
       password,
     })
