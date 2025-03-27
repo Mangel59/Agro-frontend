@@ -2,7 +2,7 @@
  * @file TipoProduccion.jsx
  * @module TipoProduccion
  * @description Componente principal para gestionar Tipos de Producción: formulario, grilla, mensajes y recarga de datos.
- * @author Karla
+ * @author Maria
  */
 
 import * as React from "react";

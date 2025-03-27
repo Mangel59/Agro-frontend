@@ -1,7 +1,7 @@
 /**
  * @file Persona.jsx
  * @module Persona
- * @description Componente principal para gestionar personas. Incluye formulario y grilla con paginación.
+ * @description Componente principal para gestionar personas. Incluye formulario y grilla con paginación y actualización de datos desde el backend.
  * @author Karla
  */
 
@@ -13,18 +13,43 @@ import GridPersona from "./GridPersona";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
- * Componente Persona.
- *
- * Muestra una lista de personas y permite su gestión (crear, actualizar, eliminar).
+ * @typedef {Object} PersonaRow
+ * @property {number} id - ID de la persona
+ * @property {string} tipoIdentificacion - Tipo de identificación (CC, TI, etc.)
+ * @property {string} identificacion - Número de documento
+ * @property {string} nombre - Nombre de la persona
+ * @property {string} apellido - Apellido de la persona
+ * @property {string} genero - Género de la persona
+ * @property {string} fechaNacimiento - Fecha de nacimiento (formato YYYY-MM-DD)
+ * @property {string} estrato - Estrato socioeconómico
+ * @property {string} direccion - Dirección de residencia
+ * @property {string} email - Correo electrónico
+ * @property {string} celular - Número de celular
+ * @property {number} estado - Estado (1: Activo, 0: Inactivo)
+ */
+
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open - Indica si el mensaje está visible
+ * @property {string} severity - Severidad del mensaje (success, error, etc.)
+ * @property {string} text - Texto del mensaje a mostrar
+ */
+
+/**
+ * @typedef {Object} PaginationModel
+ * @property {number} page - Página actual
+ * @property {number} pageSize - Tamaño de página
+ * @property {number} total - Total de elementos
+ */
+
+/**
+ * Componente principal para la gestión de personas.
  *
  * @component
- * @returns {JSX.Element}
+ * @returns {JSX.Element} Vista para crear, editar, eliminar y listar personas
  */
 export default function Persona() {
-  /**
-   * Valor por defecto para una persona.
-   * @type {Object}
-   */
+  /** @type {PersonaRow} */
   const defaultRow = {
     id: 0,
     tipoIdentificacion: "",
@@ -68,6 +93,11 @@ export default function Persona() {
       })
       .catch((err) => {
         console.error("Error al cargar personas", err);
+        setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al cargar personas desde el servidor.",
+        });
       });
   };
 

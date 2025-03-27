@@ -3,74 +3,40 @@
 // MODIFICADO POR: MARIA 16/05/2024, 22/08/2024
 
 import React, { useState } from 'react';
-import { Container, TextField, Button, Typography, Box, Paper, Snackbar, Alert, IconButton, InputAdornment, Link, Switch } from '@mui/material';
+import {
+  Container, TextField, Button, Typography, Box, Paper,
+  Snackbar, Alert, IconButton, InputAdornment, Link
+} from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-// import axios from '../components/axiosConfig';
 import axios from 'axios';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useThemeToggle } from './dashboard/ThemeToggleProvider';
-import AppBarComponent from './dashboard/AppBarComponent'; 
+import { useTheme } from '@mui/material/styles';
 
 /**
- * Register component handles the registration form, validating user input,
- * and sending data to the backend.
+ * Componente de registro.
+ * Muestra un formulario para crear una nueva cuenta.
  *
  * @component
- * @example
- * return (
- *   <Register />
- * )
  */
-export default function Register(props) {
-  const { t, i18n } = useTranslation(); // Hook de traducción
+export default function Register() {
+  const { t, i18n } = useTranslation();
+  const theme = useTheme(); // ✅ Acceder a los colores del tema (oscuro/claro)
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const toggleTheme = useThemeToggle();
-
   const navigate = useNavigate();
 
-  /**
- * Toggles the visibility of the password field.
- */
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
+  const handleMouseDownPassword = (event) => event.preventDefault();
 
-  /**
- * Prevents the default action when the mouse button is pressed on the password visibility toggle.
- *
- * @param {Event} event - The mouse down event.
- */
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
-  };
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validatePassword = (password) =>
+    /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/.test(password);
 
-  /**
- * Validates if the input is a properly formatted email.
- *
- * @param {string} email - The email address to validate.
- * @returns {boolean} - Returns true if the email is valid, false otherwise.
- */
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validatePassword = (password) => {
-    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
-    return passwordRegex.test(password);
-  };
-
-  /**
- * Handles the form submission, validates the input, and sends the registration
- * request to the server.
- *
- * @param {Event} event - The form submit event.
- */
   const handleSubmit = (event) => {
     event.preventDefault();
     setError('');
@@ -80,71 +46,44 @@ export default function Register(props) {
       return;
     }
 
-    /**
- * Validates if the password meets the required criteria:
- * at least 8 characters, one uppercase letter, one digit, and one special character.
- *
- * @param {string} password - The password to validate.
- * @returns {boolean} - Returns true if the password is valid, false otherwise.
- */
     if (!validatePassword(password)) {
       setError(t('invalid_password'));
       return;
     }
-    
-    axios.post('http://172.16.79.156:8080/auth/register', {
-    //axios.post('http://localhost:8080/auth/register', {
-      username,
-      password,
-    })
-    .then(response => {
-      // Aquí puedes manejar la respuesta de éxito si es necesario
-      setOpenSnackbar(true); // Muestra el Snackbar de éxito
-    })
-    .catch(error => {
-      if (error.response && error.response.status === 403) {
-        // Aquí mostramos el mensaje de que el correo ya existe
-        setError(t('email ya existe'));
-      } else {
-        // Otros posibles errores
-        setError(t('registration_failed'));
-      }
-    });
-   
-    
-  };
 
-  /**
- * Changes the language of the application using the i18n library.
- *
- * @param {string} lng - The language code to switch to (e.g., 'en' for English, 'es' for Spanish).
- */
-  const handleLanguageChange = (lng) => {
-    i18n.changeLanguage(lng);
+    axios.post('http://localhost:8080/auth/register', { username, password })
+      .then(() => {
+        setOpenSnackbar(true);
+        // Optionally redirect:
+        // navigate('/login');
+      })
+      .catch(error => {
+        if (error.response?.status === 403) {
+          setError(t('email ya existe'));
+        } else {
+          setError(t('registration_failed'));
+        }
+      });
   };
 
   return (
-    <>
-
-    <Container 
+    <Container
       maxWidth={false}
       disableGutters
       sx={{
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         minHeight: '100vh',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: theme.palette.background.default,
         padding: 3,
-        mt: 8,
       }}
     >
-
-      <Paper 
+      <Paper
         elevation={6}
-        sx={{ 
-          padding: 4, 
-          backgroundColor: '#ffffff',
+        sx={{
+          padding: 4,
+          backgroundColor: theme.palette.background.paper,
           borderRadius: 4,
           maxWidth: 400,
           width: '100%',
@@ -159,42 +98,28 @@ export default function Register(props) {
             gap: 3,
           }}
         >
-          <Typography 
-            variant="h4" 
-            component="h1" 
-            align="center" 
+          <Typography
+            variant="h4"
+            component="h1"
+            align="center"
             sx={{
               fontWeight: 'bold',
-              color: '#1a237e',
+              color: theme.palette.text.primary,
               marginBottom: 3,
             }}
           >
             {t('register')}
           </Typography>
-          {error && (
-            <Alert severity="error">{error}</Alert>
-          )}
+
+          {error && <Alert severity="error">{error}</Alert>}
+
           <TextField
             id="email-input"
             label={t("email")}
             variant="outlined"
             value={username}
-            onChange={e => setUsername(e.target.value)}
+            onChange={(e) => setUsername(e.target.value)}
             fullWidth
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 3,
-                '& fieldset': {
-                  borderColor: '#1e88e5',
-                },
-                '&:hover fieldset': {
-                  borderColor: '#1565c0',
-                },
-              },
-              '& .MuiInputLabel-root': {
-                color: '#1e88e5',
-              },
-            }}
           />
           <TextField
             id="password-input"
@@ -202,22 +127,8 @@ export default function Register(props) {
             variant="outlined"
             type={showPassword ? 'text' : 'password'}
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             fullWidth
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 3,
-                '& fieldset': {
-                  borderColor: '#1e88e5',
-                },
-                '&:hover fieldset': {
-                  borderColor: '#1565c0',
-                },
-              },
-              '& .MuiInputLabel-root': {
-                color: '#1e88e5',
-              },
-            }}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -233,63 +144,56 @@ export default function Register(props) {
               ),
             }}
           />
-          <Button 
-          id="register-button"
-            type="submit" 
-            variant="contained" 
-            color="primary" 
+
+          <Button
+            id="register-button"
+            type="submit"
+            variant="contained"
             fullWidth
             sx={{
               padding: '12px 0',
               borderRadius: 3,
               textTransform: 'none',
               fontWeight: 'bold',
-              backgroundColor: '#1e88e5',
-              '&:hover': {
-                backgroundColor: '#1565c0',
-              },
             }}
           >
             {t('register')}
           </Button>
-          <Typography 
-            variant="body2" 
-            align="center" 
-            sx={{ marginTop: 3, color: '#666' }}
+
+          <Typography
+            variant="body2"
+            align="center"
+            sx={{ marginTop: 3, color: theme.palette.text.secondary }}
           >
             {t("already_have_account")}{" "}
-            <Link 
-              component={RouterLink} 
-              to="/login" 
-              sx={{ 
-                color: '#1e88e5',
-                textDecoration: 'none', 
-                fontWeight: 'bold' 
+            <Link
+              component={RouterLink}
+              to="/login"
+              sx={{
+                color: theme.palette.primary.main,
+                fontWeight: 'bold',
+                textDecoration: 'none',
               }}
             >
               {t('login_here')}
             </Link>
           </Typography>
-
-          {/* Botones de cambio de idioma */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
-            <Button onClick={() => handleLanguageChange('en')}>English</Button>
-            <Button onClick={() => handleLanguageChange('es')}>Español</Button>
-          </Box>
         </Box>
       </Paper>
-      <Snackbar
-      open={openSnackbar}
-      autoHideDuration={3000}
-      onClose={() => setOpenSnackbar(false)}
-    >
-      <Alert onClose={() => setOpenSnackbar(false)} severity="warning" sx={{ width: '100%' }} timeout="10000">
-        {t('registration_success')}
-      </Alert>
-    </Snackbar>
 
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setOpenSnackbar(false)}
+      >
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity="success"
+          sx={{ width: '100%' }}
+        >
+          {t('registration_success')}
+        </Alert>
+      </Snackbar>
     </Container>
-    </>
   );
 }
-

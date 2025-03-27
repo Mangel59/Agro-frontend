@@ -1,12 +1,13 @@
 /**
  * @file GridMarca.jsx
  * @module GridMarca
- * @description Componente de grilla para mostrar y gestionar las marcas. Soporta paginación, ordenamiento, filtros y selección de filas.
+ * @description Componente de grilla para mostrar y gestionar las marcas. Soporta paginación, ordenamiento, filtros y selección de filas. Asegura que la tabla no se desborde visualmente usando scroll horizontal.
  * @author Karla
  */
 
 import * as React from 'react';
 import PropTypes from 'prop-types';
+import { Box } from '@mui/material';
 import { DataGrid, GridToolbarContainer, GridToolbarFilterButton } from '@mui/x-data-grid';
 
 /**
@@ -31,6 +32,7 @@ const columns = [
 /**
  * Toolbar personalizada con botón de filtros.
  *
+ * @function CustomToolbar
  * @returns {JSX.Element} Contenedor de herramientas con botón de filtro.
  */
 function CustomToolbar() {
@@ -45,6 +47,7 @@ function CustomToolbar() {
  * Componente GridMarca.
  *
  * Renderiza una tabla de marcas con soporte para ordenamiento, paginación, filtrado y selección de filas.
+ * La grilla está contenida en un contenedor que previene el desbordamiento horizontal.
  *
  * @function GridMarca
  * @param {Object} props - Props del componente.
@@ -71,29 +74,35 @@ export default function GridMarca({
   setSelectedRow,
 }) {
   return (
-    <DataGrid
-      rows={marcas || []}
-      columns={columns}
-      rowCount={rowCount}
-      loading={loading}
-      paginationMode="server"
-      paginationModel={paginationModel}
-      onPaginationModelChange={setPaginationModel}
-      sortingMode="server"
-      sortModel={sortModel}
-      onSortModelChange={setSortModel}
-      filterMode="server"
-      onFilterModelChange={setFilterModel}
-      pageSizeOptions={[5, 10, 20, 50]}
-      components={{
-        Toolbar: CustomToolbar,
-      }}
-      onRowSelectionModelChange={(newSelection) => {
-        const selectedIDs = new Set(newSelection);
-        const selectedRowData = marcas.find((row) => selectedIDs.has(row.id));
-        setSelectedRow(selectedRowData || {});
-      }}
-    />
+    <Box sx={{ width: '100%', overflowX: 'auto' }}>
+      <DataGrid
+        rows={marcas || []}
+        columns={columns}
+        rowCount={rowCount}
+        loading={loading}
+        paginationMode="server"
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        sortingMode="server"
+        sortModel={sortModel}
+        onSortModelChange={setSortModel}
+        filterMode="server"
+        onFilterModelChange={setFilterModel}
+        pageSizeOptions={[5, 10, 20, 50]}
+        components={{
+          Toolbar: CustomToolbar,
+        }}
+        onRowSelectionModelChange={(newSelection) => {
+          const selectedIDs = new Set(newSelection);
+          const selectedRowData = marcas.find((row) => selectedIDs.has(row.id));
+          setSelectedRow(selectedRowData || {});
+        }}
+        autoHeight
+        sx={{
+          minWidth: '600px',
+        }}
+      />
+    </Box>
   );
 }
 

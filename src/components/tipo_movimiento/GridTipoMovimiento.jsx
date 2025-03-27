@@ -1,11 +1,11 @@
 /**
  * @file GridTipoMovimiento.jsx
  * @module GridTipoMovimiento
- * @description Componente de grilla para mostrar los Tipos de Movimiento con paginación, filtrado y ordenamiento desde el servidor.
+ * @description Componente de grilla para mostrar los Tipos de Movimiento con paginación, filtrado y ordenamiento desde el servidor. Permite recarga desde el componente padre.
  * @author Karla
  */
 
-import * as React from "react";
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import {
   DataGrid,
   GridToolbarContainer,
@@ -36,9 +36,6 @@ import { SiteProps } from "../dashboard/SiteProps";
  * @property {function(SnackbarMessage): void} setMessage - Función para mostrar mensajes tipo snackbar
  */
 
-/**
- * Columnas de la tabla de tipos de movimiento.
- */
 const columns = [
   { field: "id", headerName: "ID", width: 90, type: "number" },
   { field: "nombre", headerName: "Nombre", width: 150, type: "string" },
@@ -55,29 +52,23 @@ const columns = [
 
 /**
  * Componente de grilla que muestra los Tipos de Movimiento desde el backend con paginación, orden y filtro.
+ * Permite recarga desde el componente padre mediante ref.
  *
  * @param {GridTipoMovimientoProps} props - Props del componente
+ * @param {React.Ref} ref - Referencia para exponer método reloadData
  * @returns {JSX.Element}
  */
-export default function GridTipoMovimiento(props) {
-  const [data, setData] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
-  const [rowCount, setRowCount] = React.useState(0);
-  const [paginationModel, setPaginationModel] = React.useState({
+const GridTipoMovimiento = forwardRef(function GridTipoMovimiento(props, ref) {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [rowCount, setRowCount] = useState(0);
+  const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
   });
-  const [sortModel, setSortModel] = React.useState([]);
-  const [filterModel, setFilterModel] = React.useState({ items: [] });
+  const [sortModel, setSortModel] = useState([]);
+  const [filterModel, setFilterModel] = useState({ items: [] });
 
-  /**
-   * Obtiene los datos del backend con paginación, ordenamiento y filtros.
-   *
-   * @param {number} page
-   * @param {number} pageSize
-   * @param {Array<Object>} sortModel
-   * @param {{items: Array<Object>}} filterModel
-   */
   const fetchData = async (page, pageSize, sortModel, filterModel) => {
     setLoading(true);
     try {
@@ -115,8 +106,7 @@ export default function GridTipoMovimiento(props) {
     }
   };
 
-  // Cargar datos al montar y cuando cambian los modelos de paginación, orden o filtro
-  React.useEffect(() => {
+  useEffect(() => {
     fetchData(
       paginationModel.page,
       paginationModel.pageSize,
@@ -125,10 +115,17 @@ export default function GridTipoMovimiento(props) {
     );
   }, [paginationModel, sortModel, filterModel]);
 
-  /**
-   * Toolbar personalizada para la grilla.
-   * @returns {JSX.Element}
-   */
+  useImperativeHandle(ref, () => ({
+    reloadData: () => {
+      fetchData(
+        paginationModel.page,
+        paginationModel.pageSize,
+        sortModel,
+        filterModel
+      );
+    },
+  }));
+
   function CustomToolbar() {
     return (
       <GridToolbarContainer>
@@ -162,4 +159,6 @@ export default function GridTipoMovimiento(props) {
       />
     </div>
   );
-}
+});
+
+export default GridTipoMovimiento;

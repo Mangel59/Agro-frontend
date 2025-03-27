@@ -1,8 +1,8 @@
 /**
  * @file Marca.jsx
  * @module Marca
+ * @description Componente principal para gestionar marcas. Incluye formulario, grilla, paginación, ordenamiento y filtros conectados al backend con autenticación vía token JWT. El listado de marcas se gestiona desde el servidor y se representa en una tabla editable con Material-UI DataGrid.
  * @author Karla
- * @description Componente principal para gestionar marcas. Incluye formulario, grilla, paginación, ordenamiento y filtros.
  */
 
 import React from "react";
@@ -13,16 +13,22 @@ import GridMarca from "./GridMarca";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
- * Componente Marca.
- * Muestra el listado de marcas y permite crear, editar y eliminar registros.
+ * @typedef {Object} MarcaRow
+ * @property {number} id - ID de la marca.
+ * @property {string} nombre - Nombre de la marca.
+ * @property {string} descripcion - Descripción de la marca.
+ * @property {number} estado - Estado de la marca (1 = Activo, 0 = Inactivo).
+ * @property {string|number} empresa - Empresa asociada a la marca.
+ */
+
+/**
+ * Componente principal `Marca`.
+ * Administra el CRUD de marcas y la vista de tabla con paginación y ordenamiento.
  *
- * @returns {JSX.Element} Componente principal con formulario y grilla de marcas.
+ * @returns {JSX.Element} Componente completo con formulario y tabla.
  */
 export default function Marca() {
-  /**
-   * Valor inicial para una marca vacía.
-   * @type {{id: number, nombre: string, descripcion: string, estado: number, empresa: string}}
-   */
+  /** Marca vacía como valor inicial para selección */
   const row = {
     id: 0,
     nombre: "",
@@ -31,36 +37,37 @@ export default function Marca() {
     empresa: "",
   };
 
-  /** Marca seleccionada en la grilla */
+  /** Marca seleccionada actualmente */
   const [selectedRow, setSelectedRow] = React.useState(row);
 
-  /** Estado del mensaje del snackbar */
+  /** Estado del snackbar para mostrar mensajes */
   const [message, setMessage] = React.useState({
     open: false,
     severity: "success",
     text: "",
   });
 
-  /** Lista de marcas cargadas desde el backend */
+  /** Lista de marcas obtenidas desde el backend */
   const [marcas, setMarcas] = React.useState([]);
 
-  /** Modelo de paginación */
+  /** Modelo de paginación de la grilla */
   const [paginationModel, setPaginationModel] = React.useState({
     page: 0,
     pageSize: 5,
   });
 
-  /** Número total de filas (rowCount) */
+  /** Total de registros para la paginación */
   const [rowCount, setRowCount] = React.useState(0);
 
-  /** Modelo de ordenamiento */
+  /** Modelo de ordenamiento aplicado a la tabla */
   const [sortModel, setSortModel] = React.useState([]);
 
   /** Modelo de filtros aplicado a la tabla */
   const [filterModel, setFilterModel] = React.useState({ items: [] });
 
   /**
-   * Carga los datos de marcas desde el backend, aplicando paginación y ordenamiento.
+   * Carga la lista de marcas desde el backend aplicando
+   * paginación y ordenamiento con token de autenticación.
    */
   const reloadData = () => {
     const token = localStorage.getItem("token");
@@ -112,7 +119,8 @@ export default function Marca() {
   };
 
   /**
-   * Efecto que se ejecuta al montar el componente y cada vez que cambian la paginación o el ordenamiento.
+   * Hook que recarga los datos cada vez que cambian
+   * los parámetros de paginación o de ordenamiento.
    */
   React.useEffect(() => {
     reloadData();
@@ -121,7 +129,9 @@ export default function Marca() {
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <h1>Marca</h1>
+
       <MessageSnackBar message={message} setMessage={setMessage} />
+
       <FormMarca
         setMessage={setMessage}
         selectedRow={selectedRow}
@@ -129,6 +139,7 @@ export default function Marca() {
         reloadData={reloadData}
         marcas={marcas}
       />
+
       <GridMarca
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}

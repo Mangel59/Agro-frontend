@@ -1,7 +1,7 @@
 /**
  * @file GridTipoProduccion.jsx
  * @module GridTipoProduccion
- * @description Componente de grilla para mostrar los tipos de producción con paginación, filtrado y ordenamiento desde el servidor.
+ * @description Componente de grilla para mostrar los tipos de producción con paginación, filtrado y ordenamiento desde el servidor. La grilla se ajusta automáticamente a la altura del contenido usando `autoHeight`.
  */
 
 import * as React from "react";
@@ -19,6 +19,7 @@ import { SiteProps } from "../dashboard/SiteProps";
  * @property {string} nombre - Nombre del tipo de producción
  * @property {string} descripcion - Descripción
  * @property {number} estado - Estado (1: Activo, 0: Inactivo)
+ * @property {number} empresa - ID de la empresa asociada
  */
 
 /**
@@ -36,12 +37,13 @@ import { SiteProps } from "../dashboard/SiteProps";
  */
 
 /**
- * Columnas de la grilla
+ * Columnas de la grilla.
  */
 const columns = [
   { field: "id", headerName: "ID", width: 90, type: "number" },
   { field: "nombre", headerName: "Nombre", width: 150, type: "string" },
   { field: "descripcion", headerName: "Descripción", width: 250, type: "string" },
+  { field: "empresa", headerName: "Empresa", width: 120, type: "number" },
   {
     field: "estado",
     headerName: "Estado",
@@ -52,9 +54,9 @@ const columns = [
 ];
 
 /**
- * Componente para mostrar los tipos de producción en una tabla con paginación, ordenamiento y filtrado.
- * @param {GridTipoProduccionProps} props - Props del componente
- * @returns {JSX.Element} Componente de tabla.
+ * Componente que muestra la grilla de tipos de producción.
+ * @param {GridTipoProduccionProps} props - Propiedades del componente.
+ * @returns {JSX.Element}
  */
 export default function GridTipoProduccion(props) {
   const [data, setData] = React.useState([]);
@@ -62,17 +64,13 @@ export default function GridTipoProduccion(props) {
   const [rowCount, setRowCount] = React.useState(0);
   const [paginationModel, setPaginationModel] = React.useState({
     page: 0,
-    pageSize: 10,
+    pageSize: 5,
   });
   const [sortModel, setSortModel] = React.useState([]);
   const [filterModel, setFilterModel] = React.useState({ items: [] });
 
   /**
    * Obtiene los datos del backend.
-   * @param {number} page - Página actual
-   * @param {number} pageSize - Tamaño de la página
-   * @param {Array<Object>} sortModel - Modelo de ordenamiento
-   * @param {Object} filterModel - Modelo de filtrado
    */
   const fetchData = async (page, pageSize, sortModel, filterModel) => {
     setLoading(true);
@@ -90,9 +88,7 @@ export default function GridTipoProduccion(props) {
       };
 
       const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("Token de autenticación no encontrado");
-      }
+      if (!token) throw new Error("Token de autenticación no encontrado");
 
       const response = await axios.get(url, {
         params,
@@ -116,12 +112,12 @@ export default function GridTipoProduccion(props) {
     }
   };
 
-  // Recarga los datos cada vez que cambia la paginación, el orden o el filtro
+  // Recargar cuando cambien los filtros, paginación u orden
   React.useEffect(() => {
     fetchData(paginationModel.page, paginationModel.pageSize, sortModel, filterModel);
   }, [paginationModel, sortModel, filterModel]);
 
-  // Permite recargar datos desde el componente padre usando ref
+  // Exponer método recarga con ref
   React.useImperativeHandle(props.innerRef, () => ({
     reloadData: () => fetchData(paginationModel.page, paginationModel.pageSize, sortModel, filterModel),
   }));
@@ -139,15 +135,16 @@ export default function GridTipoProduccion(props) {
   }
 
   return (
-    <div style={{ height: 600, width: "100%" }}>
+    <div style={{ width: "100%", backgroundColor: "white" }}>
       <DataGrid
         rows={data}
         columns={columns}
         loading={loading}
+        autoHeight
         paginationMode="server"
         rowCount={rowCount}
         paginationModel={paginationModel}
-        pageSizeOptions={[5, 10, 15, 20]}
+        pageSizeOptions={[5, 10, 20]}
         onPaginationModelChange={setPaginationModel}
         sortingMode="server"
         onSortModelChange={setSortModel}
@@ -160,6 +157,10 @@ export default function GridTipoProduccion(props) {
           props.setSelectedRow(selectedRow || { id: 0 });
         }}
         components={{ Toolbar: CustomToolbar }}
+        sx={{
+          borderRadius: 2,
+          boxShadow: 1,
+        }}
       />
     </div>
   );

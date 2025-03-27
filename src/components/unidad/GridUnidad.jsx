@@ -1,7 +1,7 @@
 /**
  * @file GridUnidad.jsx
  * @module GridUnidad
- * @description Componente que muestra la grilla de unidades con paginación, filtrado y ordenamiento desde el servidor.
+ * @description Componente que muestra la grilla de unidades con paginación, filtrado y ordenamiento desde el servidor. La grilla se adapta al tamaño del contenedor sin salirse del cuadro visual definido en la interfaz del usuario (contenedor blanco). Incluye barra de filtros personalizada con Material UI DataGrid Pro o XGrid (MUI X DataGrid Pro requerido para filtros avanzados en producción). 
  * @author Karla
  */
 
@@ -34,7 +34,6 @@ const columns = [
 /**
  * Barra de herramientas personalizada para la grilla.
  * Incluye el botón de filtros.
- * @function
  * @returns {JSX.Element}
  */
 function CustomToolbar() {
@@ -75,27 +74,33 @@ export default function GridUnidad({
   setSelectedRow,
 }) {
   return (
-    <DataGrid
-      rows={unidades || []}
-      columns={columns}
-      rowCount={rowCount}
-      loading={loading}
-      paginationMode="server"
-      paginationModel={paginationModel}
-      onPaginationModelChange={setPaginationModel}
-      sortingMode="server"
-      sortModel={sortModel}
-      onSortModelChange={(model) => setSortModel && setSortModel(model)}
-      filterModel={filterModel}
-      onFilterModelChange={(model) => setFilterModel && setFilterModel(model)}
-      pageSizeOptions={[5, 10, 20, 50]}
-      components={{ Toolbar: CustomToolbar }}
-      onRowSelectionModelChange={(newSelection) => {
-        const selectedIDs = new Set(newSelection);
-        const selectedRowData = unidades.find((row) => selectedIDs.has(row.id));
-        setSelectedRow(selectedRowData || {});
-      }}
-    />
+    <div style={{ height: '450px', width: '100%', backgroundColor: 'white' }}>
+      <DataGrid
+        rows={unidades || []}
+        columns={columns}
+        rowCount={rowCount}
+        loading={loading}
+        paginationMode="server"
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        sortingMode="server"
+        sortModel={sortModel}
+        onSortModelChange={(model) => setSortModel && setSortModel(model)}
+        filterModel={filterModel}
+        onFilterModelChange={(model) => setFilterModel && setFilterModel(model)}
+        pageSizeOptions={[5, 10, 20, 50]}
+        components={{ Toolbar: CustomToolbar }}
+        onRowSelectionModelChange={(newSelection) => {
+          const selectedIDs = new Set(newSelection);
+          const selectedRowData = unidades.find((row) => selectedIDs.has(row.id));
+          setSelectedRow(selectedRowData || {});
+        }}
+        sx={{
+          borderRadius: 2,
+          boxShadow: 1,
+        }}
+      />
+    </div>
   );
 }
 

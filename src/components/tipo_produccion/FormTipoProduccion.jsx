@@ -55,7 +55,7 @@ export default function FormTipoProduccion(props) {
   const create = () => {
     const row = { id: 0, nombre: "", descripcion: "", estado: 0 };
     props.setSelectedRow(row);
-    setMethodName("Add");
+    setMethodName("Agregar");
     setOpen(true);
   };
 
@@ -68,7 +68,7 @@ export default function FormTipoProduccion(props) {
       });
       return;
     }
-    setMethodName("Update");
+    setMethodName("actualizar ");
     setOpen(true);
   };
 

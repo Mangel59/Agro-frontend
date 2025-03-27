@@ -3,7 +3,7 @@
  * @module Unidad
  * @description Componente principal para la gestión de unidades. 
  * Carga datos desde la API, maneja paginación, mensajes de estado y renderiza el formulario y la grilla de unidades.
- * @author Karla
+ * @author Maria
  * @exports Unidad
  */
 
@@ -137,6 +137,7 @@ export default function Unidad() {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
+      <h1>Unidad</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
 
       <FormUnidad

@@ -1,101 +1,67 @@
-
 /**
  * Login componente principal.
+ * @module Login.jsx
  * @component
  * @returns {JSX.Element}
  */
+
 import React, { useState } from 'react';
-import { Container, TextField, Button, Typography, Box, IconButton, InputAdornment, Alert, Link } from '@mui/material';
+import {
+  Container, TextField, Button, Typography, Box,
+  IconButton, InputAdornment, Alert, Link
+} from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
 import LoginIcon from '@mui/icons-material/Login';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useThemeToggle } from './dashboard/ThemeToggleProvider';
+import { useTheme } from '@mui/material/styles';
+import ForgetPassword from './ForgetPassword';
 import FormRegistroPersona from './seguridad/FormRegistroPersona';
 import FormRegistroEmpresa from './seguridad/FormRegistroEmpresa';
 import Contenido from '../components/dashboard/Contenido';
 import PropTypes from "prop-types";
-import ForgetPassword from './ForgetPassword';
 
-
-/**
- * Componente Login.
- * @module Login.jsx
- * @component
- * @returns {JSX.Element}
- */
 export default function Login(props) {
-  const { t, i18n } = useTranslation(); // Hook de traducción
-  const [username, setUsername] = useState(''); // Estado para el nombre de usuario/correo electrónico
-  const [password, setPassword] = useState(''); // Estado para la contraseña
-  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar la contraseña
-  const [error, setError] = useState(''); // Estado para manejar errores de autenticación
-  const toggleTheme = useThemeToggle(); // Hook para alternar entre temas
+  const { t, i18n } = useTranslation();
+  const theme = useTheme();
 
-  /**
-   * Alterna la visibilidad del campo de la contraseña.
-   */
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
-  /**
-   * Previene la acción predeterminada cuando se presiona el botón del mouse en el icono para mostrar/ocultar contraseña.
-   *
-   * @param {Event} event - El evento de mouse down.
-   */
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
 
-  /**
-   * Valida si el correo electrónico introducido tiene un formato válido.
-   *
-   * @param {string} email - El correo electrónico a validar.
-   * @returns {boolean} - Devuelve true si el correo es válido, de lo contrario false.
-   */
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  /**
-   * Maneja el envío del formulario, valida los datos y envía la solicitud de inicio de sesión al servidor.
-   * Dependiendo de la respuesta, redirige al usuario al módulo correspondiente.
-   *
-   * @param {Event} event - El evento de envío del formulario.
-   */
   const handleSubmit = (event) => {
-    event.preventDefault(); // Previene la recarga de la página al enviar el formulario
-    setError(''); // Reinicia cualquier mensaje de error
+    event.preventDefault();
+    setError('');
 
     if (!validateEmail(username)) {
-      setError(t('invalid_email')); // Muestra mensaje de error si el correo no es válido
+      setError(t('invalid_email'));
       return;
     }
 
-    // Petición al backend para el login
-    // axios.post('http://172.16.79.156:8080/auth/login', {
     axios.post('http://localhost:8080/auth/login', {
       username,
       password,
     })
       .then(response => {
-        // Guardar el token en el almacenamiento local para manejar la sesión
         localStorage.setItem('token', response.data.token);
 
-        // Verificar si props.setIsAuthenticated existe y es una función
         if (props.setIsAuthenticated && typeof props.setIsAuthenticated === 'function') {
-          // Actualizar el estado de autenticación global
           props.setIsAuthenticated(true);
-        } else {
-          console.warn('setIsAuthenticated no está disponible o no es una función.');
         }
 
         const usuarioEstado = response.data.usuarioEstado;
-
-        // Según el estado del usuario, redirigir a los módulos correspondientes
         if (usuarioEstado === 2) {
           props.setCurrentModule(<FormRegistroPersona setCurrentModule={props.setCurrentModule} />);
         } else if (usuarioEstado === 3) {
@@ -105,24 +71,16 @@ export default function Login(props) {
         }
       })
       .catch(error => {
-        setError(t('login_error')); // Mostrar error si la autenticación falla
-        console.error('There was an error logging in!', error);
+        setError(t('login_error'));
+        console.error('Login error:', error);
       });
   };
 
-  /**
-   * Cambia el idioma de la aplicación usando la biblioteca i18n.
-   *
-   * @param {string} lng - El código de idioma al que cambiar (por ejemplo, 'en' para inglés, 'es' para español).
-   */
-  const handleLanguageChange = (lng) => {
-    i18n.changeLanguage(lng);
-  };
-  // Validación de props
   Login.propTypes = {
     setIsAuthenticated: PropTypes.func.isRequired,
     setCurrentModule: PropTypes.func.isRequired,
   };
+
   return (
     <Container
       maxWidth={false}
@@ -132,9 +90,8 @@ export default function Login(props) {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        backgroundColor: '#FFF',
+        backgroundColor: theme.palette.background.default,
         padding: 3,
-        mt: 15,
       }}
     >
       <Box
@@ -145,9 +102,9 @@ export default function Login(props) {
           flexDirection: 'column',
           gap: 3,
           padding: 4,
-          backgroundColor: 'white',
+          backgroundColor: theme.palette.background.paper,
           borderRadius: 4,
-          boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)',
+          boxShadow: theme.shadows[5],
           width: '100%',
           maxWidth: 400,
         }}
@@ -156,17 +113,12 @@ export default function Login(props) {
           variant="h4"
           component="h1"
           align="center"
-          sx={{
-            fontWeight: 'bold',
-            marginBottom: 3,
-            color: '#1a237e',
-          }}
+          sx={{ fontWeight: 'bold', color: theme.palette.text.primary }}
         >
           {t('login')}
         </Typography>
-        {error && (
-          <Alert severity="error">{error}</Alert>
-        )}
+
+        {error && <Alert severity="error">{error}</Alert>}
 
         <TextField
           label={t("email")}
@@ -174,20 +126,6 @@ export default function Login(props) {
           value={username}
           onChange={e => setUsername(e.target.value)}
           fullWidth
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 3,
-              '& fieldset': {
-                borderColor: '#1e88e5',
-              },
-              '&:hover fieldset': {
-                borderColor: '#1565c0',
-              },
-            },
-            '& .MuiInputLabel-root': {
-              color: '#1e88e5',
-            },
-          }}
         />
         <TextField
           label={t("password")}
@@ -196,25 +134,10 @@ export default function Login(props) {
           value={password}
           onChange={e => setPassword(e.target.value)}
           fullWidth
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 3,
-              '& fieldset': {
-                borderColor: '#1e88e5',
-              },
-              '&:hover fieldset': {
-                borderColor: '#1565c0',
-              },
-            },
-            '& .MuiInputLabel-root': {
-              color: '#1e88e5',
-            },
-          }}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton
-                  aria-label="toggle password visibility"
                   onClick={handleClickShowPassword}
                   onMouseDown={handleMouseDownPassword}
                   edge="end"
@@ -229,19 +152,8 @@ export default function Login(props) {
         <Button
           type="submit"
           variant="contained"
-          color="primary"
-          fullWidth
           startIcon={<LoginIcon />}
-          sx={{
-            padding: '12px 0',
-            borderRadius: 3,
-            textTransform: 'none',
-            fontWeight: 'bold',
-            backgroundColor: '#1e88e5',
-            '&:hover': {
-              backgroundColor: '#1565c0',
-            },
-          }}
+          fullWidth
         >
           {t('login')}
         </Button>
@@ -249,41 +161,21 @@ export default function Login(props) {
         <Button
           variant="text"
           onClick={() => props.setCurrentModule(<ForgetPassword setCurrentModule={props.setCurrentModule} />)}
-          sx={{
-            color: '#1e88e5',
-            textTransform: 'none',
-            fontWeight: 'bold',
-            alignSelf: 'center',
-            padding: 0,
-            minWidth: 'unset'
-          }}
+          sx={{ color: theme.palette.primary.main }}
         >
           ¿Olvidaste tu contraseña?
         </Button>
 
-        <Typography
-          variant="body2"
-          align="center"
-          sx={{ marginTop: 3, color: '#666' }}
-        >
+        <Typography variant="body2" align="center">
           {t("no_account")}{" "}
           <Link
             component={RouterLink}
             to="/register"
-            sx={{
-              color: '#1e88e5',
-              textDecoration: 'none',
-              fontWeight: 'bold'
-            }}
+            sx={{ color: theme.palette.primary.main }}
           >
             {t('register_here')}
           </Link>
         </Typography>
-
-        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
-          <Button onClick={() => handleLanguageChange('en')}>English</Button>
-          <Button onClick={() => handleLanguageChange('es')}>Español</Button>
-        </Box>
       </Box>
     </Container>
   );

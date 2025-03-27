@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Container,
@@ -15,18 +14,23 @@ import { useThemeToggle } from './dashboard/ThemeToggleProvider';
 import AppBarComponent from './dashboard/AppBarComponent';
 import axios from './axiosConfig';
 import Login from './Login';
+import { useTheme } from '@mui/material/styles';
 
+/**
+ * Componente para recuperar la contraseña.
+ *
+ * @component
+ */
 const ForgetPassword = ({ setCurrentModule }) => {
   const { t, i18n } = useTranslation();
   const toggleTheme = useThemeToggle();
+  const theme = useTheme(); // 🔥 Usamos el tema MUI para modo claro/oscuro
+
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState({ type: '', message: '' });
   const [loading, setLoading] = useState(false);
 
-  const validateEmail = (email) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  };
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -40,7 +44,6 @@ const ForgetPassword = ({ setCurrentModule }) => {
     try {
       setLoading(true);
 
-      // 💥 Formato EXACTO como Postman: x-www-form-urlencoded
       const params = new URLSearchParams();
       params.append('email', email);
 
@@ -65,9 +68,7 @@ const ForgetPassword = ({ setCurrentModule }) => {
     }
   };
 
-  const handleLanguageChange = (lng) => {
-    i18n.changeLanguage(lng);
-  };
+  const handleLanguageChange = (lng) => i18n.changeLanguage(lng);
 
   return (
     <Container
@@ -78,7 +79,7 @@ const ForgetPassword = ({ setCurrentModule }) => {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        backgroundColor: '#FFF',
+        backgroundColor: theme.palette.background.default,
         padding: 3,
         mt: 5
       }}
@@ -93,7 +94,7 @@ const ForgetPassword = ({ setCurrentModule }) => {
           flexDirection: 'column',
           gap: 3,
           padding: 4,
-          backgroundColor: 'white',
+          backgroundColor: theme.palette.background.paper,
           borderRadius: 4,
           boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)',
           width: '100%',
@@ -122,7 +123,7 @@ const ForgetPassword = ({ setCurrentModule }) => {
           sx={{
             fontWeight: 'bold',
             marginBottom: 3,
-            color: '#1a237e'
+            color: theme.palette.text.primary
           }}
         >
           Recuperar contraseña
@@ -139,20 +140,6 @@ const ForgetPassword = ({ setCurrentModule }) => {
           onChange={(e) => setEmail(e.target.value)}
           fullWidth
           disabled={loading}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 3,
-              '& fieldset': {
-                borderColor: '#1e88e5'
-              },
-              '&:hover fieldset': {
-                borderColor: '#1565c0'
-              }
-            },
-            '& .MuiInputLabel-root': {
-              color: '#1e88e5'
-            }
-          }}
         />
 
         <Button
@@ -165,11 +152,7 @@ const ForgetPassword = ({ setCurrentModule }) => {
             padding: '12px 0',
             borderRadius: 3,
             textTransform: 'none',
-            fontWeight: 'bold',
-            backgroundColor: '#1e88e5',
-            '&:hover': {
-              backgroundColor: '#1565c0'
-            }
+            fontWeight: 'bold'
           }}
         >
           {loading ? 'Enviando...' : 'Enviar enlace de recuperación'}
