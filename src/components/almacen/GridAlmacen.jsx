@@ -1,18 +1,37 @@
 /**
- * Muestra una grilla de almacenes con paginación y selección de filas.
+ * @file GridAlmacen.jsx
  * @module GridAlmacen
- * @component
- *
- * @param {Object} props - Propiedades del componente.
- * @param {Array<Object>} props.almacenes - Lista de almacenes a mostrar.
- * @param {Function} props.setSelectedRow - Función que actualiza el almacén seleccionado.
- * @returns {JSX.Element} Componente GridAlmacen.
+ * @description Componente de grilla para visualizar almacenes con paginación y selección de fila.
+ * Muestra campos clave como nombre, geolocalización, sede y estado. Utiliza DataGrid de Material-UI.
+ * Permite seleccionar un almacén para editarlo o eliminarlo desde el formulario superior.
+ * @author Karla
  */
 
 import * as React from "react";
 import PropTypes from "prop-types";
 import { DataGrid } from "@mui/x-data-grid";
 
+/**
+ * @typedef {Object} AlmacenRow
+ * @property {number} id - ID del almacén
+ * @property {string} nombre - Nombre del almacén
+ * @property {string} geolocalizacion - Coordenada de ubicación (numérica)
+ * @property {string} coordenadas - Coordenadas de ubicación (texto)
+ * @property {string} descripcion - Descripción del almacén
+ * @property {string|number|Object} sede - Nombre o ID de la sede asociada, o un objeto con propiedad `nombre`
+ * @property {number} estado - Estado del almacén (1: Activo, 0: Inactivo)
+ */
+
+/**
+ * @typedef {Object} GridAlmacenProps
+ * @property {AlmacenRow[]} almacenes - Lista de almacenes a mostrar
+ * @property {Function} setSelectedRow - Función para establecer el almacén seleccionado
+ */
+
+/**
+ * Columnas para el DataGrid de almacenes.
+ * Incluye renderizado personalizado para `sede` y `estado`.
+ */
 const columns = [
   { field: "id", headerName: "ID", width: 90 },
   { field: "nombre", headerName: "Nombre", width: 150 },
@@ -32,14 +51,17 @@ const columns = [
     field: "estado",
     headerName: "Estado",
     width: 100,
-    valueGetter: (params) => (params.row.estado === 1 ? "Activo" : "Inactivo"),
+    valueGetter: (params) =>
+      params.row.estado === 1 ? "Activo" : "Inactivo",
   },
 ];
 
 /**
- * GridAlmacen componente principal.
- * @component
- * @returns {JSX.Element}
+ * Componente GridAlmacen.
+ * Renderiza una tabla interactiva con la lista de almacenes.
+ *
+ * @param {GridAlmacenProps} props
+ * @returns {JSX.Element} Tabla de almacenes con selección de filas.
  */
 export default function GridAlmacen({ almacenes, setSelectedRow }) {
   return (
@@ -61,6 +83,7 @@ export default function GridAlmacen({ almacenes, setSelectedRow }) {
         },
       }}
       pageSizeOptions={[5, 10, 20, 50]}
+      getRowId={(row) => row.id}
     />
   );
 }
@@ -70,8 +93,14 @@ GridAlmacen.propTypes = {
     PropTypes.shape({
       id: PropTypes.number.isRequired,
       nombre: PropTypes.string.isRequired,
+      geolocalizacion: PropTypes.string,
+      coordenadas: PropTypes.string,
       descripcion: PropTypes.string,
-      sede: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      sede: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number,
+        PropTypes.shape({ nombre: PropTypes.string }),
+      ]),
       estado: PropTypes.number,
     })
   ).isRequired,

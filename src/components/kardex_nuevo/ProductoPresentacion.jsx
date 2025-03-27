@@ -1,27 +1,26 @@
-/**
- * @file ProductoPresentacion.jsx
- * @module ProductoPresentacion
- * @author Karla
- * @description Componente de autocompletado para seleccionar una combinación de producto y presentación.
- */
 
+/**
+ * ProductoPresentacion componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
+// import React, { useEffect, useState } from 'react';
+// import { TextField, Autocomplete } from '@mui/material';
+// import axios from 'axios';
+// import { SiteProps } from '../dashboard/SiteProps';
+
+/**
+ * Componente ProductoPresentacion.
+ * @module ProductoPresentacion.jsx
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useEffect, useState } from 'react';
 import { TextField, Autocomplete } from '@mui/material';
 import axios from 'axios';
 import { SiteProps } from '../dashboard/SiteProps';
 
-/**
- * Componente ProductoPresentacion.
- * Muestra un campo de autocompletado para elegir un producto con su presentación.
- *
- * @param {Object} props
- * @param {Object} props.value Valor seleccionado actualmente.
- * @param {Function} props.setValue Función para actualizar el valor seleccionado.
- * @returns {JSX.Element} Componente de selección de producto-presentación.
- */
 export default function ProductoPresentacion({ value, setValue }) {
-  // Lista combinada de productos y presentaciones
-  /** @type {Array<Object>} */
   const [options, setOptions] = useState([]);
 
   useEffect(() => {

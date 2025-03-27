@@ -23,7 +23,10 @@ import { DataGrid } from '@mui/x-data-grid';
  * @property {Function} setSelectedRow - Función para actualizar la fila seleccionada
  */
 
-/** @type {import('@mui/x-data-grid').GridColDef[]} */
+/**
+ * Columnas definidas para el DataGrid.
+ * @type {Object[]}
+ */
 const columns = [
   { field: 'id', headerName: 'ID', width: 70 },
   { field: 'nombre', headerName: 'Nombre', width: 200 },
@@ -41,7 +44,6 @@ const columns = [
  *
  * Muestra una tabla con los tipos de bloque disponibles, permitiendo la selección de una fila.
  *
- * @function GridTipoBloque
  * @param {GridTipoBloqueProps} props
  * @returns {JSX.Element} Tabla de tipos de bloque
  */

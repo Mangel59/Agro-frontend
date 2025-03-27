@@ -13,35 +13,60 @@ import GridProductoCategoria from "./GridProductoCategoria";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
- * Componente ProductoCategoria.
+ * @typedef {Object} ProductoCategoriaRow
+ * @property {number} id - ID de la categoría de producto.
+ * @property {string} nombre - Nombre de la categoría.
+ * @property {string} descripcion - Descripción de la categoría.
+ * @property {number} estado - Estado (1: activo, 0: inactivo).
+ */
+
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open - Si el Snackbar está visible.
+ * @property {string} severity - Tipo del mensaje (success, error, etc.).
+ * @property {string} text - Contenido del mensaje.
+ */
+
+/**
+ * @typedef {Object} PaginationModel
+ * @property {number} page - Número de página actual.
+ * @property {number} pageSize - Tamaño de página.
+ */
+
+/**
+ * Componente ProductoCategoria
  *
- * Permite la gestión completa de las categorías de productos:
- * - Cargar datos desde el backend.
- * - Crear, actualizar y eliminar registros.
- * - Mostrar notificaciones con Snackbar.
- *
- * @component
- * @returns {JSX.Element} Interfaz para gestión de categorías de productos
+ * @returns {JSX.Element}
  */
 export default function ProductoCategoria() {
+  /** @type {ProductoCategoriaRow} */
   const row = {
     id: 0,
     nombre: "",
     descripcion: "",
-    estado: 1, // Activo por defecto
+    estado: 1,
   };
 
+  /** @type {React.State<ProductoCategoriaRow>} */
   const [selectedRow, setSelectedRow] = React.useState(row);
+
+  /** @type {React.State<SnackbarMessage>} */
   const [message, setMessage] = React.useState({
     open: false,
     severity: "success",
     text: "",
   });
+
+  /** @type {React.State<ProductoCategoriaRow[]>} */
   const [productocategorias, setProductocategorias] = React.useState([]);
+
+  /** @type {React.State<PaginationModel>} */
   const [paginationModel, setPaginationModel] = React.useState({
     page: 0,
     pageSize: 5,
   });
+
+  /** @type {React.State<number>} */
   const [rowCount, setRowCount] = React.useState(0);
 
   /**
@@ -111,10 +136,8 @@ export default function ProductoCategoria() {
     <div style={{ height: "100%", width: "100%" }}>
       <h1>Producto Categoría</h1>
 
-      {/* Snackbar para mensajes */}
       <MessageSnackBar message={message} setMessage={setMessage} />
 
-      {/* Formulario para agregar o editar */}
       <FormProductoCategoria
         setMessage={setMessage}
         selectedRow={selectedRow}
@@ -122,7 +145,6 @@ export default function ProductoCategoria() {
         reloadData={reloadData}
       />
 
-      {/* Tabla con categorías */}
       <GridProductoCategoria
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}

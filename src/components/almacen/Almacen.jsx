@@ -1,12 +1,10 @@
 /**
- * Componente principal para la gestión de Almacenes.
- *
- * Este componente permite seleccionar una sede, visualizar los almacenes
- * correspondientes, y gestionar los datos mediante un formulario.
- *
+ * @file Almacen.jsx
  * @module Almacen
- * @component
- * @returns {JSX.Element} El componente de gestión de almacenes.
+ * @description Componente principal para la gestión de Almacenes.
+ * Permite seleccionar una sede, visualizar los almacenes relacionados, y gestionar los datos mediante formulario y grilla.
+ * Conecta con el backend para obtener y actualizar datos.
+ * @author Karla
  */
 
 import React, { useState, useEffect } from "react";
@@ -16,21 +14,48 @@ import FormAlmacen from "./FormAlmacen";
 import GridAlmacen from "./GridAlmacen";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open - Si el mensaje está visible
+ * @property {string} severity - Nivel de severidad del mensaje ('success', 'error', etc.)
+ * @property {string} text - Texto del mensaje
+ */
+
+/**
+ * @typedef {Object} SedeMinimal
+ * @property {number} id - ID de la sede
+ * @property {string} nombre - Nombre de la sede
+ */
+
+/**
+ * @typedef {Object} AlmacenRow
+ * @property {number} id - ID del almacén
+ * @property {string} nombre - Nombre del almacén
+ * @property {string} descripcion - Descripción del almacén
+ * @property {number} estado - Estado del almacén (1: Activo, 0: Inactivo)
+ */
+
+/**
+ * Componente principal de gestión de almacenes.
+ *
+ * @component
+ * @returns {JSX.Element} El componente de interfaz para gestionar almacenes por sede.
+ */
 export default function Almacen() {
-  const [sedes, setSedes] = useState([]);
-  const [almacenes, setAlmacenes] = useState([]);
+  const [sedes, setSedes] = useState(/** @type {SedeMinimal[]} */ ([]));
+  const [almacenes, setAlmacenes] = useState(/** @type {AlmacenRow[]} */ ([]));
   const [selectedSede, setSelectedSede] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [message, setMessage] = useState({
+  const [message, setMessage] = useState(/** @type {SnackbarMessage} */ ({
     open: false,
     severity: "success",
     text: "",
-  });
+  }));
 
   /**
-   * Carga las sedes al montar el componente.
+   * Carga la lista de sedes al iniciar el componente.
    */
   useEffect(() => {
     const fetchSedes = async () => {
@@ -43,6 +68,7 @@ export default function Almacen() {
         console.error("Error al cargar las sedes:", err);
       }
     };
+
     fetchSedes();
   }, []);
 
@@ -59,12 +85,9 @@ export default function Almacen() {
     const fetchAlmacenes = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          `${SiteProps.urlbasev1}/almacen/sede/${selectedSede}`,
-          {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-          }
-        );
+        const response = await axios.get(`${SiteProps.urlbasev1}/almacen/sede/${selectedSede}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
 
         const data = response.data?.content || [];
         setAlmacenes(data);
@@ -82,18 +105,15 @@ export default function Almacen() {
   }, [selectedSede]);
 
   /**
-   * Recarga los datos de almacenes según la sede seleccionada.
+   * Recarga los almacenes de la sede seleccionada.
    */
   const reloadAlmacenes = () => {
     if (selectedSede) {
       const fetchAlmacenes = async () => {
         try {
-          const response = await axios.get(
-            `${SiteProps.urlbasev1}/almacen/sede/${selectedSede}`,
-            {
-              headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-            }
-          );
+          const response = await axios.get(`${SiteProps.urlbasev1}/almacen/sede/${selectedSede}`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          });
           const data = response.data?.content || [];
           setAlmacenes(data);
         } catch (err) {
@@ -128,7 +148,7 @@ export default function Almacen() {
         </select>
       </div>
 
-      {/* Formulario para agregar/editar */}
+      {/* Formulario para agregar/editar almacén */}
       <FormAlmacen
         setMessage={setMessage}
         selectedRow={selectedRow}
@@ -137,7 +157,7 @@ export default function Almacen() {
         reloadData={reloadAlmacenes}
       />
 
-      {/* Tabla con todos los campos usando GridAlmacen */}
+      {/* Tabla de almacenes */}
       <div style={{ height: 500, width: "100%" }}>
         {loading ? (
           <div style={{ textAlign: "center", margin: "20px" }}>Cargando datos...</div>

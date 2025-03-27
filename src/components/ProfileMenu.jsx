@@ -8,7 +8,7 @@
 import React, { useState } from 'react';
 import { Button, Menu, MenuItem } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import PerfilGroup from './PerfilGroup';
+
 import Login from './Login';
 
 /**
@@ -61,7 +61,7 @@ const ProfileMenu = ({ setCurrentModule, setIsAuthenticated }) => {
         color="inherit"
         startIcon={<AccountCircle />}
       >
-        Perfil
+         Mi Perfil
       </Button>
       <Menu
         id="simple-menu"
@@ -70,9 +70,6 @@ const ProfileMenu = ({ setCurrentModule, setIsAuthenticated }) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        <MenuItem onClick={() => setCurrentModule(<PerfilGroup setCurrentModule={setCurrentModule} />)}>
-          Perfiles
-        </MenuItem>
         <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
       </Menu>
     </div>

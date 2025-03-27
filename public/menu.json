@@ -117,16 +117,6 @@
         "icon": "ProductionQuantityLimitsIcon"
       },
       {
-        "id": "kardex",
-        "text": "Kardex",
-        "icon": "ProductionQuantityLimitsIcon"
-      },
-      {
-        "id": "kardex_item",
-        "text": "KardexItem",
-        "icon": "ProductionQuantityLimitsIcon"
-      },
-      {
         "id": "kardex_nuevo",
         "text": "Kardex Nuevo",
         "icon": "ProductionQuantityLimitsIcon"
@@ -139,33 +129,13 @@
     "icon": "Settings",
     "children": [
       {
-        "id": "evaluacion",
-        "text": "Evaluacion",
-        "icon": "Settings"
-      },
-      {
-        "id": "cliente_evalacion",
-        "text": "ClienteEvaluacion",
-        "icon": "Settings"
-      },
-      {
         "id": "r_pedido",
         "text": "Reportes de Pedido",
         "icon": "Settings"
       },
       {
-        "id": "proveedor_eevaluacion",
-        "text": "ProveedorEvaluacion",
-        "icon": "Settings"
-      },
-      {
         "id": "r_orden_compra",
         "text": "Reportes de Orden de Compra",
-        "icon": "Settings"
-      },
-      {
-        "id": "TipoEvaluacionReport",
-        "text": "Reportes de TipoEvaluacionReport",
         "icon": "Settings"
       }
     ]

@@ -13,26 +13,46 @@ import GridMunicipio from "./GridMunicipio";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
+ * @typedef {Object} MunicipioRow
+ * @property {number} id - ID del municipio
+ * @property {string} name - Nombre del municipio
+ */
+
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open - Si el mensaje está visible
+ * @property {string} severity - Nivel de severidad (success, error, info, warning)
+ * @property {string} text - Contenido del mensaje
+ */
+
+/**
  * Componente Municipio.
+ * Gestiona la visualización y edición de municipios mediante formulario y grilla.
  *
- * Muestra y gestiona una lista de municipios, incluyendo formulario de edición y tabla.
- *
+ * @component
  * @returns {JSX.Element} El componente de Municipio.
  */
 export default function Municipio() {
+  /** @type {MunicipioRow} */
   const row = {
     id: 0,
     name: "",
   };
 
-  const [selectedRow, setSelectedRow] = React.useState(row);
-  const [message, setMessage] = React.useState({
+  /** @type {SnackbarMessage} */
+  const defaultMessage = {
     open: false,
     severity: "success",
     text: "",
-  });
+  };
+
+  const [selectedRow, setSelectedRow] = React.useState(row);
+  const [message, setMessage] = React.useState(defaultMessage);
+
+  /** @type {MunicipioRow[]} */
   const [municipios, setMunicipios] = React.useState([]);
 
+  // Cargar municipios al montar el componente
   React.useEffect(() => {
     axios
       .get(`${SiteProps.urlbasev1}/items/municipio`)
@@ -45,7 +65,12 @@ export default function Municipio() {
         console.log(municipioData);
       })
       .catch((error) => {
-        console.error("Error al buscar municipio!", error);
+        console.error("Error al buscar municipio:", error);
+        setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al cargar la lista de municipios.",
+        });
       });
   }, []);
 

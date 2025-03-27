@@ -1,89 +1,137 @@
 /**
  * @file GridProductoPresentacion.jsx
  * @module GridProductoPresentacion
- * @description Componente de grilla para visualizar la lista de productos presentación. Soporta paginación, ordenamiento y filtros desde el servidor. Utiliza Material UI DataGrid con barra de herramientas personalizada. Selecciona filas para edición externa usando setSelectedRow.
+ * @description Componente de grilla para visualizar productos presentación con paginación, ordenamiento y filtros.
+ * Utiliza el componente DataGrid de Material-UI y permite seleccionar una fila para edición o eliminación.
+ * Incluye toolbar personalizada con botón de filtros. Soporta configuración server-side.
  * @author Karla
  */
 
-import * as React from 'react';
+import * as React from "react";
+import PropTypes from "prop-types";
 import {
   DataGrid,
   GridToolbarContainer,
   GridToolbarFilterButton,
-} from '@mui/x-data-grid';
+} from "@mui/x-data-grid";
 
 /**
- * Columnas definidas para la grilla de productos presentación.
- * @constant
- * @type {Array<Object>}
+ * @typedef {Object} ProductoPresentacionRow
+ * @property {number} id - ID del producto presentación
+ * @property {string} nombre - Nombre de la presentación
+ * @property {number|string} producto - ID o nombre del producto asociado
+ * @property {number|string} unidad - Unidad de medida
+ * @property {number} cantidad - Cantidad en esa presentación
+ * @property {number|string} marca - Marca asociada
+ * @property {number|string} presentacion - Presentación específica (tipo)
+ * @property {string} descripcion - Descripción de la presentación
+ * @property {number} estado - Estado de la presentación (1: Activo, 0: Inactivo)
+ */
+
+/**
+ * @typedef {Object} GridProductoPresentacionProps
+ * @property {ProductoPresentacionRow[]} presentaciones - Lista de presentaciones para mostrar
+ * @property {number} rowCount - Total de filas para paginación server-side
+ * @property {Object} paginationModel - Modelo de paginación actual
+ * @property {Function} setPaginationModel - Función para actualizar el modelo de paginación
+ * @property {Function} setSortModel - Función para actualizar el ordenamiento
+ * @property {Function} setFilterModel - Función para actualizar el modelo de filtros
+ * @property {Function} setSelectedRow - Función para establecer la fila seleccionada
+ */
+
+/**
+ * Columnas para el DataGrid de productos presentación.
  */
 const columns = [
-  { field: 'id', headerName: 'ID', width: 90, type: 'number' },
-  { field: 'nombre', headerName: 'Nombre', width: 150, type: 'string' },
-  { field: 'producto', headerName: 'Producto', width: 150, type: 'number' },
-  { field: 'unidad', headerName: 'Unidad', width: 90, type: 'number' },
-  { field: 'cantidad', headerName: 'Cantidad', width: 100, type: 'number' },
-  { field: 'marca', headerName: 'Marca', width: 100, type: 'number' },
-  { field: 'presentacion', headerName: 'Presentación', width: 100, type: 'number' },
-  { field: 'descripcion', headerName: 'Descripción', width: 250, type: 'string' },
+  { field: "id", headerName: "ID", width: 90 },
+  { field: "nombre", headerName: "Nombre", width: 150 },
+  { field: "producto", headerName: "Producto", width: 150 },
+  { field: "unidad", headerName: "Unidad", width: 100 },
+  { field: "cantidad", headerName: "Cantidad", width: 100 },
+  { field: "marca", headerName: "Marca", width: 120 },
+  { field: "presentacion", headerName: "Presentación", width: 130 },
+  { field: "descripcion", headerName: "Descripción", width: 250 },
   {
-    field: 'estado',
-    headerName: 'Estado',
+    field: "estado",
+    headerName: "Estado",
     width: 100,
-    type: 'number',
-    valueGetter: (params) => (params.row.estado === 1 ? 'Activo' : 'Inactivo'),
+    valueGetter: (params) => (params.row.estado === 1 ? "Activo" : "Inactivo"),
   },
 ];
 
 /**
- * Componente GridProductoPresentacion.
- *
- * @param {Object} props - Propiedades del componente
- * @param {Array<Object>} props.presentaciones - Lista de presentaciones a mostrar
- * @param {number} props.rowCount - Total de filas (para paginación server-side)
- * @param {Object} props.paginationModel - Modelo de paginación actual
- * @param {function(Object): void} props.setPaginationModel - Setter del modelo de paginación
- * @param {function(Object): void} props.setSortModel - Setter del modelo de ordenamiento
- * @param {function(Object): void} props.setFilterModel - Setter del modelo de filtros
- * @param {function(Object): void} props.setSelectedRow - Setter del elemento seleccionado
- * @returns {JSX.Element} Grilla de producto presentación con toolbar y selección de filas
+ * Barra de herramientas personalizada que incluye botón de filtros.
+ * @returns {JSX.Element} Toolbar personalizada con filtros
  */
-export default function GridProductoPresentacion(props) {
-  /**
-   * Barra de herramientas personalizada con botón de filtro.
-   * @returns {JSX.Element}
-   */
-  function CustomToolbar() {
-    return (
-      <GridToolbarContainer>
-        <GridToolbarFilterButton />
-      </GridToolbarContainer>
-    );
-  }
-
+function CustomToolbar() {
   return (
-    <DataGrid
-      rows={props.presentaciones || []}
-      columns={columns}
-      rowCount={props.rowCount}
-      paginationMode="server"
-      paginationModel={props.paginationModel}
-      onPaginationModelChange={props.setPaginationModel}
-      sortingMode="server"
-      onSortModelChange={(model) => props.setSortModel(model)}
-      filterMode="server"
-      onFilterModelChange={(model) => props.setFilterModel(model)}
-      pageSizeOptions={[5, 10, 20, 50]}
-      components={{
-        Toolbar: CustomToolbar,
-      }}
-      onRowSelectionModelChange={(newSelection) => {
-        const selectedIDs = new Set(newSelection);
-        const selectedRowData = props.presentaciones.find((row) =>
-          selectedIDs.has(row.id)
-        );
-        props.setSelectedRow(selectedRowData || {});
-      }}
-    />
+    <GridToolbarContainer>
+      <GridToolbarFilterButton />
+    </GridToolbarContainer>
   );
 }
+
+/**
+ * Componente GridProductoPresentacion.
+ * Renderiza una tabla de productos presentación con paginación, filtros y ordenamiento desde servidor.
+ *
+ * @param {GridProductoPresentacionProps} props
+ * @returns {JSX.Element} Tabla de productos presentación
+ */
+export default function GridProductoPresentacion({
+  presentaciones,
+  rowCount,
+  paginationModel,
+  setPaginationModel,
+  setSortModel,
+  setFilterModel,
+  setSelectedRow,
+}) {
+  return (
+    <div style={{ width: "100%", background: "#fff", padding: 16, borderRadius: 8 }}>
+      <DataGrid
+        rows={presentaciones || []}
+        columns={columns}
+        getRowId={(row) => row.id}
+        rowCount={rowCount}
+        paginationMode="server"
+        sortingMode="server"
+        filterMode="server"
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        onSortModelChange={setSortModel}
+        onFilterModelChange={setFilterModel}
+        onRowSelectionModelChange={(ids) => {
+          const selectedId = ids[0];
+          const row = presentaciones.find((r) => r.id === selectedId);
+          setSelectedRow(row || null);
+        }}
+        pageSizeOptions={[5, 10, 20, 50]}
+        components={{ Toolbar: CustomToolbar }}
+        autoHeight
+      />
+    </div>
+  );
+}
+
+GridProductoPresentacion.propTypes = {
+  presentaciones: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      nombre: PropTypes.string.isRequired,
+      producto: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+      unidad: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+      cantidad: PropTypes.number,
+      marca: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+      presentacion: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+      descripcion: PropTypes.string,
+      estado: PropTypes.number,
+    })
+  ).isRequired,
+  rowCount: PropTypes.number.isRequired,
+  paginationModel: PropTypes.object.isRequired,
+  setPaginationModel: PropTypes.func.isRequired,
+  setSortModel: PropTypes.func.isRequired,
+  setFilterModel: PropTypes.func.isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+};

@@ -1,7 +1,8 @@
 /**
  * @file Unidad.jsx
  * @module Unidad
- * @description Componente principal para la gestión de unidades. Carga datos desde la API, maneja paginación, mensajes de estado y renderiza el formulario y la grilla de unidades.
+ * @description Componente principal para la gestión de unidades. 
+ * Carga datos desde la API, maneja paginación, mensajes de estado y renderiza el formulario y la grilla de unidades.
  * @author Karla
  * @exports Unidad
  */
@@ -25,7 +26,7 @@ import { SiteProps } from "../dashboard/SiteProps";
 /**
  * @typedef {Object} SnackbarMessage
  * @property {boolean} open - Si el snackbar está visible
- * @property {string} severity - Nivel del mensaje ('success', 'error', etc.)
+ * @property {"success"|"error"|"info"|"warning"} severity - Nivel del mensaje
  * @property {string} text - Texto a mostrar en el mensaje
  */
 
@@ -38,6 +39,8 @@ import { SiteProps } from "../dashboard/SiteProps";
 /**
  * Componente principal para gestionar las unidades.
  *
+ * Renderiza una interfaz con un formulario de registro/edición y una grilla con las unidades existentes.
+ *
  * @function Unidad
  * @returns {JSX.Element} Interfaz para visualizar y gestionar unidades.
  */
@@ -48,29 +51,29 @@ export default function Unidad() {
     nombre: "",
     descripcion: "",
     estado: 0,
-    empresa: ""
+    empresa: "",
   };
 
-  /** @type {[UnidadRow, Function]} */
+  /** @type {React.StateUpdater<UnidadRow>} */
   const [selectedRow, setSelectedRow] = React.useState(row);
 
-  /** @type {[SnackbarMessage, Function]} */
+  /** @type {React.StateUpdater<SnackbarMessage>} */
   const [message, setMessage] = React.useState({
     open: false,
     severity: "success",
     text: "",
   });
 
-  /** @type {[UnidadRow[], Function]} */
+  /** @type {React.StateUpdater<UnidadRow[]>} */
   const [unidades, setUnidades] = React.useState([]);
 
-  /** @type {[PaginationModel, Function]} */
+  /** @type {React.StateUpdater<PaginationModel>} */
   const [paginationModel, setPaginationModel] = React.useState({
     page: 0,
     pageSize: 5,
   });
 
-  /** @type {[number, Function]} */
+  /** @type {React.StateUpdater<number>} */
   const [rowCount, setRowCount] = React.useState(0);
 
   /**
@@ -127,6 +130,7 @@ export default function Unidad() {
       });
   };
 
+  // Ejecuta la carga inicial al cambiar la paginación
   React.useEffect(() => {
     reloadData();
   }, [paginationModel]);
@@ -134,6 +138,7 @@ export default function Unidad() {
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <MessageSnackBar message={message} setMessage={setMessage} />
+
       <FormUnidad
         setMessage={setMessage}
         selectedRow={selectedRow}
@@ -141,6 +146,7 @@ export default function Unidad() {
         reloadData={reloadData}
         unidades={unidades}
       />
+
       <GridUnidad
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}

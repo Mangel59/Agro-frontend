@@ -1,18 +1,11 @@
-/**
- * Componente Login.
- * @module Login
- * @component
- * @param {Object} props - Propiedades del componente.
- * @param {Function} props.setIsAuthenticated - Función para actualizar el estado de autenticación.
- * @param {Function} props.setCurrentModule - Función para cambiar el módulo actual.
- * @returns {JSX.Element} Componente de formulario de inicio de sesión.
- */
 
+/**
+ * Login componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useState } from 'react';
-import {
-  Container, TextField, Button, Typography, Box,
-  IconButton, InputAdornment, Alert, Link
-} from '@mui/material';
+import { Container, TextField, Button, Typography, Box, IconButton, InputAdornment, Alert, Link } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
 import LoginIcon from '@mui/icons-material/Login';
@@ -22,84 +15,87 @@ import { useThemeToggle } from './dashboard/ThemeToggleProvider';
 import FormRegistroPersona from './seguridad/FormRegistroPersona';
 import FormRegistroEmpresa from './seguridad/FormRegistroEmpresa';
 import Contenido from '../components/dashboard/Contenido';
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
+import ForgetPassword from './ForgetPassword';
+
 
 /**
- * Alterna la visibilidad de la contraseña.
- * @function handleClickShowPassword
- * @returns {void}
+ * Componente Login.
+ * @module Login.jsx
+ * @component
+ * @returns {JSX.Element}
  */
-
-/**
- * Previene el comportamiento por defecto al hacer clic en el botón del icono.
- * @function handleMouseDownPassword
- * @param {React.MouseEvent} event
- * @returns {void}
- */
-
-/**
- * Valida si un correo electrónico tiene un formato válido.
- * @function validateEmail
- * @param {string} email
- * @returns {boolean}
- */
-
-/**
- * Cambia el idioma de la aplicación.
- * @function handleLanguageChange
- * @param {string} lng - Código del idioma (ej: 'es', 'en').
- * @returns {void}
- */
-
-/**
- * Envía el formulario de login y autentica al usuario.
- * @function handleSubmit
- * @param {React.FormEvent} event
- * @returns {void}
- */
-
 export default function Login(props) {
-  const { t, i18n } = useTranslation();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const toggleTheme = useThemeToggle();
+  const { t, i18n } = useTranslation(); // Hook de traducción
+  const [username, setUsername] = useState(''); // Estado para el nombre de usuario/correo electrónico
+  const [password, setPassword] = useState(''); // Estado para la contraseña
+  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar/ocultar la contraseña
+  const [error, setError] = useState(''); // Estado para manejar errores de autenticación
+  const toggleTheme = useThemeToggle(); // Hook para alternar entre temas
 
+  /**
+   * Alterna la visibilidad del campo de la contraseña.
+   */
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
+  /**
+   * Previene la acción predeterminada cuando se presiona el botón del mouse en el icono para mostrar/ocultar contraseña.
+   *
+   * @param {Event} event - El evento de mouse down.
+   */
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
 
+  /**
+   * Valida si el correo electrónico introducido tiene un formato válido.
+   *
+   * @param {string} email - El correo electrónico a validar.
+   * @returns {boolean} - Devuelve true si el correo es válido, de lo contrario false.
+   */
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
+  /**
+   * Maneja el envío del formulario, valida los datos y envía la solicitud de inicio de sesión al servidor.
+   * Dependiendo de la respuesta, redirige al usuario al módulo correspondiente.
+   *
+   * @param {Event} event - El evento de envío del formulario.
+   */
   const handleSubmit = (event) => {
-    event.preventDefault();
-    setError('');
+    event.preventDefault(); // Previene la recarga de la página al enviar el formulario
+    setError(''); // Reinicia cualquier mensaje de error
 
     if (!validateEmail(username)) {
-      setError(t('invalid_email'));
+      setError(t('invalid_email')); // Muestra mensaje de error si el correo no es válido
       return;
     }
 
+    // Petición al backend para el login
+    // axios.post('http://172.16.79.156:8080/auth/login', {
     axios.post('http://localhost:8080/auth/login', {
       username,
       password,
     })
       .then(response => {
+        // Guardar el token en el almacenamiento local para manejar la sesión
         localStorage.setItem('token', response.data.token);
+
+        // Verificar si props.setIsAuthenticated existe y es una función
         if (props.setIsAuthenticated && typeof props.setIsAuthenticated === 'function') {
+          // Actualizar el estado de autenticación global
           props.setIsAuthenticated(true);
+        } else {
+          console.warn('setIsAuthenticated no está disponible o no es una función.');
         }
 
         const usuarioEstado = response.data.usuarioEstado;
 
+        // Según el estado del usuario, redirigir a los módulos correspondientes
         if (usuarioEstado === 2) {
           props.setCurrentModule(<FormRegistroPersona setCurrentModule={props.setCurrentModule} />);
         } else if (usuarioEstado === 3) {
@@ -109,15 +105,24 @@ export default function Login(props) {
         }
       })
       .catch(error => {
-        setError(t('login_error'));
-        console.error('Error al iniciar sesión:', error);
+        setError(t('login_error')); // Mostrar error si la autenticación falla
+        console.error('There was an error logging in!', error);
       });
   };
 
+  /**
+   * Cambia el idioma de la aplicación usando la biblioteca i18n.
+   *
+   * @param {string} lng - El código de idioma al que cambiar (por ejemplo, 'en' para inglés, 'es' para español).
+   */
   const handleLanguageChange = (lng) => {
     i18n.changeLanguage(lng);
   };
-
+  // Validación de props
+  Login.propTypes = {
+    setIsAuthenticated: PropTypes.func.isRequired,
+    setCurrentModule: PropTypes.func.isRequired,
+  };
   return (
     <Container
       maxWidth={false}
@@ -159,24 +164,52 @@ export default function Login(props) {
         >
           {t('login')}
         </Typography>
-
-        {error && <Alert severity="error">{error}</Alert>}
+        {error && (
+          <Alert severity="error">{error}</Alert>
+        )}
 
         <TextField
-          label={t('email')}
+          label={t("email")}
           variant="outlined"
           value={username}
           onChange={e => setUsername(e.target.value)}
           fullWidth
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 3,
+              '& fieldset': {
+                borderColor: '#1e88e5',
+              },
+              '&:hover fieldset': {
+                borderColor: '#1565c0',
+              },
+            },
+            '& .MuiInputLabel-root': {
+              color: '#1e88e5',
+            },
+          }}
         />
-
         <TextField
-          label={t('password')}
+          label={t("password")}
           variant="outlined"
           type={showPassword ? 'text' : 'password'}
           value={password}
           onChange={e => setPassword(e.target.value)}
           fullWidth
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 3,
+              '& fieldset': {
+                borderColor: '#1e88e5',
+              },
+              '&:hover fieldset': {
+                borderColor: '#1565c0',
+              },
+            },
+            '& .MuiInputLabel-root': {
+              color: '#1e88e5',
+            },
+          }}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -193,38 +226,55 @@ export default function Login(props) {
           }}
         />
 
-        <Link
-          component={RouterLink}
-          to="/forgetpassword"
-          variant="body2"
-          align="center"
-          sx={{
-            color: '#1e88e5',
-            textDecoration: 'none',
-            marginBottom: 2,
-            fontWeight: 'bold',
-            alignSelf: 'flex-end'
-          }}
-        >
-          {t('Forgot your password?')}
-        </Link>
-
         <Button
           type="submit"
           variant="contained"
           color="primary"
           fullWidth
           startIcon={<LoginIcon />}
+          sx={{
+            padding: '12px 0',
+            borderRadius: 3,
+            textTransform: 'none',
+            fontWeight: 'bold',
+            backgroundColor: '#1e88e5',
+            '&:hover': {
+              backgroundColor: '#1565c0',
+            },
+          }}
         >
           {t('login')}
         </Button>
 
-        <Typography variant="body2" align="center" sx={{ marginTop: 3, color: '#666' }}>
-          {t('no_account')}{' '}
+        <Button
+          variant="text"
+          onClick={() => props.setCurrentModule(<ForgetPassword setCurrentModule={props.setCurrentModule} />)}
+          sx={{
+            color: '#1e88e5',
+            textTransform: 'none',
+            fontWeight: 'bold',
+            alignSelf: 'center',
+            padding: 0,
+            minWidth: 'unset'
+          }}
+        >
+          ¿Olvidaste tu contraseña?
+        </Button>
+
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ marginTop: 3, color: '#666' }}
+        >
+          {t("no_account")}{" "}
           <Link
             component={RouterLink}
             to="/register"
-            sx={{ color: '#1e88e5', textDecoration: 'none', fontWeight: 'bold' }}
+            sx={{
+              color: '#1e88e5',
+              textDecoration: 'none',
+              fontWeight: 'bold'
+            }}
           >
             {t('register_here')}
           </Link>
@@ -238,8 +288,3 @@ export default function Login(props) {
     </Container>
   );
 }
-
-Login.propTypes = {
-  setIsAuthenticated: PropTypes.func.isRequired,
-  setCurrentModule: PropTypes.func.isRequired,
-};

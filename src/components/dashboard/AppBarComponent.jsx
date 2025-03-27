@@ -1,10 +1,9 @@
-/**
- * AppBarComponent.jsx
- * @module AppBarComponent
- * @description Barra de navegación superior con gestión de autenticación y cambio de tema.
- * @component
- */
 
+/**
+ * AppBarComponent componente principal.
+ * @component
+ * @returns {JSX.Element}
+ */
 import React, { useEffect, useState } from 'react';
 import { AppBar, Toolbar, Button, Typography, Switch } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
@@ -14,37 +13,29 @@ import ProfileMenu from '../ProfileMenu';
 import { useThemeToggle } from './ThemeToggleProvider';
 
 /**
- * Componente de la barra de navegación superior.
- *
- * @param {Object} props - Props del componente.
- * @param {Function} props.setCurrentModule - Función para cambiar el módulo mostrado.
- * @returns {JSX.Element} Componente de AppBar.
+ * Componente AppBarComponent.
+ * @module AppBarComponent.jsx
+ * @component
+ * @returns {JSX.Element}
  */
 export default function AppBarComponent({ setCurrentModule }) {
   const location = useLocation();
   const toggleTheme = useThemeToggle();
 
-  /**
-   * Estado que indica si el usuario está autenticado.
-   * @type {boolean}
-   */
+  // Estado para el manejo de autenticación
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  /**
-   * Redirige al componente Login.
-   */
+  // Función que se ejecuta cuando se hace clic en "Login"
   const handleLogin = () => {
     setCurrentModule(<Login setIsAuthenticated={setIsAuthenticated} setCurrentModule={setCurrentModule} />);
   };
 
-  /**
-   * Redirige al componente Register.
-   */
+  // Función que se ejecuta cuando se hace clic en "Register"
   const handleRegister = () => {
     setCurrentModule(<Register setCurrentModule={setCurrentModule} />);
   };
 
-  // Redirección automática si cambia la ruta
+  // Redirigir automáticamente a Login o Register según la ruta
   useEffect(() => {
     if (location.pathname === '/login') {
       handleLogin(); 
@@ -64,17 +55,17 @@ export default function AppBarComponent({ setCurrentModule }) {
           to="/"
           style={{ textDecoration: 'none', color: 'inherit' }}
         >
-          Agro Application
+          Aplicación AgroPro
         </Typography>
 
         {/* Switch para alternar tema */}
         <Switch onChange={toggleTheme} sx={{ mr: 2 }} />
 
-        {/* Mostrar Login y Register si no está autenticado, de lo contrario el menú de perfil */}
+        {/* Mostrar Login y Register si no está autenticado, de lo contrario mostrar el ProfileMenu */}
         {!isAuthenticated ? (
           <>
-            <Button color="inherit" onClick={handleLogin}>Login</Button>
-            <Button color="inherit" onClick={handleRegister}>Register</Button>
+            <Button color="inherit" onClick={handleLogin}>INICIAR SESIÓN</Button>
+            <Button color="inherit" onClick={handleRegister}>REGISTRARSE</Button>
           </>
         ) : (
           <ProfileMenu setCurrentModule={setCurrentModule} setIsAuthenticated={setIsAuthenticated} />

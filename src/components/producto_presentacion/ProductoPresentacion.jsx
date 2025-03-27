@@ -4,6 +4,7 @@
  * @description Componente principal para gestionar la entidad Producto Presentación.
  * Muestra un formulario para agregar/editar y una grilla con paginación.
  * Utiliza Axios para obtener datos del backend como marcas, unidades, productos y presentaciones.
+ * Incluye paginación, control de errores, mensajes tipo snackbar y manejo de autenticación por token.
  * @author Karla
  */
 
@@ -15,12 +16,31 @@ import GridProductoPresentacion from '../producto_presentacion/GridProductoPrese
 import { SiteProps } from '../dashboard/SiteProps';
 
 /**
+ * @typedef {Object} ProductoPresentacionRow
+ * @property {number} id
+ * @property {string} nombre
+ * @property {number} producto
+ * @property {number} unidad
+ * @property {number} cantidad
+ * @property {number} marca
+ * @property {number} presentacion
+ * @property {string} descripcion
+ * @property {number} estado
+ */
+
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open
+ * @property {"success"|"error"|"info"|"warning"} severity
+ * @property {string} text
+ */
+
+/**
  * Componente principal para la gestión de producto presentación.
- *
- * @component
- * @returns {JSX.Element} Interfaz para gestionar producto-presentación
+ * @returns {JSX.Element}
  */
 export default function ProductoPresentacion() {
+  /** @type {ProductoPresentacionRow} */
   const row = {
     id: 0,
     nombre: "",
@@ -33,21 +53,29 @@ export default function ProductoPresentacion() {
     estado: 0,
   };
 
+  /** Total de filas para paginación */
   const [rowCount, setRowCount] = React.useState(0);
+
+  /** Fila actualmente seleccionada */
   const [selectedRow, setSelectedRow] = React.useState(row);
-  const messageData = {
+
+  /** Estado del mensaje tipo snackbar */
+  const [message, setMessage] = React.useState({
     open: false,
     severity: "success",
     text: "",
-  };
+  });
 
-  const [message, setMessage] = React.useState(messageData);
+  /** Lista de presentaciones paginadas */
   const [presentaciones, setPresentaciones] = React.useState([]);
+
+  /** Modelo de paginación */
   const [paginationModel, setPaginationModel] = React.useState({
     page: 0,
     pageSize: 5,
   });
 
+  /** Listas auxiliares */
   const [marcas, setMarcas] = React.useState([]);
   const [unidades, setUnidades] = React.useState([]);
   const [presentacionesList, setPresentacionesList] = React.useState([]);
@@ -64,7 +92,8 @@ export default function ProductoPresentacion() {
   }
 
   /**
-   * Carga la lista paginada de producto-presentación desde la API.
+   * Carga la lista paginada de producto-presentaciones desde el backend.
+   * @function reloadData
    */
   const reloadData = () => {
     axios.get(`${SiteProps.urlbasev1}/producto-presentacion`, {
@@ -104,7 +133,7 @@ export default function ProductoPresentacion() {
   }, [paginationModel]);
 
   /**
-   * Carga datos relacionados (marcas, unidades, presentaciones, productos).
+   * Carga los datos auxiliares: marcas, unidades, presentaciones y productos.
    */
   React.useEffect(() => {
     axios.get(`${SiteProps.urlbasev1}/marca`, {
@@ -140,7 +169,7 @@ export default function ProductoPresentacion() {
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
-      <h1>Producto Presentacion</h1>
+      <h1>Producto Presentación</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormProductoPresentacion
         setMessage={setMessage}

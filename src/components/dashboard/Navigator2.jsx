@@ -38,7 +38,6 @@ import DomainIcon from '@mui/icons-material/Domain';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 
-import TipoEvaluacionReport from '../r_tipo_evaluacion/TipoEvaluacionReport.jsx';
 import Persona from "../personas/Persona.jsx";
 import Pais from '../pais/Pais';
 import Departamento from '../departamento/Departamento';
@@ -66,7 +65,6 @@ import RPedido from '../r_pedido/Pedido.jsx';
 import ROrdenCompra from '../r_orden_compra/OrdenCompra.jsx';
 import Rol from '../Rol/Rol.jsx';
 import TipoIdentificacion from '../TipoIdentificacion/TipoIdentificacion.jsx';
-import Evaluacion from '../Evaluacion/Evaluacion.jsx';
 import Proveedor from '../Proveedor/Proveedor.jsx';
 
 // Iconos disponibles
@@ -80,7 +78,7 @@ const icons = {
 
 // Mapeo de componentes disponibles por ID
 const components = {
-  TipoEvaluacionReport, tipoidentificacion: TipoIdentificacion, roll: Rol, evaluacion: Evaluacion,
+ tipoidentificacion: TipoIdentificacion, roll: Rol, 
   proveedor: Proveedor, pais: Pais, departamento: Departamento, municipio: Municipio, almacen: Almacen,
   espacio: Espacio, espacio_ocupacion: EspacioOcupacion, tipo_espacio: TipoEspacio, bloque: Bloque,
   tipo_bloque: TipoBloque, tipo_sede: TipoSedes, sede: Sede, producto_presentacion: ProductoPresentacion,

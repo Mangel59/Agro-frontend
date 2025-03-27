@@ -3,6 +3,9 @@
  * @module EspacioOcupacion
  * @description Componente principal para gestionar la ocupación de espacios.
  * Permite seleccionar sede, bloque y espacio, y visualizar/administrar ocupaciones a través de una grilla y formulario.
+ * Conecta con el backend para obtener los datos y actualizar la grilla de ocupación de espacios.
+ * Utiliza Axios para llamadas HTTP y Material UI para la interfaz.
+ * @author Karla
  */
 
 import React, { useEffect, useState } from "react";
@@ -20,45 +23,37 @@ import axios from "axios";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open - Si el mensaje está visible
+ * @property {string} severity - Nivel de severidad del mensaje ('success', 'error', etc.)
+ * @property {string} text - Texto del mensaje
+ */
+
+/**
  * Componente principal para la gestión de ocupaciones de espacios.
  *
  * @component
  * @returns {JSX.Element} Interfaz de usuario para seleccionar sedes, bloques y espacios,
- *                        y gestionar registros de ocupación.
+ * y gestionar registros de ocupación.
  */
 export default function EspacioOcupacion() {
-  /** Lista de sedes disponibles. */
-  const [sedes, setSedes] = useState([]);
-
-  /** Lista de bloques disponibles según la sede seleccionada. */
-  const [bloques, setBloques] = useState([]);
-
-  /** Lista de espacios disponibles según el bloque seleccionado. */
-  const [espacios, setEspacios] = useState([]);
-
-  /** ID de la sede seleccionada. */
-  const [selectedSede, setSelectedSede] = useState("");
-
-  /** ID del bloque seleccionado. */
-  const [selectedBloque, setSelectedBloque] = useState("");
-
-  /** ID del espacio seleccionado. */
-  const [selectedEspacio, setSelectedEspacio] = useState("");
-
-  /** Registro actualmente seleccionado para editar/eliminar. */
-  const [selectedRow, setSelectedRow] = useState(null);
-
-  /** Bandera que fuerza la recarga de datos en la grilla. */
-  const [reloadData, setReloadData] = useState(false);
-
-  /** Mensaje para mostrar en el snackbar. */
-  const [message, setMessage] = useState({
+  const [sedes, setSedes] = useState([]);                      // Lista de sedes
+  const [bloques, setBloques] = useState([]);                  // Lista de bloques por sede
+  const [espacios, setEspacios] = useState([]);                // Lista de espacios por bloque
+  const [selectedSede, setSelectedSede] = useState("");        // ID de sede seleccionada
+  const [selectedBloque, setSelectedBloque] = useState("");    // ID de bloque seleccionado
+  const [selectedEspacio, setSelectedEspacio] = useState("");  // ID de espacio seleccionado
+  const [selectedRow, setSelectedRow] = useState(null);        // Fila seleccionada
+  const [reloadData, setReloadData] = useState(false);         // Recarga de grilla
+  const [message, setMessage] = useState(/** @type {SnackbarMessage} */({
     open: false,
     severity: "info",
     text: "",
-  });
+  }));
 
-  // 🔄 Cargar sedes al montar el componente
+  /**
+   * Carga la lista de sedes al iniciar el componente.
+   */
   useEffect(() => {
     const fetchSedes = async () => {
       try {
@@ -79,7 +74,9 @@ export default function EspacioOcupacion() {
     fetchSedes();
   }, []);
 
-  // 🔄 Cargar bloques cuando se seleccione una sede
+  /**
+   * Carga los bloques disponibles cuando se selecciona una sede.
+   */
   useEffect(() => {
     if (!selectedSede) return;
 
@@ -92,8 +89,8 @@ export default function EspacioOcupacion() {
           }
         );
         setBloques(response.data || []);
-        setEspacios([]); // Reinicia espacios
-        setSelectedBloque(""); // Reinicia selección
+        setEspacios([]);
+        setSelectedBloque("");
         setSelectedEspacio("");
       } catch (err) {
         console.error("Error al cargar los bloques:", err);
@@ -108,7 +105,9 @@ export default function EspacioOcupacion() {
     fetchBloques();
   }, [selectedSede]);
 
-  // 🔄 Cargar espacios cuando se seleccione un bloque
+  /**
+   * Carga los espacios disponibles cuando se selecciona un bloque.
+   */
   useEffect(() => {
     if (!selectedBloque) return;
 
@@ -121,7 +120,7 @@ export default function EspacioOcupacion() {
           }
         );
         setEspacios(response.data || []);
-        setSelectedEspacio(""); // Reinicia selección de espacio
+        setSelectedEspacio("");
       } catch (err) {
         console.error("Error al cargar los espacios:", err);
         setMessage({
@@ -139,10 +138,10 @@ export default function EspacioOcupacion() {
     <Box sx={{ height: "100%", width: "100%" }}>
       <h1>Espacio ocupación</h1>
 
-      {/* Snackbar para mensajes */}
+      {/* Snackbar de mensajes */}
       <MessageSnackBar message={message} setMessage={setMessage} />
 
-      {/* Formulario de creación/edición */}
+      {/* Formulario de agregar/editar ocupación */}
       <FormEspacioOcuOcupacion
         setMessage={setMessage}
         selectedRow={selectedRow}
@@ -195,7 +194,7 @@ export default function EspacioOcupacion() {
         </Select>
       </FormControl>
 
-      {/* Grilla de registros */}
+      {/* Tabla de ocupaciones */}
       <GridEspacioOcupacion
         selectedEspacio={selectedEspacio}
         setSelectedRow={setSelectedRow}

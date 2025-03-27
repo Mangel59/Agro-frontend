@@ -3,6 +3,9 @@
  * @module Espacio
  * @description Componente principal para la gestión de espacios.
  * Permite seleccionar sede y bloque, visualizar los espacios asociados y gestionarlos con FormEspacio.
+ * Conecta con el backend para obtener y actualizar datos de espacios.
+ * Utiliza DataGrid de Material UI, manejo de estados con hooks y peticiones HTTP con Axios.
+ * @author Karla
  */
 
 import React, { useEffect, useState } from "react";
@@ -13,8 +16,20 @@ import MessageSnackBar from "../MessageSnackBar";
 import FormEspacio from "../espacio/FormEspacio";
 
 /**
+ * @typedef {Object} EspacioRow
+ * @property {number} id - ID del espacio
+ * @property {Object|number} bloque - Objeto bloque o ID del bloque
+ * @property {Object|number} tipoEspacio - Objeto tipoEspacio o ID del tipo
+ * @property {string} nombre - Nombre del espacio
+ * @property {string} geolocalizacion - Coordenada numérica
+ * @property {string} coordenadas - Coordenadas en texto (números con espacio)
+ * @property {string} descripcion - Descripción del espacio
+ * @property {number} estado - Estado (1: Activo, 0: Inactivo)
+ */
+
+/**
  * Componente React para la gestión de espacios físicos.
- * Incluye selección de sede y bloque, tabla de espacios y formulario de edición/creación.
+ * Permite cargar y visualizar espacios por sede y bloque, usando un formulario y grilla editable.
  *
  * @component
  * @returns {JSX.Element} Interfaz para gestionar espacios.
@@ -32,7 +47,7 @@ export default function Espacio() {
   const [selectedRow, setSelectedRow] = useState(null);
 
   /**
-   * Carga los espacios y reemplaza bloques y tipoEspacio con sus nombres.
+   * Carga los espacios desde el backend, incluyendo la relación con bloque y tipoEspacio.
    */
   const fetchEspacios = async () => {
     if (!selectedBloque) {
@@ -47,7 +62,6 @@ export default function Espacio() {
       );
       const data = response.data || [];
 
-      // Mapear bloque y tipoEspacio
       const mappedData = data.map((esp) => {
         const bloqueObj =
           typeof esp.bloque === "object" ? esp.bloque : bloques.find((b) => b.id === esp.bloque);
@@ -74,7 +88,9 @@ export default function Espacio() {
     }
   };
 
-  // Cargar sedes
+  /**
+   * Carga la lista de sedes al iniciar el componente.
+   */
   useEffect(() => {
     const fetchSedes = async () => {
       try {
@@ -89,7 +105,9 @@ export default function Espacio() {
     fetchSedes();
   }, []);
 
-  // Cargar bloques al seleccionar sede
+  /**
+   * Carga los bloques al cambiar la sede seleccionada.
+   */
   useEffect(() => {
     if (!selectedSede) {
       setBloques([]);
@@ -110,7 +128,9 @@ export default function Espacio() {
     fetchBloques();
   }, [selectedSede]);
 
-  // Cargar tipo de espacios
+  /**
+   * Carga el listado de tipos de espacio.
+   */
   useEffect(() => {
     const fetchTipoEspacios = async () => {
       try {
@@ -125,7 +145,9 @@ export default function Espacio() {
     fetchTipoEspacios();
   }, []);
 
-  // Cargar espacios cuando cambie bloque
+  /**
+   * Refresca la lista de espacios cuando cambian bloque, lista de bloques o tipos.
+   */
   useEffect(() => {
     fetchEspacios();
   }, [selectedBloque, bloques, tipoEspacios]);

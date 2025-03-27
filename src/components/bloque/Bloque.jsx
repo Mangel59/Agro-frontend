@@ -1,11 +1,10 @@
 /**
- * Componente principal para la gestión de bloques.
- * Permite seleccionar una sede, visualizar los bloques asociados en una tabla,
- * y realizar operaciones CRUD sobre ellos mediante el formulario FormBloque.
- *
+ * @file Bloque.jsx
  * @module Bloque
- * @component
- * @returns {JSX.Element} Componente que renderiza la interfaz de gestión de bloques.
+ * @description Componente principal para la gestión de bloques.
+ * Permite seleccionar una sede, visualizar los bloques asociados y realizar operaciones CRUD mediante FormBloque.
+ * Conecta con el backend para obtener y actualizar datos.
+ * @author Karla
  */
 
 import React, { useEffect, useState } from "react";
@@ -15,9 +14,28 @@ import FormBloque from "./FormBloque";
 import GridBloque from "./GridBloque";
 import { SiteProps } from "../dashboard/SiteProps";
 
+/**
+ * @typedef {Object} Sede
+ * @property {number} id - ID de la sede
+ * @property {string} nombre - Nombre de la sede
+ */
+
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open - Si el mensaje está visible
+ * @property {string} severity - Nivel de severidad del mensaje ('success', 'error', etc.)
+ * @property {string} text - Texto del mensaje
+ */
+
+/**
+ * Componente principal para la gestión de bloques.
+ *
+ * @component
+ * @returns {JSX.Element} Componente que renderiza la interfaz de gestión de bloques.
+ */
 export default function Bloque() {
   /** Lista de sedes disponibles */
-  const [sedes, setSedes] = useState([]);
+  const [sedes, setSedes] = useState(/** @type {Sede[]} */ ([]));
 
   /** ID de la sede actualmente seleccionada */
   const [selectedSede, setSelectedSede] = useState("");
@@ -29,11 +47,11 @@ export default function Bloque() {
   const [reloadData, setReloadData] = useState(false);
 
   /** Mensaje para mostrar en el snackbar */
-  const [message, setMessage] = useState({
+  const [message, setMessage] = useState(/** @type {SnackbarMessage} */ ({
     open: false,
     severity: "success",
     text: "",
-  });
+  }));
 
   /**
    * Carga las sedes desde el backend al montar el componente.
@@ -54,12 +72,12 @@ export default function Bloque() {
   }, []);
 
   /**
-   * Maneja el cambio de la sede seleccionada en el dropdown.
-   * @param {React.ChangeEvent} event - Evento de cambio del select
+   * Maneja el cambio de sede seleccionada.
+   * @param {React.ChangeEvent<HTMLSelectElement>} event - Evento de cambio de select
    */
   const handleSedeChange = (event) => {
     setSelectedSede(event.target.value);
-    setReloadData(prev => !prev); // Fuerza recarga de bloques
+    setReloadData((prev) => !prev); // Fuerza recarga de bloques
   };
 
   return (
@@ -73,7 +91,9 @@ export default function Bloque() {
         <select id="sede-select" value={selectedSede} onChange={handleSedeChange}>
           <option value="">Seleccione una sede</option>
           {sedes.map((sede) => (
-            <option key={sede.id} value={sede.id}>{sede.nombre}</option>
+            <option key={sede.id} value={sede.id}>
+              {sede.nombre}
+            </option>
           ))}
         </select>
       </div>
@@ -82,7 +102,7 @@ export default function Bloque() {
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
         setMessage={setMessage}
-        reloadData={() => setReloadData(prev => !prev)}
+        reloadData={() => setReloadData((prev) => !prev)}
       />
 
       <GridBloque

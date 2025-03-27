@@ -1,7 +1,7 @@
 /**
  * @file Producto.jsx
  * @module Producto
- * @description Componente principal para gestionar productos. Permite visualizar, crear, editar y eliminar productos desde una API.
+ * @description Componente principal para la gestión de productos. Permite visualizar, crear, actualizar y eliminar productos mediante un formulario y una grilla interactiva.
  * @author Karla
  */
 
@@ -13,16 +13,29 @@ import GridProducto from "./GridProducto";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
- * Componente Producto.
+ * @typedef {Object} ProductoRow
+ * @property {number} id - ID del producto.
+ * @property {string} nombre - Nombre del producto.
+ * @property {number} productoCategoriaId - ID de la categoría del producto.
+ * @property {string} descripcion - Descripción del producto.
+ * @property {number} estado - Estado del producto (1: activo, 0: inactivo).
+ */
+
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open - Si el mensaje snackbar está visible.
+ * @property {string} severity - Tipo de mensaje (success, error, warning, info).
+ * @property {string} text - Texto a mostrar en el mensaje.
+ */
+
+/**
+ * Componente principal para la gestión de productos.
  *
  * @component
- * @returns {JSX.Element} Interfaz para visualizar y gestionar productos
+ * @returns {JSX.Element} Componente de gestión de productos.
  */
 export default function Producto() {
-  /**
-   * Estado inicial del producto.
-   * @type {Object}
-   */
+  /** @type {ProductoRow} */
   const row = {
     id: 0,
     nombre: "",
@@ -31,63 +44,57 @@ export default function Producto() {
     estado: 0,
   };
 
-  /**
-   * Fila seleccionada.
-   * @type {Object}
-   */
+  /** @type {React.MutableRefObject<ProductoRow>} */
   const [selectedRow, setSelectedRow] = React.useState(row);
 
-  /**
-   * Estado para mostrar mensajes (snackbar).
-   * @type {{open: boolean, severity: string, text: string}}
-   */
-  const messageData = {
+  /** @type {SnackbarMessage} */
+  const initialMessage = {
     open: false,
     severity: "success",
     text: "",
   };
 
-  /**
-   * Estado del mensaje.
-   * @type {{open: boolean, severity: string, text: string}}
-   */
-  const [message, setMessage] = React.useState(messageData);
+  /** @type {React.MutableRefObject<SnackbarMessage>} */
+  const [message, setMessage] = React.useState(initialMessage);
 
-  /**
-   * Lista de productos cargados desde la API.
-   * @type {Array<Object>}
-   */
+  /** @type {ProductoRow[]} */
   const [producto, setProductos] = React.useState([]);
 
   /**
-   * Recarga los productos desde el backend.
+   * Función para recargar los productos desde la API.
+   * Muestra un mensaje de error si la respuesta no es válida.
+   *
    * @function
    * @returns {void}
    */
   const reloadData = () => {
     axios.get(`${SiteProps.urlbasev1}/producto`)
       .then((response) => {
+        console.log("Respuesta recibida:", response.data);
         if (response.data && Array.isArray(response.data.content)) {
           setProductos(response.data.content);
+        } else if (Array.isArray(response.data)) {
+          setProductos(response.data);
         } else {
-          console.error('La respuesta no es un array:', response.data);
+          console.error("La respuesta no es un array:", response.data);
           setMessage({
             open: true,
-            severity: 'error',
-            text: 'Error al cargar producto: respuesta no válida'
+            severity: "error",
+            text: "Error al cargar producto: respuesta no válida",
           });
         }
       })
       .catch((error) => {
-        console.error('Error al cargar producto:', error);
+        console.error("Error al cargar producto:", error);
         setMessage({
           open: true,
-          severity: 'error',
-          text: 'Error al cargar producto'
+          severity: "error",
+          text: "Error al cargar producto",
         });
       });
   };
 
+  // Se ejecuta al montar el componente
   React.useEffect(() => {
     reloadData();
   }, []);

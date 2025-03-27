@@ -1,12 +1,12 @@
 /**
  * @file GridProduccion.jsx
  * @module GridProduccion
- * @description Componente que muestra una grilla de producciones asociadas a un espacio. Permite editar o eliminar producciones usando DataGrid de Material UI. Incluye manejo de formularios y notificaciones con Snackbar.
+ * @description Componente que permite visualizar, editar y eliminar producciones asociadas a un espacio.
+ * Incluye lógica para cargar dinámicamente sedes, bloques, espacios y tipos de producción, así como un formulario para editar producciones seleccionadas.
  * @author Karla
  */
 
 import React, { useState, useEffect } from "react";
-import PropTypes from "prop-types";
 import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
 import UpdateIcon from "@mui/icons-material/Update";
@@ -31,16 +31,34 @@ import {
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
- * Componente GridProduccion.
- *
- * Muestra una tabla de producciones relacionadas con un espacio específico.
- * Permite editar o eliminar una producción seleccionada.
- *
- * @param {Object} props - Props del componente.
- * @param {number|string} props.espacioId - ID del espacio seleccionado.
- * @returns {JSX.Element} Tabla con producciones.
+ * @typedef {Object} ProduccionRow
+ * @property {number} id
+ * @property {string} nombre
+ * @property {string} descripcion
+ * @property {string} fechaInicio
+ * @property {string} fechaFinal
+ * @property {number} estado
+ * @property {string|number} sede
+ * @property {string|number} bloque
+ * @property {string|number} espacio
+ * @property {string|number} tipoProduccion
  */
-export default function GridProduccion({ espacioId }) {
+
+/**
+ * @typedef {Object} GridProduccionProps
+ * @property {number} espacioId
+ * @property {string|number} selectedSede
+ * @property {string|number} selectedBloque
+ * @property {string|number} selectedEspacio
+ * @property {Function} exposeReload - Func para exponer la recarga a otros componentes
+ */
+
+/**
+ * Componente GridProduccion
+ * @param {GridProduccionProps} props
+ * @returns {JSX.Element}
+ */
+export default function GridProduccion({ espacioId, selectedSede, selectedBloque, selectedEspacio, exposeReload }) {
   const [producciones, setProducciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -48,44 +66,34 @@ export default function GridProduccion({ espacioId }) {
   const [open, setOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 
-  const [formData, setFormData] = useState({
-    nombre: "",
-    descripcion: "",
-    fechaInicio: "",
-    fechaFinal: "",
-    estado: 1,
-  });
-
-  const [selectedSede, setSelectedSede] = useState("");
-  const [selectedBloque] = useState(""); // No usado directamente
-  const [selectedEspacio] = useState(""); // No usado directamente
+  const [formData, setFormData] = useState({ nombre: "", descripcion: "", fechaInicio: "", fechaFinal: "", estado: 1 });
+  const [internalSede, setInternalSede] = useState("");
+  const [internalBloque, setInternalBloque] = useState("");
+  const [internalEspacio, setInternalEspacio] = useState("");
   const [selectedTipoProduccion, setSelectedTipoProduccion] = useState("");
+
   const [sedes, setSedes] = useState([]);
+  const [bloques, setBloques] = useState([]);
+  const [espacios, setEspacios] = useState([]);
   const [tiposProduccion, setTiposProduccion] = useState([]);
 
-  // Cargar datos al cambiar el espacioId
-  useEffect(() => {
-    if (!espacioId) return;
+  const token = localStorage.getItem("token");
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setError("No se encontró el token de autenticación.");
-      return;
-    }
-
+  const fetchProducciones = () => {
+    if (!espacioId || !token) return;
     setLoading(true);
-    setError(null);
-
     axios.get(`${SiteProps.urlbasev1}/producciones/${espacioId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((res) => setProducciones(res.data.content))
-      .catch(() => {
-        setError("Error al cargar las producciones. Verifica tu conexión o permisos.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    .then((res) => setProducciones(res.data.content))
+    .catch(() => setError("Error al cargar producciones"))
+    .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    if (!espacioId) return;
+    fetchProducciones();
+    exposeReload(() => fetchProducciones());
 
     axios.get(`${SiteProps.urlbasev1}/sede/minimal`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -96,68 +104,22 @@ export default function GridProduccion({ espacioId }) {
     }).then((res) => setTiposProduccion(res.data));
   }, [espacioId]);
 
-  /**
-   * Maneja la eliminación de una producción.
-   */
-  const handleDelete = () => {
-    if (!selectedRow) return;
-    const token = localStorage.getItem("token");
-
-    axios.delete(`${SiteProps.urlbasev1}/producciones/${selectedRow.id}`, {
+  const fetchBloquesBySede = (sedeId) => {
+    axios.get(`${SiteProps.urlbasev1}/bloque/sede/${sedeId}`, {
       headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(() => {
-        setProducciones((prev) => prev.filter((prod) => prod.id !== selectedRow.id));
-        setSelectedRow(null);
-        setSnackbar({ open: true, message: "Producción eliminada correctamente.", severity: "success" });
-      })
-      .catch(() => {
-        setSnackbar({ open: true, message: "Error al eliminar la producción.", severity: "error" });
-      });
+    }).then((res) => setBloques(res.data));
   };
 
-  /**
-   * Maneja el envío del formulario para actualizar una producción.
-   * @param {React.FormEvent} event - Evento del formulario.
-   */
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const token = localStorage.getItem("token");
-
-    axios.put(`${SiteProps.urlbasev1}/producciones/${selectedRow.id}`, {
-      ...formData,
-      sede: selectedSede,
-      bloque: selectedBloque,
-      espacio: selectedEspacio,
-      tipoProduccion: selectedTipoProduccion,
-    }, {
+  const fetchEspaciosByBloque = (bloqueId) => {
+    axios.get(`${SiteProps.urlbasev1}/espacio/bloque/${bloqueId}`, {
       headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(() => {
-        setProducciones((prev) =>
-          prev.map((prod) =>
-            prod.id === selectedRow.id ? { ...prod, ...formData } : prod
-          )
-        );
-        setOpen(false);
-        setSnackbar({ open: true, message: "Producción actualizada correctamente.", severity: "success" });
-      })
-      .catch(() => {
-        setSnackbar({ open: true, message: "Error al actualizar la producción.", severity: "error" });
-      });
+    }).then((res) => setEspacios(res.data));
   };
 
-  /**
-   * Cierra el snackbar de mensajes.
-   */
-  const handleCloseSnackbar = () => {
-    setSnackbar({ open: false, message: "", severity: "success" });
-  };
+  useEffect(() => { if (internalSede) fetchBloquesBySede(internalSede); }, [internalSede]);
+  useEffect(() => { if (internalBloque) fetchEspaciosByBloque(internalBloque); }, [internalBloque]);
 
-  /**
-   * Abre el formulario para editar una producción.
-   */
-  const handleEdit = () => {
+  const handleEdit = async () => {
     if (!selectedRow) return;
     setFormData({
       nombre: selectedRow.nombre || "",
@@ -166,96 +128,125 @@ export default function GridProduccion({ espacioId }) {
       fechaFinal: selectedRow.fechaFinal || "",
       estado: selectedRow.estado || 1,
     });
-    setSelectedSede(selectedRow.sede || "");
-    setSelectedTipoProduccion(selectedRow.tipoProduccion || "");
-    setOpen(true);
+
+    try {
+      const sedeId = selectedRow.sede || selectedSede;
+      const bloqueId = selectedRow.bloque || selectedBloque;
+      const espId = selectedRow.espacio || selectedEspacio;
+
+      setInternalSede(sedeId);
+      const bloquesRes = await axios.get(`${SiteProps.urlbasev1}/bloque/sede/${sedeId}`, { headers: { Authorization: `Bearer ${token}` } });
+      setBloques(bloquesRes.data);
+      setInternalBloque(bloqueId);
+
+      const espaciosRes = await axios.get(`${SiteProps.urlbasev1}/espacio/bloque/${bloqueId}`, { headers: { Authorization: `Bearer ${token}` } });
+      setEspacios(espaciosRes.data);
+      setInternalEspacio(espId);
+      setSelectedTipoProduccion(selectedRow.tipoProduccion || "");
+      setOpen(true);
+    } catch (err) {
+      console.error("Error al cargar datos para edición:", err);
+      setSnackbar({ open: true, message: "Error al cargar datos para edición.", severity: "error" });
+    }
   };
 
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "nombre", headerName: "Nombre", width: 150 },
-    { field: "descripcion", headerName: "Descripción", width: 250 },
-    { field: "tipoProduccion", headerName: "Tipo Producción", width: 150 },
-    { field: "espacio", headerName: "Espacio", width: 100 },
-    { field: "estado", headerName: "Estado", width: 120 },
-  ];
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    axios.put(`${SiteProps.urlbasev1}/producciones/${selectedRow.id}`, {
+      ...formData,
+      sede: internalSede,
+      bloque: internalBloque,
+      espacio: internalEspacio,
+      tipoProduccion: selectedTipoProduccion,
+    }, { headers: { Authorization: `Bearer ${token}` } })
+    .then(() => {
+      setSnackbar({ open: true, message: "Producción actualizada correctamente.", severity: "success" });
+      setOpen(false);
+      fetchProducciones();
+    })
+    .catch(() => {
+      setSnackbar({ open: true, message: "Error al actualizar la producción.", severity: "error" });
+    });
+  };
 
-  if (!espacioId) return <Typography>Selecciona un espacio para ver las producciones.</Typography>;
-  if (loading) return (
-    <Box display="flex" justifyContent="center" alignItems="center" height="200px">
-      <CircularProgress />
-    </Box>
-  );
+  const handleDelete = () => {
+    if (!selectedRow) return;
+    axios.delete(`${SiteProps.urlbasev1}/producciones/${selectedRow.id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    .then(() => {
+      setSnackbar({ open: true, message: "Producción eliminada correctamente.", severity: "success" });
+      setSelectedRow(null);
+      fetchProducciones();
+    })
+    .catch(() => {
+      setSnackbar({ open: true, message: "Error al eliminar la producción.", severity: "error" });
+    });
+  };
+
+  if (loading) return <CircularProgress />;
   if (error) return <Typography color="error">{error}</Typography>;
-  if (producciones.length === 0) return <Typography>No hay producciones disponibles para este espacio.</Typography>;
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mb: 2 }}>
-        <Button startIcon={<UpdateIcon />} variant="outlined" onClick={handleEdit} color="primary" disabled={!selectedRow}>
-          Editar
-        </Button>
-        <Button variant="outlined" startIcon={<DeleteIcon />} onClick={handleDelete} color="primary" disabled={!selectedRow}>
-          Eliminar
-        </Button>
+    <Box>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mb: 2 }}>
+        <Button startIcon={<UpdateIcon />} variant="outlined" onClick={handleEdit} disabled={!selectedRow}>ACTUALIZAR</Button>
+        <Button startIcon={<DeleteIcon />} variant="outlined" onClick={handleDelete} disabled={!selectedRow}>ELIMINAR</Button>
       </Box>
+
       <DataGrid
         rows={producciones}
-        columns={columns}
+        columns={[
+          { field: "id", headerName: "ID", width: 90 },
+          { field: "nombre", headerName: "Nombre", width: 150 },
+          { field: "descripcion", headerName: "Descripción", width: 250 },
+          { field: "tipoProduccion", headerName: "Tipo Producción", width: 150 },
+          { field: "espacio", headerName: "Espacio", width: 100 },
+          { field: "estado", headerName: "Estado", width: 120 },
+        ]}
         pageSize={5}
         rowsPerPageOptions={[5, 10, 20]}
         getRowId={(row) => row.id}
-        disableSelectionOnClick
         onRowClick={(params) => setSelectedRow(params.row)}
+        autoHeight
       />
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
-          {snackbar.message}
-        </Alert>
+
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
       </Snackbar>
+
       <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogTitle>Editar Producción</DialogTitle>
         <form onSubmit={handleSubmit}>
           <DialogContent>
-            <Box sx={{ width: "100%" }}>
-              <FormControl fullWidth margin="normal">
-                <InputLabel id="sede-label">Sede</InputLabel>
-                <Select
-                  labelId="sede-label"
-                  value={selectedSede}
-                  onChange={(e) => setSelectedSede(e.target.value)}
-                >
-                  {sedes.map((sede) => (
-                    <MenuItem key={sede.id} value={sede.id}>
-                      {sede.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth margin="normal">
-                <InputLabel id="tipoProduccion-label">Tipo de Producción</InputLabel>
-                <Select
-                  labelId="tipoProduccion-label"
-                  value={selectedTipoProduccion}
-                  onChange={(e) => setSelectedTipoProduccion(e.target.value)}
-                >
-                  {tiposProduccion.map((tipo) => (
-                    <MenuItem key={tipo.id} value={tipo.id}>
-                      {tipo.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <TextField label="Nombre de Producción" value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })} fullWidth margin="normal" />
-              <TextField label="Descripción" value={formData.descripcion} onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })} fullWidth margin="normal" />
-              <TextField label="Fecha de Inicio" type="datetime-local" value={formData.fechaInicio} onChange={(e) => setFormData({ ...formData, fechaInicio: e.target.value })} fullWidth margin="normal" />
-              <TextField label="Fecha Final" type="datetime-local" value={formData.fechaFinal} onChange={(e) => setFormData({ ...formData, fechaFinal: e.target.value })} fullWidth margin="normal" />
-            </Box>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Sede</InputLabel>
+              <Select value={internalSede} onChange={(e) => setInternalSede(e.target.value)}>
+                {sedes.map((s) => <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>)}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth margin="normal" disabled={!internalSede}>
+              <InputLabel>Bloque</InputLabel>
+              <Select value={internalBloque} onChange={(e) => setInternalBloque(e.target.value)}>
+                {bloques.map((b) => <MenuItem key={b.id} value={b.id}>{b.nombre}</MenuItem>)}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth margin="normal" disabled={!internalBloque}>
+              <InputLabel>Espacio</InputLabel>
+              <Select value={internalEspacio} onChange={(e) => setInternalEspacio(e.target.value)}>
+                {espacios.map((e) => <MenuItem key={e.id} value={e.id}>{e.nombre}</MenuItem>)}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Tipo de Producción</InputLabel>
+              <Select value={selectedTipoProduccion} onChange={(e) => setSelectedTipoProduccion(e.target.value)}>
+                {tiposProduccion.map((t) => <MenuItem key={t.id} value={t.id}>{t.nombre}</MenuItem>)}
+              </Select>
+            </FormControl>
+            <TextField fullWidth label="Nombre" margin="normal" value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })} />
+            <TextField fullWidth label="Descripción" margin="normal" value={formData.descripcion} onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })} />
+            <TextField fullWidth label="Fecha Inicio" type="datetime-local" margin="normal" value={formData.fechaInicio} onChange={(e) => setFormData({ ...formData, fechaInicio: e.target.value })} />
+            <TextField fullWidth label="Fecha Final" type="datetime-local" margin="normal" value={formData.fechaFinal} onChange={(e) => setFormData({ ...formData, fechaFinal: e.target.value })} />
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpen(false)}>Cancelar</Button>
@@ -266,7 +257,3 @@ export default function GridProduccion({ espacioId }) {
     </Box>
   );
 }
-
-GridProduccion.propTypes = {
-  espacioId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-};

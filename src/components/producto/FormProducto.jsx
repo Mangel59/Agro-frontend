@@ -1,7 +1,7 @@
 /**
  * @file FormProducto.jsx
  * @module FormProducto
- * @description Componente de formulario para crear, actualizar o eliminar productos. Usa Material UI Dialogs y axios para interactuar con la API. 
+ * @description Componente de formulario para crear, actualizar y eliminar productos. Utiliza Material UI Dialogs y axios para comunicarse con la API. Incluye validación y manejo de errores mediante mensajes Snackbar.
  * @author Karla
  */
 
@@ -20,38 +20,44 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
-import PropTypes from "prop-types";
 
 /**
- * Componente FormProducto.
+ * Componente de formulario para gestionar productos.
  *
  * @component
  * @param {Object} props - Propiedades del componente
- * @param {Object} props.selectedRow - Fila seleccionada (producto a editar)
- * @param {Function} props.setSelectedRow - Función para establecer el producto seleccionado
- * @param {Function} props.setMessage - Función para mostrar mensajes en snackbar
- * @param {Function} props.reloadData - Función para recargar datos desde la API
- * @returns {JSX.Element} Formulario de gestión de productos
+ * @param {Object} props.selectedRow - Fila seleccionada para editar
+ * @param {Function} props.setSelectedRow - Función para establecer la fila seleccionada
+ * @param {Function} props.setMessage - Función para mostrar mensajes snackbar
+ * @param {Function} props.reloadData - Función para recargar los datos de la tabla
+ * @returns {JSX.Element} Formulario de producto
  */
-export default function FormProducto({ selectedRow, setSelectedRow, setMessage, reloadData }) {
+export default function FormProducto(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
 
+  /**
+   * Prepara el formulario para crear un nuevo producto.
+   */
   const create = () => {
-    setSelectedRow({
+    const row = {
       id: 0,
       nombre: "",
       productoCategoriaId: 0,
       descripcion: "",
       estado: 0,
-    });
+    };
+    props.setSelectedRow(row);
     setMethodName("Add");
     setOpen(true);
   };
 
+  /**
+   * Prepara el formulario para actualizar un producto existente.
+   */
   const update = () => {
-    if (!selectedRow || selectedRow.id === 0) {
-      setMessage({
+    if (!props.selectedRow || props.selectedRow.id === 0) {
+      props.setMessage({
         open: true,
         severity: "error",
         text: "Selecciona una fila para actualizar",
@@ -62,31 +68,40 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
     setOpen(true);
   };
 
+  /**
+   * Elimina el producto seleccionado.
+   */
   const deleteRow = () => {
-    if (selectedRow.id === 0) {
-      setMessage({
+    if (props.selectedRow.id === 0) {
+      props.setMessage({
         open: true,
         severity: "error",
         text: "Selecciona una fila para eliminar",
       });
       return;
     }
+
+    const id = props.selectedRow.id;
+    const url = `${SiteProps.urlbasev1}/producto/${id}`;
     const token = localStorage.getItem("token");
+
     axios
-      .delete(`${SiteProps.urlbasev1}/producto/${selectedRow.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      .delete(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
       .then(() => {
-        setMessage({
+        props.setMessage({
           open: true,
           severity: "success",
           text: "Producto eliminado con éxito",
         });
-        reloadData();
+        props.reloadData();
       })
       .catch((error) => {
         const errorMessage = error.response?.data?.message || error.message;
-        setMessage({
+        props.setMessage({
           open: true,
           severity: "error",
           text: `Error al eliminar producto: ${errorMessage}`,
@@ -94,30 +109,42 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
       });
   };
 
+  /**
+   * Cierra el formulario.
+   */
   const handleClose = () => {
     setOpen(false);
   };
 
+  /**
+   * Maneja el envío del formulario para crear o actualizar un producto.
+   * @param {React.FormEvent<HTMLFormElement>} event - Evento de envío del formulario
+   */
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const formJson = Object.fromEntries(formData.entries());
-    const id = selectedRow?.id || 0;
+    const id = props.selectedRow?.id || 0;
 
-    if (!formJson.nombre || !formJson.descripcion) {
-      setMessage({
-        open: true,
-        severity: "error",
-        text: "Datos inválidos. Revisa el formulario.",
-      });
-      return;
-    }
+    const validatePayload = (data) => {
+      if (!data.nombre || !data.descripcion) {
+        props.setMessage({
+          open: true,
+          severity: "error",
+          text: "Datos inválidos. Revisa el formulario.",
+        });
+        return false;
+      }
+      return true;
+    };
+
+    if (!validatePayload(formJson)) return;
 
     const url = `${SiteProps.urlbasev1}/producto`;
     const token = localStorage.getItem("token");
 
     if (!token) {
-      setMessage({
+      props.setMessage({
         open: true,
         severity: "error",
         text: "Error: Token de autenticación no encontrado.",
@@ -125,29 +152,55 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
       return;
     }
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const endpoint = methodName === "Add" ? url : `${url}/${id}`;
+    if (methodName === "Add") {
+      axios
+        .post(url, formJson, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then(() => {
+          props.setMessage({
+            open: true,
+            severity: "success",
+            text: "Producto creado con éxito",
+          });
+          setOpen(false);
+          props.reloadData();
+        })
+        .catch((error) => {
+          const errorMessage = error.response?.data?.message || error.message;
+          props.setMessage({
+            open: true,
+            severity: "error",
+            text: `Error al crear producto: ${errorMessage}`,
+          });
+        });
+    } else if (methodName === "Update") {
+      axios
+        .put(`${url}/${id}`, formJson, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then(() => {
+          props.setMessage({
+            open: true,
+            severity: "success",
+            text: "Producto actualizado con éxito",
+          });
+          setOpen(false);
+          props.reloadData();
+        })
+        .catch((error) => {
+          const errorMessage = error.response?.data?.message || error.message;
+          props.setMessage({
+            open: true,
+            severity: "error",
+            text: `Error al actualizar producto: ${errorMessage}`,
+          });
+        });
+    }
 
-    method(endpoint, formJson, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(() => {
-        setMessage({
-          open: true,
-          severity: "success",
-          text: `Producto ${methodName === "Add" ? "creado" : "actualizado"} con éxito`,
-        });
-        setOpen(false);
-        reloadData();
-      })
-      .catch((error) => {
-        const errorMessage = error.response?.data?.message || error.message;
-        setMessage({
-          open: true,
-          severity: "error",
-          text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} producto: ${errorMessage}`,
-        });
-      });
+    handleClose();
   };
 
   return (
@@ -172,26 +225,27 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
 
           <FormControl fullWidth margin="normal">
             <TextField
+              autoFocus
               required
               id="nombre"
               name="nombre"
               label="Nombre"
               fullWidth
               variant="standard"
-              defaultValue={selectedRow?.nombre || ""}
+              defaultValue={props.selectedRow?.nombre || ""}
             />
           </FormControl>
 
           <FormControl fullWidth margin="normal">
             <TextField
               required
-              id="productoCategoriaId"
-              name="productoCategoriaId"
+              id="productoCategoria"
+              name="productoCategoria"
               label="ID de categoría del producto"
               type="number"
               fullWidth
               variant="standard"
-              defaultValue={selectedRow?.productoCategoriaId || 0}
+              defaultValue={props.selectedRow?.productoCategoria || 0}
             />
           </FormControl>
 
@@ -203,7 +257,7 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
               label="Descripción"
               fullWidth
               variant="standard"
-              defaultValue={selectedRow?.descripcion || ""}
+              defaultValue={props.selectedRow?.descripcion || ""}
             />
           </FormControl>
 
@@ -213,7 +267,7 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
               labelId="estado-label"
               id="estado"
               name="estado"
-              defaultValue={selectedRow?.estado || 1}
+              defaultValue={props.selectedRow?.estado || 1}
               fullWidth
             >
               <MenuItem value={1}>Activo</MenuItem>
@@ -229,17 +283,3 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
     </React.Fragment>
   );
 }
-
-// PropTypes para validación
-FormProducto.propTypes = {
-  selectedRow: PropTypes.shape({
-    id: PropTypes.number,
-    nombre: PropTypes.string,
-    productoCategoriaId: PropTypes.number,
-    descripcion: PropTypes.string,
-    estado: PropTypes.number,
-  }).isRequired,
-  setSelectedRow: PropTypes.func.isRequired,
-  setMessage: PropTypes.func.isRequired,
-  reloadData: PropTypes.func.isRequired,
-};

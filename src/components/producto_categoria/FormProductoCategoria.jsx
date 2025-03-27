@@ -1,7 +1,7 @@
 /**
  * @file FormProductoCategoria.jsx
  * @module FormProductoCategoria
- * @description Componente de formulario para crear, actualizar o eliminar categorías de productos. Utiliza Material UI y Axios para comunicación con la API. Incluye validaciones y mensajes de éxito o error para el usuario.
+ * @description Componente de formulario para agregar, editar y eliminar categorías de productos. Incluye un diálogo modal y botones de acción. Utiliza Material UI y Axios para las operaciones CRUD y el estado del formulario.
  * @author Karla
  */
 
@@ -26,23 +26,23 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { SiteProps } from "../dashboard/SiteProps";
 
 /**
- * Componente FormProductoCategoria.
- *
- * Permite gestionar (crear, editar, eliminar) categorías de productos.
+ * Formulario para gestión de categorías de productos.
  *
  * @param {Object} props - Propiedades del componente
- * @param {Object} props.selectedRow - Categoría seleccionada actualmente
- * @param {function(Object): void} props.setSelectedRow - Función para actualizar la categoría seleccionada
- * @param {function(Object): void} props.setMessage - Función para mostrar mensajes (éxito o error)
- * @param {function(): void} props.reloadData - Función para recargar la lista de categorías desde la API
- * @returns {JSX.Element} Formulario de categorías de productos
+ * @param {Object} props.selectedRow - Objeto con los datos de la fila seleccionada
+ * @param {Function} props.setSelectedRow - Función para actualizar la fila seleccionada
+ * @param {Function} props.setMessage - Función para mostrar mensajes con Snackbar
+ * @param {Function} props.reloadData - Función para recargar los datos desde el backend
+ * @returns {JSX.Element} Componente del formulario
  */
 export default function FormProductoCategoria(props) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
   const selectedRow = props.selectedRow || {};
 
-  // Abrir formulario vacío
+  /**
+   * Maneja la acción de crear una nueva categoría.
+   */
   const create = () => {
     const emptyRow = {
       id: 0,
@@ -55,7 +55,9 @@ export default function FormProductoCategoria(props) {
     setOpen(true);
   };
 
-  // Abrir formulario con datos seleccionados
+  /**
+   * Maneja la acción de actualizar una categoría existente.
+   */
   const update = () => {
     if (!selectedRow || selectedRow.id === 0) {
       props.setMessage({
@@ -69,7 +71,9 @@ export default function FormProductoCategoria(props) {
     setOpen(true);
   };
 
-  // Eliminar la fila seleccionada
+  /**
+   * Maneja la eliminación de una categoría.
+   */
   const deleteRow = () => {
     if (!selectedRow || selectedRow.id === 0) {
       props.setMessage({
@@ -79,7 +83,6 @@ export default function FormProductoCategoria(props) {
       });
       return;
     }
-
     axios
       .delete(`${SiteProps.urlbasev1}/producto_categoria/${selectedRow.id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -102,12 +105,16 @@ export default function FormProductoCategoria(props) {
       });
   };
 
-  // Cerrar modal
+  /**
+   * Cierra el diálogo del formulario.
+   */
   const handleClose = () => {
     setOpen(false);
   };
 
-  // Guardar (crear o actualizar)
+  /**
+   * Envía el formulario para crear o actualizar una categoría.
+   */
   const handleSubmit = () => {
     const payload = {
       id: selectedRow.id || null,
@@ -127,9 +134,10 @@ export default function FormProductoCategoria(props) {
         props.setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add"
-            ? "Producto categoría creada con éxito."
-            : "Producto categoría actualizada con éxito.",
+          text:
+            methodName === "Add"
+              ? "Producto categoría creada con éxito."
+              : "Producto categoría actualizada con éxito.",
         });
         props.reloadData();
         handleClose();
@@ -155,7 +163,7 @@ export default function FormProductoCategoria(props) {
           onClick={create}
           style={{ marginRight: "10px" }}
         >
-          ADD
+          Agregar
         </Button>
         <Button
           variant="outlined"
@@ -164,7 +172,8 @@ export default function FormProductoCategoria(props) {
           onClick={update}
           style={{ marginRight: "10px" }}
         >
-          UPDATE
+          
+          Actualizar
         </Button>
         <Button
           variant="outlined"
@@ -172,11 +181,11 @@ export default function FormProductoCategoria(props) {
           startIcon={<DeleteIcon />}
           onClick={deleteRow}
         >
-          DELETE
+          Eliminar
         </Button>
       </Box>
 
-      {/* Diálogo para agregar o editar */}
+      {/* Diálogo del formulario */}
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>
           {methodName === "Add" ? "Agregar Categoría" : "Actualizar Categoría"}
@@ -187,7 +196,10 @@ export default function FormProductoCategoria(props) {
               label="Nombre"
               value={selectedRow.nombre || ""}
               onChange={(e) =>
-                props.setSelectedRow({ ...selectedRow, nombre: e.target.value })
+                props.setSelectedRow({
+                  ...selectedRow,
+                  nombre: e.target.value,
+                })
               }
               required
             />
@@ -210,7 +222,10 @@ export default function FormProductoCategoria(props) {
             <Select
               value={selectedRow.estado || ""}
               onChange={(e) =>
-                props.setSelectedRow({ ...selectedRow, estado: e.target.value })
+                props.setSelectedRow({
+                  ...selectedRow,
+                  estado: e.target.value,
+                })
               }
             >
               <MenuItem value={1}>Activo</MenuItem>
