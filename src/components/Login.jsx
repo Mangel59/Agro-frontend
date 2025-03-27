@@ -227,22 +227,6 @@ export default function Login(props) {
         />
 
         <Button
-          variant="text"
-          onClick={() => props.setCurrentModule(<ForgetPassword setCurrentModule={props.setCurrentModule} />)}
-          sx={{
-            color: '#1e88e5',
-            textTransform: 'none',
-            fontWeight: 'bold',
-            alignSelf: 'flex-end',
-            padding: 0,
-            minWidth: 'unset'
-          }}
-        >
-          ¿Olvidaste tu contraseña?
-        </Button>
-
-
-        <Button
           type="submit"
           variant="contained"
           color="primary"
@@ -260,6 +244,21 @@ export default function Login(props) {
           }}
         >
           {t('login')}
+        </Button>
+
+        <Button
+          variant="text"
+          onClick={() => props.setCurrentModule(<ForgetPassword setCurrentModule={props.setCurrentModule} />)}
+          sx={{
+            color: '#1e88e5',
+            textTransform: 'none',
+            fontWeight: 'bold',
+            alignSelf: 'center',
+            padding: 0,
+            minWidth: 'unset'
+          }}
+        >
+          ¿Olvidaste tu contraseña?
         </Button>
 
         <Typography

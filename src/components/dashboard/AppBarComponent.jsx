@@ -55,7 +55,7 @@ export default function AppBarComponent({ setCurrentModule }) {
           to="/"
           style={{ textDecoration: 'none', color: 'inherit' }}
         >
-          Agro Application
+          Aplicación AgroPro
         </Typography>
 
         {/* Switch para alternar tema */}
@@ -64,8 +64,8 @@ export default function AppBarComponent({ setCurrentModule }) {
         {/* Mostrar Login y Register si no está autenticado, de lo contrario mostrar el ProfileMenu */}
         {!isAuthenticated ? (
           <>
-            <Button color="inherit" onClick={handleLogin}>Login</Button>
-            <Button color="inherit" onClick={handleRegister}>Register</Button>
+            <Button color="inherit" onClick={handleLogin}>INICIAR SESIÓN</Button>
+            <Button color="inherit" onClick={handleRegister}>REGISTRARSE</Button>
           </>
         ) : (
           <ProfileMenu setCurrentModule={setCurrentModule} setIsAuthenticated={setIsAuthenticated} />
