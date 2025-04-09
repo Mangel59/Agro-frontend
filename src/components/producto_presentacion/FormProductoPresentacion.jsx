@@ -2,13 +2,14 @@
  * @file FormProductoPresentacion.jsx
  * @module FormProductoPresentacion
  * @description Componente de formulario para agregar, editar o eliminar registros de Producto Presentación.
- * Utiliza Material UI, Axios y recibe props con datos como productos, marcas, unidades y presentaciones. Muestra un formulario modal con validaciones mínimas y conexión al backend mediante API REST. Incluye validación de token, errores del backend y manejo de mensajes personalizados en un snackbar externo.
+ * Utiliza Formik, Yup, Material UI y Axios para validaciones, formularios y conexión con el backend.
+ * Incluye validación de token, errores del backend y manejo de mensajes personalizados en un snackbar externo.
  * @author Karla
  */
 
 import * as React from "react";
 import PropTypes from "prop-types";
-import axios from '../axiosConfig';
+import axios from "../axiosConfig";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
@@ -21,7 +22,9 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import StackButtons from "../StackButtons";
-import { SiteProps } from '../dashboard/SiteProps';
+import { SiteProps } from "../dashboard/SiteProps";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 /**
  * Componente FormProductoPresentacion.
@@ -40,31 +43,24 @@ import { SiteProps } from '../dashboard/SiteProps';
  */
 export default function FormProductoPresentacion(props) {
   const [open, setOpen] = React.useState(false);
-  const [methodName, setMethodName] = React.useState("");
+  const [methodName, setMethodName] = React.useState("Add");
 
-  /**
-   * Inicia el formulario con valores vacíos para crear un nuevo producto presentación.
-   */
   const create = () => {
-    const row = {
+    props.setSelectedRow({
       id: 0,
       nombre: "",
-      producto: 0,
-      unidad: 0,
+      producto: "",
+      unidad: "",
       cantidad: 0,
-      marca: 0,
-      presentacion: 0,
+      marca: "",
+      presentacion: "",
       descripcion: "",
-      estado: 0,
-    };
-    props.setSelectedRow(row);
+      estado: 1,
+    });
     setMethodName("Add");
     setOpen(true);
   };
 
-  /**
-   * Abre el formulario con los datos del producto presentación seleccionado.
-   */
   const update = () => {
     if (!props.selectedRow || props.selectedRow.id === 0) {
       props.setMessage({
@@ -78,9 +74,6 @@ export default function FormProductoPresentacion(props) {
     setOpen(true);
   };
 
-  /**
-   * Elimina el producto presentación seleccionado.
-   */
   const deleteRow = () => {
     if (props.selectedRow.id === 0) {
       props.setMessage({
@@ -105,9 +98,7 @@ export default function FormProductoPresentacion(props) {
     }
 
     axios
-      .delete(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .delete(url, { headers: { Authorization: `Bearer ${token}` } })
       .then(() => {
         props.setMessage({
           open: true,
@@ -126,191 +117,209 @@ export default function FormProductoPresentacion(props) {
       });
   };
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const handleClose = () => setOpen(false);
 
-  /**
-   * Envía el formulario al backend (crear o actualizar).
-   * @param {React.FormEvent<HTMLFormElement>} event
-   */
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    let formJson = Object.fromEntries(formData.entries());
-    const id = props.selectedRow?.id || 0;
+  const formik = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      nombre: props.selectedRow?.nombre || "",
+      producto: props.selectedRow?.producto || "",
+      unidad: props.selectedRow?.unidad || "",
+      cantidad: props.selectedRow?.cantidad || 0,
+      marca: props.selectedRow?.marca || "",
+      presentacion: props.selectedRow?.presentacion || "",
+      descripcion: props.selectedRow?.descripcion || "",
+      estado: props.selectedRow?.estado || 1,
+    },
+    validationSchema: Yup.object({
+      nombre: Yup.string().trim("No puede estar vacío").required("El nombre es obligatorio"),
+      producto: Yup.number().required("El producto es obligatorio"),
+      unidad: Yup.number().required("La unidad es obligatoria"),
+      cantidad: Yup.number().min(1, "Debe ser mayor a 0").required("Cantidad obligatoria"),
+      marca: Yup.number().required("La marca es obligatoria"),
+      presentacion: Yup.number().required("La presentación es obligatoria"),
+      descripcion: Yup.string().trim("No puede estar vacío").required("La descripción es obligatoria"),
+      estado: Yup.number().oneOf([0, 1], "Estado inválido"),
+    }),
+    onSubmit: (values) => {
+      const id = props.selectedRow?.id || 0;
+      const url = methodName === "Add"
+        ? `${SiteProps.urlbasev1}/producto-presentacion`
+        : `${SiteProps.urlbasev1}/producto-presentacion/${id}`;
+      const token = localStorage.getItem("token");
 
-    if (!formJson.producto) {
-      formJson = {
-        ...formJson,
-        producto: props.selectedRow?.producto || 1,
-      };
-    }
-
-    const url = methodName === "Add"
-      ? `${SiteProps.urlbasev1}/producto-presentacion`
-      : `${SiteProps.urlbasev1}/producto-presentacion/${id}`;
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      props.setMessage({
-        open: true,
-        severity: "error",
-        text: "Error: Token de autenticación no encontrado.",
-      });
-      return;
-    }
-
-    const axiosMethod = methodName === "Add" ? axios.post : axios.put;
-
-    axiosMethod(url, formJson, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then(() => {
-        props.setMessage({
-          open: true,
-          severity: "success",
-          text: methodName === "Add"
-            ? "Producto Presentación creado con éxito!"
-            : "Producto Presentación actualizado con éxito!",
-        });
-        setOpen(false);
-        props.reloadData();
-      })
-      .catch((error) => {
-        const errorMessage = error.response ? error.response.data.message : error.message;
+      if (!token) {
         props.setMessage({
           open: true,
           severity: "error",
-          text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} Producto Presentación: ${errorMessage || 'Error indefinido'}`,
+          text: "Error: Token de autenticación no encontrado.",
         });
-      });
-  };
+        return;
+      }
 
-  const productos = Array.isArray(props.productos) ? props.productos : [];
+      const axiosMethod = methodName === "Add" ? axios.post : axios.put;
+
+      axiosMethod(url, values, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+        .then(() => {
+          props.setMessage({
+            open: true,
+            severity: "success",
+            text: methodName === "Add"
+              ? "Producto Presentación creado con éxito!"
+              : "Producto Presentación actualizado con éxito!",
+          });
+          setOpen(false);
+          props.reloadData();
+        })
+        .catch((error) => {
+          const errorMessage = error.response ? error.response.data.message : error.message;
+          props.setMessage({
+            open: true,
+            severity: "error",
+            text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} Producto Presentación: ${errorMessage || "Error indefinido"}`,
+          });
+        });
+    },
+  });
 
   return (
-    <React.Fragment>
+    <>
       <StackButtons methods={{ create, update, deleteRow }} />
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        PaperProps={{
-          component: "form",
-          onSubmit: handleSubmit,
-        }}
-      >
+      <Dialog open={open} onClose={handleClose} PaperProps={{ component: "form", onSubmit: formik.handleSubmit }}>
         <DialogTitle>Producto Presentación</DialogTitle>
         <DialogContent>
           <DialogContentText>Completa el formulario.</DialogContentText>
 
-          {/* Select: Producto */}
+          {/* Producto */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="producto-label">Producto</InputLabel>
             <Select
               labelId="producto-label"
               id="producto"
               name="producto"
-              defaultValue={props.selectedRow?.producto || ""}
-              fullWidth
+              value={formik.values.producto}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.producto && Boolean(formik.errors.producto)}
             >
-              {productos.map((producto) => (
-                <MenuItem key={producto.id} value={producto.id}>{producto.nombre}</MenuItem>
+              {props.productos.map((item) => (
+                <MenuItem key={item.id} value={item.id}>{item.nombre}</MenuItem>
               ))}
             </Select>
           </FormControl>
 
+          {/* Nombre */}
           <TextField
-            required
+            fullWidth
+            margin="normal"
             id="nombre"
             name="nombre"
             label="Nombre"
-            fullWidth
-            margin="normal"
-            defaultValue={props.selectedRow?.nombre || ""}
+            value={formik.values.nombre}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.nombre && Boolean(formik.errors.nombre)}
+            helperText={formik.touched.nombre && formik.errors.nombre}
           />
 
-          {/* Select: Unidad */}
+          {/* Unidad */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="unidad-label">Unidad</InputLabel>
             <Select
               labelId="unidad-label"
               id="unidad"
               name="unidad"
-              defaultValue={props.selectedRow?.unidad || ""}
-              fullWidth
+              value={formik.values.unidad}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.unidad && Boolean(formik.errors.unidad)}
             >
-              {(Array.isArray(props.unidades) ? props.unidades : []).map((unidad) => (
-                <MenuItem key={unidad.id} value={unidad.id}>{unidad.nombre}</MenuItem>
+              {props.unidades.map((item) => (
+                <MenuItem key={item.id} value={item.id}>{item.nombre}</MenuItem>
               ))}
             </Select>
           </FormControl>
 
+          {/* Cantidad */}
           <TextField
-            required
+            fullWidth
+            margin="normal"
             id="cantidad"
             name="cantidad"
             label="Cantidad"
             type="number"
-            fullWidth
-            margin="normal"
-            defaultValue={props.selectedRow?.cantidad || 0}
+            value={formik.values.cantidad}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.cantidad && Boolean(formik.errors.cantidad)}
+            helperText={formik.touched.cantidad && formik.errors.cantidad}
           />
 
-          {/* Select: Marca */}
+          {/* Marca */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="marca-label">Marca</InputLabel>
             <Select
               labelId="marca-label"
               id="marca"
               name="marca"
-              defaultValue={props.selectedRow?.marca || ""}
-              fullWidth
+              value={formik.values.marca}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.marca && Boolean(formik.errors.marca)}
             >
-              {(Array.isArray(props.marcas) ? props.marcas : []).map((marca) => (
-                <MenuItem key={marca.id} value={marca.id}>{marca.nombre}</MenuItem>
+              {props.marcas.map((item) => (
+                <MenuItem key={item.id} value={item.id}>{item.nombre}</MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          {/* Select: Presentación */}
+          {/* Presentación */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="presentacion-label">Presentación</InputLabel>
             <Select
               labelId="presentacion-label"
               id="presentacion"
               name="presentacion"
-              defaultValue={props.selectedRow?.presentacion || ""}
-              fullWidth
+              value={formik.values.presentacion}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.presentacion && Boolean(formik.errors.presentacion)}
             >
-              {(Array.isArray(props.presentacionesList) ? props.presentacionesList : []).map((presentacion) => (
-                <MenuItem key={presentacion.id} value={presentacion.id}>{presentacion.nombre}</MenuItem>
+              {props.presentacionesList.map((item) => (
+                <MenuItem key={item.id} value={item.id}>{item.nombre}</MenuItem>
               ))}
             </Select>
           </FormControl>
 
+          {/* Descripción */}
           <TextField
-            required
+            fullWidth
+            margin="normal"
             id="descripcion"
             name="descripcion"
             label="Descripción"
-            fullWidth
-            margin="normal"
-            defaultValue={props.selectedRow?.descripcion || ""}
+            value={formik.values.descripcion}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.descripcion && Boolean(formik.errors.descripcion)}
+            helperText={formik.touched.descripcion && formik.errors.descripcion}
           />
 
+          {/* Estado */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="estado-label">Estado</InputLabel>
             <Select
               labelId="estado-label"
               id="estado"
               name="estado"
-              defaultValue={props.selectedRow?.estado || 1}
-              fullWidth
+              value={formik.values.estado}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
             >
               <MenuItem value={1}>Activo</MenuItem>
               <MenuItem value={0}>Inactivo</MenuItem>
@@ -322,7 +331,7 @@ export default function FormProductoPresentacion(props) {
           <Button type="submit">{methodName}</Button>
         </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </>
   );
 }
 

@@ -1,46 +1,77 @@
 /**
- * Login componente principal.
- * @module Login.jsx
- * @component
- * @returns {JSX.Element}
+ * @file Login.jsx
+ * @module Login
+ * @description Componente de inicio de sesión con soporte para traducción, alternancia de tema, validación de email y enrutamiento dinámico según el estado del usuario.
+ * @exports Login
  */
 
 import React, { useState } from 'react';
 import {
-  Container, TextField, Button, Typography, Box,
-  IconButton, InputAdornment, Alert, Link
+  Container,
+  TextField,
+  Button,
+  Typography,
+  Box,
+  IconButton,
+  InputAdornment,
+  Alert,
+  Link,
+  useTheme
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
 import LoginIcon from '@mui/icons-material/Login';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '@mui/material/styles';
-import ForgetPassword from './ForgetPassword';
+import { useThemeToggle } from './dashboard/ThemeToggleProvider';
 import FormRegistroPersona from './seguridad/FormRegistroPersona';
 import FormRegistroEmpresa from './seguridad/FormRegistroEmpresa';
 import Contenido from '../components/dashboard/Contenido';
 import PropTypes from "prop-types";
+import ForgetPassword from './ForgetPassword';
 
+/**
+ * Componente de formulario de inicio de sesión.
+ * Permite al usuario autenticarse mediante correo y contraseña.
+ * Cambia la interfaz según el estado del usuario recibido por el backend.
+ *
+ * @param {Object} props - Propiedades del componente.
+ * @param {Function} props.setIsAuthenticated - Función para actualizar el estado de autenticación global.
+ * @param {Function} props.setCurrentModule - Función para establecer el módulo actual después del login.
+ * @returns {JSX.Element} Formulario de inicio de sesión.
+ */
 export default function Login(props) {
-  const { t, i18n } = useTranslation();
-  const theme = useTheme();
-
+  const { t, i18n } = useTranslation(); // Hook de traducción
+  const theme = useTheme(); // Accede al tema actual (claro/oscuro)
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const toggleTheme = useThemeToggle(); // Alternador de tema personalizado
 
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
+  /**
+   * Alterna la visibilidad del campo de la contraseña.
+   */
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
 
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
-  };
+  /**
+   * Previene la acción predeterminada al presionar el ícono del ojo.
+   * @param {React.MouseEvent} event
+   */
+  const handleMouseDownPassword = (event) => event.preventDefault();
 
+  /**
+   * Valida si un email tiene formato válido.
+   * @param {string} email - El email a validar.
+   * @returns {boolean} true si el formato es válido.
+   */
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
+  /**
+   * Envía el formulario de login.
+   * Realiza autenticación con el backend y redirige según el estado del usuario.
+   * @param {React.FormEvent} event - Evento del formulario.
+   */
   const handleSubmit = (event) => {
     event.preventDefault();
     setError('');
@@ -72,10 +103,19 @@ export default function Login(props) {
       })
       .catch(error => {
         setError(t('login_error'));
-        console.error('Login error:', error);
+        console.error('There was an error logging in!', error);
       });
   };
 
+  /**
+   * Cambia el idioma de la aplicación.
+   * @param {string} lng - Código del idioma ('en' o 'es').
+   */
+  const handleLanguageChange = (lng) => {
+    i18n.changeLanguage(lng);
+  };
+
+  // Validación de tipos de props
   Login.propTypes = {
     setIsAuthenticated: PropTypes.func.isRequired,
     setCurrentModule: PropTypes.func.isRequired,
@@ -92,6 +132,7 @@ export default function Login(props) {
         minHeight: '100vh',
         backgroundColor: theme.palette.background.default,
         padding: 3,
+        mt: 15,
       }}
     >
       <Box
@@ -104,7 +145,7 @@ export default function Login(props) {
           padding: 4,
           backgroundColor: theme.palette.background.paper,
           borderRadius: 4,
-          boxShadow: theme.shadows[5],
+          boxShadow: theme.shadows[4],
           width: '100%',
           maxWidth: 400,
         }}
@@ -113,12 +154,18 @@ export default function Login(props) {
           variant="h4"
           component="h1"
           align="center"
-          sx={{ fontWeight: 'bold', color: theme.palette.text.primary }}
+          sx={{
+            fontWeight: 'bold',
+            marginBottom: 3,
+            color: theme.palette.primary.main,
+          }}
         >
           {t('login')}
         </Typography>
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {error && (
+          <Alert severity="error">{error}</Alert>
+        )}
 
         <TextField
           label={t("email")}
@@ -138,6 +185,7 @@ export default function Login(props) {
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton
+                  aria-label="toggle password visibility"
                   onClick={handleClickShowPassword}
                   onMouseDown={handleMouseDownPassword}
                   edge="end"
@@ -152,12 +200,17 @@ export default function Login(props) {
         <Button
           type="submit"
           variant="contained"
-          startIcon={<LoginIcon />}
           fullWidth
+          startIcon={<LoginIcon />}
+          sx={{
+            padding: '12px 0',
+            borderRadius: 3,
+            textTransform: 'none',
+            fontWeight: 'bold',
+          }}
         >
           {t('login')}
         </Button>
-
         <Button
           variant="text"
           onClick={() => props.setCurrentModule(<ForgetPassword setCurrentModule={props.setCurrentModule} />)}
@@ -165,17 +218,29 @@ export default function Login(props) {
         >
           ¿Olvidaste tu contraseña?
         </Button>
-
-        <Typography variant="body2" align="center">
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ marginTop: 3, color: theme.palette.text.secondary }}
+        >
           {t("no_account")}{" "}
           <Link
             component={RouterLink}
             to="/register"
-            sx={{ color: theme.palette.primary.main }}
+            sx={{
+              color: theme.palette.primary.main,
+              textDecoration: 'none',
+              fontWeight: 'bold'
+            }}
           >
             {t('register_here')}
           </Link>
         </Typography>
+
+        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
+          <Button onClick={() => handleLanguageChange('en')}>English</Button>
+          <Button onClick={() => handleLanguageChange('es')}>Español</Button>
+        </Box>
       </Box>
     </Container>
   );

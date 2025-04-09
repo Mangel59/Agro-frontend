@@ -1,170 +1,50 @@
 [
   {
-    "id": "localizacion",
-    "text": "Localizacion",
+    "id": "seguridad",
+    "text": "Seguridad",
     "icon": "People",
     "children": [
-      {
-        "id": "pais",
-        "text": "Pais",
-        "icon": "Apartment"
-      },
-      {
-        "id": "departamento",
-        "text": "Departamento",
-        "icon": "LocationCity"
-      },
-      {
-        "id": "municipio",
-        "text": "Municipio",
-        "icon": "Apartment"
-      },
-      {
-        "id": "almacen",
-        "text": "Almacén",
-        "icon": "LocationCity"
-      },
-      {
-        "id": "espacio",
-        "text": "Espacio",
-        "icon": "LocationCity"
-      },
-      {
-        "id": "espacio_ocupacion",
-        "text": "Espacio ocupacion",
-        "icon": "LocationCity"
-      },
-      {
-        "id": "tipo_espacio",
-        "text": "Tipo Espacio",
-        "icon": "LocationCity"
-      },
-      {
-        "id": "bloque",
-        "text": "Bloque",
-        "icon": "Warehouse"
-      },
-      {
-        "id": "tipo_bloque",
-        "text": "Tipo Bloque",
-        "icon": "Warehouse"
-      },
-      {
-        "id": "sede",
-        "text": "Sede",
-        "icon": "Domain"
-      },
-      {
-        "id": "tipo_sede",
-        "text": "Tipo Sede",
-        "icon": "Warehouse"
-      }
+      { "id": "persona", "text": "Persona", "icon": "PersonIcon" },
+      { "id": "rol", "text": "Rol", "icon": "PersonIcon" },
+      { "id": "tipoidentificacion", "text": "TipoIdentificacion", "icon": "PersonIcon" },
+      { "id": "empresa", "text": "Empresa", "icon": "PersonIcon" }
+    ]
+  },
+  {
+    "id": "parametrizacion",
+    "text": "Parametrización",
+    "icon": "People",
+    "children": [
+      { "id": "pais", "text": "Pais", "icon": "Apartment" },
+      { "id": "departamento", "text": "Departamento", "icon": "LocationCity" },
+      { "id": "municipio", "text": "Municipio", "icon": "Apartment" },
+      { "id": "tipo_sede", "text": "Tipo Sede", "icon": "Warehouse" },
+      { "id": "sede", "text": "Sede", "icon": "Domain" },
+      { "id": "tipo_bloque", "text": "Tipo Bloque", "icon": "Warehouse" },
+      { "id": "bloque", "text": "Bloque", "icon": "Warehouse" },
+      { "id": "tipo_espacio", "text": "Tipo Espacio", "icon": "LocationCity" },
+      { "id": "espacio", "text": "Espacio", "icon": "LocationCity" },
+      { "id": "almacen", "text": "Almacén", "icon": "LocationCity" }
     ]
   },
   {
     "id": "inventario",
     "text": "Inventario",
-    "icon": "AddShoppingCartIcon",
+    "icon": "People",
     "children": [
-      {
-        "id": "producto_presentacion",
-        "text": "ProductoPresentacion",
-        "icon": "ProductionQuantityLimitsIcon"
-      },
-      {
-        "id": "proveedor",
-        "text": "Proveedor",
-        "icon": "ProductionQuantityLimitsIcon"
-      },
-      {
-        "id": "presentacion",
-        "text": "Presentacion",
-        "icon": "ProductionQuantityLimitsIcon"
-      },
-      {
-        "id": "producto",
-        "text": "Producto",
-        "icon": "ProductionQuantityLimitsIcon"
-      },
-      {
-        "id": "producto_categoria",
-        "text": "Producto Categoría",
-        "icon": "ProductionQuantityLimitsIcon"
-      },
-      {
-        "id": "produccion",
-        "text": "Produccion",
-        "icon": "ProductionQuantityLimitsIcon"
-      },
-      {
-        "id": "marca",
-        "text": "Marca",
-        "icon": "ProductionQuantityLimitsIcon"
-      },
-      {
-        "id": "unidad",
-        "text": "Unidad",
-        "icon": "ProductionQuantityLimitsIcon"
-      },
-      {
-        "id": "tipo_produccion",
-        "text": "Tipo Produccion",
-        "icon": "ProductionQuantityLimitsIcon"
-      },
-      {
-        "id": "tipo_movimiento",
-        "text": "Tipo Movimiento",
-        "icon": "ProductionQuantityLimitsIcon"
-      },
-      {
-        "id": "kardex_nuevo",
-        "text": "Kardex Nuevo",
-        "icon": "ProductionQuantityLimitsIcon"
-      }
-    ]
-  },
-  {
-    "id": "reportes",
-    "text": "Reportes",
-    "icon": "Settings",
-    "children": [
-      {
-        "id": "r_pedido",
-        "text": "Reportes de Pedido",
-        "icon": "Settings"
-      },
-      {
-        "id": "r_orden_compra",
-        "text": "Reportes de Orden de Compra",
-        "icon": "Settings"
-      }
-    ]
-  },
-  {
-    "id": "autenticacion",
-    "text": "Autenticación",
-    "icon": "LockIcon",  
-    "children": [
-      {
-        "id": "persona",
-        "text": "Persona",
-        "icon": "PersonIcon" 
-      },
-      {
-        "id": "roll",
-        "text": "Rol",
-        "icon": "PersonIcon" 
-      },
-      {
-        "id": "tipoidentificacion",
-        "text": "TipoIdentificacion",
-        "icon": "PersonIcon" 
-      },
-      {
-        "id": "empresa",
-        "text": "Empresa",
-        "icon": "PersonIcon" 
-      }
+      { "id": "espacio_ocupacion", "text": "Espacio ocupación", "icon": "LocationCity" },
+      { "id": "proveedor", "text": "Proveedor", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "producto_categoria", "text": "Producto Categoría", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "marca", "text": "Marca", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "unidad", "text": "Unidad", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "producto", "text": "Producto", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "producto_presentacion", "text": "Producto Presentación", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "tipo_produccion", "text": "Tipo Producción", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "tipo_movimiento", "text": "Tipo Movimiento", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "produccion", "text": "Producción", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "r_pedido", "text": "Reportes de Pedido", "icon": "Settings" },
+      { "id": "presentacion", "text": "Presentación", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "r_orden_compra", "text": "Orden de Compra", "icon": "Settings" }
     ]
   }
 ]

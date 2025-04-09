@@ -1,9 +1,7 @@
 /**
  * @file FormPresentacion.jsx
  * @module FormPresentacion
- * @description Componente de formulario para crear, actualizar o eliminar una presentación.
- * Utiliza Material UI Dialog y campos de entrada para manejar datos de presentación.
- * @author Karla
+ * @description Componente de formulario para crear, actualizar o eliminar una presentación con Formik + Yup.
  */
 
 import * as React from "react";
@@ -24,26 +22,16 @@ import {
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
-/**
- * Componente FormPresentacion.
- *
- * Maneja la creación, actualización y eliminación de presentaciones.
- *
- * @param {Object} props - Propiedades del componente.
- * @param {function(Object):void} props.setSelectedRow - Función para establecer la fila seleccionada.
- * @param {Object} props.selectedRow - Fila actualmente seleccionada.
- * @param {function(Object):void} props.setMessage - Función para mostrar mensajes de éxito o error.
- * @param {function():void} props.reloadData - Función para recargar la lista de presentaciones.
- * @returns {JSX.Element}
- */
 export default function FormPresentacion({ setSelectedRow, selectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
 
   const create = () => {
-    setSelectedRow({ id: 0, nombre: "", descripcion: "", estado: 0 });
-    setMethodName("Add");
+    setSelectedRow({ id: 0, nombre: "", descripcion: "", estado: 1 });
+    setMethodName("Agregar");
     setOpen(true);
   };
 
@@ -56,7 +44,7 @@ export default function FormPresentacion({ setSelectedRow, selectedRow, setMessa
       });
       return;
     }
-    setMethodName("Update");
+    setMethodName("Actualizar");
     setOpen(true);
   };
 
@@ -92,96 +80,114 @@ export default function FormPresentacion({ setSelectedRow, selectedRow, setMessa
     setOpen(false);
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const formJson = Object.fromEntries(formData.entries());
-    const id = selectedRow?.id || 0;
+  const formik = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      nombre: selectedRow?.nombre || "",
+      descripcion: selectedRow?.descripcion || "",
+      estado: selectedRow?.estado ?? 1,
+    },
+    validationSchema: Yup.object({
+      nombre: Yup.string()
+        .trim("No puede contener solo espacios")
+        .strict(true)
+        .required("El nombre es obligatorio"),
+      descripcion: Yup.string()
+        .trim("No puede contener solo espacios")
+        .strict(true)
+        .required("La descripción es obligatoria"),
+      estado: Yup.number().oneOf([0, 1], "Estado inválido"),
+    }),
+    onSubmit: (values) => {
+      const id = selectedRow?.id || 0;
+      const token = localStorage.getItem("token");
 
-    if (!formJson.nombre || !formJson.descripcion) {
-      setMessage({
-        open: true,
-        severity: "error",
-        text: "Datos inválidos. Revisa el formulario.",
-      });
-      return;
-    }
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setMessage({
-        open: true,
-        severity: "error",
-        text: "Error: Token de autenticación no encontrado.",
-      });
-      return;
-    }
-
-    const url = `${SiteProps.urlbasev1}/presentaciones`;
-    const request = methodName === "Add"
-      ? axios.post(url, formJson, { headers: { Authorization: `Bearer ${token}` } })
-      : axios.put(`${url}/${id}`, formJson, { headers: { Authorization: `Bearer ${token}` } });
-
-    request
-      .then(() => {
-        setMessage({
-          open: true,
-          severity: "success",
-          text: methodName === "Add" ? "Presentación creada con éxito" : "Presentación actualizada con éxito",
-        });
-        setOpen(false);
-        reloadData();
-      })
-      .catch((error) => {
+      if (!token) {
         setMessage({
           open: true,
           severity: "error",
-          text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} presentación: ${error.response?.data?.message || error.message}`,
+          text: "Error: Token de autenticación no encontrado.",
         });
-      });
-  };
+        return;
+      }
+
+      const url = `${SiteProps.urlbasev1}/presentaciones`;
+      const request = methodName === "Agregar"
+        ? axios.post(url, values, { headers: { Authorization: `Bearer ${token}` } })
+        : axios.put(`${url}/${id}`, values, { headers: { Authorization: `Bearer ${token}` } });
+
+      request
+        .then(() => {
+          setMessage({
+            open: true,
+            severity: "success",
+            text: methodName === "Agregar" ? "Presentación creada con éxito" : "Presentación actualizada con éxito",
+          });
+          setOpen(false);
+          reloadData();
+        })
+        .catch((error) => {
+          setMessage({
+            open: true,
+            severity: "error",
+            text: `Error al ${methodName === "Agregar" ? "crear" : "actualizar"} presentación: ${error.response?.data?.message || error.message}`,
+          });
+        });
+    },
+  });
 
   return (
     <React.Fragment>
       <StackButtons methods={{ create, update, deleteRow }} />
-      <Dialog open={open} onClose={handleClose} PaperProps={{ component: "form", onSubmit: handleSubmit }}>
+      <Dialog open={open} onClose={handleClose} PaperProps={{ component: "form", onSubmit: formik.handleSubmit }}>
         <DialogTitle>Presentación</DialogTitle>
         <DialogContent>
           <DialogContentText>Completa el formulario.</DialogContentText>
 
+          {/* Campo: Nombre */}
           <FormControl fullWidth margin="normal">
             <TextField
-              autoFocus
-              required
               id="nombre"
               name="nombre"
               label="Nombre"
-              fullWidth
               variant="standard"
-              defaultValue={selectedRow?.nombre || ""}
+              value={formik.values.nombre}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.nombre && Boolean(formik.errors.nombre)}
+              helperText={formik.touched.nombre && formik.errors.nombre}
+              required
+              autoFocus
             />
           </FormControl>
 
+          {/* Campo: Descripción */}
           <FormControl fullWidth margin="normal">
             <TextField
-              required
               id="descripcion"
               name="descripcion"
               label="Descripción"
-              fullWidth
               variant="standard"
-              defaultValue={selectedRow?.descripcion || ""}
+              value={formik.values.descripcion}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.descripcion && Boolean(formik.errors.descripcion)}
+              helperText={formik.touched.descripcion && formik.errors.descripcion}
+              required
             />
           </FormControl>
 
+          {/* Campo: Estado */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="estado-label">Estado</InputLabel>
             <Select
               labelId="estado-label"
               id="estado"
               name="estado"
-              defaultValue={selectedRow?.estado || 1}
-              fullWidth
+              value={formik.values.estado}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.estado && Boolean(formik.errors.estado)}
             >
               <MenuItem value={1}>Activo</MenuItem>
               <MenuItem value={0}>Inactivo</MenuItem>
@@ -197,7 +203,6 @@ export default function FormPresentacion({ setSelectedRow, selectedRow, setMessa
   );
 }
 
-// Validación de props
 FormPresentacion.propTypes = {
   setSelectedRow: PropTypes.func.isRequired,
   selectedRow: PropTypes.shape({

@@ -90,7 +90,7 @@ export default function FormSede(props) {
   const create = () => {
     const emptyRow = {
       id: 0,
-      grupo: "",
+      grupo: 1,
       tipoSede: "",
       nombre: "",
       municipio: "",
@@ -191,14 +191,7 @@ export default function FormSede(props) {
         <DialogTitle>{methodName === "Add" ? "Agregar Sede" : "Actualizar Sede"}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Grupo</InputLabel>
-                <Select value={selectedRow.grupo || ""} onChange={(e) => props.setSelectedRow({ ...selectedRow, grupo: e.target.value })}>
-                  {grupos.map((grupo) => (<MenuItem key={grupo.id} value={grupo.id}>{grupo.nombre}</MenuItem>))}
-                </Select>
-              </FormControl>
-            </Grid>
+            
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Tipo de Sede</InputLabel>

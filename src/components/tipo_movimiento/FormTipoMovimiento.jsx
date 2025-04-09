@@ -2,8 +2,7 @@
  * @file FormTipoMovimiento.jsx
  * @module FormTipoMovimiento
  * @description Componente de formulario para gestionar Tipos de Movimiento: crear, actualizar o eliminar.
- * Incluye selección dinámica de empresas, validación, comunicación con API y uso de MUI Dialog.
- * @author Karla
+ * Incluye Formik + Yup, selección dinámica de empresas, validación, comunicación con API y uso de MUI Dialog.
  */
 
 import PropTypes from "prop-types";
@@ -24,26 +23,14 @@ import {
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
-/**
- * Componente de formulario para gestionar Tipos de Movimiento.
- * @component
- * @param {Object} props - Propiedades del componente
- * @param {Object} props.selectedRow - Fila seleccionada del tipo de movimiento
- * @param {Function} props.setSelectedRow - Función para actualizar la fila seleccionada
- * @param {Function} props.setMessage - Función para mostrar mensajes snackbar
- * @param {Function} props.reloadData - Función para recargar la grilla de datos
- * @returns {JSX.Element} El formulario de tipo de movimiento
- */
 export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMessage, reloadData }) {
-  const [open, setOpen] = React.useState(false); // Estado del diálogo
-  const [methodName, setMethodName] = React.useState(""); // Acción actual (Add / Update)
-  const [empresas, setEmpresas] = React.useState([]); // Lista de empresas disponibles
+  const [open, setOpen] = React.useState(false);
+  const [methodName, setMethodName] = React.useState("");
+  const [empresas, setEmpresas] = React.useState([]);
 
-  /**
-   * Carga las empresas disponibles desde el backend.
-   * Se usa para popular el select de empresa.
-   */
   const loadEmpresas = () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -71,33 +58,23 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
       });
   };
 
-  /**
-   * Abre el formulario en modo creación.
-   */
   const create = () => {
-    const row = { id: 0, nombre: "", descripcion: "", estado: 1, empresa: "" };
-    setSelectedRow(row);
-    setMethodName("Add");
+    setSelectedRow({ id: 0, nombre: "", descripcion: "", estado: 1, empresa: "" });
+    setMethodName("Agregar");
     setOpen(true);
     loadEmpresas();
   };
 
-  /**
-   * Abre el formulario en modo actualización.
-   */
   const update = () => {
     if (!selectedRow || selectedRow.id === 0) {
       setMessage({ open: true, severity: "error", text: "Selecciona una fila para actualizar" });
       return;
     }
-    setMethodName("Update");
+    setMethodName("Actualizar");
     setOpen(true);
     loadEmpresas();
   };
 
-  /**
-   * Elimina el registro seleccionado.
-   */
   const deleteRow = () => {
     if (selectedRow.id === 0) {
       setMessage({ open: true, severity: "error", text: "Selecciona una fila para eliminar" });
@@ -124,104 +101,105 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
       });
   };
 
-  /**
-   * Cierra el diálogo del formulario.
-   */
   const handleClose = () => setOpen(false);
 
-  /**
-   * Envía el formulario al backend, ya sea para crear o actualizar un registro.
-   * @param {React.FormEvent<HTMLFormElement>} event - Evento del formulario
-   */
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const formJson = Object.fromEntries(formData.entries());
-    const id = selectedRow?.id || 0;
+  const formik = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      nombre: selectedRow?.nombre || "",
+      descripcion: selectedRow?.descripcion || "",
+      estado: selectedRow?.estado ?? 1,
+      empresa: selectedRow?.empresa || "",
+    },
+    validationSchema: Yup.object({
+      nombre: Yup.string().trim("No puede estar vacío").strict(true).required("El nombre es obligatorio"),
+      descripcion: Yup.string().trim("No puede estar vacío").strict(true).required("La descripción es obligatoria"),
+      empresa: Yup.number().required("La empresa es obligatoria"),
+      estado: Yup.number().oneOf([0, 1], "Estado inválido").required(),
+    }),
+    onSubmit: (values) => {
+      const id = selectedRow?.id || 0;
+      const token = localStorage.getItem("token");
+      const url = methodName === "Agregar"
+        ? `${SiteProps.urlbasev1}/tipo_movimiento`
+        : `${SiteProps.urlbasev1}/tipo_movimiento/${id}`;
+      const axiosMethod = methodName === "Agregar" ? axios.post : axios.put;
 
-    if (!formJson.nombre || !formJson.descripcion || !formJson.empresa) {
-      setMessage({ open: true, severity: "error", text: "Datos inválidos. Revisa el formulario." });
-      return;
-    }
+      if (!token) {
+        setMessage({ open: true, severity: "error", text: "Token no encontrado" });
+        return;
+      }
 
-    const payload = {
-      nombre: formJson.nombre,
-      descripcion: formJson.descripcion,
-      estado: Number(formJson.estado),
-      empresa: formJson.empresa,
-    };
-
-    const url = methodName === "Add"
-      ? `${SiteProps.urlbasev1}/tipo_movimiento`
-      : `${SiteProps.urlbasev1}/tipo_movimiento/${id}`;
-
-    const axiosMethod = methodName === "Add" ? axios.post : axios.put;
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      setMessage({ open: true, severity: "error", text: "Token no encontrado" });
-      return;
-    }
-
-    axiosMethod(url, payload, {
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    })
-      .then(() => {
-        setMessage({
-          open: true,
-          severity: "success",
-          text: methodName === "Add" ? "Creado con éxito!" : "Actualizado con éxito!",
-        });
-        setOpen(false);
-        reloadData();
+      axiosMethod(url, values, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       })
-      .catch((error) => {
-        const msg = error.response?.data?.message || error.message;
-        setMessage({ open: true, severity: "error", text: `Error al guardar: ${msg}` });
-      });
-  };
+        .then(() => {
+          setMessage({
+            open: true,
+            severity: "success",
+            text: methodName === "Agregar" ? "Creado con éxito!" : "Actualizado con éxito!",
+          });
+          setOpen(false);
+          reloadData();
+        })
+        .catch((error) => {
+          const msg = error.response?.data?.message || error.message;
+          setMessage({ open: true, severity: "error", text: `Error al guardar: ${msg}` });
+        });
+    },
+  });
 
   return (
     <>
       <StackButtons methods={{ create, update, deleteRow }} />
-      <Dialog open={open} onClose={handleClose} PaperProps={{ component: "form", onSubmit: handleSubmit }}>
+      <Dialog open={open} onClose={handleClose} PaperProps={{ component: "form", onSubmit: formik.handleSubmit }}>
         <DialogTitle>Tipo de Movimiento</DialogTitle>
         <DialogContent>
           <DialogContentText>Completa el formulario.</DialogContentText>
 
+          {/* Nombre */}
           <FormControl fullWidth margin="normal">
             <TextField
-              required
               id="nombre"
               name="nombre"
               label="Nombre"
-              fullWidth
               variant="standard"
-              defaultValue={selectedRow?.nombre || ""}
+              value={formik.values.nombre}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.nombre && Boolean(formik.errors.nombre)}
+              helperText={formik.touched.nombre && formik.errors.nombre}
+              required
             />
           </FormControl>
 
+          {/* Descripción */}
           <FormControl fullWidth margin="normal">
             <TextField
-              required
               id="descripcion"
               name="descripcion"
               label="Descripción"
-              fullWidth
               variant="standard"
-              defaultValue={selectedRow?.descripcion || ""}
+              value={formik.values.descripcion}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.descripcion && Boolean(formik.errors.descripcion)}
+              helperText={formik.touched.descripcion && formik.errors.descripcion}
+              required
             />
           </FormControl>
 
+          {/* Empresa */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="empresa-label">Empresa</InputLabel>
             <Select
               labelId="empresa-label"
               id="empresa"
               name="empresa"
-              value={selectedRow?.empresa || ""}
-              onChange={(e) => setSelectedRow({ ...selectedRow, empresa: e.target.value })}
-              fullWidth
+              value={formik.values.empresa}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.empresa && Boolean(formik.errors.empresa)}
             >
               {empresas.map((empresa) => (
                 <MenuItem key={empresa.id} value={empresa.id}>
@@ -231,21 +209,23 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
             </Select>
           </FormControl>
 
+          {/* Estado */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="estado-label">Estado</InputLabel>
             <Select
               labelId="estado-label"
               id="estado"
               name="estado"
-              defaultValue={selectedRow?.estado ?? 1}
-              fullWidth
+              value={formik.values.estado}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              error={formik.touched.estado && Boolean(formik.errors.estado)}
             >
               <MenuItem value={1}>Activo</MenuItem>
               <MenuItem value={0}>Inactivo</MenuItem>
             </Select>
           </FormControl>
         </DialogContent>
-
         <DialogActions>
           <Button onClick={handleClose}>Cancelar</Button>
           <Button type="submit">{methodName}</Button>

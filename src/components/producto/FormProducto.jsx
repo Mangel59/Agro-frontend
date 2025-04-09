@@ -1,285 +1,196 @@
-/**
- * @file FormProducto.jsx
- * @module FormProducto
- * @description Componente de formulario para crear, actualizar y eliminar productos. Utiliza Material UI Dialogs y axios para comunicarse con la API. Incluye validación y manejo de errores mediante mensajes Snackbar.
- * @author Karla
- */
-
 import * as React from "react";
+import PropTypes from "prop-types";
 import axios from "../axiosConfig";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
+import {
+  Button,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  InputLabel,
+  MenuItem,
+  FormControl,
+  Select,
+} from "@mui/material";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
 
-/**
- * Componente de formulario para gestionar productos.
- *
- * @component
- * @param {Object} props - Propiedades del componente
- * @param {Object} props.selectedRow - Fila seleccionada para editar
- * @param {Function} props.setSelectedRow - Función para establecer la fila seleccionada
- * @param {Function} props.setMessage - Función para mostrar mensajes snackbar
- * @param {Function} props.reloadData - Función para recargar los datos de la tabla
- * @returns {JSX.Element} Formulario de producto
- */
-export default function FormProducto(props) {
+export default function FormProducto({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
 
-  /**
-   * Prepara el formulario para crear un nuevo producto.
-   */
-  const create = () => {
-    const row = {
-      id: 0,
-      nombre: "",
-      productoCategoriaId: 0,
-      descripcion: "",
-      estado: 0,
-    };
-    props.setSelectedRow(row);
-    setMethodName("Add");
+  const handleOpen = (method, row = {}) => {
+    setMethodName(method);
+    setSelectedRow({
+      id: row.id || 0,
+      nombre: row.nombre || "",
+      productoCategoria: row.productoCategoria || 0,
+      descripcion: row.descripcion || "",
+      estado: row.estado !== undefined ? row.estado : 1,
+    });
     setOpen(true);
   };
 
-  /**
-   * Prepara el formulario para actualizar un producto existente.
-   */
+  const create = () => handleOpen("Add");
   const update = () => {
-    if (!props.selectedRow || props.selectedRow.id === 0) {
-      props.setMessage({
-        open: true,
-        severity: "error",
-        text: "Selecciona una fila para actualizar",
-      });
+    if (!selectedRow || selectedRow.id === 0) {
+      setMessage({ open: true, severity: "error", text: "Selecciona una fila para actualizar" });
       return;
     }
-    setMethodName("Update");
-    setOpen(true);
+    handleOpen("Update", selectedRow);
   };
 
-  /**
-   * Elimina el producto seleccionado.
-   */
   const deleteRow = () => {
-    if (props.selectedRow.id === 0) {
-      props.setMessage({
-        open: true,
-        severity: "error",
-        text: "Selecciona una fila para eliminar",
-      });
+    if (!selectedRow?.id) {
+      setMessage({ open: true, severity: "error", text: "Selecciona una fila para eliminar" });
       return;
     }
 
-    const id = props.selectedRow.id;
-    const url = `${SiteProps.urlbasev1}/producto/${id}`;
     const token = localStorage.getItem("token");
-
     axios
-      .delete(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      .delete(`${SiteProps.urlbasev1}/producto/${selectedRow.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
       .then(() => {
-        props.setMessage({
-          open: true,
-          severity: "success",
-          text: "Producto eliminado con éxito",
-        });
-        props.reloadData();
+        setMessage({ open: true, severity: "success", text: "Producto eliminado con éxito" });
+        reloadData();
       })
       .catch((error) => {
         const errorMessage = error.response?.data?.message || error.message;
-        props.setMessage({
-          open: true,
-          severity: "error",
-          text: `Error al eliminar producto: ${errorMessage}`,
-        });
+        setMessage({ open: true, severity: "error", text: `Error al eliminar producto: ${errorMessage}` });
       });
   };
 
-  /**
-   * Cierra el formulario.
-   */
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const validationSchema = Yup.object({
+    nombre: Yup.string().trim("No puede contener solo espacios").strict(true).required("El nombre es obligatorio"),
+    productoCategoria: Yup.number().required("La categoría es obligatoria"),
+    descripcion: Yup.string().trim("No puede contener solo espacios").strict(true).required("La descripción es obligatoria"),
+    estado: Yup.number().oneOf([0, 1], "Estado inválido"),
+  });
 
-  /**
-   * Maneja el envío del formulario para crear o actualizar un producto.
-   * @param {React.FormEvent<HTMLFormElement>} event - Evento de envío del formulario
-   */
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const formJson = Object.fromEntries(formData.entries());
-    const id = props.selectedRow?.id || 0;
-
-    const validatePayload = (data) => {
-      if (!data.nombre || !data.descripcion) {
-        props.setMessage({
-          open: true,
-          severity: "error",
-          text: "Datos inválidos. Revisa el formulario.",
-        });
-        return false;
+  const formik = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      nombre: selectedRow?.nombre || "",
+      productoCategoria: selectedRow?.productoCategoria || 0,
+      descripcion: selectedRow?.descripcion || "",
+      estado: selectedRow?.estado ?? 1,
+    },
+    validationSchema,
+    onSubmit: (values) => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setMessage({ open: true, severity: "error", text: "Error: Token de autenticación no encontrado." });
+        return;
       }
-      return true;
-    };
 
-    if (!validatePayload(formJson)) return;
+      const method = methodName === "Add" ? axios.post : axios.put;
+      const url =
+        methodName === "Add"
+          ? `${SiteProps.urlbasev1}/producto`
+          : `${SiteProps.urlbasev1}/producto/${selectedRow.id}`;
 
-    const url = `${SiteProps.urlbasev1}/producto`;
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      props.setMessage({
-        open: true,
-        severity: "error",
-        text: "Error: Token de autenticación no encontrado.",
-      });
-      return;
-    }
-
-    if (methodName === "Add") {
-      axios
-        .post(url, formJson, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+      method(url, values, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
         .then(() => {
-          props.setMessage({
+          setMessage({
             open: true,
             severity: "success",
-            text: "Producto creado con éxito",
+            text: `Producto ${methodName === "Add" ? "creado" : "actualizado"} con éxito`,
           });
           setOpen(false);
-          props.reloadData();
+          reloadData();
         })
         .catch((error) => {
           const errorMessage = error.response?.data?.message || error.message;
-          props.setMessage({
+          setMessage({
             open: true,
             severity: "error",
-            text: `Error al crear producto: ${errorMessage}`,
+            text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} producto: ${errorMessage}`,
           });
         });
-    } else if (methodName === "Update") {
-      axios
-        .put(`${url}/${id}`, formJson, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then(() => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: "Producto actualizado con éxito",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response?.data?.message || error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al actualizar producto: ${errorMessage}`,
-          });
-        });
-    }
-
-    handleClose();
-  };
+    },
+  });
 
   return (
-    <React.Fragment>
-      <StackButtons
-        methods={{ create, update, deleteRow }}
-        create={create}
-        open={open}
-        setOpen={setOpen}
-      />
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        PaperProps={{
-          component: "form",
-          onSubmit: handleSubmit,
-        }}
-      >
-        <DialogTitle>Producto</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Completa el formulario.</DialogContentText>
+    <>
+      <StackButtons methods={{ create, update, deleteRow }} />
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <form onSubmit={formik.handleSubmit}>
+          <DialogTitle>Producto</DialogTitle>
+          <DialogContent>
+            <DialogContentText>Completa el formulario.</DialogContentText>
 
-          <FormControl fullWidth margin="normal">
             <TextField
-              autoFocus
-              required
+              fullWidth
+              margin="normal"
               id="nombre"
               name="nombre"
               label="Nombre"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.nombre || ""}
+              value={formik.values.nombre}
+              onChange={formik.handleChange}
+              error={formik.touched.nombre && Boolean(formik.errors.nombre)}
+              helperText={formik.touched.nombre && formik.errors.nombre}
             />
-          </FormControl>
 
-          <FormControl fullWidth margin="normal">
             <TextField
-              required
+              fullWidth
+              margin="normal"
               id="productoCategoria"
               name="productoCategoria"
               label="ID de categoría del producto"
               type="number"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.productoCategoria || 0}
+              value={formik.values.productoCategoria}
+              onChange={formik.handleChange}
+              error={formik.touched.productoCategoria && Boolean(formik.errors.productoCategoria)}
+              helperText={formik.touched.productoCategoria && formik.errors.productoCategoria}
             />
-          </FormControl>
 
-          <FormControl fullWidth margin="normal">
             <TextField
-              required
+              fullWidth
+              margin="normal"
               id="descripcion"
               name="descripcion"
               label="Descripción"
-              fullWidth
-              variant="standard"
-              defaultValue={props.selectedRow?.descripcion || ""}
+              value={formik.values.descripcion}
+              onChange={formik.handleChange}
+              error={formik.touched.descripcion && Boolean(formik.errors.descripcion)}
+              helperText={formik.touched.descripcion && formik.errors.descripcion}
             />
-          </FormControl>
 
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label">Estado</InputLabel>
-            <Select
-              labelId="estado-label"
-              id="estado"
-              name="estado"
-              defaultValue={props.selectedRow?.estado || 1}
-              fullWidth
-            >
-              <MenuItem value={1}>Activo</MenuItem>
-              <MenuItem value={0}>Inactivo</MenuItem>
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancelar</Button>
-          <Button type="submit">{methodName}</Button>
-        </DialogActions>
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="estado-label">Estado</InputLabel>
+              <Select
+                labelId="estado-label"
+                id="estado"
+                name="estado"
+                value={formik.values.estado}
+                onChange={formik.handleChange}
+                error={formik.touched.estado && Boolean(formik.errors.estado)}
+              >
+                <MenuItem value={1}>Activo</MenuItem>
+                <MenuItem value={0}>Inactivo</MenuItem>
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpen(false)}>Cancelar</Button>
+            <Button type="submit">{methodName}</Button>
+          </DialogActions>
+        </form>
       </Dialog>
-    </React.Fragment>
+    </>
   );
 }
+
+FormProducto.propTypes = {
+  selectedRow: PropTypes.object.isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+  setMessage: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired,
+};

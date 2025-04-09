@@ -1,7 +1,7 @@
 /**
  * @file Navigator2.jsx
  * @module Navigator2
- * @description Componente que representa el menú de navegación lateral con submenús y renderización dinámica de componentes.
+ * @description Componente que representa el menú de navegación lateral con submenús y renderización dinámica de componentes con imagen fija.
  * @component
  */
 
@@ -38,6 +38,7 @@ import DomainIcon from '@mui/icons-material/Domain';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 
+// Componentes del sistema
 import Persona from "../personas/Persona.jsx";
 import Pais from '../pais/Pais';
 import Departamento from '../departamento/Departamento';
@@ -66,8 +67,8 @@ import ROrdenCompra from '../r_orden_compra/OrdenCompra.jsx';
 import Rol from '../Rol/Rol.jsx';
 import TipoIdentificacion from '../TipoIdentificacion/TipoIdentificacion.jsx';
 import Proveedor from '../Proveedor/Proveedor.jsx';
+import MediaCard from '../MediaCard.jsx';
 
-// Iconos disponibles
 const icons = {
   DnsRounded: <DnsRoundedIcon />, Home: <HomeIcon />, People: <PeopleIcon />,
   Public: <PublicIcon />, AddShoppingCartIcon: <AddShoppingCartIcon />, Domain: <DomainIcon />,
@@ -76,25 +77,49 @@ const icons = {
   PersonIcon: <PersonIcon />, HomeWorkIcon: <HomeWorkIcon />, Warehouse: <WarehouseIcon />
 };
 
-// Mapeo de componentes disponibles por ID
 const components = {
- tipoidentificacion: TipoIdentificacion, roll: Rol, 
-  proveedor: Proveedor, pais: Pais, departamento: Departamento, municipio: Municipio, almacen: Almacen,
-  espacio: Espacio, espacio_ocupacion: EspacioOcupacion, tipo_espacio: TipoEspacio, bloque: Bloque,
-  tipo_bloque: TipoBloque, tipo_sede: TipoSedes, sede: Sede, producto_presentacion: ProductoPresentacion,
-  presentacion: Presentacion, producto_categoria: ProductoCategoria, producto: Producto, produccion: Produccion,
+  tipoidentificacion: TipoIdentificacion, roll: Rol, proveedor: Proveedor, pais: Pais,
+  departamento: Departamento, municipio: Municipio, almacen: Almacen, espacio: Espacio,
+  espacio_ocupacion: EspacioOcupacion, tipo_espacio: TipoEspacio, bloque: Bloque,
+  tipo_bloque: TipoBloque, tipo_sede: TipoSedes, sede: Sede,
+  producto_presentacion: ProductoPresentacion, presentacion: Presentacion,
+  producto_categoria: ProductoCategoria, producto: Producto, produccion: Produccion,
   kardex_nuevo: KardexNuevo, marca: Marca, unidad: Unidad, tipo_movimiento: TipoMovimiento,
   tipo_produccion: TipoProduccion, persona: Persona, empresa: Empresa, r_pedido: RPedido,
-  r_orden_compra: ROrdenCompra
+  r_orden_compra: ROrdenCompra, media_card: MediaCard
 };
 
-/**
- * Componente Navigator2.
- *
- * @param {Object} props - Propiedades del componente.
- * @param {function} props.setCurrentModuleItem - Función para establecer el módulo seleccionado.
- * @returns {JSX.Element} Componente de navegación lateral.
- */
+const moduleImages = {
+  persona: "/images/cards/1.jpg",
+  rol: "/images/cards/2.jpg",
+  tipoidentificacion: "/images/cards/3.jpg",
+  empresa: "/images/cards/4.jpg",
+  pais: "/images/cards/5.jpg",
+  departamento: "/images/cards/6.jpg",
+  municipio: "/images/cards/7.jpg",
+  tipo_sede: "/images/cards/8.jpg",
+  sede: "/images/cards/9.jpg",
+  tipo_bloque: "/images/cards/10.jpg",
+  bloque: "/images/cards/1.jpg",
+  tipo_espacio: "/images/cards/2.jpg",
+  espacio: "/images/cards/3.jpg",
+  almacen: "/images/cards/4.jpg",
+  espacio_ocupacion: "/images/cards/5.jpg",
+  proveedor: "/images/cards/6.jpg",
+  producto_categoria: "/images/cards/7.jpg",
+  marca: "/images/cards/8.jpg",
+  unidad: "/images/cards/9.jpg",
+  producto: "/images/cards/10.jpg",
+  producto_presentacion: "/images/cards/1.jpg",
+  tipo_produccion: "/images/cards/2.jpg",
+  tipo_movimiento: "/images/cards/3.jpg",
+  produccion: "/images/cards/4.jpg",
+  r_pedido: "/images/cards/5.jpg",
+  presentacion: "/images/cards/6.jpg",
+  media_card: "/images/cards/7.jpg",
+  r_orden_compra: "/images/cards/8.jpg"
+};
+
 export default function Navigator2(props) {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -155,27 +180,36 @@ export default function Navigator2(props) {
           <Box
             sx={{
               minWidth: 275,
-              height: '100%',
               backgroundColor: theme.palette.mode === 'dark' ? '#333' : '#fff',
               color: theme.palette.mode === 'dark' ? '#fff' : '#000',
               marginBottom: '20px',
-              padding: 2,
+              paddingBottom: 2,
               borderRadius: 2,
+              overflow: 'hidden',
               boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
             }}
           >
-            <ListItemIcon sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
-              {icons[icon]}
-            </ListItemIcon>
-            <Typography variant="h6">{t(text)}</Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
-              <Button
-                size="small"
-                sx={{ color: theme.palette.mode === 'dark' ? '#90caf9' : '#1976d2' }}
-                onClick={() => handleSubMenuClick(id, parentMenuId)}
-              >
-                {t('Ver más')}
-              </Button>
+            <Box
+              component="img"
+              src={moduleImages[id] || "/images/cards/1.jpg"}
+              alt={`Imagen de ${id}`}
+              sx={{ width: '100%', height: 140, objectFit: 'cover' }}
+            />
+
+            <Box sx={{ padding: 2 }}>
+              <ListItemIcon sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+                {icons[icon]}
+              </ListItemIcon>
+              <Typography variant="h6">{t(text)}</Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
+                <Button
+                  size="small"
+                  sx={{ color: theme.palette.mode === 'dark' ? '#90caf9' : '#1976d2' }}
+                  onClick={() => handleSubMenuClick(id, parentMenuId)}
+                >
+                  {t('Ver más')}
+                </Button>
+              </Box>
             </Box>
           </Box>
         </Grid>
