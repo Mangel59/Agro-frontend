@@ -28,11 +28,19 @@ export const SiteProps = {
     /**
      * URL base versión 1 para las solicitudes API.
      */
-    urlbasev1:"http://localhost:8080/api/v1",
+    // urlbasev1:"http://localhost:8080/api/v1",
+
+
 
     // urlbasev1:"http://172.16.79.156:8080/api/v1",
 
     // urlbasev2:"http://172.16.79.156:8080/api/v2"
 
-    urlbasev2:"http://localhost:8080/api/v2"
+    // urlbasev2:"http://localhost:8080/api/v2"
+
+
+    //direccion que lleva al backend de la ip 192.168.194.7
+    urlbasev1: "http://192.168.194.7:8080/api/v1",
+    //direccion que lleva al backend de la ip 192.168.194.7
+    urlbasev2: "http://192.168.194.7:8080/api/v2"
 }
