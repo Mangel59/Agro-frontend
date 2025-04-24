@@ -44,7 +44,11 @@
       { "id": "produccion", "text": "Producción", "icon": "ProductionQuantityLimitsIcon" },
       { "id": "r_pedido", "text": "Reportes de Pedido", "icon": "Settings" },
       { "id": "presentacion", "text": "Presentación", "icon": "ProductionQuantityLimitsIcon" },
-      { "id": "r_orden_compra", "text": "Orden de Compra", "icon": "Settings" }
+      { "id": "r_orden_compra", "text": "Orden de Compra", "icon": "Settings" },
+      {"id": "evaluacion_item", "text": "EvaluacionItem","icon": "Settings"},
+      {"id": "evaluacion","text": "Evaluacion","icon": "Settings"},
+      {"id": "tipo_evaluacion","text": "Tipo Evaluacion","icon": "ProductionQuantityLimitsIcon" },
+      {"id": "criterio_evaluacion","text": "Criterio Evaluacion","icon": "Settings"}
     ]
   }
 ]

@@ -21,30 +21,26 @@ export default function Produccion() {
 
   const token = localStorage.getItem("token");
 
-  React.useEffect(() => {
-    if (!token) return;
-    axios.get(`${SiteProps.urlbasev1}/sede/minimal`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then((res) => setSedes(res.data));
-  }, [token]);
-
-  const handleSedeChange = (sedeId) => {
-    setSelectedSede(sedeId);
-    setSelectedBloque("");
-    setSelectedEspacio("");
-    axios.get(`${SiteProps.urlbasev1}/bloque/sede/${sedeId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then((res) => setBloques(res.data));
-  };
-
-  const handleBloqueChange = (bloqueId) => {
-    setSelectedBloque(bloqueId);
-    setSelectedEspacio("");
-    axios.get(`${SiteProps.urlbasev1}/espacio/bloque/${bloqueId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then((res) => setEspacios(res.data));
-  };
-
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Estos dos NO necesitan Authorization
+        const [municipioRes, tipoSedeRes] = await Promise.all([
+          axios.get(`${SiteProps.urlbasev1}/municipio/all`),
+          axios.get(`${SiteProps.urlbasev1}/tipo_sede/minimal`),
+        ]);
+  
+        setMunicipios(municipioRes.data || []);
+        setTipoSedes(tipoSedeRes.data || []);
+      } catch (error) {
+        console.error("Error al cargar municipios o tipos de sede:", error);
+        setMessage({ open: true, severity: "error", text: "Error al cargar datos iniciales." });
+      }
+    };
+  
+    fetchData();
+  }, [setMessage]);
+  
   return (
     <div style={{ padding: 16 }}>
       <h1>Producción</h1>

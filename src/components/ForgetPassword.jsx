@@ -15,6 +15,8 @@ import AppBarComponent from './dashboard/AppBarComponent';
 import axios from './axiosConfig';
 import Login from './Login';
 import { useTheme } from '@mui/material/styles';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 /**
  * Componente para recuperar la contraseña.
@@ -24,51 +26,50 @@ import { useTheme } from '@mui/material/styles';
 const ForgetPassword = ({ setCurrentModule }) => {
   const { t, i18n } = useTranslation();
   const toggleTheme = useThemeToggle();
-  const theme = useTheme(); // 🔥 Usamos el tema MUI para modo claro/oscuro
+  const theme = useTheme();
 
-  const [email, setEmail] = useState('');
   const [status, setStatus] = useState({ type: '', message: '' });
   const [loading, setLoading] = useState(false);
 
-  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setStatus({ type: '', message: '' });
-
-    if (!validateEmail(email)) {
-      setStatus({ type: 'error', message: 'Correo inválido.' });
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const params = new URLSearchParams();
-      params.append('email', email);
-
-      await axios.post('/auth/forgot-password', params, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      });
-
-      setStatus({
-        type: 'success',
-        message: 'Se ha enviado un enlace de recuperación a tu correo.'
-      });
-    } catch (error) {
-      console.error('Error en recuperación de contraseña:', error);
-      setStatus({
-        type: 'error',
-        message: 'No se pudo enviar el enlace. Intenta más tarde.'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleLanguageChange = (lng) => i18n.changeLanguage(lng);
+
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+    },
+    validationSchema: Yup.object({
+      email: Yup.string()
+        .email('Correo inválido.')
+        .required('El correo es obligatorio.'),
+    }),
+    onSubmit: async (values) => {
+      setStatus({ type: '', message: '' });
+      try {
+        setLoading(true);
+        const params = new URLSearchParams();
+        params.append('email', values.email);
+
+        await axios.post('/auth/forgot-password', params, {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        });
+
+        setStatus({
+          type: 'success',
+          message: 'Se ha enviado un enlace de recuperación a tu correo.'
+        });
+      } catch (error) {
+        console.error('Error en recuperación de contraseña:', error);
+        setStatus({
+          type: 'error',
+          message: 'No se pudo enviar el enlace. Intenta más tarde.'
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+  });
 
   return (
     <Container
@@ -88,7 +89,7 @@ const ForgetPassword = ({ setCurrentModule }) => {
 
       <Box
         component="form"
-        onSubmit={handleSubmit}
+        onSubmit={formik.handleSubmit}
         sx={{
           display: 'flex',
           flexDirection: 'column',
@@ -136,10 +137,14 @@ const ForgetPassword = ({ setCurrentModule }) => {
         <TextField
           label="Correo electrónico"
           variant="outlined"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          name="email"
+          value={formik.values.email}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
           fullWidth
           disabled={loading}
+          error={formik.touched.email && Boolean(formik.errors.email)}
+          helperText={formik.touched.email && formik.errors.email}
         />
 
         <Button

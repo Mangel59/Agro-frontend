@@ -1,16 +1,9 @@
-/**
- * @file Sede.jsx
- * @module Sede
- * @description Componente principal para gestionar las sedes del sistema. Contiene formulario, grilla y manejo de estado y errores. Se conecta al backend para cargar datos dinámicamente.
- * @author Karla
- */
-
-import * as React from "react";
+import React, { useEffect, useState } from "react";
+import { Box } from "@mui/material";
 import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
 import FormSede from "./FormSede";
 import GridSede from "./GridSede";
-import { SiteProps } from "../dashboard/SiteProps";
 
 /**
  * @typedef {Object} SedeRow
@@ -19,8 +12,8 @@ import { SiteProps } from "../dashboard/SiteProps";
  * @property {string} tipoSede - ID o nombre del tipo de sede
  * @property {string} nombre - Nombre de la sede
  * @property {string} municipioId - ID del municipio
- * @property {string|Object} geolocalizacion - Ubicación geográfica (puede ser string u objeto con coordenadas)
- * @property {string} cooordenadas - Coordenadas manuales (si aplica)
+ * @property {string|Object} geolocalizacion - Ubicación geográfica
+ * @property {string} coordenadas - Coordenadas manuales
  * @property {number} area - Área de la sede
  * @property {string} comuna - Comuna donde se ubica
  * @property {string} descripcion - Descripción de la sede
@@ -29,106 +22,84 @@ import { SiteProps } from "../dashboard/SiteProps";
 
 /**
  * @typedef {Object} SnackbarMessage
- * @property {boolean} open - Indica si el mensaje está visible
- * @property {string} severity - Severidad del mensaje (success, error, etc.)
- * @property {string} text - Texto del mensaje a mostrar
+ * @property {boolean} open - Si el mensaje está visible
+ * @property {string} severity - Severidad (success, error, etc)
+ * @property {string} text - Texto del mensaje
  */
 
 /**
  * Componente principal para gestionar las sedes.
- *
- * Este componente muestra un formulario para crear o editar sedes,
- * y una grilla con la lista de sedes registradas.
- * También maneja la carga de datos desde el backend,
- * el estado de errores y los mensajes tipo snackbar.
- *
- * @function Sede
- * @returns {JSX.Element} Elemento JSX renderizado
+ * @component
+ * @returns {JSX.Element}
  */
 export default function Sede() {
-  /** @type {SedeRow} */
-  const row = {
+  const initialRow = {
     id: 0,
     grupo: "",
     tipoSede: "",
     nombre: "",
     municipioId: "",
     geolocalizacion: "",
-    cooordenadas: "",
+    coordenadas: "",
     area: 0,
     comuna: "",
     descripcion: "",
     estado: 1,
   };
 
-  const [selectedRow, setSelectedRow] = React.useState(row);
-  const [message, setMessage] = React.useState({ open: false, severity: "success", text: "" });
-  const [sedes, setSedes] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState(null);
+  const [sedes, setSedes] = useState([]);
+  const [selectedRow, setSelectedRow] = useState(initialRow);
+  const [message, setMessage] = useState({ open: false, severity: "info", text: "" });
 
-  /**
-   * Carga las sedes desde el backend y actualiza el estado local.
-   */
-  const reloadData = () => {
-    setLoading(true);
-    axios
-      .get(`${SiteProps.urlbasev1}/sede`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
-      .then((response) => {
-        const sedeData = response.data.map((item) => ({
-          ...item,
-          geolocalizacion: item.geolocalizacion || { type: "Point", coordinates: [0, 0] },
-        }));
-        setSedes(sedeData);
-        setError(null);
-      })
-      .catch((error) => {
-        console.error("Error al cargar las sedes!", error);
-        setError("No se pudieron cargar las sedes. Intente nuevamente.");
-        setMessage({ open: true, severity: "error", text: "Error al cargar las sedes. Intente nuevamente." });
-      })
-      .finally(() => {
-        setLoading(false);
+  const token = localStorage.getItem("token");
+
+  // Define fetchData outside of useEffect
+  const fetchData = async () => {
+    if (!token) return;
+
+    try {
+      const res = await axios.get('/api/v1/sede/all', {
+        headers: { Authorization: `Bearer ${token}` },
       });
+
+      setSedes(
+        (res.data || []).map((sede, index) => ({
+          ...sede,
+          id: sede.id ?? `temp-${index}`,
+        }))
+      );
+
+      setMessage({ open: false });
+    } catch (error) {
+      console.error("Error al cargar las sedes:", error);
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Error al cargar las sedes. Intente nuevamente.",
+      });
+    }
   };
 
-  React.useEffect(() => {
-    reloadData();
+  // Call fetchData inside useEffect
+  useEffect(() => {
+    fetchData();
   }, []);
 
-  /**
-   * Cierra el snackbar de mensajes.
-   */
-  const handleMessageClose = () => {
-    setMessage({ ...message, open: false });
-  };
-
   return (
-    <div style={{ height: "100%", width: "100%" }}>
+    <Box sx={{ height: "100%", width: "100%" }}>
       <h1>Sede</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
-      {loading ? (
-        <div style={{ textAlign: "center", margin: "20px" }}>Cargando datos...</div>
-      ) : error ? (
-        <div style={{ color: "red", textAlign: "center", margin: "20px" }}>{error}</div>
-      ) : (
-        <>
-          <FormSede
-            setMessage={setMessage}
-            selectedRow={selectedRow}
-            setSelectedRow={setSelectedRow}
-            reloadData={reloadData}
-          />
-          <GridSede
-            selectedRow={selectedRow}
-            setSelectedRow={setSelectedRow}
-            sedes={sedes}
-            reloadData={reloadData}
-          />
-        </>
-      )}
-    </div>
+      <FormSede
+        selectedRow={selectedRow}
+        setSelectedRow={setSelectedRow}
+        reloadData={fetchData}
+        setMessage={setMessage}
+      />
+      <GridSede
+        sedes={sedes}
+        setSelectedRow={setSelectedRow}
+        reloadData={fetchData}
+      />
+    </Box>
   );
 }

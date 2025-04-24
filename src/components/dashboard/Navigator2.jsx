@@ -68,6 +68,10 @@ import Rol from '../Rol/Rol.jsx';
 import TipoIdentificacion from '../TipoIdentificacion/TipoIdentificacion.jsx';
 import Proveedor from '../Proveedor/Proveedor.jsx';
 import MediaCard from '../MediaCard.jsx';
+import CriterioEvaluacion from '../criterio_evaluacion/criterio_evaluacion.jsx';
+import TipoEvaluacion from '../tipo_evaluacion/Tipo_evaluacion.jsx';
+import Evaluacion from '../Evaluacion/Evaluacion.jsx';
+import EvaluacionItem from '../Evaluacion_item/Evaluacion_item.jsx';
 
 const icons = {
   DnsRounded: <DnsRoundedIcon />, Home: <HomeIcon />, People: <PeopleIcon />,
@@ -86,7 +90,10 @@ const components = {
   producto_categoria: ProductoCategoria, producto: Producto, produccion: Produccion,
   kardex_nuevo: KardexNuevo, marca: Marca, unidad: Unidad, tipo_movimiento: TipoMovimiento,
   tipo_produccion: TipoProduccion, persona: Persona, empresa: Empresa, r_pedido: RPedido,
-  r_orden_compra: ROrdenCompra, media_card: MediaCard
+  r_orden_compra: ROrdenCompra, media_card: MediaCard, evaluacion_item: EvaluacionItem,
+  criterio_evaluacion: CriterioEvaluacion,tipo_evaluacion: TipoEvaluacion,
+  evaluacion:Evaluacion
+
 };
 
 const moduleImages = {
@@ -117,7 +124,11 @@ const moduleImages = {
   r_pedido: "/images/cards/5.jpg",
   presentacion: "/images/cards/6.jpg",
   media_card: "/images/cards/7.jpg",
-  r_orden_compra: "/images/cards/8.jpg"
+  r_orden_compra: "/images/cards/8.jpg",
+  evaluacion_item: "/images/cards/2.jpg",
+  evaluacion: "/images/cards/7.jpg",
+  criterio_evaluacion: "/images/cards/9.jpg",
+  tipo_evaluacio: "/images/cards/5.jpg",
 };
 
 export default function Navigator2(props) {
