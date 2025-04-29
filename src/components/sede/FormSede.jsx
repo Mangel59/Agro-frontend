@@ -17,59 +17,44 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import UpdateIcon from "@mui/icons-material/Update";
 import DeleteIcon from "@mui/icons-material/Delete";
-import axios from "axios";
+import axios from "../axiosConfig"; // Usa tu configuración de axios
 import { SiteProps } from "../dashboard/SiteProps";
 
-/**
- * Componente de formulario para la gestión de sedes.
- *
- * @component
- * @param {Object} props - Propiedades del componente
- * @param {Object} props.selectedRow - Objeto que representa la fila seleccionada
- * @param {function(Object): void} props.setSelectedRow - Función para actualizar la fila seleccionada
- * @param {function(): void} props.reloadData - Función para recargar los datos desde la API
- * @param {function(Object): void} props.setMessage - Función para mostrar mensajes en Snackbar
- * @returns {JSX.Element} Formulario para crear, actualizar o eliminar sedes
- */
-export default function FormSede({ selectedRow, setSelectedRow, reloadData, setMessage }) {
+export default function FormSede({ selectedRow, setSelectedRow, reloadData, setMessage, onAdd, onUpdate, onDelete }) {
   const [open, setOpen] = useState(false);
   const [methodName, setMethodName] = useState("");
   const [municipios, setMunicipios] = useState([]);
   const [tipoSedes, setTipoSedes] = useState([]);
   const [grupos, setGrupos] = useState([]);
-  
+
   const token = localStorage.getItem("token");
 
+  const fetchData = async () => {
+    if (!token || token.trim() === "") {
+      console.error("Token inválido");
+      return;
+    }
+    try {
+      const [tipoSedeResponse, grupoResponse, municipioResponse] = await Promise.all([
+        axios.get('/api/v1/tipo_sede/minimal', { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get('/api/v1/grupo/minimal', { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get('/api/v1/municipio/all', { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+
+      setTipoSedes(tipoSedeResponse.data || []);
+      setGrupos(grupoResponse.data || []);
+      setMunicipios(municipioResponse.data || []);
+    } catch (error) {
+      console.error("Error al cargar datos:", error);
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "No se pudo cargar la información de municipios, grupos o tipos de sede.",
+      });
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Cargar tipo de sede
-        await axios.get('/api/v1/tipo_sede/minimal', {
-          headers: { Authorization: `Bearer ${token}` },
-        }).then((res) => setTipoSedes(res.data));
-        
-        // Cargar grupos
-        await axios.get('/api/v1/grupo/minimal', {
-          headers: { Authorization: `Bearer ${token}` },
-        }).then((res) => setGrupos(res.data));
-
-        // Cargar municipios
-        await axios.get('/api/v1/municipio/all', {
-          headers: { Authorization: `Bearer ${token}` },
-        }).then((res) => {
-          setMunicipios(res.data);
-        });
-
-      } catch (error) {
-        console.error("Error al cargar datos iniciales de sede:", error);
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al cargar datos iniciales.",
-        });
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -80,7 +65,7 @@ export default function FormSede({ selectedRow, setSelectedRow, reloadData, setM
     }
     setMethodName(method);
     if (method === "Delete") {
-      handleDelete();
+      onDelete(selectedRow.id);
     } else {
       setOpen(true);
     }
@@ -91,8 +76,10 @@ export default function FormSede({ selectedRow, setSelectedRow, reloadData, setM
       id: null,
       nombre: "",
       municipioId: "",
-      tipoSedeId: "",
       grupoId: "",
+      tipoSedeId: "",
+      area: "",
+      comuna: "",
       descripcion: "",
       estadoId: 1,
     });
@@ -100,61 +87,12 @@ export default function FormSede({ selectedRow, setSelectedRow, reloadData, setM
   };
 
   const handleSubmit = () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    const url = `${SiteProps.urlbasev1}/sede`;
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const endpoint = methodName === "Add" ? url : `${url}/${selectedRow.id}`;
-
-    method(endpoint, selectedRow, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(() => {
-        setMessage({
-          open: true,
-          severity: "success",
-          text: methodName === "Add" ? "Sede creada exitosamente." : "Sede actualizada exitosamente.",
-        });
-        reloadData();
-        handleClose();
-      })
-      .catch((error) => {
-        console.error("Error al guardar sede:", error);
-        const errorMessage = error.response?.status === 403
-          ? "No tiene permisos para guardar la sede."
-          : "Error al guardar datos.";
-        setMessage({ open: true, severity: "error", text: errorMessage });
-      });
-  };
-
-  const handleDelete = () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    axios.delete(`${SiteProps.urlbasev1}/sede/${selectedRow.id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(() => {
-        setMessage({ open: true, severity: "success", text: "Sede eliminada exitosamente." });
-        reloadData();
-        setSelectedRow({
-          id: null,
-          nombre: "",
-          municipioId: "",
-          tipoSedeId: "",
-          grupoId: "",
-          descripcion: "",
-          estadoId: 1,
-        });
-      })
-      .catch((error) => {
-        console.error("Error al eliminar sede:", error);
-        const errorMessage = error.response?.status === 403
-          ? "No tiene permisos para eliminar la sede."
-          : "Error al eliminar el registro.";
-        setMessage({ open: true, severity: "error", text: errorMessage });
-      });
+    if (methodName === "Add") {
+      onAdd(selectedRow);
+    } else {
+      onUpdate(selectedRow);
+    }
+    handleClose();
   };
 
   return (
@@ -175,7 +113,7 @@ export default function FormSede({ selectedRow, setSelectedRow, reloadData, setM
         <DialogTitle>{methodName === "Add" ? "Agregar Sede" : "Actualizar Sede"}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 margin="normal"
@@ -184,7 +122,8 @@ export default function FormSede({ selectedRow, setSelectedRow, reloadData, setM
                 onChange={(e) => setSelectedRow({ ...selectedRow, nombre: e.target.value })}
               />
             </Grid>
-            <Grid item xs={12}>
+
+            <Grid item xs={12} md={6}>
               <FormControl fullWidth margin="normal">
                 <InputLabel>Municipio</InputLabel>
                 <Select
@@ -192,14 +131,16 @@ export default function FormSede({ selectedRow, setSelectedRow, reloadData, setM
                   onChange={(e) => setSelectedRow({ ...selectedRow, municipioId: e.target.value })}
                 >
                   {municipios.map((mun) => (
-                    <MenuItem key={mun.id} value={mun.id}>
-                      {mun.name}
-                    </MenuItem>
-                  ))}
+  <MenuItem key={mun.id} value={mun.id}>
+    {mun.name}
+  </MenuItem>
+))}
+
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+
+            <Grid item xs={12} md={6}>
               <FormControl fullWidth margin="normal">
                 <InputLabel>Grupo</InputLabel>
                 <Select
@@ -214,7 +155,8 @@ export default function FormSede({ selectedRow, setSelectedRow, reloadData, setM
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12}>
+
+            <Grid item xs={12} md={6}>
               <FormControl fullWidth margin="normal">
                 <InputLabel>Tipo de Sede</InputLabel>
                 <Select
@@ -229,6 +171,28 @@ export default function FormSede({ selectedRow, setSelectedRow, reloadData, setM
                 </Select>
               </FormControl>
             </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Área (m²)"
+                type="number"
+                value={selectedRow?.area || ""}
+                onChange={(e) => setSelectedRow({ ...selectedRow, area: e.target.value })}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Comuna"
+                value={selectedRow?.comuna || ""}
+                onChange={(e) => setSelectedRow({ ...selectedRow, comuna: e.target.value })}
+              />
+            </Grid>
+
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -237,18 +201,6 @@ export default function FormSede({ selectedRow, setSelectedRow, reloadData, setM
                 value={selectedRow?.descripcion || ""}
                 onChange={(e) => setSelectedRow({ ...selectedRow, descripcion: e.target.value })}
               />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControl fullWidth margin="normal">
-                <InputLabel>Estado</InputLabel>
-                <Select
-                  value={selectedRow?.estadoId || 1}
-                  onChange={(e) => setSelectedRow({ ...selectedRow, estadoId: e.target.value })}
-                >
-                  <MenuItem value={1}>Activo</MenuItem>
-                  <MenuItem value={0}>Inactivo</MenuItem>
-                </Select>
-              </FormControl>
             </Grid>
           </Grid>
         </DialogContent>
@@ -266,4 +218,7 @@ FormSede.propTypes = {
   setSelectedRow: PropTypes.func.isRequired,
   reloadData: PropTypes.func.isRequired,
   setMessage: PropTypes.func.isRequired,
+  onAdd: PropTypes.func.isRequired,
+  onUpdate: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
 };

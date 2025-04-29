@@ -186,63 +186,82 @@ export default function Navigator2(props) {
 
   const renderSubmenu = (children, parentMenuId) => (
     <Grid container spacing={3} sx={{ padding: 2, marginTop: '40px' }}>
-      {children.map(({ id, text, icon }) => (
-        <Grid item xs={12} sm={6} md={4} key={id}>
+    {children.map(({ id, text, icon }) => (
+      <Grid item xs={12} sm={6} md={4} lg={2} xl={2} key={id}>
+        <Box
+          sx={{
+            minWidth: 150,
+            height: 180,
+            boxShadow: 3,
+            borderRadius: 2,
+            overflow: 'hidden',
+            cursor: 'pointer',
+            transition: '0.3s',
+            display: 'flex',
+            flexDirection: 'column',
+            '&:hover': { transform: 'scale(1.03)' }
+          }}
+        >
+          {/* Imagen superior */}
           <Box
+            component="img"
+            src={moduleImages[id] || "/images/cards/1.jpg"}
+            alt={`Imagen de ${id}`}
             sx={{
-              minWidth: 275,
-              backgroundColor: theme.palette.mode === 'dark' ? '#333' : '#fff',
-              color: theme.palette.mode === 'dark' ? '#fff' : '#000',
-              marginBottom: '20px',
-              paddingBottom: 2,
-              borderRadius: 2,
-              overflow: 'hidden',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
+              width: '100%',
+              height: 80,
+              objectFit: 'cover'
             }}
-          >
-            <Box
-              component="img"
-              src={moduleImages[id] || "/images/cards/1.jpg"}
-              alt={`Imagen de ${id}`}
-              sx={{ width: '100%', height: 140, objectFit: 'cover' }}
-            />
-
-            <Box sx={{ padding: 2 }}>
-              <ListItemIcon sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
+          />
+  
+          {/* Contenido */}
+          <Box sx={{ flex: 1, padding: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ListItemIcon sx={{ minWidth: 0, color: theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
                 {icons[icon]}
               </ListItemIcon>
-              <Typography variant="h6">{t(text)}</Typography>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
-                <Button
-                  size="small"
-                  sx={{ color: theme.palette.mode === 'dark' ? '#90caf9' : '#1976d2' }}
-                  onClick={() => handleSubMenuClick(id, parentMenuId)}
-                >
-                  {t('Ver más')}
-                </Button>
-              </Box>
+              <Typography variant="body2" fontWeight="bold" noWrap>
+                {t(text)}
+              </Typography>
+            </Box>
+  
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 1 }}>
+              <Button
+                size="small"
+                sx={{ color: theme.palette.mode === 'dark' ? '#90caf9' : '#1976d2' }}
+                onClick={() => handleSubMenuClick(id, parentMenuId)}
+              >
+                {t('Ver más')}
+              </Button>
             </Box>
           </Box>
-        </Grid>
-      ))}
-    </Grid>
+        </Box>
+      </Grid>
+    ))}
+  </Grid>
+  
   );
 
   return (
     <Box
-      sx={{
-        position: 'fixed',
-        top: '65px',
-        left: '0',
-        width: open ? '250px' : '70px',
-        height: '100vh',
-        overflowY: 'auto',
-        backgroundColor: theme.palette.mode === 'dark' ? '#212121' : '#fff',
-        color: theme.palette.mode === 'dark' ? '#fff' : '#000',
-        boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-        transition: 'width 0.3s'
-      }}
-    >
+  sx={{
+    position: 'fixed',
+    top: '65px',
+    left: 0,
+    width: {
+      xs: open ? '200px' : '60px',
+      sm: open ? '220px' : '70px',
+      md: open ? '250px' : '70px',
+    },
+    minWidth: open ? '60px' : '40px',
+    height: '100vh',
+    overflowY: 'auto',
+    backgroundColor: theme.palette.mode === 'dark' ? '#212121' : '#fff',
+    color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+    boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+    transition: 'width 0.3s'
+  }}
+>
       <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', p: 2 }} onClick={() => setOpen(!open)}>
         <MenuIcon sx={{ mr: open ? 1 : 0, color: theme.palette.mode === 'dark' ? '#fff' : '#000' }} />
         {open && <Typography variant="h6">{t('Menú')}</Typography>}

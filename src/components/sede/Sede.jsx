@@ -1,31 +1,10 @@
-import React, { useEffect, useState } from "react";
+import * as React from "react";
+import axios from "../axiosConfig";
+
 import { Box } from "@mui/material";
-import axios from "axios";
 import MessageSnackBar from "../MessageSnackBar";
 import FormSede from "./FormSede";
 import GridSede from "./GridSede";
-
-/**
- * @typedef {Object} SedeRow
- * @property {number} id - ID de la sede
- * @property {string} grupo - ID o nombre del grupo
- * @property {string} tipoSede - ID o nombre del tipo de sede
- * @property {string} nombre - Nombre de la sede
- * @property {string} municipioId - ID del municipio
- * @property {string|Object} geolocalizacion - Ubicación geográfica
- * @property {string} coordenadas - Coordenadas manuales
- * @property {number} area - Área de la sede
- * @property {string} comuna - Comuna donde se ubica
- * @property {string} descripcion - Descripción de la sede
- * @property {number} estado - Estado (1: activo, 0: inactivo)
- */
-
-/**
- * @typedef {Object} SnackbarMessage
- * @property {boolean} open - Si el mensaje está visible
- * @property {string} severity - Severidad (success, error, etc)
- * @property {string} text - Texto del mensaje
- */
 
 /**
  * Componente principal para gestionar las sedes.
@@ -33,72 +12,125 @@ import GridSede from "./GridSede";
  * @returns {JSX.Element}
  */
 export default function Sede() {
-  const initialRow = {
-    id: 0,
-    grupo: "",
-    tipoSede: "",
-    nombre: "",
-    municipioId: "",
-    geolocalizacion: "",
-    coordenadas: "",
-    area: 0,
-    comuna: "",
-    descripcion: "",
-    estado: 1,
-  };
+  const [sedes, setSedes] = React.useState([]);
+  const [selectedRow, setSelectedRow] = React.useState(null);
+  const [message, setMessage] = React.useState({ open: false, severity: "info", text: "" });
 
-  const [sedes, setSedes] = useState([]);
-  const [selectedRow, setSelectedRow] = useState(initialRow);
-  const [message, setMessage] = useState({ open: false, severity: "info", text: "" });
-
-  const token = localStorage.getItem("token");
-
-  // Define fetchData outside of useEffect
-  const fetchData = async () => {
-    if (!token) return;
-
-    try {
-      const res = await axios.get('/api/v1/sede/all', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setSedes(
-        (res.data || []).map((sede, index) => ({
-          ...sede,
-          id: sede.id ?? `temp-${index}`,
-        }))
-      );
-
-      setMessage({ open: false });
-    } catch (error) {
-      console.error("Error al cargar las sedes:", error);
+  const reloadData = () => {
+    const token = localStorage.getItem("token");
+    if (!token || token.trim() === "") {
       setMessage({
         open: true,
-        severity: "error",
-        text: "Error al cargar las sedes. Intente nuevamente.",
+        severity: "warning",
+        text: "No hay token válido. Por favor inicie sesión.",
       });
+      return;
     }
+
+    axios.get('/api/v1/sede/all', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((response) => {
+        setSedes(response.data || []);
+      })
+      .catch((error) => {
+        console.error("Error al buscar sedes:", error);
+        setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al cargar la lista de sedes.",
+        });
+      });
   };
 
-  // Call fetchData inside useEffect
-  useEffect(() => {
-    fetchData();
+  const handleAdd = (nuevaSede) => {
+    const token = localStorage.getItem("token");
+    if (!token || token.trim() === "") return;
+
+    axios.post('/api/v1/sede', nuevaSede, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(() => {
+        reloadData();
+        setMessage({ open: true, severity: "success", text: "Sede agregada exitosamente." });
+      })
+      .catch((error) => {
+        console.error("Error al agregar sede:", error);
+        setMessage({ open: true, severity: "error", text: "No se pudo agregar la sede." });
+      });
+  };
+
+  const handleUpdate = (sedeActualizada) => {
+    const token = localStorage.getItem("token");
+    if (!token || token.trim() === "") return;
+
+    axios.put(`/api/v1/sede/${sedeActualizada.id}`, sedeActualizada, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(() => {
+        reloadData();
+        setMessage({ open: true, severity: "success", text: "Sede actualizada exitosamente." });
+      })
+      .catch((error) => {
+        console.error("Error al actualizar sede:", error);
+        setMessage({ open: true, severity: "error", text: "No se pudo actualizar la sede." });
+      });
+  };
+
+  const handleDelete = (id) => {
+    const token = localStorage.getItem("token");
+    if (!token || token.trim() === "") return;
+
+    axios.delete(`/api/v1/sede/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(() => {
+        reloadData();
+        setMessage({ open: true, severity: "success", text: "Sede eliminada exitosamente." });
+      })
+      .catch((error) => {
+        console.error("Error al eliminar sede:", error);
+        setMessage({ open: true, severity: "error", text: "No se pudo eliminar la sede." });
+      });
+  };
+
+  React.useEffect(() => {
+    reloadData();
   }, []);
 
+  const mappedData = sedes.map((item) => ({
+    id: item.id,
+    nombre: item.nombre,
+    grupoId: item.grupoId,
+    tipoSedeId: item.tipoSedeId,
+    empresaId: item.empresaId,
+    municipioId: item.municipioId,
+    comuna: item.comuna,
+    area: item.area,
+    descripcion: item.descripcion,
+    estadoId: item.estadoId,
+    geolocalizacion: item.geolocalizacion,
+    coordenadas: item.coordenadas,
+    direccion: item.direccion,
+  }));
+  
+
   return (
-    <Box sx={{ height: "100%", width: "100%" }}>
-      <h1>Sede</h1>
+    <Box sx={{ padding: "2rem" }}>
+      <h1>Sedes</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormSede
+        onAdd={handleAdd}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        reloadData={fetchData}
-        setMessage={setMessage}
+        setMessage={setMessage} // ✅ Ahora FormSede recibe también setMessage
+        reloadData={reloadData} // ✅ Y reloadData si FormSede lo necesita
       />
       <GridSede
-        sedes={sedes}
-        setSelectedRow={setSelectedRow}
-        reloadData={fetchData}
+        sedes={mappedData}
+        onEdit={setSelectedRow}
       />
     </Box>
   );
