@@ -1,6 +1,6 @@
 /**
- * @file r_pedidos.jsx
- * @module r_pedidos
+ * @filer_kardex.jsx
+ * @moduler_kardex
  * @description Servicio para cargar datos locales de archivos JSON desde /public.
  * Proporciona funciones para recuperar listas jerárquicas para el formulario de pedidos,
  * como país, departamento, municipio, sede, bloque, etc., con soporte para estructuras anidadas.
@@ -9,7 +9,7 @@
 
 import React from "react";
 import axios from "axios";
-import FormPedido from "./FormPedido";
+import Formkardex from "./Formkardex";
 
 const BASE_PATH = "/"; // JSONs están directamente en /public
 
@@ -20,7 +20,7 @@ const BASE_PATH = "/"; // JSONs están directamente en /public
  */
 const obtenerDatos = async (nombreArchivo) => {
   const response = await axios.get(`${BASE_PATH}${nombreArchivo}.json`);
-  return Array.isArray(response.data) ? response.data : []; // ya no busca dentro de un objeto
+  return Array.isArray(response.data) ? response.data : [];
 };
 
 export const DataPedidosService = {
@@ -31,16 +31,18 @@ export const DataPedidosService = {
   cargarBloques: () => obtenerDatos("bloque"),
   cargarEspacios: () => obtenerDatos("espacio"),
   cargarAlmacenes: () => obtenerDatos("almacen"),
-  cargarUnidades: () => obtenerDatos("unidad")
+  cargarUnidades: () => obtenerDatos("unidad"),
+  cargarProductos: () => obtenerDatos("producto"),
+  cargarTiposMovimiento: () => obtenerDatos("tipo_movimiento"),
+  cargarMovimientos: () => obtenerDatos("movimiento"),
+  cargarPresentaciones: () => obtenerDatos("producto_presentacion")
 };
 
 export default function RPedidos() {
   return (
-    
     <div className="container mt-4">
-      
-      <h1>Reporte de pedidos</h1>
-      <FormPedido />
+       <h1>Reportde kardex</h1>
+      <Formkardex />
     </div>
   );
 }

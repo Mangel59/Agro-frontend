@@ -1,75 +1,46 @@
-/**
- * @file TipoIdentificacion.jsx
- * @module TipoIdentificacion
- * @description Componente principal para la gestión de tipos de identificación. Maneja la carga de datos desde un archivo JSON y permite agregar, actualizar y eliminar registros desde el frontend sin conexión al backend.
- * @author Karla
- */
-
 import React, { useState, useEffect } from "react";
-import FormTipoIdentificacion from "./FormTipoIdentificacion.jsx";
-import GridTipoIdentificacion from "./GridTipoIdentificacion.jsx";
+import FormTipoIdentificacion from "./FormTipoIdentificacion";
+import GridTipoIdentificacion from "./GridTipoIdentificacion";
+import axios from "../axiosConfig";
 
-/**
- * Componente principal del módulo TipoIdentificacion.
- * Permite gestionar los tipos de identificación a través de un formulario y una grilla.
- *
- * @component
- * @returns {JSX.Element} Componente renderizado de gestión de tipos de identificación.
- */
 export default function TipoIdentificacion() {
-  /** Lista de tipos de identificación cargados.
-   * @type {Array<Object>}
-   */
   const [tiposIdentificacion, setTiposIdentificacion] = useState([]);
-
-  /** Fila actualmente seleccionada.
-   * @type {Object|null}
-   */
   const [selectedRow, setSelectedRow] = useState(null);
 
-  // Cargar datos desde archivo JSON al montar el componente
+  const token = localStorage.getItem("token");
+
+  const axiosConfig = {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  };
+
+  const reloadData = () => {
+    axios.get("/tipo_identificacion", axiosConfig)
+      .then((res) => setTiposIdentificacion(res.data))
+      .catch((err) => console.error("Error al cargar tipos de identificación:", err));
+  };
+
   useEffect(() => {
-    fetch("/tipo_identificacion.json")
-      .then((response) => response.json())
-      .then((data) => setTiposIdentificacion(data))
-      .catch((error) =>
-        console.error("Error al cargar tipos de identificación:", error)
-      );
+    reloadData();
   }, []);
 
-  /**
-   * Maneja la adición de un nuevo tipo de identificación.
-   * @param {Object} newTipo - Nuevo objeto de tipo identificación.
-   */
   const handleAdd = (newTipo) => {
-    setTiposIdentificacion([
-      ...tiposIdentificacion,
-      { ...newTipo, tii_id: Date.now() }, // ID simulado
-    ]);
+    axios.post("/tipo_identificacion", newTipo, axiosConfig)
+      .then(() => reloadData())
+      .catch((err) => console.error("Error al agregar:", err));
   };
 
-  /**
-   * Maneja la actualización de un tipo de identificación.
-   * @param {Object} updatedTipo - Objeto actualizado.
-   */
   const handleUpdate = (updatedTipo) => {
-    setTiposIdentificacion(
-      tiposIdentificacion.map((tipo) =>
-        tipo.tii_id === updatedTipo.tii_id ? updatedTipo : tipo
-      )
-    );
-    setSelectedRow(null);
+    axios.put(`/tipo_identificacion/${updatedTipo.id}`, updatedTipo, axiosConfig)
+      .then(() => reloadData())
+      .catch((err) => console.error("Error al actualizar:", err));
   };
 
-  /**
-   * Maneja la eliminación de un tipo de identificación por ID.
-   * @param {number} id - ID del tipo de identificación a eliminar.
-   */
   const handleDelete = (id) => {
-    setTiposIdentificacion(
-      tiposIdentificacion.filter((tipo) => tipo.tii_id !== id)
-    );
-    setSelectedRow(null);
+    axios.delete(`/tipo_identificacion/${id}`, axiosConfig)
+      .then(() => reloadData())
+      .catch((err) => console.error("Error al eliminar:", err));
   };
 
   return (

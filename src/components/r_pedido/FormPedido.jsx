@@ -1,296 +1,130 @@
-/**
- * @file FormPedido.jsx
- * @module FormPedido
- * @description Componente de formulario para crear o editar pedidos. Permite seleccionar sede, almacén y producción, además de ingresar descripción y fecha. Incluye validación básica y manejo de modales para agregar/editar pedidos. Utiliza Axios para comunicarse con el backend.
- * @author Karla
- */
-
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Grid,
-  Select,
-  MenuItem,
-  Button,
-  FormControl,
-  InputLabel,
-  Box,
-  Modal,
-  TextField,
-  Autocomplete,
+  Box, Grid, FormControl, InputLabel, MenuItem,
+  Select, OutlinedInput, Button
 } from "@mui/material";
-import axios from "axios";
-import { SiteProps } from "../dashboard/SiteProps";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { DataPedidosService } from "../r_pedido/Pedido";
 
-/**
- * Componente de formulario para crear o editar pedidos.
- *
- * @param {Object} props - Props del componente.
- * @param {function(): void} props.onAddPedido - Función para agregar un nuevo pedido.
- * @param {function(): void} props.onUpdatePedido - Función para actualizar un pedido.
- * @param {function(): void} props.onDeletePedido - Función para eliminar un pedido.
- * @param {function(string): void} props.setAlmacenId - Setter del ID de almacén.
- * @param {Object|null} props.selectedPedido - Pedido actualmente seleccionado.
- * @param {function(Object): void} props.setSelectedPedido - Setter del pedido seleccionado (puede ser null).
- * @param {function(): void} props.fetchPedidos - Función para obtener la lista de pedidos.
- *
- * @component
- * @returns {JSX.Element}
- */
-export default function FormPedido({
-  onAddPedido,
-  onUpdatePedido,
-  onDeletePedido,
-  setAlmacenId,
-  selectedPedido,
-  setSelectedPedido,
-  fetchPedidos,
-}) {
-  const [sede, setSede] = useState("");
-  const [almacen, setAlmacen] = useState("");
-  const [sedes, setSedes] = useState([]);
-  const [almacenes, setAlmacenes] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [newPedido, setNewPedido] = useState({
-    fechaHora: "",
-    almacen: "",
-    produccion: "",
-    descripcion: "",
-    estado: 1,
+export default function FormPedido() {
+  const [data, setData] = useState({
+    paises: [], departamentos: [], municipios: [], sedes: [],
+    bloques: [], espacios: [], almacenes: [], unidades: []
   });
-  const [producciones, setProducciones] = useState([]);
-  const [selectedProduccion, setSelectedProduccion] = useState(null);
 
   useEffect(() => {
-    const fetchSedes = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(`${SiteProps.urlbasev1}/sede/minimal`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setSedes(response.data || []);
-      } catch (error) {
-        console.error("Error al cargar sedes:", error);
-      }
-    };
-    fetchSedes();
+    DataPedidosService.cargarPaises().then(paises => setData(d => ({ ...d, paises })));
+    DataPedidosService.cargarDepartamentos().then(departamentos => setData(d => ({ ...d, departamentos })));
+    DataPedidosService.cargarMunicipios().then(municipios => setData(d => ({ ...d, municipios })));
+    DataPedidosService.cargarSedes().then(sedes => setData(d => ({ ...d, sedes })));
+    DataPedidosService.cargarBloques().then(bloques => setData(d => ({ ...d, bloques })));
+    DataPedidosService.cargarEspacios().then(espacios => setData(d => ({ ...d, espacios })));
+    DataPedidosService.cargarAlmacenes().then(almacenes => setData(d => ({ ...d, almacenes })));
+    DataPedidosService.cargarUnidades().then(unidades => setData(d => ({ ...d, unidades })));
   }, []);
 
-  const handleSedeChange = async (e) => {
-    const sedeId = e.target.value;
-    setSede(sedeId);
-    setAlmacen("");
-    setAlmacenes([]);
-    setSelectedPedido(null);
-
-    if (sedeId) {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(`${SiteProps.urlbasev1}/almacen/minimal/sede/${sedeId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setAlmacenes(response.data || []);
-      } catch (error) {
-        console.error("Error al cargar almacenes:", error);
-      }
-    }
+  const initialValues = {
+    pais: "", departamento: "", municipio: "",
+    sede: "", bloque: "", espacio: "",
+    almacen: "", unidad: ""
   };
 
-  useEffect(() => {
-    const fetchProducciones = async () => {
-      if (!almacen) return;
+  const validationSchema = Yup.object().shape({
+    pais: Yup.string().required("Requerido"),
+    departamento: Yup.string().required("Requerido"),
+    municipio: Yup.string().required("Requerido"),
+    sede: Yup.string().required("Requerido"),
+    bloque: Yup.string().required("Requerido"),
+    espacio: Yup.string().required("Requerido"),
+    almacen: Yup.string().required("Requerido"),
+    unidad: Yup.string().required("Requerido"),
+  });
 
-      setSelectedPedido(null);
-      setNewPedido({
-        fechaHora: "",
-        almacen: "",
-        produccion: "",
-        descripcion: "",
-        estado: 1,
-      });
-      setSelectedProduccion(null);
-
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(`${SiteProps.urlbasev1}/producciones/short/${almacen}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setProducciones(response.data || []);
-      } catch (error) {
-        console.error("Error al cargar producciones:", error);
-      }
-    };
-    fetchProducciones();
-  }, [almacen]);
-
-  const handleSavePedido = async () => {
-    if (!almacen || !selectedProduccion) {
-      alert("Por favor selecciona un almacén y una producción antes de guardar el pedido.");
-      return;
-    }
-
-    const pedidoToSend = {
-      ...newPedido,
-      almacen,
-      produccion: selectedProduccion?.id || "",
-    };
-
-    if (!pedidoToSend.fechaHora || !pedidoToSend.descripcion) {
-      alert("Todos los campos son obligatorios.");
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("token");
-      if (isEditing) {
-        await axios.put(`${SiteProps.urlbasev1}/pedido/${selectedPedido.id}`, pedidoToSend, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        alert("Pedido actualizado correctamente.");
-      } else {
-        await axios.post(`${SiteProps.urlbasev1}/pedido`, pedidoToSend, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        alert("Pedido creado correctamente.");
-      }
-
-      setModalOpen(false);
-      fetchPedidos();
-    } catch (error) {
-      console.error("Error al guardar el pedido:", error);
-      alert("Hubo un problema al guardar el pedido.");
-    }
-  };
-
-  const handleOpenAddModal = () => {
-    setIsEditing(false);
-    setSelectedPedido(null);
-    setNewPedido({
-      fechaHora: "",
-      almacen: "",
-      produccion: "",
-      descripcion: "",
-      estado: 1,
+  const generarPDF = (valores) => {
+    const getNombre = (arr, id, campo) => arr.find(x => x.id === Number(id))?.[campo] || "";
+    const doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.text("Resumen de Pedido", 14, 20);
+    const datos = [
+      ["País", getNombre(data.paises, valores.pais, "paisI")],
+      ["Departamento", getNombre(data.departamentos, valores.departamento, "departamentoI")],
+      ["Municipio", getNombre(data.municipios, valores.municipio, "municipioI")],
+      ["Sede", getNombre(data.sedes, valores.sede, "sedeI")],
+      ["Bloque", getNombre(data.bloques, valores.bloque, "bloqueI")],
+      ["Espacio", getNombre(data.espacios, valores.espacio, "espacioI")],
+      ["Almacén", getNombre(data.almacenes, valores.almacen, "almacenI")],
+      ["Unidad", getNombre(data.unidades, valores.unidad, "unidadI")]
+    ];
+    autoTable(doc, {
+      startY: 30,
+      head: [["Campo", "Valor"]],
+      body: datos,
     });
-    setModalOpen(true);
-  };
-
-  const handleOpenUpdateModal = () => {
-    if (selectedPedido) {
-      setIsEditing(true);
-      setNewPedido({
-        fechaHora: selectedPedido.fechaHora,
-        almacen: selectedPedido.almacen,
-        produccion: selectedPedido.produccion,
-        descripcion: selectedPedido.descripcion,
-        estado: selectedPedido.estado,
-      });
-
-      const currentProduccion = producciones.find((p) => p.id === selectedPedido.produccion);
-      setSelectedProduccion(currentProduccion || null);
-      setModalOpen(true);
-    } else {
-      alert("Selecciona un pedido para actualizar.");
-    }
+    doc.save("pedido.pdf");
   };
 
   return (
-    <Box mb={2}>
-      <Grid container spacing={2} alignItems="center">
-        <Grid item xs={3}>
-          <FormControl fullWidth>
-            <InputLabel>Sede</InputLabel>
-            <Select value={sede} onChange={handleSedeChange} required>
-              <MenuItem value="">
-                <em>Seleccione una sede</em>
-              </MenuItem>
-              {sedes.map((s) => (
-                <MenuItem key={s.id} value={s.id}>
-                  {s.nombre}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={3}>
-          <FormControl fullWidth>
-            <InputLabel>Almacén</InputLabel>
-            <Select
-              value={almacen}
-              onChange={(e) => {
-                setAlmacen(e.target.value);
-                setAlmacenId(e.target.value);
-              }}
-              required
-              disabled={!almacenes.length}
-            >
-              <MenuItem value="">
-                <em>Seleccione un almacén</em>
-              </MenuItem>
-              {almacenes.map((a) => (
-                <MenuItem key={a.id} value={a.id}>
-                  {a.nombre}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={6} display="flex" justifyContent="flex-end">
-          <Button variant="contained" color="primary" onClick={handleOpenAddModal} sx={{ mr: 1 }}>
-            ADD
-          </Button>
-          <Button variant="contained" color="secondary" onClick={handleOpenUpdateModal} sx={{ mr: 1 }}>
-            UPDATE
-          </Button>
-          <Button variant="contained" color="error" onClick={onDeletePedido}>
-            DELETE
-          </Button>
-        </Grid>
-      </Grid>
+    <Box sx={{ maxWidth: 900, mx: "auto", mt: 4, p: 3, bgcolor: "white", borderRadius: 2, boxShadow: 3 }}>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={generarPDF}
+      >
+        {({ values, handleChange, touched, errors }) => {
+          const departamentosFiltrados = data.departamentos.filter(d => d.pais_id === Number(values.pais));
+          const municipiosFiltrados = data.municipios.filter(m => m.departamento_id === Number(values.departamento));
+          const sedesFiltradas = data.sedes.filter(s => s.municipio_id === Number(values.municipio));
+          const bloquesFiltrados = data.bloques.filter(b => b.sede_id === Number(values.sede));
+          const espaciosFiltrados = data.espacios.filter(e => e.bloque_id === Number(values.bloque));
+          const almacenesFiltrados = data.almacenes.filter(a => a.espacio_id === Number(values.espacio));
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
-        <Box
-          p={4}
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 400,
-            bgcolor: "background.paper",
-            borderRadius: "8px",
-          }}
-        >
-          <h2>{isEditing ? "Editar Pedido" : "Añadir Pedido"}</h2>
-          <TextField
-            label="Fecha y Hora"
-            type="datetime-local"
-            fullWidth
-            margin="normal"
-            value={newPedido.fechaHora}
-            onChange={(e) => setNewPedido({ ...newPedido, fechaHora: e.target.value })}
-          />
-          <Autocomplete
-            options={producciones}
-            getOptionLabel={(option) => option.nombre}
-            value={selectedProduccion}
-            onChange={(event, value) => setSelectedProduccion(value)}
-            renderInput={(params) => (
-              <TextField {...params} label="Producción" margin="normal" required />
-            )}
-          />
-          <TextField
-            label="Descripción"
-            fullWidth
-            margin="normal"
-            value={newPedido.descripcion}
-            onChange={(e) => setNewPedido({ ...newPedido, descripcion: e.target.value })}
-          />
-          <Button variant="contained" color="primary" onClick={handleSavePedido} fullWidth>
-            Guardar
-          </Button>
-        </Box>
-      </Modal>
+          const renderSelect = (name, label, options, campo) => (
+            <Grid item xs={12} sm={6} key={name}>
+              <FormControl fullWidth error={Boolean(touched[name] && errors[name])}>
+                <InputLabel>{label}</InputLabel>
+                <Select
+                  name={name}
+                  value={values[name]}
+                  onChange={handleChange}
+                  input={<OutlinedInput label={label} />}
+                >
+                  <MenuItem value="">
+                    <em>Seleccione {label}</em>
+                  </MenuItem>
+                  {options.map((option, i) => (
+                    <MenuItem key={option.id || i} value={option.id}>
+                      {option[campo]}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          );
+
+          return (
+            <Form>
+              <Grid container spacing={2}>
+                {renderSelect("pais", "País", data.paises, "paisI")}
+                {renderSelect("departamento", "Departamento", departamentosFiltrados, "departamentoI")}
+                {renderSelect("municipio", "Municipio", municipiosFiltrados, "municipioI")}
+                {renderSelect("sede", "Sede", sedesFiltradas, "sedeI")}
+                {renderSelect("bloque", "Bloque", bloquesFiltrados, "bloqueI")}
+                {renderSelect("espacio", "Espacio", espaciosFiltrados, "espacioI")}
+                {renderSelect("almacen", "Almacén", almacenesFiltrados, "almacenI")}
+                {renderSelect("unidad", "Unidad", data.unidades, "unidadI")}
+                <Grid item xs={12}>
+                  <Button type="submit" fullWidth variant="contained" color="primary">
+                    Generar PDF
+                  </Button>
+                </Grid>
+              </Grid>
+            </Form>
+          );
+        }}
+      </Formik>
     </Box>
   );
 }

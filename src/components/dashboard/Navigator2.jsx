@@ -63,7 +63,7 @@ import TipoSedes from '../tipo_sede/TipoSede.jsx';
 import TipoEspacio from '../tipo_espacio/TipoEspacio.jsx';
 import EspacioOcupacion from '../espacio_ocupacion/EspacioOcupacion.jsx';
 import RPedido from '../r_pedido/Pedido.jsx';
-import ROrdenCompra from '../r_orden_compra/OrdenCompra.jsx';
+import kardex from '../Kardex/kardex.jsx';
 import Rol from '../Rol/Rol.jsx';
 import TipoIdentificacion from '../TipoIdentificacion/TipoIdentificacion.jsx';
 import Proveedor from '../Proveedor/Proveedor.jsx';
@@ -90,7 +90,7 @@ const components = {
   producto_categoria: ProductoCategoria, producto: Producto, produccion: Produccion,
   kardex_nuevo: KardexNuevo, marca: Marca, unidad: Unidad, tipo_movimiento: TipoMovimiento,
   tipo_produccion: TipoProduccion, persona: Persona, empresa: Empresa, r_pedido: RPedido,
-  r_orden_compra: ROrdenCompra, media_card: MediaCard, evaluacion_item: EvaluacionItem,
+  kardex:kardex, media_card: MediaCard, evaluacion_item: EvaluacionItem,
   criterio_evaluacion: CriterioEvaluacion,tipo_evaluacion: TipoEvaluacion,
   evaluacion:Evaluacion
 
@@ -124,7 +124,7 @@ const moduleImages = {
   r_pedido: "/images/cards/5.jpg",
   presentacion: "/images/cards/6.jpg",
   media_card: "/images/cards/7.jpg",
-  r_orden_compra: "/images/cards/8.jpg",
+  kardex: "/images/cards/8.jpg",
   evaluacion_item: "/images/cards/2.jpg",
   evaluacion: "/images/cards/7.jpg",
   criterio_evaluacion: "/images/cards/9.jpg",

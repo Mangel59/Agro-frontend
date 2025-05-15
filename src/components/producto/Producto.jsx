@@ -52,7 +52,7 @@ export default function Produccion() {
 
   return (
     <div style={{ padding: 16 }}>
-      <h1>Producción</h1>
+      <h1>Producto</h1>
 
       <FormControl fullWidth margin="normal">
         <InputLabel>Sede</InputLabel>
