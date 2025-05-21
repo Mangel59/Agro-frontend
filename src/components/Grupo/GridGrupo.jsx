@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 
 const columns = [
   { field: 'id', headerName: 'ID', width: 90 },
-  { field: 'nombre', headerName: 'Nombre', width: 200 },
+  { field: 'nombre', headerName: 'Nombre del Grupo', width: 200 },
   { field: 'descripcion', headerName: 'Descripción', width: 250 },
   {
     field: 'estadoId',
@@ -16,19 +16,14 @@ const columns = [
         default: return "Desconocido";
       }
     }
-  },
-  {
-    field: 'empresaId',
-    headerName: 'Empresa',
-    width: 100
   }
 ];
 
-export default function GridTipoBloque({ tiposBloque, selectedRow, setSelectedRow }) {
+export default function GridGrupo({ grupos, selectedRow, setSelectedRow }) {
   return (
     <Box sx={{ height: 400, width: '100%' }}>
       <DataGrid
-        rows={tiposBloque}
+        rows={grupos}
         columns={columns}
         pageSize={5}
         getRowId={(row) => row.id}

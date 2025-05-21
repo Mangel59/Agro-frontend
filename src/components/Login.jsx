@@ -4,7 +4,7 @@
  * @description Componente de inicio de sesión con soporte para traducción, alternancia de tema, validación de email y enrutamiento dinámico según el estado del usuario.
  * @exports Login
  */
-import { useEffect } from 'react';
+
 import React, { useState } from 'react';
 import {
   Container,
@@ -48,16 +48,7 @@ export default function Login(props) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const toggleTheme = useThemeToggle(); // Alternador de tema personalizado
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-  
-    if (user.roles?.includes("ADMINISTRADOR_SISTEMA")) {
-      console.log("✅ Tiene acceso como ADMINISTRADOR");
-    } else {
-      console.log("⛔ No tiene rol o no tiene permisos suficientes");
-    }
-  }, []);
-  
+
   /**
    * Alterna la visibilidad del campo de la contraseña.
    */
@@ -81,7 +72,6 @@ export default function Login(props) {
    * Realiza autenticación con el backend y redirige según el estado del usuario.
    * @param {React.FormEvent} event - Evento del formulario.
    */
-  
   const handleSubmit = (event) => {
     event.preventDefault();
     setError('');
@@ -95,39 +85,26 @@ export default function Login(props) {
       username,
       password,
     })
-    .then(response => {
-      const token = response.data.token;
-localStorage.setItem('token', token);
+      .then(response => {
+        localStorage.setItem('token', response.data.token);
 
-// Decodificar el token para extraer roles (si existen)
-let decodedRoles = [];
-try {
-  const payload = JSON.parse(atob(token.split('.')[1]));
-  decodedRoles = payload.roles || payload.authorities || [];
-  console.log("🎯 Roles extraídos del token:", decodedRoles);
-} catch (e) {
-  console.warn("⚠️ No se pudo decodificar el token o no tiene roles.");
-}
+        if (props.setIsAuthenticated && typeof props.setIsAuthenticated === 'function') {
+          props.setIsAuthenticated(true);
+        }
 
-// Combinar usuario con roles, si vinieron separados
-let user = response.data.usuario || {};
-user.roles = decodedRoles;
-localStorage.setItem('user', JSON.stringify(user));
-
-    
-      if (props.setIsAuthenticated && typeof props.setIsAuthenticated === 'function') {
-        props.setIsAuthenticated(true);
-      }
-    
-      const usuarioEstado = response.data.usuarioEstado;
-      if (usuarioEstado === 2) {
-        props.setCurrentModule(<FormRegistroPersona setCurrentModule={props.setCurrentModule} />);
-      } else if (usuarioEstado === 3) {
-        props.setCurrentModule(<FormRegistroEmpresa setCurrentModule={props.setCurrentModule} />);
-      } else if (usuarioEstado === 4) {
-        props.setCurrentModule(<Contenido setCurrentModule={props.setCurrentModule} />);
-      }
-    })    
+        const usuarioEstado = response.data.usuarioEstado;
+        if (usuarioEstado === 2) {
+          props.setCurrentModule(<FormRegistroPersona setCurrentModule={props.setCurrentModule} />);
+        } else if (usuarioEstado === 3) {
+          props.setCurrentModule(<FormRegistroEmpresa setCurrentModule={props.setCurrentModule} />);
+        } else if (usuarioEstado === 4) {
+          props.setCurrentModule(<Contenido setCurrentModule={props.setCurrentModule} />);
+        }
+      })
+      .catch(error => {
+        setError(t('login_error'));
+        console.error('There was an error logging in!', error);
+      });
   };
 
   /**

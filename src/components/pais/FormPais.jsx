@@ -1,13 +1,12 @@
 import * as React from "react";
 import PropTypes from "prop-types";
-import axios from "../axiosConfig";
+import axios from "../axiosConfig"; // ✅ Usa la instancia personalizada con baseURL y token
 import {
   Button, Dialog, DialogActions, DialogContent,
   DialogContentText, DialogTitle, TextField, FormControl,
   InputLabel, Select, MenuItem
 } from "@mui/material";
 import StackButtons from "../StackButtons";
-import { SiteProps } from "../dashboard/SiteProps";
 
 export default function FormPais({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
@@ -21,9 +20,6 @@ export default function FormPais({ selectedRow, setSelectedRow, setMessage, relo
   };
 
   const [formData, setFormData] = React.useState(initialData);
-
-  // Obtener empresa desde token
-  const empresaId = JSON.parse(localStorage.getItem("user"))?.empresa?.id;
 
   const create = () => {
     setFormData(initialData);
@@ -41,7 +37,7 @@ export default function FormPais({ selectedRow, setSelectedRow, setMessage, relo
       nombre: selectedRow.nombre || "",
       codigo: selectedRow.codigo || "",
       acronimo: selectedRow.acronimo || "",
-      estado: selectedRow.estado?.id?.toString() || ""
+      estado: selectedRow.estadoId?.toString() || ""
     });
 
     setMethodName("Update");
@@ -53,20 +49,24 @@ export default function FormPais({ selectedRow, setSelectedRow, setMessage, relo
       setMessage({ open: true, severity: "error", text: "Selecciona un país para eliminar." });
       return;
     }
-
-    axios.put(`${SiteProps.urlbasev1}/pais/${selectedRow.id}`, {
-      ...selectedRow,
-      estado: { id: 2 }
-    })
+  
+    axios.delete(`/v1/pais/${selectedRow.id}`)
       .then(() => {
-        setMessage({ open: true, severity: "success", text: "País marcado como inactivo." });
+        setMessage({ open: true, severity: "success", text: "País eliminado correctamente." });
         setSelectedRow({});
         reloadData();
       })
-      .catch(err => {
-        setMessage({ open: true, severity: "error", text: `Error al eliminar: ${err.message}` });
+      .catch((err) => {
+        console.error("❌ Error al eliminar país:", err);
+        setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al eliminar: ${err.message}`,
+        });
       });
   };
+  
+  
 
   const handleClose = () => setOpen(false);
 
@@ -78,24 +78,17 @@ export default function FormPais({ selectedRow, setSelectedRow, setMessage, relo
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    if (!empresaId) {
-      setMessage({ open: true, severity: "error", text: "Empresa no encontrada en el token." });
-      return;
-    }
-
     const payload = {
       nombre: formData.nombre,
       codigo: parseInt(formData.codigo),
       acronimo: formData.acronimo.toUpperCase(),
-      empresa: { id: empresaId },
-      estado: { id: parseInt(formData.estado) }
+      estadoId: parseInt(formData.estado)
     };
 
-    const url = `${SiteProps.urlbasev1}/pais`;
     const method = methodName === "Add" ? axios.post : axios.put;
-    const endpoint = methodName === "Add" ? url : `${url}/${selectedRow.id}`;
+    const url = methodName === "Add" ? "/v1/pais" : `/v1/pais/${selectedRow.id}`;
 
-    method(endpoint, payload)
+    method(url, payload)
       .then(() => {
         setMessage({
           open: true,

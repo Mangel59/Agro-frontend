@@ -72,6 +72,7 @@ import CriterioEvaluacion from '../criterio_evaluacion/criterio_evaluacion.jsx';
 import TipoEvaluacion from '../tipo_evaluacion/Tipo_evaluacion.jsx';
 import Evaluacion from '../Evaluacion/Evaluacion.jsx';
 import EvaluacionItem from '../Evaluacion_item/Evaluacion_item.jsx';
+import Grupo from '../Grupo/Grupo.jsx';
 
 const icons = {
   DnsRounded: <DnsRoundedIcon />, Home: <HomeIcon />, People: <PeopleIcon />,
@@ -92,7 +93,7 @@ const components = {
   tipo_produccion: TipoProduccion, persona: Persona, empresa: Empresa, r_pedido: RPedido,
   kardex:kardex, media_card: MediaCard, evaluacion_item: EvaluacionItem,
   criterio_evaluacion: CriterioEvaluacion,tipo_evaluacion: TipoEvaluacion,
-  evaluacion:Evaluacion
+  evaluacion:Evaluacion, grupo:Grupo
 
 };
 

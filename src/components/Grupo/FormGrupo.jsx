@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 
-export default function FormTipoEspacio({ selectedRow, setSelectedRow, setMessage, reloadData }) {
+export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
 
@@ -28,7 +28,7 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, setMessag
 
   const update = () => {
     if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona un tipo de espacio para editar." });
+      setMessage({ open: true, severity: "error", text: "Selecciona un grupo para editar." });
       return;
     }
 
@@ -44,13 +44,13 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, setMessag
 
   const deleteRow = () => {
     if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona un tipo de espacio para eliminar." });
+      setMessage({ open: true, severity: "error", text: "Selecciona un grupo para eliminar." });
       return;
     }
 
-    axios.delete(`/v1/tipo_espacio/${selectedRow.id}`)
+    axios.delete(`/v1/grupo/${selectedRow.id}`)
       .then(() => {
-        setMessage({ open: true, severity: "success", text: "Tipo de espacio eliminado correctamente." });
+        setMessage({ open: true, severity: "success", text: "Grupo eliminado correctamente." });
         setSelectedRow({});
         reloadData();
       })
@@ -80,14 +80,14 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, setMessag
     };
 
     const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/tipo_espacio" : `/v1/tipo_espacio/${selectedRow.id}`;
+    const url = methodName === "Add" ? "/v1/grupo" : `/v1/grupo/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Tipo de espacio creado!" : "Tipo de espacio actualizado!"
+          text: methodName === "Add" ? "Grupo creado con éxito!" : "Grupo actualizado con éxito!"
         });
         setOpen(false);
         setSelectedRow({});
@@ -107,13 +107,13 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, setMessag
       <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog open={open} onClose={handleClose}>
         <form onSubmit={handleSubmit}>
-          <DialogTitle>{methodName} Tipo de Espacio</DialogTitle>
+          <DialogTitle>{methodName} Grupo</DialogTitle>
           <DialogContent>
-            <DialogContentText>Formulario para tipo de espacio</DialogContentText>
+            <DialogContentText>Formulario para gestionar grupo</DialogContentText>
 
             <TextField
               fullWidth margin="dense" required
-              name="nombre" label="Nombre"
+              name="nombre" label="Nombre del Grupo"
               value={formData.nombre}
               onChange={handleChange}
             />
@@ -147,7 +147,7 @@ export default function FormTipoEspacio({ selectedRow, setSelectedRow, setMessag
   );
 }
 
-FormTipoEspacio.propTypes = {
+FormGrupo.propTypes = {
   selectedRow: PropTypes.object.isRequired,
   setSelectedRow: PropTypes.func.isRequired,
   setMessage: PropTypes.func.isRequired,

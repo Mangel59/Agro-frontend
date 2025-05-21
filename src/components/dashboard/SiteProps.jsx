@@ -28,7 +28,7 @@ export const SiteProps = {
     /**
      * URL base versión 1 para las solicitudes API.
      */
-    urlbasev1:"http://localhost:8080/api/v1",
+    urlbasev1:"api/v1",
 
     // urlbasev1:"http://172.16.79.156:8080/api/v1",
 

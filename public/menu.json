@@ -18,6 +18,7 @@
       { "id": "pais", "text": "Pais", "icon": "Apartment" },
       { "id": "departamento", "text": "Departamento", "icon": "LocationCity" },
       { "id": "municipio", "text": "Municipio", "icon": "Apartment" },
+      { "id": "grupo", "text": "Grupo", "icon": "Apartment" },
       { "id": "tipo_sede", "text": "Tipo Sede", "icon": "Warehouse" },
       { "id": "sede", "text": "Sede", "icon": "Domain" },
       { "id": "tipo_bloque", "text": "Tipo Bloque", "icon": "Warehouse" },

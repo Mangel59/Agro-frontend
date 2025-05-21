@@ -1,235 +1,155 @@
-/**
- * @file FormTipoSede.jsx
- * @module FormTipoSede
- * @description Formulario modal para agregar, editar o eliminar Tipos de Sede. Utiliza MUI Dialog y comunica cambios al backend mediante Axios.
- * @author Karla
- */
-
-import React, { useState } from "react";
+import * as React from "react";
 import PropTypes from "prop-types";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
-  Box,
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import UpdateIcon from "@mui/icons-material/Update";
-import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "../axiosConfig";
-import { SiteProps } from "../dashboard/SiteProps";
+import {
+  Button, Dialog, DialogActions, DialogContent,
+  DialogContentText, DialogTitle, TextField, FormControl,
+  InputLabel, Select, MenuItem
+} from "@mui/material";
+import StackButtons from "../StackButtons";
 
-/**
- * Componente de formulario para la gestión de tipos de sede.
- *
- * @component
- * @param {Object} props - Propiedades del componente
- * @param {Object} props.selectedRow - Objeto que representa la fila seleccionada
- * @param {function(Object): void} props.setSelectedRow - Función para actualizar la fila seleccionada
- * @param {function(): void} props.reloadData - Función para recargar los datos desde la API
- * @param {function(Object): void} props.setMessage - Función para mostrar mensajes en Snackbar
- * @returns {JSX.Element} Formulario para crear, actualizar o eliminar tipos de sede
- */
-export default function FormTipoSedes({
-  selectedRow,
-  setSelectedRow,
-  reloadData,
-  setMessage,
-}) {
-  const [open, setOpen] = useState(false);
-  const [methodName, setMethodName] = useState("");
+export default function FormTipoSede({ selectedRow, setSelectedRow, setMessage, reloadData }) {
+  const [open, setOpen] = React.useState(false);
+  const [methodName, setMethodName] = React.useState("");
 
-  /**
-   * Abre el modal según la acción (Add, Update, Delete).
-   * @param {string} method - Tipo de acción a ejecutar
-   */
-  const handleOpen = (method) => {
-    if (method === "Update" && (!selectedRow || selectedRow.id == null)) {
-      setMessage({
-        open: true,
-        severity: "error",
-        text: "Seleccione un registro para actualizar.",
-      });
-      return;
-    }
-    if (method === "Delete" && (!selectedRow || selectedRow.id == null)) {
-      setMessage({
-        open: true,
-        severity: "error",
-        text: "Seleccione un registro para eliminar.",
-      });
+  const initialData = {
+    nombre: "",
+    descripcion: "",
+    estado: ""
+  };
+
+  const [formData, setFormData] = React.useState(initialData);
+
+  const create = () => {
+    setFormData(initialData);
+    setMethodName("Add");
+    setOpen(true);
+  };
+
+  const update = () => {
+    if (!selectedRow?.id) {
+      setMessage({ open: true, severity: "error", text: "Selecciona un tipo de sede para editar." });
       return;
     }
 
-    setMethodName(method);
-    if (method === "Delete") {
-      handleDelete();
-    } else {
-      setOpen(true);
+    setFormData({
+      nombre: selectedRow.nombre || "",
+      descripcion: selectedRow.descripcion || "",
+      estado: selectedRow.estadoId?.toString() || ""
+    });
+
+    setMethodName("Update");
+    setOpen(true);
+  };
+
+  const deleteRow = () => {
+    if (!selectedRow?.id) {
+      setMessage({ open: true, severity: "error", text: "Selecciona un tipo de sede para eliminar." });
+      return;
     }
+
+    axios.delete(`/v1/tipo_sede/${selectedRow.id}`)
+      .then(() => {
+        setMessage({ open: true, severity: "success", text: "Tipo de sede eliminado correctamente." });
+        setSelectedRow({});
+        reloadData();
+      })
+      .catch((err) => {
+        setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al eliminar: ${err.message}`,
+        });
+      });
   };
 
-  /**
-   * Cierra el diálogo y reinicia la fila seleccionada.
-   */
-  const handleClose = () => {
-    setSelectedRow({ id: null, nombre: "", descripcion: "", estado: 1 });
-    setOpen(false);
+  const handleClose = () => setOpen(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  /**
-   * Maneja el envío del formulario para crear o actualizar.
-   */
-  const handleSubmit = () => {
-    const url = `${SiteProps.urlbasev1}/tipo_sede`;
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const payload = {
+      nombre: formData.nombre,
+      descripcion: formData.descripcion,
+      estadoId: parseInt(formData.estado)
+    };
+
     const method = methodName === "Add" ? axios.post : axios.put;
-    const endpoint = methodName === "Add" ? url : `${url}/${selectedRow.id}`;
+    const url = methodName === "Add" ? "/v1/tipo_sede" : `/v1/tipo_sede/${selectedRow.id}`;
 
-    method(endpoint, selectedRow, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    })
+    method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text:
-            methodName === "Add"
-              ? "Tipo de Sede creado con éxito."
-              : "Tipo de Sede actualizado con éxito.",
+          text: methodName === "Add" ? "Tipo de sede creado!" : "Tipo de sede actualizado!"
         });
+        setOpen(false);
+        setSelectedRow({});
         reloadData();
-        handleClose();
       })
-      .catch((error) => {
-        console.error("Error al guardar tipo_sede:", error);
+      .catch(err => {
         setMessage({
           open: true,
           severity: "error",
-          text: "Error al guardar los datos. Intente nuevamente.",
-        });
-      });
-  };
-
-  /**
-   * Elimina el tipo de sede seleccionado.
-   */
-  const handleDelete = () => {
-    axios
-      .delete(`${SiteProps.urlbasev1}/tipo_sede/${selectedRow.id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
-      .then(() => {
-        setMessage({
-          open: true,
-          severity: "success",
-          text: "Tipo de Sede eliminado con éxito.",
-        });
-        reloadData();
-        setSelectedRow({ id: null, nombre: "", descripcion: "", estado: 1 });
-      })
-      .catch((error) => {
-        console.error("Error al eliminar tipo_sede:", error);
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al eliminar el registro. Intente nuevamente.",
+          text: `Error: ${err.message || "Network Error"}`
         });
       });
   };
 
   return (
     <>
-      <Box display="flex" justifyContent="flex-end" mb={2}>
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpen("Add")}
-          style={{ marginRight: "10px" }}
-        >
-          Nuevo
-        </Button>
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<UpdateIcon />}
-          onClick={() => handleOpen("Update")}
-          style={{ marginRight: "10px" }}
-        >
-          Editar
-        </Button>
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<DeleteIcon />}
-          onClick={() => handleOpen("Delete")}
-        >
-          Eliminar
-        </Button>
-      </Box>
-
+      <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>
-          {methodName === "Add" ? "Agregar Tipo de Sede" : "Actualizar Tipo de Sede"}
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Nombre"
-            value={selectedRow?.nombre || ""}
-            onChange={(e) =>
-              setSelectedRow({ ...selectedRow, nombre: e.target.value })
-            }
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Descripción"
-            value={selectedRow?.descripcion || ""}
-            onChange={(e) =>
-              setSelectedRow({ ...selectedRow, descripcion: e.target.value })
-            }
-          />
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Estado</InputLabel>
-            <Select
-              value={selectedRow?.estado || 1}
-              onChange={(e) =>
-                setSelectedRow({ ...selectedRow, estado: e.target.value })
-              }
-            >
-              <MenuItem value={1}>Activo</MenuItem>
-              <MenuItem value={0}>Inactivo</MenuItem>
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancelar</Button>
-          <Button onClick={handleSubmit}>
-            {methodName === "Add" ? "Agregar" : "Actualizar"}
-          </Button>
-        </DialogActions>
+        <form onSubmit={handleSubmit}>
+          <DialogTitle>{methodName} Tipo de Sede</DialogTitle>
+          <DialogContent>
+            <DialogContentText>Formulario para tipo de sede</DialogContentText>
+
+            <TextField
+              fullWidth margin="dense" required
+              name="nombre" label="Nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+            />
+            <TextField
+              fullWidth margin="dense"
+              name="descripcion" label="Descripción"
+              value={formData.descripcion}
+              onChange={handleChange}
+            />
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel>Estado</InputLabel>
+              <Select
+                name="estado"
+                value={formData.estado}
+                onChange={handleChange}
+                label="Estado"
+              >
+                <MenuItem value="">Seleccione...</MenuItem>
+                <MenuItem value="1">Activo</MenuItem>
+                <MenuItem value="2">Inactivo</MenuItem>
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancelar</Button>
+            <Button type="submit">{methodName}</Button>
+          </DialogActions>
+        </form>
       </Dialog>
     </>
   );
 }
 
-FormTipoSedes.propTypes = {
-  selectedRow: PropTypes.shape({
-    id: PropTypes.number,
-    nombre: PropTypes.string,
-    descripcion: PropTypes.string,
-    estado: PropTypes.number,
-  }),
+FormTipoSede.propTypes = {
+  selectedRow: PropTypes.object.isRequired,
   setSelectedRow: PropTypes.func.isRequired,
-  reloadData: PropTypes.func.isRequired,
   setMessage: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired,
 };

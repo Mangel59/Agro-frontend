@@ -1,61 +1,62 @@
 import React, { useState, useEffect } from "react";
+import axios from "../axiosConfig";
+import MessageSnackBar from "../MessageSnackBar";
 import FormTipoIdentificacion from "./FormTipoIdentificacion";
 import GridTipoIdentificacion from "./GridTipoIdentificacion";
-import axios from "../axiosConfig";
+import { Button } from "@mui/material";
 
 export default function TipoIdentificacion() {
+  const [selectedRow, setSelectedRow] = useState({ id: 0 });
+  const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
   const [tiposIdentificacion, setTiposIdentificacion] = useState([]);
-  const [selectedRow, setSelectedRow] = useState(null);
-
-  const token = localStorage.getItem("token");
-
-  const axiosConfig = {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
+  const [formOpen, setFormOpen] = useState(false);
 
   const reloadData = () => {
-    axios.get("/tipo_identificacion", axiosConfig)
-      .then((res) => setTiposIdentificacion(res.data))
-      .catch((err) => console.error("Error al cargar tipos de identificación:", err));
+    axios.get('/v1/tipo_identificacion')
+      .then(res => {
+        const filas = res.data.map(item => ({
+          ...item,
+          estadoId: item.estado?.id || item.estadoId, // por si viene como objeto
+          nombreCompleto: item.nombre + ' ' + item.codigo,
+        }));
+        setTiposIdentificacion(filas);
+      })
+      .catch(err => {
+        console.error("❌ Error al cargar tipos de identificación:", err);
+        setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al cargar tipos de identificación"
+        });
+      });
   };
 
   useEffect(() => {
     reloadData();
   }, []);
 
-  const handleAdd = (newTipo) => {
-    axios.post("/tipo_identificacion", newTipo, axiosConfig)
-      .then(() => reloadData())
-      .catch((err) => console.error("Error al agregar:", err));
-  };
-
-  const handleUpdate = (updatedTipo) => {
-    axios.put(`/tipo_identificacion/${updatedTipo.id}`, updatedTipo, axiosConfig)
-      .then(() => reloadData())
-      .catch((err) => console.error("Error al actualizar:", err));
-  };
-
-  const handleDelete = (id) => {
-    axios.delete(`/tipo_identificacion/${id}`, axiosConfig)
-      .then(() => reloadData())
-      .catch((err) => console.error("Error al eliminar:", err));
-  };
-
   return (
-    <div style={{ padding: "2rem" }}>
+    <div>
       <h1>Gestión de Tipos de Identificación</h1>
+
+      <MessageSnackBar message={message} setMessage={setMessage} />
+
       <FormTipoIdentificacion
-        onAdd={handleAdd}
-        onUpdate={handleUpdate}
-        onDelete={handleDelete}
-        selectedRow={selectedRow}
+        open={formOpen}
+        setOpen={setFormOpen}
+        selectedRow={selectedRow || { id: 0 }}
         setSelectedRow={setSelectedRow}
+        setMessage={setMessage}
+        reloadData={reloadData}
       />
+
       <GridTipoIdentificacion
-        tiposIdentificacion={tiposIdentificacion}
-        onEdit={setSelectedRow}
+        rows={tiposIdentificacion}
+        selectedRow={selectedRow}
+        setSelectedRow={(row) => {
+          setSelectedRow(row);
+          setFormOpen(true);
+        }}
       />
     </div>
   );

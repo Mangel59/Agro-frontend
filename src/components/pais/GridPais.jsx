@@ -11,11 +11,6 @@ export const columns = [
     field: 'estadoId',
     headerName: 'Estado',
     width: 150,
-  },
-  {
-    field: 'empresaId',
-    headerName: 'Empresa',
-    width: 200,
   }
 ];
 

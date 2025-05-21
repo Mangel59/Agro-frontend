@@ -31,8 +31,12 @@ export default function GridDepartamento(props) {
 
   const columns = [
     { field: "id", headerName: "ID", width: 90, type: "number" },
-    { field: "name", headerName: "Nombre", width: 250, type: "string" },
-  ];
+    { field: "name", headerName: "Nombre", width: 200, type: "string" },          
+    { field: "paisNombre", headerName: "País", width: 200, type: "string" },      
+    { field: "codigo", headerName: "Código", width: 120 },
+    { field: "acronimo", headerName: "Acrónimo", width: 120 },
+    { field: "estadoId", headerName: "Estado", width: 150 },
+  ];  
 
   return (
     <div style={{ height: 400, width: "100%" }}>

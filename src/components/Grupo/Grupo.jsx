@@ -1,31 +1,31 @@
 import React, { useState, useEffect } from "react";
 import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
-import FormTipoBloque from "./FormTipoBloque";
-import GridTipoBloque from "./GridTipoBloque";
+import FormGrupo from "./FormGrupo";
+import GridGrupo from "./GridGrupo";
 
-export default function TipoBloque() {
+export default function Grupo() {
   const [selectedRow, setSelectedRow] = useState({ id: 0 });
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
-  const [tiposBloque, setTiposBloque] = useState([]);
+  const [grupos, setGrupos] = useState([]);
 
   const reloadData = () => {
-    axios.get("/v1/tipo_bloque")
+    axios.get("/v1/grupo")
       .then((res) => {
-        const datos = res.data.map((item) => ({
-          ...item,
-          id: item.id,
-          estadoId: item.estadoId,
-          empresaId: item.empresaId
-        }));
-        setTiposBloque(datos);
+        const datosConId = res.data.map((g) => ({
+            ...g,
+            id: g.id,
+            estadoId: g.estadoId
+          }));
+                  
+        setGrupos(datosConId);
       })
       .catch((err) => {
-        console.error("❌ Error al cargar tipos de bloque:", err);
+        console.error("❌ Error al cargar grupos:", err);
         setMessage({
           open: true,
           severity: "error",
-          text: "Error al cargar datos",
+          text: "Error al cargar grupos",
         });
       });
   };
@@ -36,16 +36,16 @@ export default function TipoBloque() {
 
   return (
     <div>
-      <h1>Gestión de Tipos de Bloque</h1>
+      <h1>Gestión de Grupos</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
-      <FormTipoBloque
+      <FormGrupo
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
         setMessage={setMessage}
         reloadData={reloadData}
       />
-      <GridTipoBloque
-        tiposBloque={tiposBloque}
+      <GridGrupo
+        grupos={grupos}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
       />

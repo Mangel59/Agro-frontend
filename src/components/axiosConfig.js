@@ -20,24 +20,23 @@
 // );
 
 // export default instance;
+// axiosConfig.js
+// src/axiosConfig.js
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: '/api', // Rutas relativas para que el proxy funcione
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-instance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+instance.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => Promise.reject(error));
 
 export default instance;
