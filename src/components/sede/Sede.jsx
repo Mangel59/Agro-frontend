@@ -1,137 +1,189 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import axios from "../axiosConfig";
-
-import { Box } from "@mui/material";
 import MessageSnackBar from "../MessageSnackBar";
 import FormSede from "./FormSede";
 import GridSede from "./GridSede";
+import {
+  Box, Typography, FormControl, InputLabel, Select, MenuItem, Button
+} from "@mui/material";
 
-/**
- * Componente principal para gestionar las sedes.
- * @component
- * @returns {JSX.Element}
- */
 export default function Sede() {
-  const [sedes, setSedes] = React.useState([]);
-  const [selectedRow, setSelectedRow] = React.useState(null);
-  const [message, setMessage] = React.useState({ open: false, severity: "info", text: "" });
+  const [paises, setPaises] = useState([]);
+  const [departamentos, setDepartamentos] = useState([]);
+  const [municipios, setMunicipios] = useState([]);
+  const [grupos, setGrupos] = useState([]);
+  const [tiposSede, setTiposSede] = useState([]);
+  const [sedes, setSedes] = useState([]);
 
-  const reloadData = () => {
-    const token = localStorage.getItem("token");
-    if (!token || token.trim() === "") {
-      setMessage({
-        open: true,
-        severity: "warning",
-        text: "No hay token válido. Por favor inicie sesión.",
-      });
+  const [selectedPais, setSelectedPais] = useState("");
+  const [selectedDepto, setSelectedDepto] = useState("");
+  const [selectedMunicipio, setSelectedMunicipio] = useState("");
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState("create");
+  const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
+
+  const token = localStorage.getItem("token");
+  const headers = { headers: { Authorization: `Bearer ${token}` } };
+
+  useEffect(() => {
+    axios.get("/v1/pais", headers)
+      .then(res => setPaises(res.data))
+      .catch(() => setMessage({ open: true, severity: "error", text: "Error al cargar países." }));
+
+     // luego en cada request:
+axios.get("/v1/tipo_sede", headers)
+.then(res => {
+  console.log("Tipos de sede recibidos:", res.data);
+  setTiposSede(res.data);
+})
+.catch(err => {
+  console.error("Error tipos de sede:", err);
+  setMessage({ open: true, severity: "error", text: "Error al cargar tipos de sede." });
+});
+
+axios.get("/v1/grupo", headers)
+.then(res => setGrupos(res.data))
+.catch(err => {
+  console.error("Error grupos:", err);
+  setMessage({ open: true, severity: "error", text: "Error al cargar grupos." });
+});
+    
+  }, []);
+
+  useEffect(() => {
+    if (!selectedPais) {
+      setDepartamentos([]);
+      setSelectedDepto("");
+      setMunicipios([]);
+      setSelectedMunicipio("");
       return;
     }
 
-    axios.get('/api/v1/sede/all', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((response) => {
-        setSedes(response.data || []);
-      })
-      .catch((error) => {
-        console.error("Error al buscar sedes:", error);
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al cargar la lista de sedes.",
-        });
+    axios.get("/v1/departamento", headers)
+      .then(res => {
+        setDepartamentos(res.data.filter(dep => dep.paisId === parseInt(selectedPais)));
+        setSelectedDepto("");
+        setMunicipios([]);
+        setSelectedMunicipio("");
+      });
+  }, [selectedPais]);
+
+  useEffect(() => {
+    if (!selectedDepto) {
+      setMunicipios([]);
+      setSelectedMunicipio("");
+      return;
+    }
+
+    axios.get(`/v1/municipio?departamentoId=${selectedDepto}`, headers)
+      .then(res => setMunicipios(res.data));
+  }, [selectedDepto]);
+
+  const reloadData = () => {
+    if (!selectedMunicipio) return setSedes([]);
+    axios.get(`/v1/sede?municipioId=${selectedMunicipio}`, headers)
+      .then(res => {
+        setSedes(res.data.filter(s => s.municipioId === parseInt(selectedMunicipio)));
       });
   };
 
-  const handleAdd = (nuevaSede) => {
-    const token = localStorage.getItem("token");
-    if (!token || token.trim() === "") return;
+  useEffect(() => { reloadData(); }, [selectedMunicipio]);
 
-    axios.post('/api/v1/sede', nuevaSede, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(() => {
+  const handleDelete = async () => {
+    if (!selectedRow) return;
+    if (window.confirm(`¿Eliminar la sede "${selectedRow.nombre}"?`)) {
+      try {
+        await axios.delete(`/v1/sede/${selectedRow.id}`, headers);
+        setMessage({ open: true, severity: "success", text: "Sede eliminada correctamente." });
+        setSelectedRow(null);
         reloadData();
-        setMessage({ open: true, severity: "success", text: "Sede agregada exitosamente." });
-      })
-      .catch((error) => {
-        console.error("Error al agregar sede:", error);
-        setMessage({ open: true, severity: "error", text: "No se pudo agregar la sede." });
-      });
+      } catch {
+        setMessage({ open: true, severity: "error", text: "Error al eliminar sede." });
+      }
+    }
   };
-
-  const handleUpdate = (sedeActualizada) => {
-    const token = localStorage.getItem("token");
-    if (!token || token.trim() === "") return;
-
-    axios.put(`/api/v1/sede/${sedeActualizada.id}`, sedeActualizada, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(() => {
-        reloadData();
-        setMessage({ open: true, severity: "success", text: "Sede actualizada exitosamente." });
-      })
-      .catch((error) => {
-        console.error("Error al actualizar sede:", error);
-        setMessage({ open: true, severity: "error", text: "No se pudo actualizar la sede." });
-      });
-  };
-
-  const handleDelete = (id) => {
-    const token = localStorage.getItem("token");
-    if (!token || token.trim() === "") return;
-
-    axios.delete(`/api/v1/sede/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(() => {
-        reloadData();
-        setMessage({ open: true, severity: "success", text: "Sede eliminada exitosamente." });
-      })
-      .catch((error) => {
-        console.error("Error al eliminar sede:", error);
-        setMessage({ open: true, severity: "error", text: "No se pudo eliminar la sede." });
-      });
-  };
-
-  React.useEffect(() => {
-    reloadData();
-  }, []);
-
-  const mappedData = sedes.map((item) => ({
-    id: item.id,
-    nombre: item.nombre,
-    grupoId: item.grupoId,
-    tipoSedeId: item.tipoSedeId,
-    empresaId: item.empresaId,
-    municipioId: item.municipioId,
-    comuna: item.comuna,
-    area: item.area,
-    descripcion: item.descripcion,
-    estadoId: item.estadoId,
-    geolocalizacion: item.geolocalizacion,
-    coordenadas: item.coordenadas,
-    direccion: item.direccion,
-  }));
-  
 
   return (
-    <Box sx={{ padding: "2rem" }}>
-      <h1>Sedes</h1>
-      <MessageSnackBar message={message} setMessage={setMessage} />
+    <Box sx={{ padding: 2 }}>
+      <Typography variant="h5" gutterBottom>Gestión de Sede</Typography>
+
+      <FormControl fullWidth sx={{ mb: 2 }}>
+        <InputLabel>País</InputLabel>
+        <Select value={selectedPais} onChange={(e) => setSelectedPais(e.target.value)} label="País">
+          {paises.map((pais) => (
+            <MenuItem key={pais.id} value={pais.id}>{pais.nombre}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedPais}>
+        <InputLabel>Departamento</InputLabel>
+        <Select value={selectedDepto} onChange={(e) => setSelectedDepto(e.target.value)} label="Departamento">
+          {departamentos.map((dep) => (
+            <MenuItem key={dep.id} value={dep.id}>{dep.nombre}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedDepto}>
+        <InputLabel>Municipio</InputLabel>
+        <Select value={selectedMunicipio} onChange={(e) => setSelectedMunicipio(e.target.value)} label="Municipio">
+          {municipios.map((mun) => (
+            <MenuItem key={mun.id} value={mun.id}>{mun.nombre}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setFormMode("create");
+            setFormOpen(true);
+            setSelectedRow(null);
+          }}
+          disabled={!selectedMunicipio}
+        >
+          + Agregar Sede
+        </Button>
+
+        <Button
+          variant="outlined"
+          onClick={() => {
+            setFormMode("edit");
+            setFormOpen(true);
+          }}
+          disabled={!selectedRow}
+        >
+          Editar
+        </Button>
+
+        <Button
+          variant="outlined"
+          color="error"
+          onClick={handleDelete}
+          disabled={!selectedRow}
+        >
+          Eliminar
+        </Button>
+      </Box>
+
+      <GridSede sedes={sedes} setSelectedRow={setSelectedRow} />
+
       <FormSede
-        onAdd={handleAdd}
-        onUpdate={handleUpdate}
-        onDelete={handleDelete}
+        open={formOpen}
+        setOpen={setFormOpen}
+        formMode={formMode}
         selectedRow={selectedRow}
-        setSelectedRow={setSelectedRow}
-        setMessage={setMessage} // ✅ Ahora FormSede recibe también setMessage
-        reloadData={reloadData} // ✅ Y reloadData si FormSede lo necesita
+        reloadData={reloadData}
+        setMessage={setMessage}
+        municipioId={selectedMunicipio}
+        grupos={grupos}
+        tiposSede={tiposSede}
       />
-      <GridSede
-        sedes={mappedData}
-        onEdit={setSelectedRow}
-      />
+
+      <MessageSnackBar message={message} setMessage={setMessage} />
     </Box>
   );
 }

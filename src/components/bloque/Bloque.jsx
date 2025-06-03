@@ -1,115 +1,132 @@
-/**
- * @file Bloque.jsx
- * @module Bloque
- * @description Componente principal para la gestión de bloques.
- * Permite seleccionar una sede, visualizar los bloques asociados y realizar operaciones CRUD mediante FormBloque.
- * Conecta con el backend para obtener y actualizar datos.
- * @author Karla
- */
-
+// Bloque.jsx
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
 import FormBloque from "./FormBloque";
 import GridBloque from "./GridBloque";
-import { SiteProps } from "../dashboard/SiteProps";
+import {
+  Box, Typography, FormControl, InputLabel, Select, MenuItem, Button
+} from "@mui/material";
 
-/**
- * @typedef {Object} Sede
- * @property {number} id - ID de la sede
- * @property {string} nombre - Nombre de la sede
- */
-
-/**
- * @typedef {Object} SnackbarMessage
- * @property {boolean} open - Si el mensaje está visible
- * @property {string} severity - Nivel de severidad del mensaje ('success', 'error', etc.)
- * @property {string} text - Texto del mensaje
- */
-
-/**
- * Componente principal para la gestión de bloques.
- *
- * @component
- * @returns {JSX.Element} Componente que renderiza la interfaz de gestión de bloques.
- */
 export default function Bloque() {
-  /** Lista de sedes disponibles */
-  const [sedes, setSedes] = useState(/** @type {Sede[]} */ ([]));
+  const [paises, setPaises] = useState([]);
+  const [departamentos, setDepartamentos] = useState([]);
+  const [municipios, setMunicipios] = useState([]);
+  const [sedes, setSedes] = useState([]);
+  const [bloques, setBloques] = useState([]);
+  const [tiposBloque, setTiposBloque] = useState([]);
 
-  /** ID de la sede actualmente seleccionada */
+  const [selectedPais, setSelectedPais] = useState("");
+  const [selectedDepto, setSelectedDepto] = useState("");
+  const [selectedMunicipio, setSelectedMunicipio] = useState("");
   const [selectedSede, setSelectedSede] = useState("");
 
-  /** Fila seleccionada de la tabla de bloques */
   const [selectedRow, setSelectedRow] = useState(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState("create");
+  const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
 
-  /** Estado para controlar si se debe recargar la tabla de bloques */
-  const [reloadData, setReloadData] = useState(false);
+  const token = localStorage.getItem("token");
+  const headers = { headers: { Authorization: `Bearer ${token}` } };
 
-  /** Mensaje para mostrar en el snackbar */
-  const [message, setMessage] = useState(/** @type {SnackbarMessage} */ ({
-    open: false,
-    severity: "success",
-    text: "",
-  }));
-
-  /**
-   * Carga las sedes desde el backend al montar el componente.
-   */
   useEffect(() => {
-    const fetchSedes = async () => {
-      try {
-        const response = await axios.get(`${SiteProps.urlbasev1}/sede/minimal`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
-        setSedes(response.data || []);
-      } catch (error) {
-        console.error("Error al cargar las sedes:", error);
-        setMessage({ open: true, severity: "error", text: "Error al cargar las sedes." });
-      }
-    };
-    fetchSedes();
+    axios.get("/v1/pais", headers).then(res => setPaises(res.data));
+    axios.get("/v1/tipo_bloque", headers).then(res => setTiposBloque(res.data));
   }, []);
 
-  /**
-   * Maneja el cambio de sede seleccionada.
-   * @param {React.ChangeEvent<HTMLSelectElement>} event - Evento de cambio de select
-   */
-  const handleSedeChange = (event) => {
-    setSelectedSede(event.target.value);
-    setReloadData((prev) => !prev); // Fuerza recarga de bloques
+  useEffect(() => {
+    if (!selectedPais) return;
+    axios.get("/v1/departamento", headers).then(res => {
+      setDepartamentos(res.data.filter(d => d.paisId === parseInt(selectedPais)));
+    });
+  }, [selectedPais]);
+
+  useEffect(() => {
+    if (!selectedDepto) return;
+    axios.get(`/v1/municipio?departamentoId=${selectedDepto}`, headers).then(res => setMunicipios(res.data));
+  }, [selectedDepto]);
+
+  useEffect(() => {
+    if (!selectedMunicipio) return;
+    axios.get(`/v1/sede`, headers).then(res => {
+      const sedesFiltradas = res.data.filter(s => s.municipioId === parseInt(selectedMunicipio));
+      setSedes(sedesFiltradas);
+    });
+  }, [selectedMunicipio]);
+
+  const reloadData = () => {
+    if (!selectedSede) return setBloques([]);
+    axios.get(`/v1/bloque?sedeId=${selectedSede}`, headers).then(res => setBloques(res.data));
+  };
+
+  useEffect(() => { reloadData(); }, [selectedSede]);
+
+  const handleDelete = async () => {
+    if (!selectedRow) return;
+    if (window.confirm(`¿Eliminar el bloque "${selectedRow.nombre}"?`)) {
+      try {
+        await axios.delete(`/v1/bloque/${selectedRow.id}`, headers);
+        setMessage({ open: true, severity: "success", text: "Bloque eliminado correctamente." });
+        setSelectedRow(null);
+        reloadData();
+      } catch {
+        setMessage({ open: true, severity: "error", text: "Error al eliminar bloque." });
+      }
+    }
   };
 
   return (
-    <div style={{ height: "100%", width: "100%" }}>
-      <h1>Bloque</h1>
+    <Box sx={{ padding: 2 }}>
+      <Typography variant="h5" gutterBottom>Gestión de Bloque</Typography>
 
-      <MessageSnackBar message={message} setMessage={setMessage} />
+      <FormControl fullWidth sx={{ mb: 2 }}>
+        <InputLabel>País</InputLabel>
+        <Select value={selectedPais} onChange={e => setSelectedPais(e.target.value)} label="País">
+          {paises.map(p => <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>)}
+        </Select>
+      </FormControl>
 
-      <div style={{ marginBottom: 20 }}>
-        <label htmlFor="sede-select"><strong>Seleccionar Sede:</strong> </label>
-        <select id="sede-select" value={selectedSede} onChange={handleSedeChange}>
-          <option value="">Seleccione una sede</option>
-          {sedes.map((sede) => (
-            <option key={sede.id} value={sede.id}>
-              {sede.nombre}
-            </option>
-          ))}
-        </select>
-      </div>
+      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedPais}>
+        <InputLabel>Departamento</InputLabel>
+        <Select value={selectedDepto} onChange={e => setSelectedDepto(e.target.value)} label="Departamento">
+          {departamentos.map(d => <MenuItem key={d.id} value={d.id}>{d.nombre}</MenuItem>)}
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedDepto}>
+        <InputLabel>Municipio</InputLabel>
+        <Select value={selectedMunicipio} onChange={e => setSelectedMunicipio(e.target.value)} label="Municipio">
+          {municipios.map(m => <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>)}
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedMunicipio}>
+        <InputLabel>Sede</InputLabel>
+        <Select value={selectedSede} onChange={e => setSelectedSede(e.target.value)} label="Sede">
+          {sedes.map(s => <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>)}
+        </Select>
+      </FormControl>
+
+      <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+        <Button variant="contained" onClick={() => { setFormMode("create"); setFormOpen(true); setSelectedRow(null); }} disabled={!selectedSede}>+ Agregar Bloque</Button>
+        <Button variant="outlined" onClick={() => { setFormMode("edit"); setFormOpen(true); }} disabled={!selectedRow}>Editar</Button>
+        <Button variant="outlined" color="error" onClick={handleDelete} disabled={!selectedRow}>Eliminar</Button>
+      </Box>
+
+      <GridBloque bloques={bloques} setSelectedRow={setSelectedRow} />
 
       <FormBloque
+        open={formOpen}
+        setOpen={setFormOpen}
+        formMode={formMode}
         selectedRow={selectedRow}
-        setSelectedRow={setSelectedRow}
+        reloadData={reloadData}
         setMessage={setMessage}
-        reloadData={() => setReloadData((prev) => !prev)}
+        sedeId={selectedSede}
+        tiposBloque={tiposBloque}
       />
 
-      <GridBloque
-        selectedSede={selectedSede}
-        setSelectedRow={setSelectedRow}
-        reloadData={reloadData}
-      />
-    </div>
+      <MessageSnackBar message={message} setMessage={setMessage} />
+    </Box>
   );
 }

@@ -1,240 +1,127 @@
-/**
- * @module FormAlmacen
- */
-// ========================
-// TIPOS AUXILIARES PARA JSDOC
-// ========================
+import React, { useEffect, useState } from "react";
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Button, FormControl, InputLabel,
+  Select, MenuItem, FormHelperText
+} from "@mui/material";
+import axios from "../axiosConfig";
 
-/**
- * @typedef {Object} SnackbarMessage
- * @property {boolean} open - Si el mensaje está visible.
- * @property {string} severity - Nivel de severidad (success, error, etc.).
- * @property {string} text - Texto a mostrar en el mensaje.
- */
+export default function FormAlmacen({
+  open = false,
+  setOpen = () => {},
+  formMode = "create",
+  selectedRow = null,
+  espacioId = "",
+  reloadData = () => {},
+  setMessage = () => {},
+}) {
+  const initialData = {
+    id: null,
+    espacioId: espacioId || "",
+    nombre: "",
+    descripcion: "",
+    estadoId: 1,
+    geolocalizacion: "",
+    coordenadas: "",
+    direccion: "",
+  };
 
-/**
- * @callback SetMessageFn
- * @param {SnackbarMessage} message
- * @returns {void}
- */
-
-/**
- * @callback SetSelectedRowFn
- * @param {Object} row
- * @returns {void}
- */
-
-/**
- * @callback ReloadDataFn
- * @returns {void}
- */
-
-/**
- * @typedef {Object} FormAlmacenProps
- * @property {SetMessageFn} setMessage - Muestra un mensaje tipo snackbar.
- * @property {Object} selectedRow - Objeto del almacén seleccionado.
- * @property {number} [selectedRow.id] - ID del almacén.
- * @property {string} [selectedRow.nombre] - Nombre del almacén.
- * @property {string} [selectedRow.descripcion] - Descripción del almacén.
- * @property {string|number} [selectedRow.sede] - ID de la sede.
- * @property {string} [selectedRow.geolocalizacion] - Geolocalización.
- * @property {string} [selectedRow.coordenadas] - Coordenadas GPS.
- * @property {number} [selectedRow.estado] - Estado del almacén (1=Activo).
- * @property {SetSelectedRowFn} setSelectedRow - Cambia la fila seleccionada.
- * @property {ReloadDataFn} reloadData - Recarga la tabla.
- */
-
-import React, { useState, useEffect } from "react";
-import PropTypes from "prop-types";
-import axios from "axios";
-
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-
-import AddIcon from "@mui/icons-material/Add";
-import UpdateIcon from "@mui/icons-material/Update";
-import DeleteIcon from "@mui/icons-material/Delete";
-
-import { SiteProps } from "../dashboard/SiteProps";
-
-/**
- * Componente FormAlmacen. Permite agregar, actualizar y eliminar almacenes.
- *
- * @component
- * @param {FormAlmacenProps} props - Propiedades del componente.
- * @returns {JSX.Element}
- */
-const FormAlmacen = ({ setMessage, selectedRow, setSelectedRow, reloadData }) => {
-  const [open, setOpen] = useState(false);
-  const [methodName, setMethodName] = useState("");
-  const [sedes, setSedes] = useState([]);
+  const [formData, setFormData] = useState(initialData);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    const fetchSedes = async () => {
-      try {
-        const response = await axios.get(`${SiteProps.urlbasev1}/sede/minimal`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
-        setSedes(response.data || []);
-      } catch (error) {
-        console.error("Error al cargar sedes:", error);
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al cargar sedes.",
-        });
+    if (open) {
+      if (formMode === "edit" && selectedRow) {
+        setFormData({ ...selectedRow });
+      } else {
+        setFormData({ ...initialData, espacioId });
       }
-    };
-    fetchSedes();
-  }, []);
+      setErrors({});
+    }
+  }, [open, formMode, selectedRow, espacioId]);
 
-  const handleOpen = (method) => {
-    setMethodName(method);
-    setOpen(true);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleClose = () => {
-    setOpen(false);
-    setSelectedRow({});
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.nombre?.trim()) newErrors.nombre = "El nombre es obligatorio.";
+    if (!formData.estadoId && formData.estadoId !== 0) newErrors.estadoId = "Debe seleccionar estado.";
+    if (!formData.espacioId) newErrors.espacioId = "Espacio no asignado.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (!selectedRow.nombre || !selectedRow.sede) {
+  const handleSubmit = async () => {
+    if (!validate()) return;
+    try {
+      if (formMode === "edit" && formData.id) {
+        await axios.put(`/v1/almacen/${formData.id}`, formData);
+        setMessage({ open: true, severity: "success", text: "Almacén actualizado correctamente." });
+      } else {
+        await axios.post("/v1/almacen", formData);
+        setMessage({ open: true, severity: "success", text: "Almacén creado correctamente." });
+      }
+      setOpen(false);
+      reloadData();
+    } catch (err) {
       setMessage({
         open: true,
         severity: "error",
-        text: "Los campos Nombre y Sede son obligatorios.",
+        text: err.response?.data?.message || "Error al guardar almacén.",
       });
-      return;
     }
-
-    const payload = {
-      id: selectedRow?.id || null,
-      nombre: selectedRow?.nombre || "",
-      sede: selectedRow?.sede || "",
-      geolocalizacion: selectedRow?.geolocalizacion || "",
-      coordenadas: selectedRow?.coordenadas || "",
-      descripcion: selectedRow?.descripcion || "",
-      estado: selectedRow?.estado || 1,
-    };
-
-    const url = `${SiteProps.urlbasev1}/almacen`;
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const endpoint = methodName === "Add" ? url : `${url}/${selectedRow.id}`;
-
-    method(endpoint, payload, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    })
-      .then(() => {
-        setMessage({
-          open: true,
-          severity: "success",
-          text: methodName === "Add" ? "Almacén creado con éxito." : "Almacén actualizado con éxito.",
-        });
-        reloadData();
-        handleClose();
-      })
-      .catch((error) => {
-        console.error("Error al enviar datos:", error);
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al enviar datos. Intente nuevamente.",
-        });
-      });
-  };
-
-  const handleDelete = () => {
-    if (!selectedRow || !selectedRow.id) {
-      setMessage({
-        open: true,
-        severity: "error",
-        text: "Seleccione un almacén para eliminar.",
-      });
-      return;
-    }
-
-    axios
-      .delete(`${SiteProps.urlbasev1}/almacen/${selectedRow.id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
-      .then(() => {
-        setMessage({
-          open: true,
-          severity: "success",
-          text: "Almacén eliminado con éxito.",
-        });
-        reloadData();
-      })
-      .catch((error) => {
-        console.error("Error al eliminar almacén:", error);
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al eliminar el almacén. Intente nuevamente.",
-        });
-      });
   };
 
   return (
-    <>
-      <Box display="flex" justifyContent="flex-end" mb={2}>
-        <Button variant="outlined" color="primary" startIcon={<AddIcon />} onClick={() => handleOpen("Add")}>
-          Agregar
-        </Button>
-        <Button variant="outlined" color="primary" startIcon={<UpdateIcon />} onClick={() => handleOpen("Update")} style={{ marginLeft: "10px" }}>
-          Actualizar
-        </Button>
-        <Button variant="outlined" color="primary" startIcon={<DeleteIcon />} onClick={handleDelete} style={{ marginLeft: "10px" }}>
-          Eliminar
-        </Button>
-      </Box>
+    <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+      <DialogTitle>{formMode === "edit" ? "Editar Almacén" : "Nuevo Almacén"}</DialogTitle>
+      <DialogContent>
+        <TextField
+          fullWidth margin="normal" label="Nombre" name="nombre"
+          value={formData.nombre} onChange={handleChange}
+          error={!!errors.nombre} helperText={errors.nombre}
+        />
 
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{methodName === "Add" ? "Agregar Almacén" : "Actualizar Almacén"}</DialogTitle>
-        <DialogContent>
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Sede</InputLabel>
-            <Select
-              value={selectedRow?.sede || ""}
-              onChange={(e) => setSelectedRow({ ...selectedRow, sede: e.target.value })}
-            >
-              {sedes.map((sede) => (
-                <MenuItem key={sede.id} value={sede.id}>
-                  {sede.nombre}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+        <TextField
+          fullWidth margin="normal" label="Descripción" name="descripcion"
+          value={formData.descripcion} onChange={handleChange}
+        />
 
-          <TextField fullWidth label="Nombre" value={selectedRow?.nombre || ""} onChange={(e) => setSelectedRow({ ...selectedRow, nombre: e.target.value })} required margin="normal" />
-          <TextField fullWidth label="Geolocalización" value={selectedRow?.geolocalizacion || ""} onChange={(e) => setSelectedRow({ ...selectedRow, geolocalizacion: e.target.value })} required margin="normal" />
-          <TextField fullWidth label="Coordenadas" value={selectedRow?.coordenadas || ""} onChange={(e) => setSelectedRow({ ...selectedRow, coordenadas: e.target.value })} margin="normal" />
-          <TextField fullWidth label="Descripción" value={selectedRow?.descripcion || ""} onChange={(e) => setSelectedRow({ ...selectedRow, descripcion: e.target.value })} margin="normal" />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">Cancelar</Button>
-          <Button onClick={handleSubmit} color="primary">{methodName === "Add" ? "Agregar" : "Actualizar"}</Button>
-        </DialogActions>
-      </Dialog>
-    </>
+        <TextField
+          fullWidth margin="normal" label="Dirección" name="direccion"
+          value={formData.direccion} onChange={handleChange}
+        />
+
+        <TextField
+          fullWidth margin="normal" label="Geolocalización" name="geolocalizacion"
+          value={formData.geolocalizacion} onChange={handleChange}
+        />
+
+        <TextField
+          fullWidth margin="normal" label="Coordenadas" name="coordenadas"
+          value={formData.coordenadas} onChange={handleChange}
+        />
+
+        <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
+          <InputLabel>Estado</InputLabel>
+          <Select
+            name="estadoId" value={formData.estadoId}
+            onChange={handleChange} label="Estado"
+          >
+            <MenuItem value={1}>Activo</MenuItem>
+            <MenuItem value={0}>Inactivo</MenuItem>
+          </Select>
+          {errors.estadoId && <FormHelperText>{errors.estadoId}</FormHelperText>}
+        </FormControl>
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={() => setOpen(false)}>Cancelar</Button>
+        <Button variant="contained" onClick={handleSubmit}>Guardar</Button>
+      </DialogActions>
+    </Dialog>
   );
-};
-
-FormAlmacen.propTypes = {
-  setMessage: PropTypes.func.isRequired,
-  selectedRow: PropTypes.object,
-  setSelectedRow: PropTypes.func.isRequired,
-  reloadData: PropTypes.func.isRequired,
-};
-
-export default FormAlmacen;
+}

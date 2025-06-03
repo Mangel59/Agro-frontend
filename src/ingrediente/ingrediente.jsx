@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from "react";
-import axios from "../axiosConfig";
-import MessageSnackBar from "../MessageSnackBar";
-import FormUnidad from "./FormUnidad";
-import GridUnidad from "./GridUnidad";
+import axios from "../components/axiosConfig";
+import MessageSnackBar from "../components/MessageSnackBar";
+import FormIngrediente from "./FormIngrediente";
+import GridIngrediente from "./GridIngrediente";
 
-export default function Unidad() {
+export default function Ingrediente() {
   const [selectedRow, setSelectedRow] = useState({ id: 0 });
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
-  const [unidades, setUnidades] = useState([]);
+  const [ingredientes, setIngredientes] = useState([]);
   const [formOpen, setFormOpen] = useState(false);
 
   const reloadData = () => {
-    axios.get('/v1/unidad')
+    axios.get('/v1/ingrediente')
       .then(res => {
         const filas = res.data.map(item => ({
           ...item,
           estadoId: item.estado?.id || item.estadoId,
         }));
-        setUnidades(filas);
+        setIngredientes(filas);
       })
-      .catch(err => {
-        setMessage({ open: true, severity: "error", text: "Error al cargar unidades" });
+      .catch(() => {
+        setMessage({ open: true, severity: "error", text: "Error al cargar ingredientes" });
       });
   };
 
@@ -30,11 +30,11 @@ export default function Unidad() {
 
   return (
     <div>
-      <h1>Gestión de Unidades</h1>
+      <h1>Gestión de Ingredientes</h1>
 
       <MessageSnackBar message={message} setMessage={setMessage} />
 
-      <FormUnidad
+      <FormIngrediente
         open={formOpen}
         setOpen={setFormOpen}
         selectedRow={selectedRow || { id: 0 }}
@@ -43,8 +43,8 @@ export default function Unidad() {
         reloadData={reloadData}
       />
 
-      <GridUnidad
-        rows={unidades}
+      <GridIngrediente
+        rows={ingredientes}
         selectedRow={selectedRow}
         setSelectedRow={(row) => {
           setSelectedRow(row);

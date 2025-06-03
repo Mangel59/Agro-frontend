@@ -1,3 +1,12 @@
+/**
+ * @file FormMunicipio.jsx
+ * @module FormMunicipio
+ * @description Formulario para crear o editar un municipio.
+ *
+ * Este componente renderiza un formulario dentro de un diálogo modal
+ * para la gestión de municipios, incluyendo validación y envío a la API.
+ */
+
 import React, { useState, useEffect } from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
@@ -5,6 +14,23 @@ import {
 } from "@mui/material";
 import axios from "../axiosConfig";
 
+/**
+ * @typedef {Object} FormMunicipioProps
+ * @property {boolean} open - Si el formulario está visible
+ * @property {Function} setOpen - Función para cerrar el formulario
+ * @property {number} selectedDepartamento - ID del departamento asociado
+ * @property {Object|null} selectedRow - Datos del municipio seleccionado (para edición)
+ * @property {"create"|"edit"} formMode - Modo del formulario (crear o editar)
+ * @property {Function} setMessage - Función para mostrar notificaciones tipo snackbar
+ * @property {Function} reloadData - Función para recargar la lista de municipios
+ */
+
+/**
+ * Formulario modal de creación y edición de municipios.
+ *
+ * @param {FormMunicipioProps} props - Propiedades del componente
+ * @returns {JSX.Element} El formulario de municipio
+ */
 export default function FormMunicipio({
   open = false,
   setOpen = () => {},
@@ -26,6 +52,9 @@ export default function FormMunicipio({
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
 
+  /**
+   * Inicializa el formulario según si es modo edición o creación.
+   */
   useEffect(() => {
     if (open) {
       if (formMode === "edit" && selectedRow) {
@@ -37,11 +66,19 @@ export default function FormMunicipio({
     }
   }, [open, formMode, selectedRow, selectedDepartamento]);
 
+  /**
+   * Maneja el cambio de campos del formulario.
+   * @param {React.ChangeEvent<HTMLInputElement | { name: string, value: any }>} e
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  /**
+   * Valida los campos del formulario.
+   * @returns {boolean} true si los campos son válidos
+   */
   const validate = () => {
     const newErrors = {};
     if (!formData.nombre?.trim()) newErrors.nombre = "El nombre es obligatorio.";
@@ -54,6 +91,9 @@ export default function FormMunicipio({
     return Object.keys(newErrors).length === 0;
   };
 
+  /**
+   * Envía los datos a la API para crear o actualizar el municipio.
+   */
   const handleSubmit = async () => {
     if (!validate()) return;
 

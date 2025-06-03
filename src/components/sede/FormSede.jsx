@@ -1,224 +1,168 @@
-import React, { useState, useEffect } from "react";
-import PropTypes from "prop-types";
+import React, { useEffect, useState } from "react";
 import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
-  Box,
-  Grid,
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Button, FormControl, InputLabel,
+  Select, MenuItem, FormHelperText
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import UpdateIcon from "@mui/icons-material/Update";
-import DeleteIcon from "@mui/icons-material/Delete";
-import axios from "../axiosConfig"; // Usa tu configuración de axios
-import { SiteProps } from "../dashboard/SiteProps";
+import axios from "../axiosConfig";
 
-export default function FormSede({ selectedRow, setSelectedRow, reloadData, setMessage, onAdd, onUpdate, onDelete }) {
-  const [open, setOpen] = useState(false);
-  const [methodName, setMethodName] = useState("");
-  const [municipios, setMunicipios] = useState([]);
-  const [tipoSedes, setTipoSedes] = useState([]);
-  const [grupos, setGrupos] = useState([]);
+export default function FormSede({
+  open = false,
+  setOpen = () => {},
+  formMode = "create",
+  selectedRow = null,
+  municipioId = "",
+  grupos = [],
+  tiposSede = [],
+  reloadData = () => {},
+  setMessage = () => {},
+}) {
+  const initialData = {
+    id: null,
+    grupoId: "",
+    tipoSedeId: "",
+    nombre: "",
+    municipioId: municipioId || "",
+    area: "",
+    comuna: "",
+    descripcion: "",
+    estadoId: 1,
+  };
 
-  const token = localStorage.getItem("token");
+  const [formData, setFormData] = useState(initialData);
+  const [errors, setErrors] = useState({});
 
-  const fetchData = async () => {
-    if (!token || token.trim() === "") {
-      console.error("Token inválido");
-      return;
+  useEffect(() => {
+    if (open) {
+      if (formMode === "edit" && selectedRow) {
+        setFormData({ ...selectedRow });
+      } else {
+        setFormData({ ...initialData, municipioId });
+      }
+      setErrors({});
     }
-    try {
-      const [tipoSedeResponse, grupoResponse, municipioResponse] = await Promise.all([
-        axios.get('/api/v1/tipo_sede/minimal', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('/api/v1/grupo/minimal', { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get('/api/v1/municipio/all', { headers: { Authorization: `Bearer ${token}` } }),
-      ]);
+  }, [open, formMode, selectedRow, municipioId]);
 
-      setTipoSedes(tipoSedeResponse.data || []);
-      setGrupos(grupoResponse.data || []);
-      setMunicipios(municipioResponse.data || []);
-    } catch (error) {
-      console.error("Error al cargar datos:", error);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.nombre?.trim()) newErrors.nombre = "El nombre es obligatorio.";
+    if (!formData.grupoId) newErrors.grupoId = "Debe seleccionar un grupo.";
+    if (!formData.tipoSedeId) newErrors.tipoSedeId = "Debe seleccionar un tipo de sede.";
+    if (!formData.municipioId) newErrors.municipioId = "Municipio no asignado.";
+    if (!formData.estadoId && formData.estadoId !== 0) newErrors.estadoId = "Debe seleccionar estado.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validate()) return;
+
+    try {
+      if (formMode === "edit" && formData.id) {
+        await axios.put(`/v1/sede/${formData.id}`, formData);
+        setMessage({ open: true, severity: "success", text: "Sede actualizada correctamente." });
+      } else {
+        await axios.post("/v1/sede", formData);
+        setMessage({ open: true, severity: "success", text: "Sede creada correctamente." });
+      }
+
+      setOpen(false);
+      reloadData();
+    } catch (err) {
       setMessage({
         open: true,
         severity: "error",
-        text: "No se pudo cargar la información de municipios, grupos o tipos de sede.",
+        text: err.response?.data?.message || "Error al guardar sede.",
       });
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const handleOpen = (method) => {
-    if (method !== "Add" && (!selectedRow || selectedRow.id == null)) {
-      setMessage({ open: true, severity: "error", text: "Seleccione un registro primero." });
-      return;
-    }
-    setMethodName(method);
-    if (method === "Delete") {
-      onDelete(selectedRow.id);
-    } else {
-      setOpen(true);
-    }
-  };
-
-  const handleClose = () => {
-    setSelectedRow({
-      id: null,
-      nombre: "",
-      municipioId: "",
-      grupoId: "",
-      tipoSedeId: "",
-      area: "",
-      comuna: "",
-      descripcion: "",
-      estadoId: 1,
-    });
-    setOpen(false);
-  };
-
-  const handleSubmit = () => {
-    if (methodName === "Add") {
-      onAdd(selectedRow);
-    } else {
-      onUpdate(selectedRow);
-    }
-    handleClose();
-  };
-
   return (
-    <>
-      <Box display="flex" justifyContent="flex-end" mb={2}>
-        <Button variant="outlined" color="primary" startIcon={<AddIcon />} onClick={() => handleOpen("Add")} sx={{ mr: 1 }}>
-          Nuevo
-        </Button>
-        <Button variant="outlined" color="primary" startIcon={<UpdateIcon />} onClick={() => handleOpen("Update")} sx={{ mr: 1 }}>
-          Editar
-        </Button>
-        <Button variant="outlined" color="primary" startIcon={<DeleteIcon />} onClick={() => handleOpen("Delete")}>
-          Eliminar
-        </Button>
-      </Box>
+    <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+      <DialogTitle>{formMode === "edit" ? "Editar Sede" : "Nueva Sede"}</DialogTitle>
+      <DialogContent>
 
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{methodName === "Add" ? "Agregar Sede" : "Actualizar Sede"}</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                margin="normal"
-                label="Nombre"
-                value={selectedRow?.nombre || ""}
-                onChange={(e) => setSelectedRow({ ...selectedRow, nombre: e.target.value })}
-              />
-            </Grid>
+        <TextField
+          fullWidth margin="normal" label="Nombre" name="nombre"
+          value={formData.nombre} onChange={handleChange}
+          error={!!errors.nombre} helperText={errors.nombre}
+        />
 
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth margin="normal">
-                <InputLabel>Municipio</InputLabel>
-                <Select
-                  value={selectedRow?.municipioId || ""}
-                  onChange={(e) => setSelectedRow({ ...selectedRow, municipioId: e.target.value })}
-                >
-                  {municipios.map((mun) => (
-  <MenuItem key={mun.id} value={mun.id}>
-    {mun.name}
-  </MenuItem>
-))}
+        <TextField
+          fullWidth margin="normal" label="Área" name="area"
+          value={formData.area} onChange={handleChange}
+        />
 
-                </Select>
-              </FormControl>
-            </Grid>
+        <TextField
+          fullWidth margin="normal" label="Comuna" name="comuna"
+          value={formData.comuna} onChange={handleChange}
+        />
 
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth margin="normal">
-                <InputLabel>Grupo</InputLabel>
-                <Select
-                  value={selectedRow?.grupoId || ""}
-                  onChange={(e) => setSelectedRow({ ...selectedRow, grupoId: e.target.value })}
-                >
-                  {grupos.map((grupo) => (
-                    <MenuItem key={grupo.id} value={grupo.id}>
-                      {grupo.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+        <TextField
+          fullWidth margin="normal" label="Descripción" name="descripcion"
+          value={formData.descripcion} onChange={handleChange}
+        />
 
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth margin="normal">
-                <InputLabel>Tipo de Sede</InputLabel>
-                <Select
-                  value={selectedRow?.tipoSedeId || ""}
-                  onChange={(e) => setSelectedRow({ ...selectedRow, tipoSedeId: e.target.value })}
-                >
-                  {tipoSedes.map((tipo) => (
-                    <MenuItem key={tipo.id} value={tipo.id}>
-                      {tipo.nombre}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+<FormControl fullWidth margin="normal" error={!!errors.tipoSedeId}>
+  <InputLabel>Tipo de Sede</InputLabel>
+  <Select
+    name="tipoSedeId"
+    value={String(formData.tipoSedeId || "")}
+    onChange={handleChange}
+    label="Tipo de Sede"
+  >
+    {tiposSede.map((tipo) => (
+      <MenuItem key={tipo.id} value={String(tipo.id)}>
+        {tipo.nombre}
+      </MenuItem>
+    ))}
+  </Select>
+  {errors.tipoSedeId && <FormHelperText>{errors.tipoSedeId}</FormHelperText>}
+</FormControl>
 
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                margin="normal"
-                label="Área (m²)"
-                type="number"
-                value={selectedRow?.area || ""}
-                onChange={(e) => setSelectedRow({ ...selectedRow, area: e.target.value })}
-              />
-            </Grid>
+<FormControl fullWidth margin="normal" error={!!errors.grupoId}>
+  <InputLabel>Grupo</InputLabel>
+  <Select
+    name="grupoId"
+    value={String(formData.grupoId || "")}
+    onChange={handleChange}
+    label="Grupo"
+  >
+    {grupos.map((grupo) => (
+      <MenuItem key={grupo.id} value={String(grupo.id)}>
+        {grupo.nombre}
+      </MenuItem>
+    ))}
+  </Select>
+  {errors.grupoId && <FormHelperText>{errors.grupoId}</FormHelperText>}
+</FormControl>
 
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                margin="normal"
-                label="Comuna"
-                value={selectedRow?.comuna || ""}
-                onChange={(e) => setSelectedRow({ ...selectedRow, comuna: e.target.value })}
-              />
-            </Grid>
 
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                margin="normal"
-                label="Descripción"
-                value={selectedRow?.descripcion || ""}
-                onChange={(e) => setSelectedRow({ ...selectedRow, descripcion: e.target.value })}
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancelar</Button>
-          <Button onClick={handleSubmit}>{methodName === "Add" ? "Agregar" : "Actualizar"}</Button>
-        </DialogActions>
-      </Dialog>
-    </>
+        <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
+          <InputLabel>Estado</InputLabel>
+          <Select
+            name="estadoId"
+            value={formData.estadoId}
+            onChange={handleChange}
+            label="Estado"
+          >
+            <MenuItem value={1}>Activo</MenuItem>
+            <MenuItem value={0}>Inactivo</MenuItem>
+          </Select>
+          {errors.estadoId && <FormHelperText>{errors.estadoId}</FormHelperText>}
+        </FormControl>
+
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={() => setOpen(false)}>Cancelar</Button>
+        <Button variant="contained" onClick={handleSubmit}>Guardar</Button>
+      </DialogActions>
+    </Dialog>
   );
 }
-
-FormSede.propTypes = {
-  selectedRow: PropTypes.object.isRequired,
-  setSelectedRow: PropTypes.func.isRequired,
-  reloadData: PropTypes.func.isRequired,
-  setMessage: PropTypes.func.isRequired,
-  onAdd: PropTypes.func.isRequired,
-  onUpdate: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
-};

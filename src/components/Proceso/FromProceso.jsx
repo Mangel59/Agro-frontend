@@ -1,12 +1,4 @@
-/**
- * @file FormPais.jsx
- * @module FormPais
- * @description Componente de formulario para crear y editar países.
- *
- * Este formulario permite la creación, actualización y eliminación de países,
- * incluyendo validaciones básicas y control de estado.
- */
-
+// FormProceso.jsx
 import * as React from "react";
 import PropTypes from "prop-types";
 import axios from "../axiosConfig";
@@ -17,66 +9,69 @@ import {
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 
-/**
- * @typedef {Object} FormPaisProps
- * @property {Object} selectedRow - Fila seleccionada para editar
- * @property {Function} setSelectedRow - Setter para la fila seleccionada
- * @property {Function} setMessage - Setter para los mensajes de alerta
- * @property {Function} reloadData - Función para recargar los datos
- */
-
-/**
- * @param {FormPaisProps} props
- * @returns {JSX.Element} Formulario de país
- */
-export default function FormPais({ selectedRow, setSelectedRow, setMessage, reloadData }) {
+export default function FormProceso({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
+  const [tiposProduccion, setTiposProduccion] = React.useState([]);
 
   const initialData = {
     nombre: "",
-    codigo: "",
-    acronimo: "",
+    descripcion: "",
+    tipoProduccionId: "",
     estado: ""
   };
 
   const [formData, setFormData] = React.useState(initialData);
 
+  const loadTiposProduccion = () => {
+    axios.get("/v1/tipo_produccion")
+      .then(res => setTiposProduccion(res.data))
+      .catch(err => console.error("❌ Error al cargar tipo de producción:", err));
+  };
+
   const create = () => {
     setFormData(initialData);
     setMethodName("Add");
+    loadTiposProduccion();
     setOpen(true);
   };
 
   const update = () => {
     if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona un país para editar." });
+      setMessage({ open: true, severity: "error", text: "Selecciona un proceso para editar." });
       return;
     }
+
     setFormData({
       nombre: selectedRow.nombre || "",
-      codigo: selectedRow.codigo || "",
-      acronimo: selectedRow.acronimo || "",
+      descripcion: selectedRow.descripcion || "",
+      tipoProduccionId: selectedRow.tipoProduccionId?.toString() || "",
       estado: selectedRow.estadoId?.toString() || ""
     });
+
     setMethodName("Update");
+    loadTiposProduccion();
     setOpen(true);
   };
 
   const deleteRow = () => {
     if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona un país para eliminar." });
+      setMessage({ open: true, severity: "error", text: "Selecciona un proceso para eliminar." });
       return;
     }
-    axios.delete(`/v1/pais/${selectedRow.id}`)
+
+    axios.delete(`/v1/proceso/${selectedRow.id}`)
       .then(() => {
-        setMessage({ open: true, severity: "success", text: "País eliminado correctamente." });
+        setMessage({ open: true, severity: "success", text: "Proceso eliminado correctamente." });
         setSelectedRow({});
         reloadData();
       })
       .catch((err) => {
-        console.error("❌ Error al eliminar país:", err);
-        setMessage({ open: true, severity: "error", text: `Error al eliminar: ${err.message}` });
+        setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al eliminar: ${err.message}`
+        });
       });
   };
 
@@ -91,20 +86,20 @@ export default function FormPais({ selectedRow, setSelectedRow, setMessage, relo
     event.preventDefault();
     const payload = {
       nombre: formData.nombre,
-      codigo: parseInt(formData.codigo),
-      acronimo: formData.acronimo.toUpperCase(),
+      descripcion: formData.descripcion,
+      tipoProduccionId: parseInt(formData.tipoProduccionId),
       estadoId: parseInt(formData.estado)
     };
 
     const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/pais" : `/v1/pais/${selectedRow.id}`;
+    const url = methodName === "Add" ? "/v1/proceso" : `/v1/proceso/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "País creado con éxito!" : "País actualizado con éxito!"
+          text: methodName === "Add" ? "Proceso creado con éxito!" : "Proceso actualizado con éxito!"
         });
         setOpen(false);
         setSelectedRow({});
@@ -124,15 +119,38 @@ export default function FormPais({ selectedRow, setSelectedRow, setMessage, relo
       <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog open={open} onClose={handleClose}>
         <form onSubmit={handleSubmit}>
-          <DialogTitle>{methodName} País</DialogTitle>
+          <DialogTitle>{methodName} Proceso</DialogTitle>
           <DialogContent>
-            <DialogContentText>Formulario para gestionar país</DialogContentText>
-            <TextField fullWidth required name="nombre" label="Nombre del País" value={formData.nombre} onChange={handleChange} margin="dense" />
-            <TextField fullWidth required name="codigo" label="Código" type="number" value={formData.codigo} onChange={handleChange} margin="dense" />
-            <TextField fullWidth required name="acronimo" label="Acrónimo" inputProps={{ maxLength: 3 }} value={formData.acronimo} onChange={handleChange} margin="dense" />
-            <FormControl fullWidth required margin="normal">
+            <DialogContentText>Formulario para gestionar procesos</DialogContentText>
+
+            <TextField fullWidth margin="dense" required name="nombre" label="Nombre"
+              value={formData.nombre} onChange={handleChange} />
+            <TextField fullWidth margin="dense" multiline rows={3} name="descripcion" label="Descripción"
+              value={formData.descripcion} onChange={handleChange} />
+
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel>Tipo de Producción</InputLabel>
+              <Select
+                name="tipoProduccionId"
+                value={formData.tipoProduccionId}
+                onChange={handleChange}
+                label="Tipo de Producción"
+              >
+                <MenuItem value="">Seleccione...</MenuItem>
+                {tiposProduccion.map(tp => (
+                  <MenuItem key={tp.id} value={tp.id}>{tp.nombre}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth margin="normal" required>
               <InputLabel>Estado</InputLabel>
-              <Select name="estado" value={formData.estado} onChange={handleChange} label="Estado">
+              <Select
+                name="estado"
+                value={formData.estado}
+                onChange={handleChange}
+                label="Estado"
+              >
                 <MenuItem value="">Seleccione...</MenuItem>
                 <MenuItem value="1">Activo</MenuItem>
                 <MenuItem value="2">Inactivo</MenuItem>
@@ -149,7 +167,7 @@ export default function FormPais({ selectedRow, setSelectedRow, setMessage, relo
   );
 }
 
-FormPais.propTypes = {
+FormProceso.propTypes = {
   selectedRow: PropTypes.object.isRequired,
   setSelectedRow: PropTypes.func.isRequired,
   setMessage: PropTypes.func.isRequired,

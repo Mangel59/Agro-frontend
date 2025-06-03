@@ -1,184 +1,155 @@
-/**
- * @file FormProductoCategoria.jsx
- * @module FormProductoCategoria
- * @description Componente de formulario para agregar, editar y eliminar categorías de productos.
- * Utiliza Formik y Yup para validación, y envía el estado como "Activo" automáticamente.
- * Incluye un diálogo modal y botones de acción. Utiliza Material UI y Axios para las operaciones CRUD.
- * @author Karla
- */
-
-import React, { useState } from "react";
-import axios from "axios";
+import * as React from "react";
+import PropTypes from "prop-types";
+import axios from "../axiosConfig";
 import {
-  Button,
-  Box,
-  TextField,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormHelperText,
+  Button, Dialog, DialogActions, DialogContent,
+  DialogContentText, DialogTitle, TextField, FormControl,
+  InputLabel, Select, MenuItem
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import UpdateIcon from "@mui/icons-material/Update";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { SiteProps } from "../dashboard/SiteProps";
-import { useFormik } from "formik";
-import * as Yup from "yup";
+import StackButtons from "../StackButtons";
 
-/**
- * Formulario para gestión de categorías de productos con Formik + Yup.
- *
- * @param {Object} props - Propiedades del componente
- * @param {Object} props.selectedRow - Objeto con los datos de la fila seleccionada
- * @param {Function} props.setSelectedRow - Función para actualizar la fila seleccionada
- * @param {Function} props.setMessage - Función para mostrar mensajes con Snackbar
- * @param {Function} props.reloadData - Función para recargar los datos desde el backend
- * @returns {JSX.Element} Componente del formulario
- */
-export default function FormProductoCategoria(props) {
-  const [open, setOpen] = useState(false);
-  const [methodName, setMethodName] = useState("");
+export default function FormProductoCategoria({ selectedRow, setSelectedRow, setMessage, reloadData }) {
+  const [open, setOpen] = React.useState(false);
+  const [methodName, setMethodName] = React.useState("");
 
-  const formik = useFormik({
-    initialValues: {
-      nombre: "",
-      descripcion: "",
-      estado: 1,
-    },
-    validationSchema: Yup.object({
-      nombre: Yup.string().trim("no puede contener solo espacios").strict(true).required("El nombre es obligatorio"),
-      descripcion: Yup.string().trim("no puede contener solo espacios").strict(true).required("El nombre es obligatorio"),
-    }),
-  
-    onSubmit: (values) => {
-      const payload = {
-        id: methodName === "Add" ? null : props.selectedRow?.id,
-        nombre: values.nombre.trim(),
-        descripcion: values.descripcion.trim(),
-        estado: 1,
-      };
+  const initialData = {
+    nombre: "",
+    descripcion: "",
+    estado: ""
+  };
 
-      const url = `${SiteProps.urlbasev1}/producto_categoria`;
-      const method = methodName === "Add" ? axios.post : axios.put;
-      const endpoint = methodName === "Add" ? url : `${url}/${props.selectedRow.id}`;
-
-      method(endpoint, payload, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
-        .then(() => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text:
-              methodName === "Add"
-                ? "Producto categoría creada con éxito."
-                : "Producto categoría actualizada con éxito.",
-          });
-          props.reloadData();
-          setOpen(false);
-        })
-        .catch(() => {
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: "Error al enviar datos. Intente nuevamente.",
-          });
-        });
-    },
-  });
+  const [formData, setFormData] = React.useState(initialData);
 
   const create = () => {
-    formik.resetForm();
-    formik.setFieldValue("estado", 1);
+    setFormData(initialData);
     setMethodName("Add");
     setOpen(true);
   };
 
   const update = () => {
-    if (!props.selectedRow || props.selectedRow.id === 0) {
-      return props.setMessage({ open: true, severity: "error", text: "Seleccione una fila para actualizar." });
+    if (!selectedRow?.id) {
+      setMessage({ open: true, severity: "error", text: "Selecciona una categoría para editar." });
+      return;
     }
-    formik.setValues({
-      nombre: props.selectedRow.nombre || "",
-      descripcion: props.selectedRow.descripcion || "",
-      estado: 1,
+
+    setFormData({
+      nombre: selectedRow.nombre || "",
+      descripcion: selectedRow.descripcion || "",
+      estado: selectedRow.estadoId?.toString() || ""
     });
+
     setMethodName("Update");
     setOpen(true);
   };
 
   const deleteRow = () => {
-    if (!props.selectedRow || props.selectedRow.id === 0) {
-      return props.setMessage({ open: true, severity: "error", text: "Seleccione una fila para eliminar." });
+    if (!selectedRow?.id) {
+      setMessage({ open: true, severity: "error", text: "Selecciona una categoría para eliminar." });
+      return;
     }
-    axios
-      .delete(`${SiteProps.urlbasev1}/producto_categoria/${props.selectedRow.id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
+
+    axios.delete(`/v1/producto_categoria/${selectedRow.id}`)
       .then(() => {
-        props.setMessage({
-          open: true,
-          severity: "success",
-          text: "Producto categoría eliminada con éxito.",
-        });
-        props.reloadData();
+        setMessage({ open: true, severity: "success", text: "Categoría eliminada correctamente." });
+        setSelectedRow({});
+        reloadData();
       })
-      .catch(() => {
-        props.setMessage({
+      .catch((err) => {
+        setMessage({
           open: true,
           severity: "error",
-          text: "Error al eliminar la categoría. Intente nuevamente.",
+          text: `Error al eliminar: ${err.message}`,
+        });
+      });
+  };
+
+  const handleClose = () => setOpen(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const payload = {
+      nombre: formData.nombre,
+      descripcion: formData.descripcion,
+      estadoId: parseInt(formData.estado)
+    };
+
+    const method = methodName === "Add" ? axios.post : axios.put;
+    const url = methodName === "Add" ? "/v1/producto_categoria" : `/v1/producto_categoria/${selectedRow.id}`;
+
+    method(url, payload)
+      .then(() => {
+        setMessage({
+          open: true,
+          severity: "success",
+          text: methodName === "Add" ? "Categoría creada con éxito!" : "Categoría actualizada con éxito!"
+        });
+        setOpen(false);
+        setSelectedRow({});
+        reloadData();
+      })
+      .catch(err => {
+        setMessage({
+          open: true,
+          severity: "error",
+          text: `Error: ${err.message || "Network Error"}`
         });
       });
   };
 
   return (
     <>
-      <Box display="flex" justifyContent="right" mb={2}>
-        <Button variant="outlined" color="primary" startIcon={<AddIcon />} onClick={create} sx={{ mr: 1 }}>
-          Agregar
-        </Button>
-        <Button variant="outlined" color="primary" startIcon={<UpdateIcon />} onClick={update} sx={{ mr: 1 }}>
-          Actualizar
-        </Button>
-        <Button variant="outlined" color="primary" startIcon={<DeleteIcon />} onClick={deleteRow}>
-          Eliminar
-        </Button>
-      </Box>
+      <StackButtons methods={{ create, update, deleteRow }} />
+      <Dialog open={open} onClose={handleClose}>
+        <form onSubmit={handleSubmit}>
+          <DialogTitle>{methodName} Categoría de Producto</DialogTitle>
+          <DialogContent>
+            <DialogContentText>Formulario para gestionar categorías de productos</DialogContentText>
 
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle>{methodName === "Add" ? "Agregar Categoría" : "Actualizar Categoría"}</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Nombre"
-            name="nombre"
-            margin="normal"
-            value={formik.values.nombre}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.nombre && Boolean(formik.errors.nombre)}
-            helperText={formik.touched.nombre && formik.errors.nombre}
-          />
-
-          <TextField
-            fullWidth
-            label="Descripción"
-            name="descripcion"
-            margin="normal"
-            value={formik.values.descripcion}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.descripcion && Boolean(formik.errors.descripcion)}
-            helperText={formik.touched.descripcion && formik.errors.descripcion}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancelar</Button>
-          <Button onClick={formik.handleSubmit}>{methodName === "Add" ? "Agregar" : "Actualizar"}</Button>
-        </DialogActions>
+            <TextField
+              fullWidth margin="dense" required
+              name="nombre" label="Nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+            />
+            <TextField
+              fullWidth margin="dense" required
+              name="descripcion" label="Descripción"
+              value={formData.descripcion}
+              onChange={handleChange}
+            />
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel>Estado</InputLabel>
+              <Select
+                name="estado"
+                value={formData.estado}
+                onChange={handleChange}
+                label="Estado"
+              >
+                <MenuItem value="">Seleccione...</MenuItem>
+                <MenuItem value="1">Activo</MenuItem>
+                <MenuItem value="2">Inactivo</MenuItem>
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancelar</Button>
+            <Button type="submit">{methodName}</Button>
+          </DialogActions>
+        </form>
       </Dialog>
     </>
   );
 }
+
+FormProductoCategoria.propTypes = {
+  selectedRow: PropTypes.object.isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+  setMessage: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired,
+};

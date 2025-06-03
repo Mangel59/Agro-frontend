@@ -1,21 +1,54 @@
+/**
+ * @file Pais.jsx
+ * @module Pais
+ * @description Componente principal para la gestión de países.
+ *
+ * Este componente maneja la lógica del módulo de países, incluyendo la carga de datos,
+ * manejo de mensajes, y renderizado del formulario y la tabla de países.
+ */
+
 import React, { useState, useEffect } from "react";
-import axios from "../axiosConfig"; 
+import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
 import FormPais from "./FormPais";
 import GridPais from "./GridPais";
 
+/**
+ * @typedef {Object} PaisRow
+ * @property {number} id - ID del país
+ * @property {string} nombre - Nombre del país
+ * @property {string} codigo - Código numérico del país
+ * @property {string} acronimo - Acrónimo (ej. COL, USA)
+ * @property {number} estadoId - Estado (1: Activo, 2: Inactivo)
+ */
+
+/**
+ * @typedef {Object} SnackbarMessage
+ * @property {boolean} open - Si el mensaje está visible
+ * @property {string} severity - Nivel de severidad ("success", "error", etc.)
+ * @property {string} text - Texto del mensaje
+ */
+
+/**
+ * Componente principal para la gestión de países.
+ *
+ * @returns {JSX.Element} El módulo de gestión de países
+ */
 export default function Pais() {
   const [selectedRow, setSelectedRow] = useState({ id: 0 });
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
   const [paises, setPaises] = useState([]);
 
+  /**
+   * Carga los países desde la API.
+   */
   const reloadData = () => {
     axios.get("/v1/pais")
       .then((res) => {
         const datosConId = res.data.map((p) => ({
           ...p,
           id: p.id,
-          estadoId: p.estado?.id || null, 
+          estadoId: p.estado?.id || null,
         }));
         setPaises(datosConId);
       })
@@ -28,7 +61,6 @@ export default function Pais() {
         });
       });
   };
-  
 
   useEffect(() => {
     reloadData();

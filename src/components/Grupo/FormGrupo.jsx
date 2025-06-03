@@ -1,4 +1,13 @@
-import * as React from "react";
+/**
+ * @file FormGrupo.jsx
+ * @module FormGrupo
+ * @description Formulario para crear, editar y eliminar grupos.
+ *
+ * Este componente maneja la lógica del formulario de grupos,
+ * incluyendo apertura, validación, envío a la API y control de estado.
+ */
+
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import axios from "../axiosConfig";
 import {
@@ -8,9 +17,23 @@ import {
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 
+/**
+ * @typedef {Object} FormGrupoProps
+ * @property {Object} selectedRow - Fila actualmente seleccionada en la tabla
+ * @property {Function} setSelectedRow - Función para actualizar la fila seleccionada
+ * @property {Function} setMessage - Función para mostrar mensajes tipo snackbar
+ * @property {Function} reloadData - Función para recargar la lista de grupos
+ */
+
+/**
+ * Formulario de creación, edición y eliminación de grupos.
+ *
+ * @param {FormGrupoProps} props - Propiedades del componente
+ * @returns {JSX.Element} Formulario en modal para gestionar grupos
+ */
 export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, reloadData }) {
-  const [open, setOpen] = React.useState(false);
-  const [methodName, setMethodName] = React.useState("");
+  const [open, setOpen] = useState(false);
+  const [methodName, setMethodName] = useState("");
 
   const initialData = {
     nombre: "",
@@ -18,14 +41,20 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
     estado: ""
   };
 
-  const [formData, setFormData] = React.useState(initialData);
+  const [formData, setFormData] = useState(initialData);
 
+  /**
+   * Abre el formulario en modo creación.
+   */
   const create = () => {
     setFormData(initialData);
     setMethodName("Add");
     setOpen(true);
   };
 
+  /**
+   * Abre el formulario en modo edición.
+   */
   const update = () => {
     if (!selectedRow?.id) {
       setMessage({ open: true, severity: "error", text: "Selecciona un grupo para editar." });
@@ -42,6 +71,9 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
     setOpen(true);
   };
 
+  /**
+   * Elimina el grupo actualmente seleccionado.
+   */
   const deleteRow = () => {
     if (!selectedRow?.id) {
       setMessage({ open: true, severity: "error", text: "Selecciona un grupo para eliminar." });
@@ -65,11 +97,17 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
 
   const handleClose = () => setOpen(false);
 
+  /**
+   * Maneja los cambios en los campos del formulario.
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  /**
+   * Envía los datos del formulario a la API según el modo activo.
+   */
   const handleSubmit = (event) => {
     event.preventDefault();
 

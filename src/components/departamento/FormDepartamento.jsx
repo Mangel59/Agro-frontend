@@ -1,3 +1,12 @@
+/**
+ * @file FormDepartamento.jsx
+ * @module FormDepartamento
+ * @description Formulario para crear o editar un departamento.
+ *
+ * Este componente se encarga de gestionar la lógica de validación,
+ * envío de datos y renderizado del formulario en un diálogo modal.
+ */
+
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -14,12 +23,29 @@ import {
 } from "@mui/material";
 import axios from "../axiosConfig";
 
+/**
+ * @typedef {Object} FormDepartamentoProps
+ * @property {boolean} open - Si el diálogo está abierto
+ * @property {Function} setOpen - Función para cerrar el diálogo
+ * @property {number} selectedPais - ID del país seleccionado
+ * @property {Object|null} selectedRow - Fila seleccionada para editar (si existe)
+ * @property {("create"|"edit")} formMode - Modo del formulario (crear o editar)
+ * @property {Function} setMessage - Función para mostrar mensajes snackbar
+ * @property {Function} reloadData - Función para recargar los datos
+ */
+
+/**
+ * Formulario de creación y edición de departamentos.
+ *
+ * @param {FormDepartamentoProps} props - Propiedades del componente
+ * @returns {JSX.Element} El formulario del departamento
+ */
 export default function FormDepartamento({
   open = false,
   setOpen = () => {},
   selectedPais,
   selectedRow = null,
-  formMode = "create", // "create" | "edit"
+  formMode = "create", 
   setMessage,
   reloadData,
 }) {
@@ -34,6 +60,9 @@ export default function FormDepartamento({
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
 
+  /**
+   * Establece los datos del formulario al abrir el diálogo.
+   */
   useEffect(() => {
     if (open) {
       if (formMode === "edit" && selectedRow) {
@@ -45,11 +74,19 @@ export default function FormDepartamento({
     }
   }, [open, selectedPais, formMode, selectedRow]);
 
+  /**
+   * Maneja los cambios en los inputs del formulario.
+   * @param {React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement|{name: string, value: any}>} e
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  /**
+   * Valida los campos del formulario.
+   * @returns {boolean} true si no hay errores
+   */
   const validate = () => {
     const newErrors = {};
     if (!formData.nombre?.trim()) newErrors.nombre = "El nombre es obligatorio.";
@@ -62,6 +99,9 @@ export default function FormDepartamento({
     return Object.keys(newErrors).length === 0;
   };
 
+  /**
+   * Envía los datos a la API para crear o actualizar un departamento.
+   */
   const handleSubmit = async () => {
     if (!validate()) return;
 

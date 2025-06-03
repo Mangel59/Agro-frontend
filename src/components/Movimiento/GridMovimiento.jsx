@@ -3,27 +3,25 @@ import PropTypes from "prop-types";
 import { DataGrid } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
 
-export default function GridPresentacion({ rows = [], selectedRow = {}, setSelectedRow = () => {} }) {
+export default function GridMovimineto({
+  rows = [],
+  selectedRow = {},
+  setSelectedRow = () => {},
+}) {
   const [paginationModel, setPaginationModel] = useState({
     pageSize: 5,
     page: 0,
   });
 
   const columns = [
-    { field: "id", headerName: "ID", width: 80 },
+    { field: 'id', headerName: 'ID', width: 80 },
     { field: "nombre", headerName: "Nombre", width: 200 },
-    { field: "descripcion", headerName: "Descripción", width: 300 },
     {
       field: "estadoId",
       headerName: "Estado",
       width: 150,
       valueFormatter: ({ value }) => (value === 1 ? "Activo" : "Inactivo"),
     },
-    {
-      field: "empresaId",
-      headerName: "Empresa",
-      width: 150,
-    }
   ];
 
   return (
@@ -43,7 +41,7 @@ export default function GridPresentacion({ rows = [], selectedRow = {}, setSelec
   );
 }
 
-GridPresentacion.propTypes = {
+GridMovimineto.propTypes = {
   rows: PropTypes.array.isRequired,
   selectedRow: PropTypes.object.isRequired,
   setSelectedRow: PropTypes.func.isRequired,

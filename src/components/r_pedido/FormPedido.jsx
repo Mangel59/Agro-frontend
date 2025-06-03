@@ -1,130 +1,134 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box, Grid, FormControl, InputLabel, MenuItem,
-  Select, OutlinedInput, Button
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Button, FormControl, InputLabel,
+  Select, MenuItem, FormHelperText
 } from "@mui/material";
-import { Formik, Form } from "formik";
-import * as Yup from "yup";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import { DataPedidosService } from "../r_pedido/Pedido";
+import axios from "../axiosConfig";
 
-export default function FormPedido() {
-  const [data, setData] = useState({
-    paises: [], departamentos: [], municipios: [], sedes: [],
-    bloques: [], espacios: [], almacenes: [], unidades: []
-  });
+export default function FormPedido({
+  open = false,
+  setOpen = () => {},
+  formMode = "create",
+  selectedRow = null,
+  almacenId = "",
+  reloadData = () => {},
+  setMessage = () => {},
+}) {
+  const [producciones, setProducciones] = useState([]);
 
-  useEffect(() => {
-    DataPedidosService.cargarPaises().then(paises => setData(d => ({ ...d, paises })));
-    DataPedidosService.cargarDepartamentos().then(departamentos => setData(d => ({ ...d, departamentos })));
-    DataPedidosService.cargarMunicipios().then(municipios => setData(d => ({ ...d, municipios })));
-    DataPedidosService.cargarSedes().then(sedes => setData(d => ({ ...d, sedes })));
-    DataPedidosService.cargarBloques().then(bloques => setData(d => ({ ...d, bloques })));
-    DataPedidosService.cargarEspacios().then(espacios => setData(d => ({ ...d, espacios })));
-    DataPedidosService.cargarAlmacenes().then(almacenes => setData(d => ({ ...d, almacenes })));
-    DataPedidosService.cargarUnidades().then(unidades => setData(d => ({ ...d, unidades })));
-  }, []);
-
-  const initialValues = {
-    pais: "", departamento: "", municipio: "",
-    sede: "", bloque: "", espacio: "",
-    almacen: "", unidad: ""
+  const initialData = {
+    id: null,
+    almacenId: almacenId || "",
+    produccionId: "",
+    descripcion: "",
+    fechaHora: "",
+    estadoId: 1,
+    empresaId: "", // puedes llenarlo por token si se necesita
   };
 
-  const validationSchema = Yup.object().shape({
-    pais: Yup.string().required("Requerido"),
-    departamento: Yup.string().required("Requerido"),
-    municipio: Yup.string().required("Requerido"),
-    sede: Yup.string().required("Requerido"),
-    bloque: Yup.string().required("Requerido"),
-    espacio: Yup.string().required("Requerido"),
-    almacen: Yup.string().required("Requerido"),
-    unidad: Yup.string().required("Requerido"),
-  });
+  const [formData, setFormData] = useState(initialData);
+  const [errors, setErrors] = useState({});
 
-  const generarPDF = (valores) => {
-    const getNombre = (arr, id, campo) => arr.find(x => x.id === Number(id))?.[campo] || "";
-    const doc = new jsPDF();
-    doc.setFontSize(14);
-    doc.text("Resumen de Pedido", 14, 20);
-    const datos = [
-      ["País", getNombre(data.paises, valores.pais, "paisI")],
-      ["Departamento", getNombre(data.departamentos, valores.departamento, "departamentoI")],
-      ["Municipio", getNombre(data.municipios, valores.municipio, "municipioI")],
-      ["Sede", getNombre(data.sedes, valores.sede, "sedeI")],
-      ["Bloque", getNombre(data.bloques, valores.bloque, "bloqueI")],
-      ["Espacio", getNombre(data.espacios, valores.espacio, "espacioI")],
-      ["Almacén", getNombre(data.almacenes, valores.almacen, "almacenI")],
-      ["Unidad", getNombre(data.unidades, valores.unidad, "unidadI")]
-    ];
-    autoTable(doc, {
-      startY: 30,
-      head: [["Campo", "Valor"]],
-      body: datos,
-    });
-    doc.save("pedido.pdf");
+  useEffect(() => {
+    axios.get("/v1/tipo-produccion") // o tu endpoint real
+      .then(res => setProducciones(res.data))
+      .catch(() => setProducciones([]));
+  }, []);
+
+  useEffect(() => {
+    if (open) {
+      if (formMode === "edit" && selectedRow) {
+        setFormData({ ...selectedRow });
+      } else {
+        setFormData({ ...initialData, almacenId });
+      }
+      setErrors({});
+    }
+  }, [open, formMode, selectedRow, almacenId]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.produccionId) newErrors.produccionId = "Seleccione una producción.";
+    if (!formData.fechaHora) newErrors.fechaHora = "La fecha es obligatoria.";
+    if (!formData.estadoId && formData.estadoId !== 0) newErrors.estadoId = "Seleccione estado.";
+    if (!formData.almacenId) newErrors.almacenId = "Almacén no asignado.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validate()) return;
+    try {
+      if (formMode === "edit" && formData.id) {
+        await axios.put(`/v1/pedido/${formData.id}`, formData);
+        setMessage({ open: true, severity: "success", text: "Pedido actualizado correctamente." });
+      } else {
+        await axios.post("/v1/pedido", formData);
+        setMessage({ open: true, severity: "success", text: "Pedido creado correctamente." });
+      }
+      setOpen(false);
+      reloadData();
+    } catch (err) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: err.response?.data?.message || "Error al guardar pedido.",
+      });
+    }
   };
 
   return (
-    <Box sx={{ maxWidth: 900, mx: "auto", mt: 4, p: 3, bgcolor: "white", borderRadius: 2, boxShadow: 3 }}>
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={generarPDF}
-      >
-        {({ values, handleChange, touched, errors }) => {
-          const departamentosFiltrados = data.departamentos.filter(d => d.pais_id === Number(values.pais));
-          const municipiosFiltrados = data.municipios.filter(m => m.departamento_id === Number(values.departamento));
-          const sedesFiltradas = data.sedes.filter(s => s.municipio_id === Number(values.municipio));
-          const bloquesFiltrados = data.bloques.filter(b => b.sede_id === Number(values.sede));
-          const espaciosFiltrados = data.espacios.filter(e => e.bloque_id === Number(values.bloque));
-          const almacenesFiltrados = data.almacenes.filter(a => a.espacio_id === Number(values.espacio));
+    <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+      <DialogTitle>{formMode === "edit" ? "Editar Pedido" : "Nuevo Pedido"}</DialogTitle>
+      <DialogContent>
+        <FormControl fullWidth margin="normal" error={!!errors.produccionId}>
+          <InputLabel>Producción</InputLabel>
+          <Select
+            name="produccionId" value={formData.produccionId}
+            onChange={handleChange} label="Producción"
+          >
+            {producciones.map((p) => (
+              <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>
+            ))}
+          </Select>
+          {errors.produccionId && <FormHelperText>{errors.produccionId}</FormHelperText>}
+        </FormControl>
 
-          const renderSelect = (name, label, options, campo) => (
-            <Grid item xs={12} sm={6} key={name}>
-              <FormControl fullWidth error={Boolean(touched[name] && errors[name])}>
-                <InputLabel>{label}</InputLabel>
-                <Select
-                  name={name}
-                  value={values[name]}
-                  onChange={handleChange}
-                  input={<OutlinedInput label={label} />}
-                >
-                  <MenuItem value="">
-                    <em>Seleccione {label}</em>
-                  </MenuItem>
-                  {options.map((option, i) => (
-                    <MenuItem key={option.id || i} value={option.id}>
-                      {option[campo]}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-          );
+        <TextField
+          fullWidth margin="normal" label="Descripción" name="descripcion"
+          value={formData.descripcion} onChange={handleChange}
+        />
 
-          return (
-            <Form>
-              <Grid container spacing={2}>
-                {renderSelect("pais", "País", data.paises, "paisI")}
-                {renderSelect("departamento", "Departamento", departamentosFiltrados, "departamentoI")}
-                {renderSelect("municipio", "Municipio", municipiosFiltrados, "municipioI")}
-                {renderSelect("sede", "Sede", sedesFiltradas, "sedeI")}
-                {renderSelect("bloque", "Bloque", bloquesFiltrados, "bloqueI")}
-                {renderSelect("espacio", "Espacio", espaciosFiltrados, "espacioI")}
-                {renderSelect("almacen", "Almacén", almacenesFiltrados, "almacenI")}
-                {renderSelect("unidad", "Unidad", data.unidades, "unidadI")}
-                <Grid item xs={12}>
-                  <Button type="submit" fullWidth variant="contained" color="primary">
-                    Generar PDF
-                  </Button>
-                </Grid>
-              </Grid>
-            </Form>
-          );
-        }}
-      </Formik>
-    </Box>
+        <TextField
+          fullWidth margin="normal" label="Fecha y Hora" name="fechaHora" type="datetime-local"
+          value={formData.fechaHora} onChange={handleChange}
+          error={!!errors.fechaHora} helperText={errors.fechaHora}
+          InputLabelProps={{ shrink: true }}
+        />
+
+        <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
+          <InputLabel>Estado</InputLabel>
+          <Select
+            name="estadoId" value={formData.estadoId}
+            onChange={handleChange} label="Estado"
+          >
+            <MenuItem value={1}>Activo</MenuItem>
+            <MenuItem value={0}>Inactivo</MenuItem>
+          </Select>
+          {errors.estadoId && <FormHelperText>{errors.estadoId}</FormHelperText>}
+        </FormControl>
+      </DialogContent>
+
+      <DialogActions>
+        <Button onClick={() => setOpen(false)}>Cancelar</Button>
+        <Button variant="contained" onClick={handleSubmit}>Guardar</Button>
+      </DialogActions>
+    </Dialog>
   );
 }

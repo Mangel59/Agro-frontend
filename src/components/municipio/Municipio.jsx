@@ -1,3 +1,12 @@
+/**
+ * @file Municipio.jsx
+ * @module Municipio
+ * @description Componente principal para la gestión de municipios.
+ *
+ * Este componente maneja la carga de países y departamentos, filtrado jerárquico,
+ * renderizado de la tabla y el formulario de municipios, y operaciones CRUD.
+ */
+
 import * as React from "react";
 import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
@@ -13,6 +22,11 @@ import {
   Button,
 } from "@mui/material";
 
+/**
+ * Componente principal para la gestión de municipios.
+ *
+ * @returns {JSX.Element} El módulo de gestión de municipios
+ */
 export default function Municipio() {
   const [paises, setPaises] = React.useState([]);
   const [departamentos, setDepartamentos] = React.useState([]);
@@ -28,7 +42,9 @@ export default function Municipio() {
     text: "",
   });
 
-  // ✅ Cargar países
+  /**
+   * Cargar todos los países al iniciar.
+   */
   React.useEffect(() => {
     axios
       .get("/v1/pais")
@@ -42,7 +58,9 @@ export default function Municipio() {
       );
   }, []);
 
-  // ✅ Cargar departamentos por país
+  /**
+   * Cargar departamentos filtrados por país seleccionado.
+   */
   React.useEffect(() => {
     if (!selectedPais) {
       setDepartamentos([]);
@@ -67,7 +85,9 @@ export default function Municipio() {
       );
   }, [selectedPais]);
 
-  // ✅ Cargar municipios por departamento
+  /**
+   * Cargar municipios según el departamento seleccionado.
+   */
   const reloadData = () => {
     if (!selectedDepto) {
       setMunicipios([]);
@@ -90,7 +110,9 @@ export default function Municipio() {
     reloadData();
   }, [selectedDepto]);
 
-  // ✅ Eliminar municipio
+  /**
+   * Eliminar municipio seleccionado tras confirmación.
+   */
   const handleDelete = async () => {
     if (!selectedRow) return;
     if (window.confirm(`¿Eliminar el municipio "${selectedRow.nombre}"?`)) {
@@ -119,7 +141,7 @@ export default function Municipio() {
         Gestión de Municipio
       </Typography>
 
-      {/* Select País */}
+      {/* Selector de país */}
       <FormControl fullWidth sx={{ mb: 2 }}>
         <InputLabel>País</InputLabel>
         <Select
@@ -135,7 +157,7 @@ export default function Municipio() {
         </Select>
       </FormControl>
 
-      {/* Select Departamento */}
+      {/* Selector de departamento */}
       <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedPais}>
         <InputLabel>Departamento</InputLabel>
         <Select
@@ -151,7 +173,7 @@ export default function Municipio() {
         </Select>
       </FormControl>
 
-      {/* Botones externos */}
+      {/* Botones de acción */}
       <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
         <Button
           variant="contained"
@@ -186,7 +208,7 @@ export default function Municipio() {
         </Button>
       </Box>
 
-      {/* Tabla */}
+      {/* Tabla de municipios */}
       <GridMunicipio
         municipios={municipios}
         setSelectedRow={setSelectedRow}
@@ -203,6 +225,7 @@ export default function Municipio() {
         reloadData={reloadData}
       />
 
+      {/* Mensajes Snackbar */}
       <MessageSnackBar message={message} setMessage={setMessage} />
     </Box>
   );

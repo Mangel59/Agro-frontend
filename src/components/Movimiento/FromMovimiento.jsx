@@ -8,13 +8,12 @@ import {
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 
-export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, reloadData }) {
+export default function FormMovimineto ({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
 
   const initialData = {
     nombre: "",
-    descripcion: "",
     estado: ""
   };
 
@@ -28,13 +27,12 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
 
   const update = () => {
     if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona una unidad para editar." });
+      setMessage({ open: true, severity: "error", text: "Selecciona una movimiento para editar." });
       return;
     }
 
     setFormData({
       nombre: selectedRow.nombre || "",
-      descripcion: selectedRow.descripcion || "",
       estado: selectedRow.estadoId?.toString() || ""
     });
 
@@ -44,13 +42,13 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
 
   const deleteRow = () => {
     if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona una unidad para eliminar." });
+      setMessage({ open: true, severity: "error", text: "Selecciona una movimiento para eliminar." });
       return;
     }
 
-    axios.delete(`/v1/unidad/${selectedRow.id}`)
+    axios.delete(`/v1/movimiento/${selectedRow.id}`)
       .then(() => {
-        setMessage({ open: true, severity: "success", text: "Unidad eliminada correctamente." });
+        setMessage({ open: true, severity: "success", text: "movimiento eliminada correctamente." });
         setSelectedRow({});
         reloadData();
       })
@@ -69,19 +67,18 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
 
     const payload = {
       nombre: formData.nombre,
-      descripcion: formData.descripcion,
       estadoId: parseInt(formData.estado)
     };
 
     const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/unidad" : `/v1/unidad/${selectedRow.id}`;
+    const url = methodName === "Add" ? "/v1/movimiento" : `/v1/movimiento/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Unidad creada con éxito!" : "Unidad actualizada con éxito!"
+          text: methodName === "Add" ? "movimiento creada con éxito!" : "movimiento actualizada con éxito!"
         });
         setOpen(false);
         setSelectedRow({});
@@ -97,20 +94,14 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
       <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog open={open} onClose={() => setOpen(false)}>
         <form onSubmit={handleSubmit}>
-          <DialogTitle>{methodName} Unidad</DialogTitle>
+          <DialogTitle>{methodName} movimiento</DialogTitle>
           <DialogContent>
-            <DialogContentText>Formulario para gestionar unidades</DialogContentText>
+            <DialogContentText>Formulario para gestionar movimientoes</DialogContentText>
 
             <TextField
               fullWidth margin="dense" required
               name="nombre" label="Nombre"
               value={formData.nombre}
-              onChange={handleChange}
-            />
-            <TextField
-              fullWidth margin="dense" required
-              name="descripcion" label="Descripción"
-              value={formData.descripcion}
               onChange={handleChange}
             />
             <FormControl fullWidth margin="normal" required>
@@ -137,7 +128,7 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
   );
 }
 
-FormUnidad.propTypes = {
+FormMovimineto.propTypes = {
   selectedRow: PropTypes.object.isRequired,
   setSelectedRow: PropTypes.func.isRequired,
   setMessage: PropTypes.func.isRequired,

@@ -1,180 +1,184 @@
-import * as React from "react";
-import PropTypes from "prop-types";
-import axios from "../axiosConfig";
+import React, { useState, useEffect } from "react";
 import {
-  Button,
-  TextField,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  InputLabel,
-  MenuItem,
-  FormControl,
-  Select,
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  Button, TextField, FormControl, InputLabel, Select, MenuItem
 } from "@mui/material";
-import { useFormik } from "formik";
-import * as Yup from "yup";
+import axios from "../axiosConfig";
 import StackButtons from "../StackButtons";
-import { SiteProps } from "../dashboard/SiteProps";
 
 export default function FormProducto({ selectedRow, setSelectedRow, setMessage, reloadData }) {
-  const [open, setOpen] = React.useState(false);
-  const [methodName, setMethodName] = React.useState("");
+  const [open, setOpen] = useState(false);
+  const [methodName, setMethodName] = useState("");
 
-  const handleOpen = (method, row = {}) => {
-    setMethodName(method);
-    setSelectedRow({
-      id: row.id || 0,
-      nombre: row.nombre || "",
-      productoCategoria: row.productoCategoria || 0,
-      descripcion: row.descripcion || "",
-      estado: row.estado !== undefined ? row.estado : 1,
-    });
+  const [categorias, setCategorias] = useState([]);
+  const [unidades, setUnidades] = useState([]);
+
+  const initialData = {
+    nombre: "",
+    descripcion: "",
+    productoCategoriaId: "",
+    unidadMinimaId: "",
+    estado: ""
+  };
+
+  const [formData, setFormData] = useState(initialData);
+
+  const loadData = () => {
+    axios.get("/v1/producto_categoria")
+      .then(res => setCategorias(res.data))
+      .catch(err => console.error("❌ Error al cargar categorías:", err));
+
+    axios.get("/v1/unidad")
+      .then(res => setUnidades(res.data))
+      .catch(err => console.error("❌ Error al cargar unidades:", err));
+  };
+
+  const create = () => {
+    setFormData(initialData);
+    setMethodName("Add");
+    loadData();
     setOpen(true);
   };
 
-  const create = () => handleOpen("Add");
   const update = () => {
-    if (!selectedRow || selectedRow.id === 0) {
-      setMessage({ open: true, severity: "error", text: "Selecciona una fila para actualizar" });
+    if (!selectedRow?.id) {
+      setMessage({ open: true, severity: "error", text: "Selecciona un producto para editar." });
       return;
     }
-    handleOpen("Update", selectedRow);
+
+    setFormData({
+      nombre: selectedRow.nombre || "",
+      descripcion: selectedRow.descripcion || "",
+      productoCategoriaId: selectedRow.productoCategoriaId?.toString() || "",
+      unidadMinimaId: selectedRow.unidadMinimaId?.toString() || "",
+      estado: selectedRow.estadoId?.toString() || ""
+    });
+
+    setMethodName("Update");
+    loadData();
+    setOpen(true);
   };
 
   const deleteRow = () => {
     if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona una fila para eliminar" });
+      setMessage({ open: true, severity: "error", text: "Selecciona un producto para eliminar." });
       return;
     }
 
-    const token = localStorage.getItem("token");
-    axios
-      .delete(`${SiteProps.urlbasev1}/producto/${selectedRow.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    axios.delete(`/v1/producto/${selectedRow.id}`)
       .then(() => {
-        setMessage({ open: true, severity: "success", text: "Producto eliminado con éxito" });
+        setMessage({ open: true, severity: "success", text: "Producto eliminado correctamente." });
+        setSelectedRow({});
         reloadData();
       })
-      .catch((error) => {
-        const errorMessage = error.response?.data?.message || error.message;
-        setMessage({ open: true, severity: "error", text: `Error al eliminar producto: ${errorMessage}` });
+      .catch((err) => {
+        setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al eliminar: ${err.message}`
+        });
       });
   };
 
-  const validationSchema = Yup.object({
-    nombre: Yup.string().trim("No puede contener solo espacios").strict(true).required("El nombre es obligatorio"),
-    productoCategoria: Yup.number().required("La categoría es obligatoria"),
-    descripcion: Yup.string().trim("No puede contener solo espacios").strict(true).required("La descripción es obligatoria"),
-    estado: Yup.number().oneOf([0, 1], "Estado inválido"),
-  });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-  const formik = useFormik({
-    enableReinitialize: true,
-    initialValues: {
-      nombre: selectedRow?.nombre || "",
-      productoCategoria: selectedRow?.productoCategoria || 0,
-      descripcion: selectedRow?.descripcion || "",
-      estado: selectedRow?.estado ?? 1,
-    },
-    validationSchema,
-    onSubmit: (values) => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setMessage({ open: true, severity: "error", text: "Error: Token de autenticación no encontrado." });
-        return;
-      }
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-      const method = methodName === "Add" ? axios.post : axios.put;
-      const url =
-        methodName === "Add"
-          ? `${SiteProps.urlbasev1}/producto`
-          : `${SiteProps.urlbasev1}/producto/${selectedRow.id}`;
+    if (!formData.nombre || !formData.descripcion || !formData.productoCategoriaId || !formData.unidadMinimaId || !formData.estado) {
+      setMessage({ open: true, severity: "error", text: "Todos los campos son obligatorios." });
+      return;
+    }
 
-      method(url, values, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then(() => {
-          setMessage({
-            open: true,
-            severity: "success",
-            text: `Producto ${methodName === "Add" ? "creado" : "actualizado"} con éxito`,
-          });
-          setOpen(false);
-          reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response?.data?.message || error.message;
-          setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} producto: ${errorMessage}`,
-          });
+    const payload = {
+      nombre: formData.nombre,
+      descripcion: formData.descripcion,
+      productoCategoriaId: parseInt(formData.productoCategoriaId),
+      unidadMinimaId: parseInt(formData.unidadMinimaId),
+      estadoId: parseInt(formData.estado)
+    };
+
+    const method = methodName === "Add" ? axios.post : axios.put;
+    const url = methodName === "Add" ? "/v1/producto" : `/v1/producto/${selectedRow.id}`;
+
+    method(url, payload)
+      .then(() => {
+        setMessage({
+          open: true,
+          severity: "success",
+          text: methodName === "Add" ? "Producto creado con éxito!" : "Producto actualizado con éxito!"
         });
-    },
-  });
+        setOpen(false);
+        setSelectedRow({});
+        reloadData();
+      })
+      .catch(err => {
+        console.error("❌ Error al guardar producto:", err);
+        setMessage({
+          open: true,
+          severity: "error",
+          text: `Error: ${err.response?.data?.message || err.message || "Datos inválidos"}`
+        });
+      });
+  };
 
   return (
     <>
       <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog open={open} onClose={() => setOpen(false)}>
-        <form onSubmit={formik.handleSubmit}>
-          <DialogTitle>Producto</DialogTitle>
+        <form onSubmit={handleSubmit}>
+          <DialogTitle>{methodName} Producto</DialogTitle>
           <DialogContent>
-            <DialogContentText>Completa el formulario.</DialogContentText>
-
             <TextField
-              fullWidth
-              margin="normal"
-              id="nombre"
-              name="nombre"
-              label="Nombre"
-              value={formik.values.nombre}
-              onChange={formik.handleChange}
-              error={formik.touched.nombre && Boolean(formik.errors.nombre)}
-              helperText={formik.touched.nombre && formik.errors.nombre}
+              fullWidth margin="dense" required name="nombre" label="Nombre"
+              value={formData.nombre} onChange={handleChange}
+            />
+            <TextField
+              fullWidth margin="dense" multiline rows={3} name="descripcion" label="Descripción"
+              value={formData.descripcion} onChange={handleChange}
             />
 
-            <TextField
-              fullWidth
-              margin="normal"
-              id="productoCategoria"
-              name="productoCategoria"
-              label="ID de categoría del producto"
-              type="number"
-              value={formik.values.productoCategoria}
-              onChange={formik.handleChange}
-              error={formik.touched.productoCategoria && Boolean(formik.errors.productoCategoria)}
-              helperText={formik.touched.productoCategoria && formik.errors.productoCategoria}
-            />
-
-            <TextField
-              fullWidth
-              margin="normal"
-              id="descripcion"
-              name="descripcion"
-              label="Descripción"
-              value={formik.values.descripcion}
-              onChange={formik.handleChange}
-              error={formik.touched.descripcion && Boolean(formik.errors.descripcion)}
-              helperText={formik.touched.descripcion && formik.errors.descripcion}
-            />
-
-            <FormControl fullWidth margin="normal">
-              <InputLabel id="estado-label">Estado</InputLabel>
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel>Producto Categoría</InputLabel>
               <Select
-                labelId="estado-label"
-                id="estado"
-                name="estado"
-                value={formik.values.estado}
-                onChange={formik.handleChange}
-                error={formik.touched.estado && Boolean(formik.errors.estado)}
+                name="productoCategoriaId"
+                value={formData.productoCategoriaId}
+                onChange={handleChange}
               >
-                <MenuItem value={1}>Activo</MenuItem>
-                <MenuItem value={0}>Inactivo</MenuItem>
+                <MenuItem value="">Seleccione...</MenuItem>
+                {categorias.map(cat => (
+                  <MenuItem key={cat.id} value={cat.id}>{cat.nombre}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel>Unidad Mínima</InputLabel>
+              <Select
+                name="unidadMinimaId"
+                value={formData.unidadMinimaId}
+                onChange={handleChange}
+              >
+                <MenuItem value="">Seleccione...</MenuItem>
+                {unidades.map(u => (
+                  <MenuItem key={u.id} value={u.id}>{u.nombre}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel>Estado</InputLabel>
+              <Select
+                name="estado"
+                value={formData.estado}
+                onChange={handleChange}
+              >
+                <MenuItem value="">Seleccione...</MenuItem>
+                <MenuItem value="1">Activo</MenuItem>
+                <MenuItem value="2">Inactivo</MenuItem>
               </Select>
             </FormControl>
           </DialogContent>
@@ -187,10 +191,3 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
     </>
   );
 }
-
-FormProducto.propTypes = {
-  selectedRow: PropTypes.object.isRequired,
-  setSelectedRow: PropTypes.func.isRequired,
-  setMessage: PropTypes.func.isRequired,
-  reloadData: PropTypes.func.isRequired,
-};
