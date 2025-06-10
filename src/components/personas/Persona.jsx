@@ -21,7 +21,7 @@ export default function Persona() {
 
       const personas = (personaRes.data.content || []).map((persona) => ({
         ...persona,
-        tipoIdentificacionNombre: tiposMap[persona.tipoIdentificacion] || "N/A" // 👈 Mostrar el name en la tabla
+        tipoIdentificacionNombre: tiposMap[persona.tipoIdentificacion] || "N/A" 
       }));
 
       setPersonas(personas);

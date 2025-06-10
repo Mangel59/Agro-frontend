@@ -1,95 +1,110 @@
-// Produccion.jsx
-import * as React from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import axios from "../axiosConfig";
+import MessageSnackBar from "../MessageSnackBar";
 import FormProduccion from "./FormProduccion";
 import GridProduccion from "./GridProduccion";
-import { SiteProps } from "../dashboard/SiteProps";
-import { FormControl, InputLabel, Select, MenuItem, Snackbar, Alert } from "@mui/material";
+import {
+  Box, Typography, Button
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function Produccion() {
-  const [sedes, setSedes] = React.useState([]);
-  const [bloques, setBloques] = React.useState([]);
-  const [espacios, setEspacios] = React.useState([]);
+  const [producciones, setProducciones] = useState([]);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState("create");
+  const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
 
-  const [selectedSede, setSelectedSede] = React.useState("");
-  const [selectedBloque, setSelectedBloque] = React.useState("");
-  const [selectedEspacio, setSelectedEspacio] = React.useState("");
+  const reloadData = () => {
+    axios.get("/v1/produccion")
+      .then((res) => {
+        const datos = res.data.map(item => ({
+          ...item,
+          estadoId: item.estado?.id || item.estadoId,
+          espacioId: item.espacio?.id || item.espacioId,
+        }));
+        setProducciones(datos);
+      })
+      .catch((err) => {
+        console.error("Error al cargar producciones:", err);
+        setMessage({ open: true, severity: "error", text: "Error al cargar producciones" });
+      });
+  };
 
-  const [reloadProduccionesFn, setReloadProduccionesFn] = React.useState(null);
-
-  const [message, setMessage] = React.useState({ open: false, severity: "", text: "" });
-
-  const token = localStorage.getItem("token");
+  const handleDelete = () => {
+    if (!selectedRow) return;
+    axios.delete(`/v1/produccion/${selectedRow.id}`)
+      .then(() => {
+        setMessage({ open: true, severity: "success", text: "Producción eliminada correctamente" });
+        reloadData();
+        setSelectedRow(null);
+      })
+      .catch((err) => {
+        console.error("Error al eliminar producción:", err);
+        setMessage({ open: true, severity: "error", text: "Error al eliminar producción" });
+      });
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Estos dos NO necesitan Authorization
-        const [municipioRes, tipoSedeRes] = await Promise.all([
-          axios.get(`${SiteProps.urlbasev1}/municipio/all`),
-          axios.get(`${SiteProps.urlbasev1}/tipo_sede/minimal`),
-        ]);
-  
-        setMunicipios(municipioRes.data || []);
-        setTipoSedes(tipoSedeRes.data || []);
-      } catch (error) {
-        console.error("Error al cargar municipios o tipos de sede:", error);
-        setMessage({ open: true, severity: "error", text: "Error al cargar datos iniciales." });
-      }
-    };
-  
-    fetchData();
-  }, [setMessage]);
-  
+    reloadData();
+  }, []);
+
   return (
-    <div style={{ padding: 16 }}>
-      <h1>Producción</h1>
+    <Box sx={{ p: 2 }}>
+      <Typography variant="h4" gutterBottom> Produccion</Typography>
 
-      <FormControl fullWidth margin="normal">
-        <InputLabel>Sede</InputLabel>
-        <Select value={selectedSede} onChange={(e) => handleSedeChange(e.target.value)}>
-          {sedes.map((s) => (
-            <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <Box sx={{ mb: 2, display: "flex", gap: 1, justifyContent: "flex-end" }}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => {
+            setFormMode("create");
+            setSelectedRow(null);
+            setFormOpen(true);
+          }}
+        >
+          Crear
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<EditIcon />}
+          disabled={!selectedRow}
+          onClick={() => {
+            setFormMode("edit");
+            setFormOpen(true);
+          }}
+        >
+          Editar
+        </Button>
+        <Button
+          variant="outlined"
+          color="error"
+          startIcon={<DeleteIcon />}
+          disabled={!selectedRow}
+          onClick={handleDelete}
+        >
+          Eliminar
+        </Button>
+      </Box>
 
-      <FormControl fullWidth margin="normal" disabled={!selectedSede}>
-        <InputLabel>Bloque</InputLabel>
-        <Select value={selectedBloque} onChange={(e) => handleBloqueChange(e.target.value)}>
-          {bloques.map((b) => (
-            <MenuItem key={b.id} value={b.id}>{b.nombre}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth margin="normal" disabled={!selectedBloque}>
-        <InputLabel>Espacio</InputLabel>
-        <Select value={selectedEspacio} onChange={(e) => setSelectedEspacio(e.target.value)}>
-          {espacios.map((e) => (
-            <MenuItem key={e.id} value={e.id}>{e.nombre}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <GridProduccion
+        producciones={producciones}
+        selectedRow={selectedRow}
+        setSelectedRow={setSelectedRow}
+      />
 
       <FormProduccion
-        reloadProducciones={reloadProduccionesFn}
+        open={formOpen}
+        setOpen={setFormOpen}
+        reloadData={reloadData}
+        selectedRow={selectedRow}
+        formMode={formMode}
         setMessage={setMessage}
       />
 
-      {selectedEspacio && (
-        <GridProduccion
-          espacioId={selectedEspacio}
-          selectedSede={selectedSede}
-          selectedBloque={selectedBloque}
-          selectedEspacio={selectedEspacio}
-          exposeReload={(fn) => setReloadProduccionesFn(() => fn)}
-        />
-      )}
-
-      <Snackbar open={message.open} autoHideDuration={3000} onClose={() => setMessage({ ...message, open: false })}>
-        <Alert severity={message.severity}>{message.text}</Alert>
-      </Snackbar>
-    </div>
+      <MessageSnackBar message={message} setMessage={setMessage} />
+    </Box>
   );
 }

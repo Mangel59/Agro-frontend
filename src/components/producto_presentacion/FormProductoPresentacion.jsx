@@ -1,335 +1,209 @@
-/**
- * @file FormProductoPresentacion.jsx
- * @module FormProductoPresentacion
- * @description Componente de formulario para agregar, editar o eliminar registros de Producto Presentación.
- * Utiliza Formik, Yup, Material UI y Axios para validaciones, formularios y conexión con el backend.
- * Incluye validación de token, errores del backend y manejo de mensajes personalizados en un snackbar externo.
- * @author Karla
- */
-
-import * as React from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import axios from "../axiosConfig";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Button, FormControl, InputLabel, Select, MenuItem, Grid
+} from "@mui/material";
 import StackButtons from "../StackButtons";
-import { SiteProps } from "../dashboard/SiteProps";
-import { useFormik } from "formik";
-import * as Yup from "yup";
 
-/**
- * Componente FormProductoPresentacion.
- *
- * @component
- * @param {Object} props - Props del componente
- * @param {Object} props.selectedRow - Objeto seleccionado para edición
- * @param {function(Object): void} props.setSelectedRow - Setter del objeto seleccionado
- * @param {function(Object): void} props.setMessage - Setter para mostrar mensajes en el snackbar
- * @param {function(): void} props.reloadData - Función para recargar los datos
- * @param {Array<Object>} props.productos - Lista de productos para el selector
- * @param {Array<Object>} props.unidades - Lista de unidades para el selector
- * @param {Array<Object>} props.marcas - Lista de marcas para el selector
- * @param {Array<Object>} props.presentacionesList - Lista de presentaciones para el selector
- * @returns {JSX.Element} Formulario para crear, actualizar o eliminar Producto Presentación
- */
-export default function FormProductoPresentacion(props) {
-  const [open, setOpen] = React.useState(false);
-  const [methodName, setMethodName] = React.useState("Add");
+export default function FormProductoPresentacion({ selectedRow, setSelectedRow, setMessage, reloadData }) {
+  const [open, setOpen] = useState(false);
+  const [methodName, setMethodName] = useState("");
+
+  const initialData = {
+    productoId: "", nombre: "", unidadId: "",
+    descripcion: "", estadoId: "", cantidad: "",
+    marcaId: "", presentacionId: "", ingredienteId: ""
+  };
+
+  const [formData, setFormData] = useState(initialData);
+
+  const [productos, setProductos] = useState([]);
+  const [unidades, setUnidades] = useState([]);
+  const [marcas, setMarcas] = useState([]);
+  const [presentaciones, setPresentaciones] = useState([]);
+  const [ingredientes, setIngredientes] = useState([]);
+
+  // ✅ Extracción segura de empresaId desde token
+  let empresaId = null;
+  try {
+    const rawToken = localStorage.getItem("token");
+    const payload = JSON.parse(atob(rawToken.split(".")[1]));
+    empresaId = payload.empresa?.id || null;
+  } catch (e) {
+    console.error("Error al leer empresaId desde el token", e);
+  }
+
+  useEffect(() => {
+    axios.get("/v1/producto").then(res => setProductos(res.data)).catch(() => {});
+    axios.get("/v1/unidad").then(res => setUnidades(res.data)).catch(() => {});
+    axios.get("/v1/marca").then(res => setMarcas(res.data)).catch(() => {});
+    axios.get("/v1/presentacion").then(res => setPresentaciones(res.data)).catch(() => {});
+    axios.get("/v1/ingrediente").then(res => setIngredientes(res.data)).catch(() => {});
+  }, []);
 
   const create = () => {
-    props.setSelectedRow({
-      id: 0,
-      nombre: "",
-      producto: "",
-      unidad: "",
-      cantidad: 0,
-      marca: "",
-      presentacion: "",
-      descripcion: "",
-      estado: 1,
-    });
+    setFormData(initialData);
     setMethodName("Add");
     setOpen(true);
   };
 
   const update = () => {
-    if (!props.selectedRow || props.selectedRow.id === 0) {
-      props.setMessage({
-        open: true,
-        severity: "error",
-        text: "Selecciona una fila para actualizar",
-      });
+    if (!selectedRow?.id) {
+      setMessage({ open: true, severity: "error", text: "Selecciona una presentación para editar." });
       return;
     }
+    setFormData({
+      productoId: selectedRow.productoId || "",
+      nombre: selectedRow.nombre || "",
+      unidadId: selectedRow.unidadId || "",
+      descripcion: selectedRow.descripcion || "",
+      estadoId: selectedRow.estadoId?.toString() || "",
+      cantidad: selectedRow.cantidad || "",
+      marcaId: selectedRow.marcaId || "",
+      presentacionId: selectedRow.presentacionId || "",
+      ingredienteId: selectedRow.ingredienteId || ""
+    });
     setMethodName("Update");
     setOpen(true);
   };
 
   const deleteRow = () => {
-    if (props.selectedRow.id === 0) {
-      props.setMessage({
-        open: true,
-        severity: "error",
-        text: "Selecciona una fila para eliminar",
-      });
+    if (!selectedRow?.id) {
+      setMessage({ open: true, severity: "error", text: "Selecciona una presentación para eliminar." });
       return;
     }
-
-    const id = props.selectedRow.id;
-    const url = `${SiteProps.urlbasev1}/producto-presentacion/${id}`;
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      props.setMessage({
-        open: true,
-        severity: "error",
-        text: "Error: Token de autenticación no encontrado.",
-      });
-      return;
-    }
-
-    axios
-      .delete(url, { headers: { Authorization: `Bearer ${token}` } })
+    axios.delete(`/v1/producto_presentacion/${selectedRow.id}`)
       .then(() => {
-        props.setMessage({
-          open: true,
-          severity: "success",
-          text: "Producto Presentación eliminado con éxito!",
-        });
-        props.reloadData();
+        setMessage({ open: true, severity: "success", text: "Eliminado correctamente." });
+        setSelectedRow({});
+        reloadData();
       })
-      .catch((error) => {
-        const errorMessage = error.response ? error.response.data.message : error.message;
-        props.setMessage({
-          open: true,
-          severity: "error",
-          text: `Error al eliminar Producto Presentación: ${errorMessage}`,
-        });
+      .catch(err => {
+        setMessage({ open: true, severity: "error", text: `Error al eliminar: ${err.message}` });
       });
   };
 
-  const handleClose = () => setOpen(false);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-  const formik = useFormik({
-    enableReinitialize: true,
-    initialValues: {
-      nombre: props.selectedRow?.nombre || "",
-      producto: props.selectedRow?.producto || "",
-      unidad: props.selectedRow?.unidad || "",
-      cantidad: props.selectedRow?.cantidad || 0,
-      marca: props.selectedRow?.marca || "",
-      presentacion: props.selectedRow?.presentacion || "",
-      descripcion: props.selectedRow?.descripcion || "",
-      estado: props.selectedRow?.estado || 1,
-    },
-    validationSchema: Yup.object({
-      nombre: Yup.string().trim("No puede estar vacío").required("El nombre es obligatorio"),
-      producto: Yup.number().required("El producto es obligatorio"),
-      unidad: Yup.number().required("La unidad es obligatoria"),
-      cantidad: Yup.number().min(1, "Debe ser mayor a 0").required("Cantidad obligatoria"),
-      marca: Yup.number().required("La marca es obligatoria"),
-      presentacion: Yup.number().required("La presentación es obligatoria"),
-      descripcion: Yup.string().trim("No puede estar vacío").required("La descripción es obligatoria"),
-      estado: Yup.number().oneOf([0, 1], "Estado inválido"),
-    }),
-    onSubmit: (values) => {
-      const id = props.selectedRow?.id || 0;
-      const url = methodName === "Add"
-        ? `${SiteProps.urlbasev1}/producto-presentacion`
-        : `${SiteProps.urlbasev1}/producto-presentacion/${id}`;
-      const token = localStorage.getItem("token");
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const payload = {
+      ...formData,
+      productoId: parseInt(formData.productoId),
+      unidadId: parseInt(formData.unidadId),
+      estadoId: parseInt(formData.estadoId),
+      cantidad: parseFloat(formData.cantidad),
+      marcaId: parseInt(formData.marcaId),
+      presentacionId: parseInt(formData.presentacionId),
+      ingredienteId: parseInt(formData.ingredienteId),
+      empresaId
+    };
 
-      if (!token) {
-        props.setMessage({
+    const method = methodName === "Add" ? axios.post : axios.put;
+    const url = methodName === "Add"
+      ? "/v1/producto_presentacion"
+      : `/v1/producto_presentacion/${selectedRow.id}`;
+
+    method(url, payload)
+      .then(() => {
+        setMessage({
           open: true,
-          severity: "error",
-          text: "Error: Token de autenticación no encontrado.",
+          severity: "success",
+          text: methodName === "Add" ? "Creado con éxito!" : "Actualizado con éxito!"
         });
-        return;
-      }
-
-      const axiosMethod = methodName === "Add" ? axios.post : axios.put;
-
-      axiosMethod(url, values, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        setOpen(false);
+        setSelectedRow({});
+        reloadData();
       })
-        .then(() => {
-          props.setMessage({
-            open: true,
-            severity: "success",
-            text: methodName === "Add"
-              ? "Producto Presentación creado con éxito!"
-              : "Producto Presentación actualizado con éxito!",
-          });
-          setOpen(false);
-          props.reloadData();
-        })
-        .catch((error) => {
-          const errorMessage = error.response ? error.response.data.message : error.message;
-          props.setMessage({
-            open: true,
-            severity: "error",
-            text: `Error al ${methodName === "Add" ? "crear" : "actualizar"} Producto Presentación: ${errorMessage || "Error indefinido"}`,
-          });
-        });
-    },
-  });
+      .catch(err => {
+        setMessage({ open: true, severity: "error", text: `Error: ${err.message}` });
+      });
+  };
 
   return (
     <>
       <StackButtons methods={{ create, update, deleteRow }} />
-      <Dialog open={open} onClose={handleClose} PaperProps={{ component: "form", onSubmit: formik.handleSubmit }}>
-        <DialogTitle>Producto Presentación</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Completa el formulario.</DialogContentText>
-
-          {/* Producto */}
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="producto-label">Producto</InputLabel>
-            <Select
-              labelId="producto-label"
-              id="producto"
-              name="producto"
-              value={formik.values.producto}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.producto && Boolean(formik.errors.producto)}
-            >
-              {props.productos.map((item) => (
-                <MenuItem key={item.id} value={item.id}>{item.nombre}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {/* Nombre */}
-          <TextField
-            fullWidth
-            margin="normal"
-            id="nombre"
-            name="nombre"
-            label="Nombre"
-            value={formik.values.nombre}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.nombre && Boolean(formik.errors.nombre)}
-            helperText={formik.touched.nombre && formik.errors.nombre}
-          />
-
-          {/* Unidad */}
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="unidad-label">Unidad</InputLabel>
-            <Select
-              labelId="unidad-label"
-              id="unidad"
-              name="unidad"
-              value={formik.values.unidad}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.unidad && Boolean(formik.errors.unidad)}
-            >
-              {props.unidades.map((item) => (
-                <MenuItem key={item.id} value={item.id}>{item.nombre}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {/* Cantidad */}
-          <TextField
-            fullWidth
-            margin="normal"
-            id="cantidad"
-            name="cantidad"
-            label="Cantidad"
-            type="number"
-            value={formik.values.cantidad}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.cantidad && Boolean(formik.errors.cantidad)}
-            helperText={formik.touched.cantidad && formik.errors.cantidad}
-          />
-
-          {/* Marca */}
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="marca-label">Marca</InputLabel>
-            <Select
-              labelId="marca-label"
-              id="marca"
-              name="marca"
-              value={formik.values.marca}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.marca && Boolean(formik.errors.marca)}
-            >
-              {props.marcas.map((item) => (
-                <MenuItem key={item.id} value={item.id}>{item.nombre}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {/* Presentación */}
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="presentacion-label">Presentación</InputLabel>
-            <Select
-              labelId="presentacion-label"
-              id="presentacion"
-              name="presentacion"
-              value={formik.values.presentacion}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.presentacion && Boolean(formik.errors.presentacion)}
-            >
-              {props.presentacionesList.map((item) => (
-                <MenuItem key={item.id} value={item.id}>{item.nombre}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {/* Descripción */}
-          <TextField
-            fullWidth
-            margin="normal"
-            id="descripcion"
-            name="descripcion"
-            label="Descripción"
-            value={formik.values.descripcion}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.descripcion && Boolean(formik.errors.descripcion)}
-            helperText={formik.touched.descripcion && formik.errors.descripcion}
-          />
-
-          {/* Estado */}
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="estado-label">Estado</InputLabel>
-            <Select
-              labelId="estado-label"
-              id="estado"
-              name="estado"
-              value={formik.values.estado}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            >
-              <MenuItem value={1}>Activo</MenuItem>
-              <MenuItem value={0}>Inactivo</MenuItem>
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancelar</Button>
-          <Button type="submit">{methodName}</Button>
-        </DialogActions>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
+        <form onSubmit={handleSubmit}>
+          <DialogTitle>{methodName} Producto Presentación</DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2} mt={1}>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Producto</InputLabel>
+                  <Select name="productoId" value={formData.productoId} onChange={handleChange} label="Producto">
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {productos.map(p => <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>)}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth required label="Nombre" name="nombre" value={formData.nombre} onChange={handleChange} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Unidad</InputLabel>
+                  <Select name="unidadId" value={formData.unidadId} onChange={handleChange} label="Unidad">
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {unidades.map(u => <MenuItem key={u.id} value={u.id}>{u.nombre}</MenuItem>)}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth label="Descripción" name="descripcion" value={formData.descripcion} onChange={handleChange} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Estado</InputLabel>
+                  <Select name="estadoId" value={formData.estadoId} onChange={handleChange} label="Estado">
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    <MenuItem value="1">Activo</MenuItem>
+                    <MenuItem value="2">Inactivo</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth required label="Cantidad" name="cantidad" type="number" value={formData.cantidad} onChange={handleChange} />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Marca</InputLabel>
+                  <Select name="marcaId" value={formData.marcaId} onChange={handleChange} label="Marca">
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {marcas.map(m => <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>)}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Presentación</InputLabel>
+                  <Select name="presentacionId" value={formData.presentacionId} onChange={handleChange} label="Presentación">
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {presentaciones.map(p => <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>)}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth required>
+                  <InputLabel>Ingrediente</InputLabel>
+                  <Select name="ingredienteId" value={formData.ingredienteId} onChange={handleChange} label="Ingrediente">
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {ingredientes.map(i => <MenuItem key={i.id} value={i.id}>{i.nombre}</MenuItem>)}
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpen(false)}>Cancelar</Button>
+            <Button type="submit">{methodName}</Button>
+          </DialogActions>
+        </form>
       </Dialog>
     </>
   );
@@ -340,8 +214,4 @@ FormProductoPresentacion.propTypes = {
   setSelectedRow: PropTypes.func.isRequired,
   setMessage: PropTypes.func.isRequired,
   reloadData: PropTypes.func.isRequired,
-  productos: PropTypes.array,
-  unidades: PropTypes.array,
-  marcas: PropTypes.array,
-  presentacionesList: PropTypes.array,
 };

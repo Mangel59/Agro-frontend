@@ -61,15 +61,14 @@ import Presentacion from '../Presentacion/Presentacion.jsx';
 import TipoBloque from '../tipo_bloque/Tipobloque.jsx';
 import TipoSedes from '../tipo_sede/TipoSede.jsx';
 import TipoEspacio from '../tipo_espacio/TipoEspacio.jsx';
-import EspacioOcupacion from '../espacio_ocupacion/EspacioOcupacion.jsx';
 import RPedido from '../r_pedido/Pedido.jsx';
 import kardex from '../Kardex/kardex.jsx';
 import Rol from '../Rol/Rol.jsx';
 import TipoIdentificacion from '../TipoIdentificacion/TipoIdentificacion.jsx';
 import Proveedor from '../Proveedor/Proveedor.jsx';
 import MediaCard from '../MediaCard.jsx';
-import CriterioEvaluacion from '../criterio_evaluacion/criterio_evaluacion.jsx';
-import TipoEvaluacion from '../tipo_evaluacion/Tipo_evaluacion.jsx';
+import OrdenCompra from '../OrdenCompra/OrdenCompra.jsx';
+import ArticuloPedido from '../ArticuloPedido/ArticuloPedido.jsx';
 import Evaluacion from '../Evaluacion/Evaluacion.jsx';
 import EvaluacionItem from '../Evaluacion_item/Evaluacion_item.jsx';
 import Grupo from '../Grupo/Grupo.jsx';
@@ -87,14 +86,14 @@ const icons = {
 const components = {
   tipoidentificacion: TipoIdentificacion, roll: Rol, proveedor: Proveedor, pais: Pais,
   departamento: Departamento, municipio: Municipio, almacen: Almacen, espacio: Espacio,
-  espacio_ocupacion: EspacioOcupacion, tipo_espacio: TipoEspacio, bloque: Bloque,
+  tipo_espacio: TipoEspacio, bloque: Bloque,
   tipo_bloque: TipoBloque, tipo_sede: TipoSedes, sede: Sede,
   producto_presentacion: ProductoPresentacion, presentacion: Presentacion,
   producto_categoria: ProductoCategoria, producto: Producto, produccion: Produccion,
   kardex_nuevo: KardexNuevo, marca: Marca, unidad: Unidad, tipo_movimiento: TipoMovimiento,
   tipo_produccion: TipoProduccion, persona: Persona, empresa: Empresa, r_pedido: RPedido,
   kardex:kardex, media_card: MediaCard, evaluacion_item: EvaluacionItem,
-  criterio_evaluacion: CriterioEvaluacion,tipo_evaluacion: TipoEvaluacion,
+  OrdenCompra: OrdenCompra, ArticuloPedido: ArticuloPedido,
   evaluacion:Evaluacion, grupo:Grupo, Movimiento:Movimineto, Proceso: Proceso, Ingrediente:Ingrediente
 
 };
@@ -114,7 +113,7 @@ const moduleImages = {
   tipo_espacio: "/images/cards/2.jpg",
   espacio: "/images/cards/3.jpg",
   almacen: "/images/cards/4.jpg",
-  espacio_ocupacion: "/images/cards/5.jpg",
+  Kardex: "/images/cards/5.jpg",
   proveedor: "/images/cards/6.jpg",
   producto_categoria: "/images/cards/7.jpg",
   marca: "/images/cards/8.jpg",
@@ -130,8 +129,8 @@ const moduleImages = {
   kardex: "/images/cards/8.jpg",
   evaluacion_item: "/images/cards/2.jpg",
   evaluacion: "/images/cards/7.jpg",
-  criterio_evaluacion: "/images/cards/9.jpg",
-  tipo_evaluacio: "/images/cards/5.jpg",
+  OrdenCompra: "/images/cards/9.jpg",
+  ArticuloPedido: "/images/cards/5.jpg",
 };
 
 export default function Navigator2(props) {

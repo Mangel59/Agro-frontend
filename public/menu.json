@@ -33,24 +33,33 @@
     "text": "Inventario",
     "icon": "People",
     "children": [
-      { "id": "espacio_ocupacion", "text": "Espacio ocupación", "icon": "LocationCity" },
-      { "id": "proveedor", "text": "Proveedor", "icon": "ProductionQuantityLimitsIcon" },
+
+      { "id": "presentacion", "text": "Presentación", "icon": "ProductionQuantityLimitsIcon" },
       { "id": "producto_categoria", "text": "Producto Categoría", "icon": "ProductionQuantityLimitsIcon" },
       { "id": "marca", "text": "Marca", "icon": "ProductionQuantityLimitsIcon" },
-      { "id": "unidad", "text": "Unidad", "icon": "ProductionQuantityLimitsIcon" },
-      { "id": "producto", "text": "Producto", "icon": "ProductionQuantityLimitsIcon" },
-      { "id": "producto_presentacion", "text": "Producto Presentación", "icon": "ProductionQuantityLimitsIcon" },
+      {"id": "Ingrediente","text": "Ingrediente","icon": "Settings"},
       { "id": "tipo_produccion", "text": "Tipo Producción", "icon": "ProductionQuantityLimitsIcon" },
-      { "id": "tipo_movimiento", "text": "Tipo Movimiento", "icon": "ProductionQuantityLimitsIcon" },
-      { "id": "Movimiento", "text": "Movimiento", "icon": "ProductionQuantityLimitsIcon" },
-      { "id": "produccion", "text": "Producción", "icon": "ProductionQuantityLimitsIcon" },
-      { "id": "presentacion", "text": "Presentación", "icon": "ProductionQuantityLimitsIcon" },
-      {"id": "evaluacion_item", "text": "EvaluacionItem","icon": "Settings"},
-      {"id": "evaluacion","text": "Evaluacion","icon": "Settings"},
-      {"id": "tipo_evaluacion","text": "Tipo Evaluacion","icon": "ProductionQuantityLimitsIcon" },
-      {"id": "criterio_evaluacion","text": "Criterio Evaluacion","icon": "Settings"},
       {"id": "Proceso","text": "Proceso","icon": "Settings"},
-      {"id": "Ingrediente","text": "Ingrediente","icon": "Settings"}
+      { "id": "Movimiento", "text": "Movimiento", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "unidad", "text": "Unidad", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "r_pedido", "text": "Pedido", "icon": "Settings" },
+      { "id": "producto", "text": "Producto", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "proveedor", "text": "Proveedor", "icon": "ProductionQuantityLimitsIcon" },
+      
+
+      { "id": "producto_presentacion", "text": "Producto Presentación", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "produccion", "text": "Producción", "icon": "ProductionQuantityLimitsIcon" },
+      { "id": "tipo_movimiento", "text": "Tipo Movimiento", "icon": "ProductionQuantityLimitsIcon" },
+      {"id": "OrdenCompra","text": "Orden Compra","icon": "Settings"},     
+      {"id": "ArticuloPedido","text": " Articulo de Pedido","icon": "ProductionQuantityLimitsIcon" },
+      { "id": "kardex", "text": "Kardex", "icon": "LocationCity" },
+      
+      
+      {"id": "evaluacion_item", "text": "EvaluacionItem","icon": "Settings"}
+      
+      
+     
+      
       
     ]
   },
@@ -59,8 +68,7 @@
     "text": "Reportes",
     "icon": "People",
     "children": [
-      { "id": "r_pedido", "text": "Reportes de Pedido", "icon": "Settings" },
-      { "id": "kardex", "text": "kardex", "icon": "Settings" }
+    
     ]
   }
 ]

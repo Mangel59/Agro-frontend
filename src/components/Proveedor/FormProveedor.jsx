@@ -1,169 +1,217 @@
-/**
- * @file FormProveedor.jsx
- * @module FormProveedor
- * @description Componente de formulario para agregar, editar o eliminar proveedores. Usa Material UI y funciona con JSON local. Ideal para CRUDs simples sin backend complejo.
- * @author Karla
- */
-
-import React, { useState } from "react";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import PropTypes from "prop-types";
-
-/**
- * Componente FormProveedor.
- *
- * @param {Object} props - Props del componente
- * @param {Function} props.onAdd - Función para agregar un nuevo proveedor
- * @param {Function} props.onUpdate - Función para actualizar un proveedor existente
- * @param {Function} props.onDelete - Función para eliminar un proveedor por ID
- * @param {Object|null} props.selectedRow - Fila seleccionada (proveedor a editar)
- * @param {Function} props.setSelectedRow - Función para actualizar la fila seleccionada
- * @returns {JSX.Element}
- */
+import React, { useEffect, useState } from "react";
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Button, MenuItem, FormControl, InputLabel, Select, FormHelperText
+} from "@mui/material";
+import axios from "../axiosConfig";
 
 export default function FormProveedor({
-  onAdd,
-  onUpdate,
-  onDelete,
-  selectedRow,
+  open = false,
+  setOpen = () => {},
+  selectedRow = null,
+  formMode = "create",
+  setMessage,
+  reloadData,
   setSelectedRow,
+  tiposIdentificacion = []
 }) {
-  const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    pro_id: "",
-    pro_empresa_id: "",
-    pro_fecha_creacion: "",
-    pro_estado: 1,
-  });
+  const initialData = {
+    nombre: "",
+    identificacion: "",
+    contacto: "",
+    correo: "",
+    celular: "",
+    empresaId: "",
+    tipoIdentificacionId: "",
+    estadoId: 1,
+    fechaCreacion: "",
+  };
 
-  const handleOpen = () => {
-    if (selectedRow) {
-      setFormData(selectedRow);
-    } else {
-      setFormData({
-        pro_id: "",
-        pro_empresa_id: "",
-        pro_fecha_creacion: "",
-        pro_estado: 1,
-      });
+  const [formData, setFormData] = useState(initialData);
+  const [errors, setErrors] = useState({});
+
+  const getLocalDateTime = () => {
+    const now = new Date();
+    return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 16);
+  };
+
+  useEffect(() => {
+    if (open) {
+      if (formMode === "edit" && selectedRow) {
+        setFormData({
+          ...selectedRow,
+          fechaCreacion: selectedRow.fechaCreacion?.slice(0, 16) || "",
+        });
+      } else {
+        setFormData({
+          ...initialData,
+          fechaCreacion: getLocalDateTime(),
+        });
+      }
+      setErrors({});
     }
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setSelectedRow(null);
-    setFormData({
-      pro_id: "",
-      pro_empresa_id: "",
-      pro_fecha_creacion: "",
-      pro_estado: 1,
-    });
-  };
+  }, [open, formMode, selectedRow]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (formData.pro_id) {
-      onUpdate(formData);
-    } else {
-      onAdd({ ...formData, pro_id: Date.now() });
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.nombre?.trim()) newErrors.nombre = "Nombre es obligatorio";
+    if (!formData.identificacion?.trim()) newErrors.identificacion = "Identificación es obligatoria";
+    if (!formData.tipoIdentificacionId) newErrors.tipoIdentificacionId = "Seleccione un tipo de identificación";
+    if (!formData.estadoId && formData.estadoId !== 0) newErrors.estadoId = "Seleccione un estado";
+
+    if (!formData.celular?.trim()) {
+      newErrors.celular = "El celular es obligatorio";
+    } else if (!/^\d+$/.test(formData.celular)) {
+      newErrors.celular = "El celular debe contener solo números";
+    } else if (formData.celular.length < 7) {
+      newErrors.celular = "El celular es demasiado corto";
     }
-    handleClose();
+
+    const isValidFecha = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(formData.fechaCreacion);
+    if (!formData.fechaCreacion || !isValidFecha) {
+      newErrors.fechaCreacion = "Debe seleccionar una fecha válida";
+    }
+
+    // Mostrar errores detallados en consola
+    if (Object.keys(newErrors).length > 0) {
+      console.warn("Campos inválidos:");
+      Object.entries(newErrors).forEach(([campo, mensaje]) => {
+        console.warn(`• ${campo}: ${mensaje}`);
+      });
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleDelete = () => {
-    if (selectedRow?.pro_id) {
-      onDelete(selectedRow.pro_id);
+  const handleSubmit = async () => {
+    console.log("Datos a enviar:", formData);
+
+    if (!validate()) return;
+
+    try {
+      const dataEnviar = {
+        ...formData,
+        empresaId:
+          formData.empresaId ||
+          JSON.parse(localStorage.getItem("tokenData"))?.empresaId ||
+          0,
+        fechaCreacion: new Date(formData.fechaCreacion).toISOString(),
+      };
+
+      if (formMode === "edit") {
+        await axios.put(`/v1/proveedor/${formData.id}`, dataEnviar);
+        setMessage({
+          open: true,
+          severity: "success",
+          text: "Proveedor actualizado correctamente.",
+        });
+      } else {
+        await axios.post("/v1/proveedor", dataEnviar);
+        setMessage({
+          open: true,
+          severity: "success",
+          text: "Proveedor creado correctamente.",
+        });
+      }
+
+      setOpen(false);
       setSelectedRow(null);
+      reloadData?.();
+    } catch (err) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: err.response?.data?.message || "Error al guardar proveedor.",
+      });
     }
   };
 
   return (
-    <>
-      <div style={{ marginBottom: "1rem" }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleOpen}
-          style={{ marginRight: "1rem" }}
-        >
-          Agregar
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleOpen}
-          disabled={!selectedRow}
-          style={{ marginRight: "1rem" }}
-        >
-          Editar
-        </Button>
-        <Button
-          variant="contained"
-          color="error"
-          onClick={handleDelete}
-          disabled={!selectedRow}
-        >
-          Eliminar
-        </Button>
-      </div>
-
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{selectedRow ? "Editar Proveedor" : "Agregar Proveedor"}</DialogTitle>
-        <DialogContent>
-          <TextField
-            name="pro_empresa_id"
-            label="Empresa ID"
-            value={formData.pro_empresa_id}
+    <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="md">
+      <DialogTitle>{formMode === "edit" ? "Editar Proveedor" : "Nuevo Proveedor"}</DialogTitle>
+      <DialogContent>
+        <TextField
+          fullWidth margin="dense" label="Nombre" name="nombre"
+          value={formData.nombre} onChange={handleChange}
+          error={!!errors.nombre} helperText={errors.nombre}
+        />
+        <TextField
+          fullWidth margin="dense" label="Identificación" name="identificacion"
+          value={formData.identificacion} onChange={handleChange}
+          error={!!errors.identificacion} helperText={errors.identificacion}
+        />
+        <FormControl fullWidth margin="dense" error={!!errors.tipoIdentificacionId}>
+          <InputLabel>Tipo de Identificación</InputLabel>
+          <Select
+            name="tipoIdentificacionId"
+            value={formData.tipoIdentificacionId}
             onChange={handleChange}
-            fullWidth
-            margin="normal"
-          />
-          <TextField
-            name="pro_fecha_creacion"
-            label="Fecha Creación"
-            value={formData.pro_fecha_creacion}
+            label="Tipo de Identificación"
+          >
+            {tiposIdentificacion.map((tipo) => (
+              <MenuItem key={tipo.id} value={tipo.id}>
+                {tipo.nombre}
+              </MenuItem>
+            ))}
+          </Select>
+          {errors.tipoIdentificacionId && (
+            <FormHelperText>{errors.tipoIdentificacionId}</FormHelperText>
+          )}
+        </FormControl>
+        <TextField
+          fullWidth margin="dense" label="Contacto" name="contacto"
+          value={formData.contacto} onChange={handleChange}
+        />
+        <TextField
+          fullWidth margin="dense" label="Correo" name="correo"
+          value={formData.correo} onChange={handleChange}
+        />
+        <TextField
+          fullWidth margin="dense" label="Celular" name="celular"
+          value={formData.celular} onChange={handleChange}
+          error={!!errors.celular} helperText={errors.celular}
+        />
+        <TextField
+          fullWidth
+          margin="dense"
+          label="Fecha de Creación"
+          name="fechaCreacion"
+          type="datetime-local"
+          value={formData.fechaCreacion}
+          onChange={handleChange}
+          InputLabelProps={{ shrink: true }}
+          error={!!errors.fechaCreacion}
+          helperText={errors.fechaCreacion}
+        />
+        <FormControl fullWidth margin="dense" error={!!errors.estadoId}>
+          <InputLabel>Estado</InputLabel>
+          <Select
+            name="estadoId"
+            value={formData.estadoId}
             onChange={handleChange}
-            fullWidth
-            margin="normal"
-            type="datetime-local"
-          />
-          <TextField
-            name="pro_estado"
-            label="Estado (1: Activo, 0: Inactivo)"
-            value={formData.pro_estado}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            type="number"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancelar</Button>
-          <Button type="submit" onClick={handleSubmit}>
-            {selectedRow ? "Actualizar" : "Agregar"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+            label="Estado"
+          >
+            <MenuItem value={1}>Activo</MenuItem>
+            <MenuItem value={0}>Inactivo</MenuItem>
+            <MenuItem value={2}>Otro</MenuItem>
+          </Select>
+          {errors.estadoId && (
+            <FormHelperText>{errors.estadoId}</FormHelperText>
+          )}
+        </FormControl>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setOpen(false)}>Cancelar</Button>
+        <Button onClick={handleSubmit} variant="contained">Guardar</Button>
+      </DialogActions>
+    </Dialog>
   );
 }
-
-// Validación de tipos con PropTypes
-FormProveedor.propTypes = {
-  onAdd: PropTypes.func.isRequired,
-  onUpdate: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
-  selectedRow: PropTypes.object,
-  setSelectedRow: PropTypes.func.isRequired,
-};

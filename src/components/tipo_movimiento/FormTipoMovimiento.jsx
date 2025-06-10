@@ -1,10 +1,3 @@
-/**
- * @file FormTipoMovimiento.jsx
- * @module FormTipoMovimiento
- * @description Componente de formulario para gestionar Tipos de Movimiento: crear, actualizar o eliminar.
- * Incluye Formik + Yup, selección dinámica de empresas, validación, comunicación con API y uso de MUI Dialog.
- */
-
 import PropTypes from "prop-types";
 import * as React from "react";
 import axios from "axios";
@@ -29,9 +22,9 @@ import * as Yup from "yup";
 export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
-  const [empresas, setEmpresas] = React.useState([]);
+  const [movimientos, setMovimientos] = React.useState([]);
 
-  const loadEmpresas = () => {
+  const loadMovimientos = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       setMessage({ open: true, severity: "error", text: "Token no encontrado" });
@@ -39,30 +32,26 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
     }
 
     axios
-      .get(`${SiteProps.urlbasev1}/empresas`, {
+      .get(`${SiteProps.urlbasev1}/movimiento`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then((response) => {
-        if (Array.isArray(response.data?.data)) {
-          setEmpresas(response.data.data);
-        } else {
-          setMessage({ open: true, severity: "error", text: "Error al cargar empresas." });
-        }
+      .then((res) => {
+        setMovimientos(res.data);
       })
       .catch((error) => {
         setMessage({
           open: true,
           severity: "error",
-          text: `Error al cargar empresas: ${error.message}`,
+          text: `Error al cargar movimientos: ${error.message}`,
         });
       });
   };
 
   const create = () => {
-    setSelectedRow({ id: 0, nombre: "", descripcion: "", estado: 1, empresa: "" });
+    setSelectedRow({ id: 0, nombre: "", descripcion: "", estado: 1, movimientoId: "" });
     setMethodName("Agregar");
     setOpen(true);
-    loadEmpresas();
+    loadMovimientos();
   };
 
   const update = () => {
@@ -72,7 +61,7 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
     }
     setMethodName("Actualizar");
     setOpen(true);
-    loadEmpresas();
+    loadMovimientos();
   };
 
   const deleteRow = () => {
@@ -109,28 +98,46 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
       nombre: selectedRow?.nombre || "",
       descripcion: selectedRow?.descripcion || "",
       estado: selectedRow?.estado ?? 1,
-      empresa: selectedRow?.empresa || "",
+      movimientoId: selectedRow?.movimientoId || "",
     },
     validationSchema: Yup.object({
       nombre: Yup.string().trim("No puede estar vacío").strict(true).required("El nombre es obligatorio"),
       descripcion: Yup.string().trim("No puede estar vacío").strict(true).required("La descripción es obligatoria"),
-      empresa: Yup.number().required("La empresa es obligatoria"),
+      movimientoId: Yup.number().required("El movimiento es obligatorio"),
       estado: Yup.number().oneOf([0, 1], "Estado inválido").required(),
     }),
     onSubmit: (values) => {
       const id = selectedRow?.id || 0;
       const token = localStorage.getItem("token");
-      const url = methodName === "Agregar"
-        ? `${SiteProps.urlbasev1}/tipo_movimiento`
-        : `${SiteProps.urlbasev1}/tipo_movimiento/${id}`;
-      const axiosMethod = methodName === "Agregar" ? axios.post : axios.put;
 
       if (!token) {
         setMessage({ open: true, severity: "error", text: "Token no encontrado" });
         return;
       }
 
-      axiosMethod(url, values, {
+      let empresaId = null;
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        empresaId = payload.empresaId;
+      } catch (e) {
+        setMessage({ open: true, severity: "error", text: "Error al obtener empresa del token" });
+        return;
+      }
+
+      const finalValues = {
+        nombre: values.nombre,
+        descripcion: values.descripcion,
+        estadoId: values.estado,               // ✅ corregido para backend
+        movimientoId: values.movimientoId,
+        empresaId: empresaId,
+      };
+
+      const url = methodName === "Agregar"
+        ? `${SiteProps.urlbasev1}/tipo_movimiento`
+        : `${SiteProps.urlbasev1}/tipo_movimiento/${id}`;
+      const axiosMethod = methodName === "Agregar" ? axios.post : axios.put;
+
+      axiosMethod(url, finalValues, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       })
         .then(() => {
@@ -157,7 +164,6 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
         <DialogContent>
           <DialogContentText>Completa el formulario.</DialogContentText>
 
-          {/* Nombre */}
           <FormControl fullWidth margin="normal">
             <TextField
               id="nombre"
@@ -173,7 +179,6 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
             />
           </FormControl>
 
-          {/* Descripción */}
           <FormControl fullWidth margin="normal">
             <TextField
               id="descripcion"
@@ -189,27 +194,25 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
             />
           </FormControl>
 
-          {/* Empresa */}
           <FormControl fullWidth margin="normal">
-            <InputLabel id="empresa-label">Empresa</InputLabel>
+            <InputLabel id="movimientoId-label">Movimiento</InputLabel>
             <Select
-              labelId="empresa-label"
-              id="empresa"
-              name="empresa"
-              value={formik.values.empresa}
+              labelId="movimientoId-label"
+              id="movimientoId"
+              name="movimientoId"
+              value={formik.values.movimientoId}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              error={formik.touched.empresa && Boolean(formik.errors.empresa)}
+              error={formik.touched.movimientoId && Boolean(formik.errors.movimientoId)}
             >
-              {empresas.map((empresa) => (
-                <MenuItem key={empresa.id} value={empresa.id}>
-                  {empresa.nombre}
+              {movimientos.map((mov) => (
+                <MenuItem key={mov.id} value={mov.id}>
+                  {mov.nombre}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          {/* Estado */}
           <FormControl fullWidth margin="normal">
             <InputLabel id="estado-label">Estado</InputLabel>
             <Select
@@ -241,7 +244,7 @@ FormTipoMovimiento.propTypes = {
     nombre: PropTypes.string,
     descripcion: PropTypes.string,
     estado: PropTypes.number,
-    empresa: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    movimientoId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   }),
   setSelectedRow: PropTypes.func.isRequired,
   setMessage: PropTypes.func.isRequired,

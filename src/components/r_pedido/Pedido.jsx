@@ -4,7 +4,7 @@ import MessageSnackBar from "../MessageSnackBar";
 import FormPedido from "./FormPedido";
 import GridPedido from "./GridPedido.jsx";
 import {
-  Box, Typography, FormControl, InputLabel, Select, MenuItem, Button
+  Box, Typography, FormControl, InputLabel, Select, MenuItem, Button, Toolbar
 } from "@mui/material";
 
 export default function Pedido() {
@@ -33,7 +33,6 @@ export default function Pedido() {
   const token = localStorage.getItem("token");
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
-  // Cargas encadenadas
   useEffect(() => {
     axios.get("/v1/pais", headers).then(res => setPaises(res.data));
   }, []);
@@ -114,46 +113,108 @@ export default function Pedido() {
   };
 
   return (
-    <Box sx={{ padding: 2 }}>
-      <Typography variant="h5" gutterBottom>Gestión de Pedidos</Typography>
+    <>
+      <Toolbar />
+      <Box sx={{ pt: 1, px: 2, pb: -6, width: "100%", maxWidth: "1000px", margin: "0 auto" }}> 
+        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 500, color: "#ccc" }}>
+          Gestión de Pedidos
+        </Typography>
 
-      {[["País", selectedPais, setSelectedPais, paises],
-        ["Departamento", selectedDepto, setSelectedDepto, departamentos],
-        ["Municipio", selectedMunicipio, setSelectedMunicipio, municipios],
-        ["Sede", selectedSede, setSelectedSede, sedes],
-        ["Bloque", selectedBloque, setSelectedBloque, bloques],
-        ["Espacio", selectedEspacio, setSelectedEspacio, espacios],
-        ["Almacén", selectedAlmacen, setSelectedAlmacen, almacenes]
-      ].map(([label, val, setter, list]) => (
-        <FormControl fullWidth sx={{ mb: 2 }} key={label} disabled={!list.length && label !== "País"}>
-          <InputLabel>{label}</InputLabel>
-          <Select value={val} onChange={e => setter(e.target.value)} label={label}>
-            {list.map(item => (
-              <MenuItem key={item.id} value={item.id}>{item.nombre}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      ))}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(3, 1fr)",
+            },
+            gap: 1,
+            mb: 1,
+          }}
+        >
+          {["País", "Departamento", "Municipio", "Sede", "Bloque", "Espacio", "Almacén"].map((label, idx) => {
+            const states = [
+              [selectedPais, setSelectedPais, paises],
+              [selectedDepto, setSelectedDepto, departamentos],
+              [selectedMunicipio, setSelectedMunicipio, municipios],
+              [selectedSede, setSelectedSede, sedes],
+              [selectedBloque, setSelectedBloque, bloques],
+              [selectedEspacio, setSelectedEspacio, espacios],
+              [selectedAlmacen, setSelectedAlmacen, almacenes],
+            ];
+            const [val, setter, list] = states[idx];
 
-      <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
-        <Button variant="contained" onClick={() => { setFormMode("create"); setFormOpen(true); setSelectedRow(null); }} disabled={!selectedAlmacen}>+ Agregar Pedido</Button>
-        <Button variant="outlined" onClick={() => { setFormMode("edit"); setFormOpen(true); }} disabled={!selectedRow}>Editar</Button>
-        <Button variant="outlined" color="error" onClick={handleDelete} disabled={!selectedRow}>Eliminar</Button>
+            return (
+              <FormControl
+                fullWidth
+                key={label}
+                disabled={!list.length && label !== "País"}
+              >
+                <InputLabel>{label}</InputLabel>
+                <Select
+                  value={val}
+                  onChange={(e) => setter(e.target.value)}
+                  label={label}
+                >
+                  {list.map((item) => (
+                    <MenuItem key={item.id} value={item.id}>
+                      {item.nombre}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            );
+          })}
+        </Box>
+
+        <Box sx={{ mb: 2, display: "flex", gap: 2, flexWrap: "wrap" }}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setFormMode("create");
+              setFormOpen(true);
+              setSelectedRow(null);
+            }}
+            disabled={!selectedAlmacen}
+          >
+            + Agregar Pedido
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              setFormMode("edit");
+              setFormOpen(true);
+            }}
+            disabled={!selectedRow}
+          >
+            Editar
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleDelete}
+            disabled={!selectedRow}
+          >
+            Eliminar
+          </Button>
+        </Box>
+
+        <GridPedido pedidos={pedidos} setSelectedRow={setSelectedRow} />
+
+        <Box sx={{ mt: 4 }}>
+          <FormPedido
+            open={formOpen}
+            setOpen={setFormOpen}
+            formMode={formMode}
+            selectedRow={selectedRow}
+            reloadData={reloadData}
+            setMessage={setMessage}
+            almacenId={selectedAlmacen}
+          />
+        </Box>
+
+        <MessageSnackBar message={message} setMessage={setMessage} />
       </Box>
-
-      <GridPedido pedidos={pedidos} setSelectedRow={setSelectedRow} />
-
-      <FormPedido
-        open={formOpen}
-        setOpen={setFormOpen}
-        formMode={formMode}
-        selectedRow={selectedRow}
-        reloadData={reloadData}
-        setMessage={setMessage}
-        almacenId={selectedAlmacen}
-      />
-
-      <MessageSnackBar message={message} setMessage={setMessage} />
-    </Box>
+    </>
   );
 }

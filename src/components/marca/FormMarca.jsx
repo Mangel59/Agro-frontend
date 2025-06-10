@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 import { SiteProps } from "../dashboard/SiteProps";
-import { Formik, Form, Field } from "formik";
+import { Formik, Form } from "formik";
 import * as Yup from "yup";
 
 // Esquema de validación Yup
@@ -26,7 +26,7 @@ const MarcaSchema = Yup.object().shape({
     .trim("No puede contener solo espacios")
     .strict(true)
     .required("La descripción es obligatoria."),
-  estado: Yup.number().oneOf([0, 1], "Estado inválido"),
+  estadoId: Yup.number().oneOf([0, 1], "Estado inválido"),
 });
 
 export default function FormMarca({ setMessage, selectedRow, setSelectedRow, reloadData }) {
@@ -34,7 +34,7 @@ export default function FormMarca({ setMessage, selectedRow, setSelectedRow, rel
   const [methodName, setMethodName] = React.useState("");
 
   const create = () => {
-    setSelectedRow({ id: 0, nombre: "", descripcion: "", estado: 1 });
+    setSelectedRow({ id: 0, nombre: "", descripcion: "", estadoId: 1 });
     setMethodName("Agregar");
     setOpen(true);
   };
@@ -88,19 +88,15 @@ export default function FormMarca({ setMessage, selectedRow, setSelectedRow, rel
           initialValues={{
             nombre: selectedRow?.nombre || "",
             descripcion: selectedRow?.descripcion || "",
-            estado: selectedRow?.estado ?? 1,
+            estadoId: selectedRow?.estadoId ?? 1,
           }}
           enableReinitialize
           validationSchema={MarcaSchema}
           onSubmit={(values, { setSubmitting }) => {
             const token = localStorage.getItem("token");
-            const empresa = localStorage.getItem("empresa_id");
             const id = selectedRow?.id || 0;
 
-            const payload = {
-              ...values,
-              empresa,
-            };
+            const payload = { ...values };
 
             const url =
               methodName === "Agregar"
@@ -168,8 +164,8 @@ export default function FormMarca({ setMessage, selectedRow, setSelectedRow, rel
                   <InputLabel id="estado-label">Estado</InputLabel>
                   <Select
                     labelId="estado-label"
-                    name="estado"
-                    value={values.estado}
+                    name="estadoId"
+                    value={values.estadoId}
                     onChange={handleChange}
                   >
                     <MenuItem value={1}>Activo</MenuItem>
@@ -195,7 +191,7 @@ FormMarca.propTypes = {
     id: PropTypes.number,
     nombre: PropTypes.string,
     descripcion: PropTypes.string,
-    estado: PropTypes.number,
+    estadoId: PropTypes.number,
   }).isRequired,
   setSelectedRow: PropTypes.func.isRequired,
   reloadData: PropTypes.func.isRequired,

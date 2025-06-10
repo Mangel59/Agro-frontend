@@ -1,74 +1,73 @@
-/**
- * @file TipoMovimiento.jsx
- * @module TipoMovimiento
- * @description Componente principal para gestionar Tipos de Movimiento: formulario, grilla, mensajes y recarga de datos en tiempo real usando referencia (ref).
- * @author Karla
- */
-
-import React, { useRef, useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
 import FormTipoMovimiento from "./FormTipoMovimiento";
 import GridTipoMovimiento from "./GridTipoMovimiento";
 
-/**
- * @typedef {Object} TipoMovimientoRow
- * @property {number} id - ID del tipo de movimiento
- * @property {string} nombre - Nombre del tipo de movimiento
- * @property {string} descripcion - Descripción del tipo de movimiento
- * @property {number} estado - Estado (1: activo, 0: inactivo)
- * @property {number} empresa - ID de la empresa asociada
- */
-
-/**
- * @typedef {Object} SnackbarMessage
- * @property {boolean} open - Indica si el mensaje snackbar está visible
- * @property {string} severity - Nivel de severidad del mensaje ("success", "error", etc.)
- * @property {string} text - Contenido del mensaje que se mostrará
- */
-
-/**
- * Componente principal para la gestión de Tipos de Movimiento.
- *
- * @component
- * @returns {JSX.Element} Interfaz de administración para tipos de movimiento.
- */
 export default function TipoMovimiento() {
-  const gridRef = useRef(); // 👉 Referencia para la grilla
+  const [selectedRow, setSelectedRow] = useState({ id: 0 });
+  const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
+  const [tipoMovimientos, setTipoMovimientos] = useState([]);
+  const [formOpen, setFormOpen] = useState(false);
+  const [movimientos, setMovimientos] = useState([]);
 
-  /** @type {TipoMovimientoRow} */
-  const initialRow = {
-    id: 0,
-    nombre: "",
-    descripcion: "",
-    estado: 0,
-    empresa: 0,
+  const reloadData = () => {
+    axios.get('/v1/tipo_movimiento')
+      .then(res => {
+        const filas = res.data?.data || res.data;
+        const transformados = filas.map(item => {
+          const mov = movimientos.find(m => m.id === item.movimientoId);
+          return {
+            ...item,
+            estado: item.estadoId ?? item.estado,
+            movimientoNombre: mov ? mov.nombre : item.movimientoId,
+          };
+        });
+        setTipoMovimientos(transformados);
+      })
+      .catch(err => {
+        setMessage({ open: true, severity: "error", text: "Error al cargar tipos de movimiento" });
+      });
   };
 
-  const [selectedRow, setSelectedRow] = useState(initialRow);
+  useEffect(() => {
+    axios.get('/v1/movimiento')
+      .then(res => {
+        setMovimientos(res.data || []);
+      })
+      .catch(err => {
+        setMessage({ open: true, severity: "error", text: "Error al cargar movimientos" });
+      });
+  }, []);
 
-  /** @type {SnackbarMessage} */
-  const [message, setMessage] = useState({
-    open: false,
-    severity: "success",
-    text: "",
-  });
+  useEffect(() => {
+    if (movimientos.length > 0) {
+      reloadData();
+    }
+  }, [movimientos]);
 
   return (
-    <div style={{ height: "100%", width: "100%" }}>
-      <h1>Tipo Movimiento</h1>
+    <div>
+      <h1>Gestión de Tipo de Movimiento</h1>
+
       <MessageSnackBar message={message} setMessage={setMessage} />
 
       <FormTipoMovimiento
-        selectedRow={selectedRow}
+        open={formOpen}
+        setOpen={setFormOpen}
+        selectedRow={selectedRow || { id: 0 }}
         setSelectedRow={setSelectedRow}
         setMessage={setMessage}
-        reloadData={() => gridRef.current?.reloadData()} // 👉 Refrescar desde el form
+        reloadData={reloadData}
       />
 
       <GridTipoMovimiento
-        ref={gridRef} // 👉 Conectar ref a la grilla
-        setSelectedRow={setSelectedRow}
-        setMessage={setMessage}
+        rows={tipoMovimientos}
+        selectedRow={selectedRow}
+        setSelectedRow={(row) => {
+          setSelectedRow(row);
+          setFormOpen(true);
+        }}
       />
     </div>
   );
