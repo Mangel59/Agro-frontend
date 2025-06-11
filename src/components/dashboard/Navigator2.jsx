@@ -52,7 +52,6 @@ import Almacen from '../almacen/Almacen.jsx';
 import Espacio from '../espacio/Espacio.jsx';
 import Bloque from '../bloque/Bloque.jsx';
 import Sede from '../sede/Sede.jsx';
-import KardexNuevo from '../kardex_nuevo/KardexNuevo.jsx';
 import Marca from '../marca/Marca.jsx';
 import Unidad from '../unidad/Unidad.jsx';
 import TipoMovimiento from '../tipo_movimiento/TipoMovimiento.jsx';
@@ -75,6 +74,7 @@ import Grupo from '../Grupo/Grupo.jsx';
 import Movimineto from '../Movimiento/Movimiento.jsx';
 import Proceso from '../Proceso/Proceso.jsx';
 import Ingrediente from '../../ingrediente/ingrediente.jsx';
+import ArticuloKardex from  '../kardexItem/ArticuloKardex.jsx';
 const icons = {
   DnsRounded: <DnsRoundedIcon />, Home: <HomeIcon />, People: <PeopleIcon />,
   Public: <PublicIcon />, AddShoppingCartIcon: <AddShoppingCartIcon />, Domain: <DomainIcon />,
@@ -90,7 +90,7 @@ const components = {
   tipo_bloque: TipoBloque, tipo_sede: TipoSedes, sede: Sede,
   producto_presentacion: ProductoPresentacion, presentacion: Presentacion,
   producto_categoria: ProductoCategoria, producto: Producto, produccion: Produccion,
-  kardex_nuevo: KardexNuevo, marca: Marca, unidad: Unidad, tipo_movimiento: TipoMovimiento,
+  ArticuloKardex: ArticuloKardex, marca: Marca, unidad: Unidad, tipo_movimiento: TipoMovimiento,
   tipo_produccion: TipoProduccion, persona: Persona, empresa: Empresa, r_pedido: RPedido,
   kardex:kardex, media_card: MediaCard, evaluacion_item: EvaluacionItem,
   OrdenCompra: OrdenCompra, ArticuloPedido: ArticuloPedido,

@@ -100,8 +100,9 @@ export default function FormKardex({
     setEspacios([]); setSelectedEspacio("");
     setAlmacenes([]); setFormData(f => ({ ...f, almacenId: "" }));
     if (!selectedSede) return;
-    axios.get(`/v1/bloque?sedeId=${selectedSede}`, headers).then(res => {
-      setBloques(res.data);
+    axios.get(`/v1/bloque`, headers).then(res => {
+      const filtrados = res.data.filter(b => b.sedeId === parseInt(selectedSede));
+      setBloques(filtrados);
     });
   }, [selectedSede]);
 
@@ -109,16 +110,18 @@ export default function FormKardex({
     setEspacios([]); setSelectedEspacio("");
     setAlmacenes([]); setFormData(f => ({ ...f, almacenId: "" }));
     if (!selectedBloque) return;
-    axios.get(`/v1/espacio?bloqueId=${selectedBloque}`, headers).then(res => {
-      setEspacios(res.data);
+    axios.get(`/v1/espacio`, headers).then(res => {
+      const filtrados = res.data.filter(e => e.bloqueId === parseInt(selectedBloque));
+      setEspacios(filtrados);
     });
   }, [selectedBloque]);
 
   useEffect(() => {
     setAlmacenes([]); setFormData(f => ({ ...f, almacenId: "" }));
     if (!selectedEspacio) return;
-    axios.get(`/v1/almacen?espacioId=${selectedEspacio}`, headers).then(res => {
-      setAlmacenes(res.data);
+    axios.get(`/v1/almacen`, headers).then(res => {
+      const filtrados = res.data.filter(a => a.espacioId === parseInt(selectedEspacio));
+      setAlmacenes(filtrados);
     });
   }, [selectedEspacio]);
 

@@ -53,7 +53,7 @@
       {"id": "OrdenCompra","text": "Orden Compra","icon": "Settings"},     
       {"id": "ArticuloPedido","text": " Articulo de Pedido","icon": "ProductionQuantityLimitsIcon" },
       { "id": "kardex", "text": "Kardex", "icon": "LocationCity" },
-      
+      { "id": "ArticuloKardex", "text": "Kardex item", "icon": "LocationCity" },
       
       {"id": "evaluacion_item", "text": "EvaluacionItem","icon": "Settings"}
       

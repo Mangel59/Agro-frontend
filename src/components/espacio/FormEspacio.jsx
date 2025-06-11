@@ -27,6 +27,18 @@ export default function FormEspacio({
 
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
+  const [tiposEspacioLocal, setTiposEspacioLocal] = useState([]);
+
+  useEffect(() => {
+    if (!tiposEspacio.length) {
+      axios.get("/v1/tipo_espacio")
+        .then(res => {
+          const data = Array.isArray(res.data) ? res.data : [];
+          setTiposEspacioLocal(data);
+        })
+        .catch(() => setTiposEspacioLocal([]));
+    }
+  }, [tiposEspacio]);
 
   useEffect(() => {
     if (open) {
@@ -75,6 +87,8 @@ export default function FormEspacio({
     }
   };
 
+  const tipos = tiposEspacio.length ? tiposEspacio : tiposEspacioLocal;
+
   return (
     <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
       <DialogTitle>{formMode === "edit" ? "Editar Espacio" : "Nuevo Espacio"}</DialogTitle>
@@ -103,7 +117,7 @@ export default function FormEspacio({
             onChange={handleChange}
             label="Tipo de Espacio"
           >
-            {tiposEspacio.map(tipo => (
+            {tipos.map(tipo => (
               <MenuItem key={tipo.id} value={tipo.id}>{tipo.nombre}</MenuItem>
             ))}
           </Select>

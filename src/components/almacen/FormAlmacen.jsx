@@ -20,10 +20,10 @@ export default function FormAlmacen({
     espacioId: espacioId || "",
     nombre: "",
     descripcion: "",
-    estadoId: 1,
+    direccion: "",
     geolocalizacion: "",
     coordenadas: "",
-    direccion: "",
+    estadoId: 1,
   };
 
   const [formData, setFormData] = useState(initialData);

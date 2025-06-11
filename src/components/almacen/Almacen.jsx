@@ -31,12 +31,10 @@ export default function Almacen() {
   const token = localStorage.getItem("token");
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
-  // Carga inicial
   useEffect(() => {
     axios.get("/v1/pais", headers).then(res => setPaises(res.data));
   }, []);
 
-  // País → Departamento
   useEffect(() => {
     setDepartamentos([]); setSelectedDepto("");
     setMunicipios([]); setSelectedMunicipio("");
@@ -50,7 +48,6 @@ export default function Almacen() {
     });
   }, [selectedPais]);
 
-  // Departamento → Municipio
   useEffect(() => {
     setMunicipios([]); setSelectedMunicipio("");
     setSedes([]); setSelectedSede("");
@@ -63,7 +60,6 @@ export default function Almacen() {
     });
   }, [selectedDepto]);
 
-  // Municipio → Sede
   useEffect(() => {
     setSedes([]); setSelectedSede("");
     setBloques([]); setSelectedBloque("");
@@ -75,34 +71,34 @@ export default function Almacen() {
     });
   }, [selectedMunicipio]);
 
-  // Sede → Bloques
   useEffect(() => {
     setBloques([]); setSelectedBloque("");
     setEspacios([]); setSelectedEspacio("");
     setAlmacenes([]);
     if (!selectedSede) return;
-    axios.get(`/v1/bloque?sedeId=${selectedSede}`, headers).then(res => {
-      setBloques(res.data);
+    axios.get(`/v1/bloque`, headers).then(res => {
+      const filtrados = res.data.filter(b => b.sedeId === parseInt(selectedSede));
+      setBloques(filtrados);
     });
   }, [selectedSede]);
 
-  // Bloque → Espacios
   useEffect(() => {
     setEspacios([]); setSelectedEspacio("");
     setAlmacenes([]);
     if (!selectedBloque) return;
-    axios.get(`/v1/espacio?bloqueId=${selectedBloque}`, headers).then(res => {
-      setEspacios(res.data);
+    axios.get(`/v1/espacio`, headers).then(res => {
+      const filtrados = res.data.filter(e => e.bloqueId === parseInt(selectedBloque));
+      setEspacios(filtrados);
     });
   }, [selectedBloque]);
 
-  // Espacio → Almacenes
   const reloadData = () => {
-    if (!selectedEspacio) return setAlmacenes([]);
-    axios.get(`/v1/almacen?espacioId=${selectedEspacio}`, headers).then(res => {
-      setAlmacenes(res.data);
-    });
-  };
+  if (!selectedEspacio) return setAlmacenes([]);
+  axios.get(`/v1/almacen`, headers).then(res => {
+    const filtrados = res.data.filter(a => a.espacioId === parseInt(selectedEspacio));
+    setAlmacenes(filtrados);
+  });
+};
 
   useEffect(() => {
     reloadData();

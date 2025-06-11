@@ -1,4 +1,3 @@
-// Bloque.jsx
 import React, { useEffect, useState } from "react";
 import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
@@ -27,6 +26,7 @@ export default function Bloque() {
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
 
   const token = localStorage.getItem("token");
+  const empresaId = localStorage.getItem("empresaId"); // puede ser string
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
   useEffect(() => {
@@ -43,23 +43,44 @@ export default function Bloque() {
 
   useEffect(() => {
     if (!selectedDepto) return;
-    axios.get(`/v1/municipio?departamentoId=${selectedDepto}`, headers).then(res => setMunicipios(res.data));
+    axios.get(`/v1/municipio?departamentoId=${selectedDepto}`, headers).then(res => {
+      const data = Array.isArray(res.data) ? res.data : [];
+      setMunicipios(data);
+    }).catch(err => {
+      console.error("ERROR MUNICIPIO", err.response?.status, err.response?.data);
+    });
   }, [selectedDepto]);
 
   useEffect(() => {
+    setSedes([]);
+    setSelectedSede("");
+    setBloques([]);
+    setSelectedRow(null);
+
     if (!selectedMunicipio) return;
-    axios.get(`/v1/sede`, headers).then(res => {
-      const sedesFiltradas = res.data.filter(s => s.municipioId === parseInt(selectedMunicipio));
-      setSedes(sedesFiltradas);
-    });
+
+    axios.get(`/v1/sede`, headers)
+      .then(res => {
+        const data = Array.isArray(res.data) ? res.data : [];
+        const filtradas = data.filter(
+          s => s.municipioId == selectedMunicipio && s.empresaId == empresaId
+        );
+        setSedes(filtradas);
+      })
+      .catch(err => {
+        console.error("ERROR SEDE", err.response?.status, err.response?.data);
+      });
   }, [selectedMunicipio]);
 
-  const reloadData = () => {
-    if (!selectedSede) return setBloques([]);
-    axios.get(`/v1/bloque?sedeId=${selectedSede}`, headers).then(res => setBloques(res.data));
-  };
+const reloadData = () => {
+  if (!selectedSede) return setBloques([]);
+  axios.get(`/v1/bloque`, headers).then(res => {
+    const data = Array.isArray(res.data) ? res.data : [];
+    const filtrados = data.filter(b => String(b.sedeId) === String(selectedSede));
+    setBloques(filtrados);
+  });
+};
 
-  useEffect(() => { reloadData(); }, [selectedSede]);
 
   const handleDelete = async () => {
     if (!selectedRow) return;

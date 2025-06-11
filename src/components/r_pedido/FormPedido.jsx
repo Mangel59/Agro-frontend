@@ -17,6 +17,9 @@ export default function FormPedido({
 }) {
   const [producciones, setProducciones] = useState([]);
 
+  const token = localStorage.getItem("token");
+  const headers = { headers: { Authorization: `Bearer ${token}` } };
+
   const initialData = {
     id: null,
     almacenId: almacenId || "",
@@ -24,15 +27,18 @@ export default function FormPedido({
     descripcion: "",
     fechaHora: "",
     estadoId: 1,
-    empresaId: "", // puedes llenarlo por token si se necesita
+    empresaId: "", // opcional, si se quiere llenar por token
   };
 
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    axios.get("/v1/tipo-produccion") // o tu endpoint real
-      .then(res => setProducciones(res.data))
+    axios.get("/v1/produccion", headers)
+      .then(res => {
+        const data = Array.isArray(res.data) ? res.data : [];
+        setProducciones(data);
+      })
       .catch(() => setProducciones([]));
   }, []);
 
@@ -66,10 +72,10 @@ export default function FormPedido({
     if (!validate()) return;
     try {
       if (formMode === "edit" && formData.id) {
-        await axios.put(`/v1/pedido/${formData.id}`, formData);
+        await axios.put(`/v1/pedido/${formData.id}`, formData, headers);
         setMessage({ open: true, severity: "success", text: "Pedido actualizado correctamente." });
       } else {
-        await axios.post("/v1/pedido", formData);
+        await axios.post("/v1/pedido", formData, headers);
         setMessage({ open: true, severity: "success", text: "Pedido creado correctamente." });
       }
       setOpen(false);
@@ -90,10 +96,12 @@ export default function FormPedido({
         <FormControl fullWidth margin="normal" error={!!errors.produccionId}>
           <InputLabel>Producción</InputLabel>
           <Select
-            name="produccionId" value={formData.produccionId}
-            onChange={handleChange} label="Producción"
+            name="produccionId"
+            value={formData.produccionId}
+            onChange={handleChange}
+            label="Producción"
           >
-            {producciones.map((p) => (
+            {Array.isArray(producciones) && producciones.map((p) => (
               <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>
             ))}
           </Select>
@@ -101,22 +109,34 @@ export default function FormPedido({
         </FormControl>
 
         <TextField
-          fullWidth margin="normal" label="Descripción" name="descripcion"
-          value={formData.descripcion} onChange={handleChange}
+          fullWidth
+          margin="normal"
+          label="Descripción"
+          name="descripcion"
+          value={formData.descripcion}
+          onChange={handleChange}
         />
 
         <TextField
-          fullWidth margin="normal" label="Fecha y Hora" name="fechaHora" type="datetime-local"
-          value={formData.fechaHora} onChange={handleChange}
-          error={!!errors.fechaHora} helperText={errors.fechaHora}
+          fullWidth
+          margin="normal"
+          label="Fecha y Hora"
+          name="fechaHora"
+          type="datetime-local"
+          value={formData.fechaHora}
+          onChange={handleChange}
+          error={!!errors.fechaHora}
+          helperText={errors.fechaHora}
           InputLabelProps={{ shrink: true }}
         />
 
         <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
           <InputLabel>Estado</InputLabel>
           <Select
-            name="estadoId" value={formData.estadoId}
-            onChange={handleChange} label="Estado"
+            name="estadoId"
+            value={formData.estadoId}
+            onChange={handleChange}
+            label="Estado"
           >
             <MenuItem value={1}>Activo</MenuItem>
             <MenuItem value={0}>Inactivo</MenuItem>

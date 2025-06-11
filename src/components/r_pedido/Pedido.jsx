@@ -41,47 +41,56 @@ export default function Pedido() {
     resetAll(["departamentos", "municipios", "sedes", "bloques", "espacios", "almacenes", "pedidos"]);
     if (selectedPais)
       axios.get("/v1/departamento", headers).then(res => {
-        setDepartamentos(res.data.filter(dep => dep.paisId === parseInt(selectedPais)));
+        setDepartamentos((res.data || []).filter(dep => dep.paisId === parseInt(selectedPais)));
       });
   }, [selectedPais]);
 
   useEffect(() => {
     resetAll(["municipios", "sedes", "bloques", "espacios", "almacenes", "pedidos"]);
     if (selectedDepto)
-      axios.get(`/v1/municipio?departamentoId=${selectedDepto}`, headers).then(res => setMunicipios(res.data));
+      axios.get(`/v1/municipio?departamentoId=${selectedDepto}`, headers).then(res => {
+        setMunicipios(res.data || []);
+      });
   }, [selectedDepto]);
 
   useEffect(() => {
     resetAll(["sedes", "bloques", "espacios", "almacenes", "pedidos"]);
     if (selectedMunicipio)
       axios.get("/v1/sede", headers).then(res => {
-        setSedes(res.data.filter(s => s.municipioId === parseInt(selectedMunicipio)));
+        setSedes((res.data || []).filter(s => s.municipioId === parseInt(selectedMunicipio)));
       });
   }, [selectedMunicipio]);
 
   useEffect(() => {
     resetAll(["bloques", "espacios", "almacenes", "pedidos"]);
     if (selectedSede)
-      axios.get(`/v1/bloque?sedeId=${selectedSede}`, headers).then(res => setBloques(res.data));
+      axios.get("/v1/bloque", headers).then(res => {
+        setBloques((res.data || []).filter(b => b.sedeId === parseInt(selectedSede)));
+      });
   }, [selectedSede]);
 
   useEffect(() => {
     resetAll(["espacios", "almacenes", "pedidos"]);
     if (selectedBloque)
-      axios.get(`/v1/espacio?bloqueId=${selectedBloque}`, headers).then(res => setEspacios(res.data));
+      axios.get(`/v1/espacio`, headers).then(res => {
+        setEspacios((res.data || []).filter(e => e.bloqueId === parseInt(selectedBloque)));
+      });
   }, [selectedBloque]);
 
   useEffect(() => {
     resetAll(["almacenes", "pedidos"]);
     if (selectedEspacio)
-      axios.get(`/v1/almacen?espacioId=${selectedEspacio}`, headers).then(res => setAlmacenes(res.data));
+      axios.get(`/v1/almacen`, headers).then(res => {
+        setAlmacenes((res.data || []).filter(a => a.espacioId === parseInt(selectedEspacio)));
+      });
   }, [selectedEspacio]);
 
   const reloadData = () => {
     if (!selectedAlmacen) return setPedidos([]);
-    axios.get(`/v1/pedido?almacenId=${selectedAlmacen}`, headers).then(res => {
-      setPedidos(res.data);
-    });
+    axios.get(`/v1/pedido`, headers).then(res => {
+      const filtrados = (res.data || []).filter(p => p.almacenId === parseInt(selectedAlmacen));
+      setPedidos(filtrados);
+    }).catch(() => setPedidos([]));
   };
 
   useEffect(() => {
@@ -100,7 +109,7 @@ export default function Pedido() {
 
   const handleDelete = async () => {
     if (!selectedRow) return;
-    if (window.confirm(`¿Eliminar el pedido "${selectedRow.nombre}"?`)) {
+    if (window.confirm(`¿Eliminar el pedido "${selectedRow.descripcion}"?`)) {
       try {
         await axios.delete(`/v1/pedido/${selectedRow.id}`, headers);
         setMessage({ open: true, severity: "success", text: "Pedido eliminado correctamente." });
@@ -156,7 +165,7 @@ export default function Pedido() {
                   onChange={(e) => setter(e.target.value)}
                   label={label}
                 >
-                  {list.map((item) => (
+                  {Array.isArray(list) && list.map((item) => (
                     <MenuItem key={item.id} value={item.id}>
                       {item.nombre}
                     </MenuItem>
