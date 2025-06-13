@@ -51,7 +51,7 @@ export default function Register() {
       return;
     }
 
-    axios.post('http://localhost:8080/auth/register', { username, password })
+    axios.post(import.meta.env.VITE_BACKEND_URI+'/auth/register', { username, password })
       .then(() => {
         setOpenSnackbar(true);
         // Optionally redirect:
