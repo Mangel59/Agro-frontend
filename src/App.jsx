@@ -33,9 +33,7 @@ const App = () => {
   }, []);
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', width: '100vw' }}>
-      <CssBaseline />
-      <Box
+    <Box
         component="main"
         sx={{
           backgroundColor: (theme) =>
@@ -44,11 +42,9 @@ const App = () => {
               : theme.palette.grey[900],
           flexGrow: 1,
           height: '100vh',
-          overflow: 'auto',
+          overflow: 'hidden', // desactiva scroll doble
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
         }}
       >
         <Toolbar />
@@ -57,10 +53,8 @@ const App = () => {
           sx={{
             mt: 4,
             mb: 4,
-            display: 'flex',
-            flexDirection: 'column',
-            height: 'calc(100% - 64px)',
-            justifyContent: 'center',
+            height: 'calc(100% - 64px)', // deja espacio para la Toolbar
+            overflowY: 'auto',            // scroll solo en el contenido
           }}
         >
           <AppBarComponent setCurrentModule={setCurrentModule} />
@@ -69,8 +63,8 @@ const App = () => {
           </Paper>
           <Copyright sx={{ pt: 2, pb: 2 }} />
         </Container>
-      </Box>
-    </Box>
+     </Box>
+
   );
 };
 

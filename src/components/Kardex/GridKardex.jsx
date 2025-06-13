@@ -1,6 +1,6 @@
 import React from "react";
-import { Box } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import { Box } from "@mui/material";
 
 const columns = [
   { field: "id", headerName: "ID", width: 90 },
@@ -24,10 +24,14 @@ export default function GridKardex({ kardexes, selectedRow, setSelectedRow }) {
       <DataGrid
         rows={kardexes}
         columns={columns}
-        pageSize={5}
+        pageSizeOptions={[5, 10, 15]}
+        initialState={{
+          pagination: { paginationModel: { pageSize: 5, page: 0 } }
+        }}
         getRowId={(row) => row.id}
         onRowClick={(params) => setSelectedRow(params.row)}
       />
+
     </Box>
   );
 }
