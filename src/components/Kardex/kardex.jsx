@@ -4,6 +4,7 @@ import MessageSnackBar from "../MessageSnackBar";
 import FormKardex from "./FromKardex";
 import GridKardex from "./GridKardex";
 import GridArticuloKardex from "./GridArticuloKardex";
+import FormArticuloKardex from "./FormArticuloKardex";
 import {
   Box,
   Button,
@@ -30,6 +31,8 @@ export default function Kardex() {
   const [searchId, setSearchId] = useState("");
   const [searchResult, setSearchResult] = useState(null);
   const [articuloItems, setArticuloItems] = useState([]);
+  const [selectedArticulo, setSelectedArticulo] = useState({});
+  const [reloadArticulos, setReloadArticulos] = useState(false);
 
   const reloadData = () => {
     axios.get("/v1/kardex")
@@ -43,7 +46,7 @@ export default function Kardex() {
   };
 
   const loadArticulos = (kardexId) => {
-    axios.get(`/v1/articulo-kardex?kardexId=${kardexId}`)
+    axios.get(`/v1/kardex/${kardexId}/articulos`)
       .then(res => setArticuloItems(res.data))
       .catch(() => setArticuloItems([]));
   };
@@ -56,7 +59,7 @@ export default function Kardex() {
     if (selectedRow) {
       loadArticulos(selectedRow.id);
     }
-  }, [selectedRow]);
+  }, [selectedRow, reloadArticulos]);
 
   const handleSearch = () => {
     if (!searchId) return;
@@ -88,7 +91,7 @@ export default function Kardex() {
         setMessage={setMessage}
       />
 
-      <Box sx={{ height: 350, mb: 8 }}>
+      <Box sx={{ height: 350, mb: 12 }}>
         <GridKardex
           kardexes={kardexes}
           selectedRow={selectedRow}
@@ -97,17 +100,26 @@ export default function Kardex() {
         />
       </Box>
 
-      <Divider sx={{ my: 6 }} />
+      <Divider sx={{ my: 10 }} />
 
-      <Typography variant="h6" gutterBottom>
-        Artículos del Kardex seleccionado
-      </Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} mt={2}>
+        <Typography variant="h6">Artículos del Kardex seleccionado</Typography>
+        <Box display="flex" gap={2}>
+          <FormArticuloKardex
+            selectedRow={selectedArticulo}
+            kardexId={selectedRow?.id || ""}
+            setSelectedRow={setSelectedArticulo}
+            setMessage={setMessage}
+            reloadData={() => setReloadArticulos(prev => !prev)}
+          />
+        </Box>
+      </Box>
 
-      <Box sx={{ height: 350, mt: 5 }}>
+      <Box>
         <GridArticuloKardex
           items={articuloItems}
-          selectedRow={{}}
-          setSelectedRow={() => {}}
+          selectedRow={selectedArticulo}
+          setSelectedRow={setSelectedArticulo}
         />
       </Box>
 

@@ -34,36 +34,32 @@ const App = () => {
 
   return (
     <Box
-        component="main"
-        sx={{
-          backgroundColor: (theme) =>
-            theme.palette.mode === 'light'
-              ? theme.palette.grey[100]
-              : theme.palette.grey[900],
-          flexGrow: 1,
-          height: '100vh',
-          overflow: 'hidden', // desactiva scroll doble
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <Toolbar />
-        <Container
-          maxWidth={false}
-          sx={{
-            mt: 4,
-            mb: 4,
-            height: 'calc(100% - 64px)', // deja espacio para la Toolbar
-            overflowY: 'auto',            // scroll solo en el contenido
-          }}
-        >
-          <AppBarComponent setCurrentModule={setCurrentModule} />
-          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-            {currentModule}
-          </Paper>
-          <Copyright sx={{ pt: 2, pb: 2 }} />
-        </Container>
-     </Box>
+  component="main"
+  sx={{
+    backgroundColor: '#f5f5f5',
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh',
+  }}
+>
+  <Toolbar />
+  <Container
+    maxWidth={false}
+    sx={{
+      flex: 1, // esto hace que se expanda al 100%
+      display: 'flex',
+      flexDirection: 'column',
+    }}
+  >
+    <AppBarComponent setCurrentModule={setCurrentModule} />
+    <Paper sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+      {currentModule}
+    </Paper>
+    <Copyright sx={{ pt: 2, pb: 2 }} />
+  </Container>
+</Box>
+
+
 
   );
 };

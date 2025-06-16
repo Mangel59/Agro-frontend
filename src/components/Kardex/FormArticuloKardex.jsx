@@ -6,7 +6,7 @@ import {
 import axios from "../axiosConfig";
 import StackButtons from "../StackButtons";
 
-export default function FormArticuloKardex({ selectedRow, setSelectedRow, setMessage, reloadData }) {
+export default function ({ selectedRow, setSelectedRow, setMessage, reloadData, kardexId }) {
   const [open, setOpen] = useState(false);
   const [methodName, setMethodName] = useState("");
   const [presentaciones, setPresentaciones] = useState([]);
@@ -15,7 +15,7 @@ export default function FormArticuloKardex({ selectedRow, setSelectedRow, setMes
     cantidad: "",
     precio: "",
     fechaVencimiento: "",
-    kardexId: "",
+    kardexId: kardexId || "",
     productoPresentacionId: "",
     estadoId: "1",
   };
@@ -23,13 +23,13 @@ export default function FormArticuloKardex({ selectedRow, setSelectedRow, setMes
   const [formData, setFormData] = useState(initialData);
 
   const loadData = () => {
-    axios.get("/v1/producto_presentacion")
+    axios.get("/v1/presentacion")
       .then(res => setPresentaciones(res.data))
       .catch(err => console.error("Error al cargar presentaciones:", err));
   };
 
   const create = () => {
-    setFormData(initialData);
+    setFormData(prev => ({ ...initialData, kardexId: kardexId || "" }));
     setMethodName("Agregar");
     loadData();
     setOpen(true);
@@ -65,12 +65,13 @@ export default function FormArticuloKardex({ selectedRow, setSelectedRow, setMes
   const handleSubmit = (e) => {
     e.preventDefault();
     const payload = {
-      ...formData,
-      cantidad: parseFloat(formData.cantidad),
-      precio: parseFloat(formData.precio),
-      kardexId: parseInt(formData.kardexId),
-      productoPresentacionId: parseInt(formData.productoPresentacionId),
-      estadoId: parseInt(formData.estadoId),
+    ...formData,
+    cantidad: parseFloat(formData.cantidad),
+    precio: parseFloat(formData.precio),
+    kardexId: parseInt(formData.kardexId),
+    productoPresentacionId: parseInt(formData.productoPresentacionId),
+    estadoId: parseInt(formData.estadoId),
+    fechaVencimiento: formData.fechaVencimiento + "T00:00:00"
     };
 
     const method = methodName === "Agregar" ? axios.post : axios.put;
@@ -107,7 +108,7 @@ export default function FormArticuloKardex({ selectedRow, setSelectedRow, setMes
               InputLabelProps={{ shrink: true }}
               required
             />
-            <TextField fullWidth name="kardexId" label="Kardex ID" value={formData.kardexId} onChange={handleChange} margin="dense" required />
+            <TextField fullWidth name="kardexId" label="Kardex ID" value={formData.kardexId} margin="dense" required disabled />
 
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Presentación</InputLabel>
