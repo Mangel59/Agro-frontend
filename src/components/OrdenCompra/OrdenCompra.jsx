@@ -53,7 +53,7 @@ export default function OrdenCompra() {
       .then(res => setArticuloItems(res.data))
       .catch(() => setArticuloItems([]));
   };
-//MAS INTENSO QUE NOVIO FEO
+//MAS INTENSO QUE NOVIO FEO :P
   useEffect(() => { reloadData(); }, [paginationModel, sortModel]);
 
   useEffect(() => {
