@@ -1,106 +1,145 @@
-/**
- * @file OrdenCompra.jsx
- * @module OrdenCompra
- * @description Componente principal para gestionar órdenes de compra. Incluye formulario, grilla, paginación, ordenamiento y filtros conectados al backend.
- */
-
-import React from "react";
+import React, { useEffect, useState } from "react";
 import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
 import FormOrdenCompra from "./FormOrdenCompra";
 import GridOrdenCompra from "./GridOrdenCompra";
+import FormArticuloOrdenCompra from "./FormArticuloOrdenCompra";
+import GridArticuloOrdenCompra from "./GridArticuloOrdenCompra";
+import {
+  Box, Button, Typography, Grid, Divider, Dialog, DialogTitle,
+  DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem
+} from "@mui/material";
 
-/**
- * Componente principal `OrdenCompra`.
- * Administra el CRUD de órdenes de compra y la vista de tabla.
- *
- * @returns {JSX.Element} Componente completo con formulario y tabla.
- */
 export default function OrdenCompra() {
-  const row = {
-    id: 0,
-    fechaHora: "",
-    pedidoId: "",
-    proveedorId: "",
-    descripcion: "",
-    estadoId: 1,
-  };
+  const [ordenes, setOrdenes] = useState([]);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState("create");
+  const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 });
+  const [rowCount, setRowCount] = useState(0);
+  const [sortModel, setSortModel] = useState([]);
+  const [filterModel, setFilterModel] = useState({ items: [] });
 
-  const [selectedRow, setSelectedRow] = React.useState(row);
-  const [message, setMessage] = React.useState({
-    open: false,
-    severity: "success",
-    text: "",
-  });
-  const [ordenes, setOrdenes] = React.useState([]);
-  const [paginationModel, setPaginationModel] = React.useState({
-    page: 0,
-    pageSize: 5,
-  });
-  const [rowCount, setRowCount] = React.useState(0);
-  const [sortModel, setSortModel] = React.useState([]);
-  const [filterModel, setFilterModel] = React.useState({ items: [] });
+  const [articuloItems, setArticuloItems] = useState([]);
+  const [selectedArticulo, setSelectedArticulo] = useState({});
+  const [reloadArticulos, setReloadArticulos] = useState(false);
 
   const reloadData = () => {
-    axios
-      .get("/v1/orden_compra", {
-        params: {
-          page: paginationModel.page,
-          size: paginationModel.pageSize,
-          sort: sortModel[0]?.field,
-          order: sortModel[0]?.sort,
-        },
-      })
-      .then((response) => {
-        const data = Array.isArray(response.data.data) ? response.data.data : response.data;
-
-        const ordenesConNombre = data.map((orden) => ({
-          ...orden,
-          proveedorNombre: orden.proveedor?.nombre || ` ${orden.proveedorId}`,
-        }));
-
-        setOrdenes(ordenesConNombre);
-        setRowCount(response.data.totalCount || ordenesConNombre.length);
-      })
-      .catch((error) => {
-        console.error("Error al cargar órdenes:", error);
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al cargar órdenes de compra",
-        });
-      });
+    axios.get("/v1/orden_compra", {
+      params: {
+        page: paginationModel.page,
+        size: paginationModel.pageSize,
+        sort: sortModel[0]?.field,
+        order: sortModel[0]?.sort,
+      },
+    })
+    .then((res) => {
+      const data = Array.isArray(res.data.data) ? res.data.data : res.data;
+      const ordenesConNombre = data.map((orden) => ({
+        ...orden,
+        proveedorNombre: orden.proveedor?.nombre || ` ${orden.proveedorId}`,
+      }));
+      setOrdenes(ordenesConNombre);
+      setRowCount(res.data.totalCount || ordenesConNombre.length);
+    })
+    .catch(() => {
+      setMessage({ open: true, severity: "error", text: "Error al cargar órdenes de compra" });
+    });
   };
 
-  React.useEffect(() => {
-    reloadData();
-  }, [paginationModel, sortModel]);
+  const loadArticulos = (ordenCompraId) => {
+    axios.get(`/v1/orden_compra/${ordenCompraId}/articulos`)
+      .then(res => setArticuloItems(res.data))
+      .catch(() => setArticuloItems([]));
+  };
+
+  useEffect(() => { reloadData(); }, [paginationModel, sortModel]);
+
+  useEffect(() => {
+    if (selectedRow?.id) loadArticulos(selectedRow.id);
+  }, [selectedRow, reloadArticulos]);
 
   return (
-    <div style={{ height: "100%", width: "100%" }}>
-      <h1>Orden de Compra</h1>
+    <Box sx={{ p: 2 }}>
+      <Typography variant="h5" gutterBottom>Gestión de Órdenes de Compra</Typography>
 
-      <MessageSnackBar message={message} setMessage={setMessage} />
+      <Grid container spacing={2} mb={2}>
+        <Grid item>
+          <Button variant="contained" onClick={() => { setFormMode("create"); setFormOpen(true); }}>Nuevo</Button>
+        </Grid>
+        <Grid item>
+          <Button variant="outlined" disabled={!selectedRow} onClick={() => { setFormMode("edit"); setFormOpen(true); }}>Editar</Button>
+        </Grid>
+        <Grid item>
+          <Button variant="outlined" color="error" disabled={!selectedRow}
+            onClick={() => {
+              axios.delete(`/v1/orden_compra/${selectedRow.id}`)
+                .then(() => {
+                  setMessage({ open: true, severity: "success", text: "Orden eliminada correctamente" });
+                  reloadData();
+                  setSelectedRow(null);
+                })
+                .catch(() => {
+                  setMessage({ open: true, severity: "error", text: "Error al eliminar orden" });
+                });
+            }}
+          >
+            Eliminar
+          </Button>
+        </Grid>
+      </Grid>
 
       <FormOrdenCompra
-        setMessage={setMessage}
+        open={formOpen}
+        setOpen={setFormOpen}
+        formMode={formMode}
+        setFormMode={setFormMode}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
         reloadData={reloadData}
+        setMessage={setMessage}
       />
 
-      <GridOrdenCompra
-        ordenes={ordenes}
-        selectedRow={selectedRow}
-        setSelectedRow={setSelectedRow}
-        rowCount={rowCount}
-        paginationModel={paginationModel}
-        setPaginationModel={setPaginationModel}
-        filterModel={filterModel}
-        setFilterModel={setFilterModel}
-        sortModel={sortModel}
-        setSortModel={setSortModel}
-      />
-    </div>
+      <Box sx={{ height: 350, mb: 10 }}>
+        <GridOrdenCompra
+          ordenes={ordenes}
+          selectedRow={selectedRow}
+          setSelectedRow={setSelectedRow}
+          rowCount={rowCount}
+          paginationModel={paginationModel}
+          setPaginationModel={setPaginationModel}
+          filterModel={filterModel}
+          setFilterModel={setFilterModel}
+          sortModel={sortModel}
+          setSortModel={setSortModel}
+        />
+      </Box>
+
+      <Divider sx={{ my: 6 }} />
+
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} mt={2}>
+        <Typography variant="h6">Artículos de la Orden Seleccionada</Typography>
+        <Box display="flex" gap={2}>
+          <FormArticuloOrdenCompra
+            selectedRow={selectedArticulo}
+            ordenCompraId={selectedRow?.id || ""}
+            setSelectedRow={setSelectedArticulo}
+            setMessage={setMessage}
+            reloadData={() => setReloadArticulos(prev => !prev)}
+          />
+        </Box>
+      </Box>
+
+      <Box>
+        <GridArticuloOrdenCompra
+          items={articuloItems}
+          selectedRow={selectedArticulo}
+          setSelectedRow={setSelectedArticulo}
+        />
+      </Box>
+
+      <MessageSnackBar message={message} setMessage={setMessage} />
+    </Box>
   );
 }

@@ -1,3 +1,4 @@
+// FormPedido.jsx con jerarquía para seleccionar almacén
 import React, { useEffect, useState } from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
@@ -16,6 +17,20 @@ export default function FormPedido({
   setMessage = () => {},
 }) {
   const [producciones, setProducciones] = useState([]);
+  const [paises, setPaises] = useState([]);
+  const [departamentos, setDepartamentos] = useState([]);
+  const [municipios, setMunicipios] = useState([]);
+  const [sedes, setSedes] = useState([]);
+  const [bloques, setBloques] = useState([]);
+  const [espacios, setEspacios] = useState([]);
+  const [almacenes, setAlmacenes] = useState([]);
+
+  const [selectedPais, setSelectedPais] = useState("");
+  const [selectedDepto, setSelectedDepto] = useState("");
+  const [selectedMunicipio, setSelectedMunicipio] = useState("");
+  const [selectedSede, setSelectedSede] = useState("");
+  const [selectedBloque, setSelectedBloque] = useState("");
+  const [selectedEspacio, setSelectedEspacio] = useState("");
 
   const token = localStorage.getItem("token");
   const headers = { headers: { Authorization: `Bearer ${token}` } };
@@ -27,7 +42,7 @@ export default function FormPedido({
     descripcion: "",
     fechaHora: "",
     estadoId: 1,
-    empresaId: "", // opcional, si se quiere llenar por token
+    empresaId: "",
   };
 
   const [formData, setFormData] = useState(initialData);
@@ -35,11 +50,9 @@ export default function FormPedido({
 
   useEffect(() => {
     axios.get("/v1/produccion", headers)
-      .then(res => {
-        const data = Array.isArray(res.data) ? res.data : [];
-        setProducciones(data);
-      })
+      .then(res => setProducciones(res.data || []))
       .catch(() => setProducciones([]));
+    axios.get("/v1/pais", headers).then(res => setPaises(res.data));
   }, []);
 
   useEffect(() => {
@@ -52,6 +65,54 @@ export default function FormPedido({
       setErrors({});
     }
   }, [open, formMode, selectedRow, almacenId]);
+
+  useEffect(() => {
+    setDepartamentos([]); setSelectedDepto("");
+    if (selectedPais)
+      axios.get("/v1/departamento", headers).then(res => {
+        setDepartamentos(res.data.filter(d => d.paisId === parseInt(selectedPais)));
+      });
+  }, [selectedPais]);
+
+  useEffect(() => {
+    setMunicipios([]); setSelectedMunicipio("");
+    if (selectedDepto)
+      axios.get(`/v1/municipio?departamentoId=${selectedDepto}`, headers).then(res => {
+        setMunicipios(res.data);
+      });
+  }, [selectedDepto]);
+
+  useEffect(() => {
+    setSedes([]); setSelectedSede("");
+    if (selectedMunicipio)
+      axios.get("/v1/sede", headers).then(res => {
+        setSedes(res.data.filter(s => s.municipioId === parseInt(selectedMunicipio)));
+      });
+  }, [selectedMunicipio]);
+
+  useEffect(() => {
+    setBloques([]); setSelectedBloque("");
+    if (selectedSede)
+      axios.get("/v1/bloque", headers).then(res => {
+        setBloques(res.data.filter(b => b.sedeId === parseInt(selectedSede)));
+      });
+  }, [selectedSede]);
+
+  useEffect(() => {
+    setEspacios([]); setSelectedEspacio("");
+    if (selectedBloque)
+      axios.get("/v1/espacio", headers).then(res => {
+        setEspacios(res.data.filter(e => e.bloqueId === parseInt(selectedBloque)));
+      });
+  }, [selectedBloque]);
+
+  useEffect(() => {
+    setAlmacenes([]);
+    if (selectedEspacio)
+      axios.get("/v1/almacen", headers).then(res => {
+        setAlmacenes(res.data.filter(a => a.espacioId === parseInt(selectedEspacio)));
+      });
+  }, [selectedEspacio]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -93,6 +154,60 @@ export default function FormPedido({
     <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
       <DialogTitle>{formMode === "edit" ? "Editar Pedido" : "Nuevo Pedido"}</DialogTitle>
       <DialogContent>
+        <FormControl fullWidth margin="normal">
+          <InputLabel>País</InputLabel>
+          <Select value={selectedPais} onChange={(e) => setSelectedPais(e.target.value)}>
+            {paises.map(p => <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>)}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal" disabled={!selectedPais}>
+          <InputLabel>Departamento</InputLabel>
+          <Select value={selectedDepto} onChange={(e) => setSelectedDepto(e.target.value)}>
+            {departamentos.map(d => <MenuItem key={d.id} value={d.id}>{d.nombre}</MenuItem>)}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal" disabled={!selectedDepto}>
+          <InputLabel>Municipio</InputLabel>
+          <Select value={selectedMunicipio} onChange={(e) => setSelectedMunicipio(e.target.value)}>
+            {municipios.map(m => <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>)}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal" disabled={!selectedMunicipio}>
+          <InputLabel>Sede</InputLabel>
+          <Select value={selectedSede} onChange={(e) => setSelectedSede(e.target.value)}>
+            {sedes.map(s => <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>)}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal" disabled={!selectedSede}>
+          <InputLabel>Bloque</InputLabel>
+          <Select value={selectedBloque} onChange={(e) => setSelectedBloque(e.target.value)}>
+            {bloques.map(b => <MenuItem key={b.id} value={b.id}>{b.nombre}</MenuItem>)}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal" disabled={!selectedBloque}>
+          <InputLabel>Espacio</InputLabel>
+          <Select value={selectedEspacio} onChange={(e) => setSelectedEspacio(e.target.value)}>
+            {espacios.map(e => <MenuItem key={e.id} value={e.id}>{e.nombre}</MenuItem>)}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal" disabled={!selectedEspacio} error={!!errors.almacenId}>
+          <InputLabel>Almacén</InputLabel>
+          <Select
+            name="almacenId"
+            value={formData.almacenId}
+            onChange={handleChange}
+          >
+            {almacenes.map(a => <MenuItem key={a.id} value={a.id}>{a.nombre}</MenuItem>)}
+          </Select>
+          {errors.almacenId && <FormHelperText>{errors.almacenId}</FormHelperText>}
+        </FormControl>
+
         <FormControl fullWidth margin="normal" error={!!errors.produccionId}>
           <InputLabel>Producción</InputLabel>
           <Select
@@ -101,7 +216,7 @@ export default function FormPedido({
             onChange={handleChange}
             label="Producción"
           >
-            {Array.isArray(producciones) && producciones.map((p) => (
+            {producciones.map((p) => (
               <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>
             ))}
           </Select>
