@@ -63,33 +63,6 @@ export default function OrdenCompra() {
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h5" gutterBottom>Gestión de Órdenes de Compra</Typography>
-
-      <Grid container spacing={2} mb={2}>
-        <Grid item>
-          <Button variant="contained" onClick={() => { setFormMode("create"); setFormOpen(true); }}>Nuevo</Button>
-        </Grid>
-        <Grid item>
-          <Button variant="outlined" disabled={!selectedRow} onClick={() => { setFormMode("edit"); setFormOpen(true); }}>Editar</Button>
-        </Grid>
-        <Grid item>
-          <Button variant="outlined" color="error" disabled={!selectedRow}
-            onClick={() => {
-              axios.delete(`/v1/orden_compra/${selectedRow.id}`)
-                .then(() => {
-                  setMessage({ open: true, severity: "success", text: "Orden eliminada correctamente" });
-                  reloadData();
-                  setSelectedRow(null);
-                })
-                .catch(() => {
-                  setMessage({ open: true, severity: "error", text: "Error al eliminar orden" });
-                });
-            }}
-          >
-            Eliminar
-          </Button>
-        </Grid>
-      </Grid>
-
       <FormOrdenCompra
         open={formOpen}
         setOpen={setFormOpen}
