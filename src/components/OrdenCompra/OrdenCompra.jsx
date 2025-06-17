@@ -53,7 +53,7 @@ export default function OrdenCompra() {
       .then(res => setArticuloItems(res.data))
       .catch(() => setArticuloItems([]));
   };
-
+//cANSON
   useEffect(() => { reloadData(); }, [paginationModel, sortModel]);
 
   useEffect(() => {
