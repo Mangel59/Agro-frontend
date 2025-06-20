@@ -22,21 +22,24 @@
 // export default instance;
 // axiosConfig.js
 // src/axiosConfig.js
-import axios from 'axios';
+import axios from "axios";
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_URI_BACKEND+'/api',
+  baseURL: import.meta.env.VITE_URI_BACKEND + "/api",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-instance.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => Promise.reject(error));
+instance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export default instance;
