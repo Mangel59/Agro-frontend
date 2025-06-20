@@ -7,7 +7,6 @@ import {
   GridToolbarFilterButton,
 } from "@mui/x-data-grid";
 
-// Columnas para mostrar datos de orden de compra
 const columns = [
   { field: "id", headerName: "ID", width: 90, type: "number" },
   {

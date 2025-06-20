@@ -5,6 +5,8 @@ import FormKardex from "./FromKardex";
 import GridKardex from "./GridKardex";
 import GridArticuloKardex from "./GridArticuloKardex";
 import FormArticuloKardex from "./FormArticuloKardex";
+import Rkardex from "../RKardex/Rkardex";
+
 import {
   Box,
   Button,
@@ -27,12 +29,16 @@ export default function Kardex() {
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState("create");
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
+
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
   const [searchId, setSearchId] = useState("");
   const [searchResult, setSearchResult] = useState(null);
+
   const [articuloItems, setArticuloItems] = useState([]);
   const [selectedArticulo, setSelectedArticulo] = useState({});
   const [reloadArticulos, setReloadArticulos] = useState(false);
+
+  const [reporteOpen, setReporteOpen] = useState(false); 
 
   const reloadData = () => {
     axios.get("/v1/kardex")
@@ -77,7 +83,12 @@ export default function Kardex() {
     <Box sx={{ p: 2 }}>
       <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
         <Typography variant="h5">Gestión de Kardex</Typography>
-        <Button variant="contained" onClick={() => setSearchDialogOpen(true)}>Buscar por ID</Button>
+        <Box display="flex" gap={2}>
+          <Button variant="contained" onClick={() => setSearchDialogOpen(true)}>Buscar por ID</Button>
+          <Button variant="outlined" color="secondary" onClick={() => setReporteOpen(true)}>
+            Ver Reporte Kardex
+          </Button>
+        </Box>
       </Box>
 
       <FormKardex
@@ -123,6 +134,7 @@ export default function Kardex() {
         />
       </Box>
 
+      {/* Dialog para buscar por ID */}
       <Dialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} fullWidth>
         <DialogTitle>Buscar Kardex por ID</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -151,6 +163,17 @@ export default function Kardex() {
         <DialogActions>
           <Button onClick={() => setSearchDialogOpen(false)}>Cerrar</Button>
           <Button onClick={handleSearch}>Buscar</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog del reporte */}
+      <Dialog open={reporteOpen} onClose={() => setReporteOpen(false)} fullWidth maxWidth="xl">
+        <DialogTitle>Reporte Kardex</DialogTitle>
+        <DialogContent>
+          <Rkardex />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setReporteOpen(false)}>Cerrar</Button>
         </DialogActions>
       </Dialog>
 

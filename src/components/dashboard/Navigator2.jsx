@@ -67,13 +67,12 @@ import TipoIdentificacion from '../TipoIdentificacion/TipoIdentificacion.jsx';
 import Proveedor from '../Proveedor/Proveedor.jsx';
 import MediaCard from '../MediaCard.jsx';
 import OrdenCompra from '../OrdenCompra/OrdenCompra.jsx';
-import ArticuloPedido from '../ArticuloPedido/ArticuloPedido.jsx';
+import Ocupacion from '../ocupacion/Ocupacion.jsx';
 import Evaluacion from '../Evaluacion/Evaluacion.jsx';
 import EvaluacionItem from '../Evaluacion_item/Evaluacion_item.jsx';
 import Grupo from '../Grupo/Grupo.jsx';
 import Movimineto from '../Movimiento/Movimiento.jsx';
 import Proceso from '../Proceso/Proceso.jsx';
-import Ingrediente from '../../ingrediente/ingrediente.jsx';
 import ArticuloKardex from  '../kardexItem/ArticuloKardex.jsx';
 const icons = {
   DnsRounded: <DnsRoundedIcon />, Home: <HomeIcon />, People: <PeopleIcon />,
@@ -93,8 +92,8 @@ const components = {
   ArticuloKardex: ArticuloKardex, marca: Marca, unidad: Unidad, tipo_movimiento: TipoMovimiento,
   tipo_produccion: TipoProduccion, persona: Persona, empresa: Empresa, r_pedido: RPedido,
   kardex:kardex, media_card: MediaCard, evaluacion_item: EvaluacionItem,
-  OrdenCompra: OrdenCompra, ArticuloPedido: ArticuloPedido,
-  evaluacion:Evaluacion, grupo:Grupo, Movimiento:Movimineto, Proceso: Proceso, Ingrediente:Ingrediente
+  OrdenCompra: OrdenCompra, Ocupacion: Ocupacion,
+  evaluacion:Evaluacion, grupo:Grupo, Movimiento:Movimineto, Proceso: Proceso
 
 };
 
@@ -130,7 +129,7 @@ const moduleImages = {
   evaluacion_item: "/images/cards/2.jpg",
   evaluacion: "/images/cards/7.jpg",
   OrdenCompra: "/images/cards/9.jpg",
-  ArticuloPedido: "/images/cards/5.jpg",
+  Ocupacion: "/images/cards/5.jpg",
 };
 
 export default function Navigator2(props) {

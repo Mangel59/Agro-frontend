@@ -1,6 +1,6 @@
-// Pedido.jsx unificado estilo Kardex
 import React, { useEffect, useState } from "react";
 import axios from "../axiosConfig";
+import axiosV2 from "../axiosConfig2";
 import MessageSnackBar from "../MessageSnackBar";
 import FormPedido from "./FormPedido";
 import GridPedido from "./GridPedido";
@@ -65,6 +65,38 @@ export default function Pedido() {
       });
   };
 
+const imprimirReportePedido = (id) => {
+  const token = localStorage.getItem("token");
+
+  axios({
+    url: "/v2/report/pedido",
+    method: "POST",
+    data: { ped_id: Number(id) }, 
+    responseType: "blob",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => {
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `reporte_pedido_${id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    })
+    .catch(() => {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Error al descargar el reporte del pedido",
+      });
+    });
+};
+
+
   return (
     <Box sx={{ p: 2 }}>
       <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
@@ -98,7 +130,7 @@ export default function Pedido() {
         setSelectedRow={setSelectedRow}
         reloadData={reloadData}
         setMessage={setMessage}
-        almacenId={selectedRow?.almacenId || ""} // ✅ AÑADIR ESTO
+        almacenId={selectedRow?.almacenId || ""}
       />
 
       <Box sx={{ mt: 4 }}>
@@ -163,6 +195,13 @@ export default function Pedido() {
         <DialogActions>
           <Button onClick={() => setSearchDialogOpen(false)}>Cerrar</Button>
           <Button onClick={handleSearch}>Buscar</Button>
+          <Button
+            onClick={() => imprimirReportePedido(searchId)}
+            disabled={!searchResult}
+            variant="contained"
+          >
+            Imprimir
+          </Button>
         </DialogActions>
       </Dialog>
 

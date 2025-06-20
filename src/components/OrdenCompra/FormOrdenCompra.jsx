@@ -18,7 +18,6 @@ import StackButtons from "../StackButtons";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 
-// Validación Yup
 const OrdenCompraSchema = Yup.object().shape({
   fechaHora: Yup.string().required("La fecha es obligatoria."),
   pedidoId: Yup.number().required("El pedido es obligatorio."),

@@ -45,16 +45,12 @@
       { "id": "r_pedido", "text": "Pedido", "icon": "Settings" },
       { "id": "producto", "text": "Producto", "icon": "ProductionQuantityLimitsIcon" },
       { "id": "proveedor", "text": "Proveedor", "icon": "ProductionQuantityLimitsIcon" },
-      
-
       { "id": "producto_presentacion", "text": "Producto Presentación", "icon": "ProductionQuantityLimitsIcon" },
       { "id": "produccion", "text": "Producción", "icon": "ProductionQuantityLimitsIcon" },
       { "id": "tipo_movimiento", "text": "Tipo Movimiento", "icon": "ProductionQuantityLimitsIcon" },
       {"id": "OrdenCompra","text": "Orden Compra","icon": "Settings"},     
-      {"id": "ArticuloPedido","text": " Articulo de Pedido","icon": "ProductionQuantityLimitsIcon" },
       { "id": "kardex", "text": "Kardex", "icon": "LocationCity" },
-      { "id": "ArticuloKardex", "text": "Kardex item", "icon": "LocationCity" },
-      
+      {"id": "Ocupacion", "text": "Ocupacion", "icon": "Settings"},
       {"id": "evaluacion_item", "text": "EvaluacionItem","icon": "Settings"}
       
       
