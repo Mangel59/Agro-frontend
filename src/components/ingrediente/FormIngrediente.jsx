@@ -1,12 +1,12 @@
 import * as React from "react";
 import PropTypes from "prop-types";
-import axios from "../components/axiosConfig";
+import axios from "../axiosConfig";
 import {
   Button, Dialog, DialogActions, DialogContent,
   DialogContentText, DialogTitle, TextField, FormControl,
   InputLabel, Select, MenuItem
 } from "@mui/material";
-import StackButtons from "../components/StackButtons";
+import StackButtons from "../StackButtons";
 
 
 export default function FormIngrediente({ selectedRow, setSelectedRow, setMessage, reloadData, open, setOpen }) {

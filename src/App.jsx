@@ -34,33 +34,31 @@ const App = () => {
 
   return (
     <Box
-  component="main"
-  sx={{
-    backgroundColor: '#f5f5f5',
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: '100vh',
-  }}
->
-  <Toolbar />
-  <Container
-    maxWidth={false}
-    sx={{
-      flex: 1, // esto hace que se expanda al 100%
-      display: 'flex',
-      flexDirection: 'column',
-    }}
-  >
-    <AppBarComponent setCurrentModule={setCurrentModule} />
-    <Paper sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-      {currentModule}
-    </Paper>
-    <Copyright sx={{ pt: 2, pb: 2 }} />
-  </Container>
-</Box>
-
-
-
+      component="main"
+      sx={(theme) => ({
+        backgroundColor: theme.palette.background.default,
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+      })}
+    >
+      <CssBaseline />
+      <Toolbar />
+      <Container
+        maxWidth={false}
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <AppBarComponent setCurrentModule={setCurrentModule} />
+        <Paper sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+          {currentModule}
+        </Paper>
+        <Copyright sx={{ pt: 2, pb: 2 }} />
+      </Container>
+    </Box>
   );
 };
 

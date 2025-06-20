@@ -81,7 +81,7 @@ export default function Login(props) {
       return;
     }
 
-    axios.post(import.meta.env.VITE_BACKEND_URI+'/auth/login', {
+    axios.post(import.meta.env.VITE_URI_BACKEND+'/auth/login', {
       username,
       password,
     })

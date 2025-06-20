@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "../components/axiosConfig";
-import MessageSnackBar from "../components/MessageSnackBar";
-import FormIngrediente from "./FormIngrediente";
+import axios from "../axiosConfig";
+import MessageSnackBar from "../MessageSnackBar";
+import FormIngrediente from "./FormIngrediente"
 import GridIngrediente from "./GridIngrediente";
 
 export default function Ingrediente() {

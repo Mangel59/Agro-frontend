@@ -74,6 +74,7 @@ import Grupo from '../Grupo/Grupo.jsx';
 import Movimineto from '../Movimiento/Movimiento.jsx';
 import Proceso from '../Proceso/Proceso.jsx';
 import ArticuloKardex from  '../kardexItem/ArticuloKardex.jsx';
+import Ingrediente from '../ingrediente/ingrediente.jsx';
 const icons = {
   DnsRounded: <DnsRoundedIcon />, Home: <HomeIcon />, People: <PeopleIcon />,
   Public: <PublicIcon />, AddShoppingCartIcon: <AddShoppingCartIcon />, Domain: <DomainIcon />,
@@ -93,7 +94,7 @@ const components = {
   tipo_produccion: TipoProduccion, persona: Persona, empresa: Empresa, r_pedido: RPedido,
   kardex:kardex, media_card: MediaCard, evaluacion_item: EvaluacionItem,
   OrdenCompra: OrdenCompra, Ocupacion: Ocupacion,
-  evaluacion:Evaluacion, grupo:Grupo, Movimiento:Movimineto, Proceso: Proceso
+  evaluacion:Evaluacion, grupo:Grupo, Movimiento:Movimineto, Proceso: Proceso, Ingrediente: Ingrediente
 
 };
 
@@ -130,6 +131,7 @@ const moduleImages = {
   evaluacion: "/images/cards/7.jpg",
   OrdenCompra: "/images/cards/9.jpg",
   Ocupacion: "/images/cards/5.jpg",
+  Ingrediente: "/images/cards/5.jpg",
 };
 
 export default function Navigator2(props) {
