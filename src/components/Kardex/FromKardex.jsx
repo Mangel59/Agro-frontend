@@ -44,7 +44,25 @@ export default function FormKardex({
   useEffect(() => {
     axios.get("/v1/pais", headers).then(res => setPaises(res.data));
     axios.get("/v1/produccion", headers).then(res => setProducciones(res.data));
-    axios.get("/v1/tipo_movimiento", headers).then(res => setTiposMovimiento(res.data));
+    axios.get("/v1/tipo_movimiento", headers)
+  .then(res => {
+    console.log("Respuesta de /v1/tipo_movimiento:", res.data); // ← AÑADE ESTO
+
+    if (Array.isArray(res.data)) {
+      setTiposMovimiento(res.data);
+    } else if (Array.isArray(res.data.data)) {
+      setTiposMovimiento(res.data.data);
+    } else {
+      console.error("Respuesta inesperada para tiposMovimiento:", res.data);
+      setTiposMovimiento([]);
+    }
+  })
+  .catch(err => {
+    console.error("Error al cargar tipos de movimiento:", err);
+    setTiposMovimiento([]);
+  });
+
+
   }, []);
 
   useEffect(() => {

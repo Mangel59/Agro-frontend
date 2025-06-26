@@ -1,19 +1,16 @@
-/**
- * FormRegistroPersona componente principal.
- * @component
- * @returns {JSX.Element}
- */
 import * as React from 'react';
 import {
   Button, TextField, FormControl, InputLabel, MenuItem, Select,
-  Typography, Box, Container
+  Typography, Box, Container, useTheme
 } from '@mui/material';
-import { SiteProps } from '../dashboard/SiteProps';
-import axios from '../axiosConfig';
 import FormRegistroEmpresa from './FormRegistroEmpresa';
+import axios from "../axiosConfig";
 
 export default function FormRegistroPersona(props) {
-  const url = `${SiteProps.urlbasev1}/personas/persona-usuario`;
+  const theme = useTheme();
+
+  const [error, setError] = React.useState('');
+  const [success, setSuccess] = React.useState('');
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -25,19 +22,31 @@ export default function FormRegistroPersona(props) {
     formJson.estado = 1;
     formJson.genero = formJson.genero.toLowerCase();
 
-    console.log('formJson limpio __', formJson);
+    const token = localStorage.getItem('token');
+    const url = import.meta.env.VITE_BACKEND_URI + '/api/v1/personas/persona-usuario';
 
-    axios.post(url, formJson)
+    axios.post(url, formJson, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((response) => {
-        console.log('Persona creada con éxito:', response.data);
+        setError('');
+        setSuccess('Persona creada con éxito');
         if (response.data.usuarioEstado === 3) {
           props.setCurrentModule(
-            <FormRegistroEmpresa setCurrentModule={props.setCurrentModule} />
+            <FormRegistroEmpresa
+              setCurrentModule={props.setCurrentModule}
+              personaId={response.data.id}
+            />
           );
         }
       })
       .catch((error) => {
         console.error('Error al crear la persona:', error);
+        const message = error.response?.data?.message || 'No se pudo crear la persona.';
+        setError(message);
+        setSuccess('');
       });
   };
 
@@ -50,7 +59,7 @@ export default function FormRegistroPersona(props) {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        backgroundColor: '#FFF',
+        backgroundColor: theme.palette.background.default,
         padding: 3,
         mt: 55,
       }}
@@ -61,13 +70,25 @@ export default function FormRegistroPersona(props) {
           flexDirection: 'column',
           gap: 3,
           padding: 4,
-          backgroundColor: 'white',
+          backgroundColor: theme.palette.background.paper,
           borderRadius: 4,
-          boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)',
+          boxShadow: 3,
           width: '100%',
           maxWidth: 400,
         }}
       >
+        {error && (
+          <Typography color="error" variant="body2">
+            {error}
+          </Typography>
+        )}
+
+        {success && (
+          <Typography color="success.main" variant="body2">
+            {success}
+          </Typography>
+        )}
+
         <form onSubmit={handleSubmit}>
           <Typography variant="h5" component="h2" gutterBottom>
             Formulario Persona
@@ -110,23 +131,14 @@ export default function FormRegistroPersona(props) {
             />
           </FormControl>
 
-          <FormControl fullWidth margin="normal" variant="outlined">
-            <InputLabel
-              id="tipoIdentificacion-label"
-              sx={{
-                backgroundColor: 'white',
-                padding: '0 8px',
-              }}
-            >
-              Tipo de Identificación
-            </InputLabel>
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="tipoIdentificacion-label">Tipo de Identificación</InputLabel>
             <Select
               labelId="tipoIdentificacion-label"
               id="tipoIdentificacion"
               name="tipoIdentificacion"
               defaultValue={props.selectedRow?.tipoIdentificacion || ''}
               fullWidth
-              label="Tipo de Identificación"
             >
               <MenuItem value={1}>Cédula</MenuItem>
               <MenuItem value={2}>Pasaporte</MenuItem>
@@ -146,16 +158,8 @@ export default function FormRegistroPersona(props) {
             />
           </FormControl>
 
-          <FormControl fullWidth margin="normal" variant="outlined">
-            <InputLabel
-              id="genero-label"
-              sx={{
-                backgroundColor: 'white',
-                padding: '0 8px',
-              }}
-            >
-              Género
-            </InputLabel>
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="genero-label">Género</InputLabel>
             <Select
               labelId="genero-label"
               id="genero"

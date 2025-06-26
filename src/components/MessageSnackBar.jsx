@@ -25,45 +25,25 @@ import Alert from '@mui/material/Alert';
  * @param {Function} props.setMessage - Función para actualizar el estado del mensaje (cerrarlo).
  * @returns {JSX.Element} Componente que muestra una alerta Snackbar con severidad y texto personalizados.
  */
-export default function MessageSnackBar(props) {
-  console.log(props.message);
+export default function MessageSnackBar({ message = {}, setMessage }) {
+  const { open = false, severity = "info", text = "" } = message;
 
-  /**
-   * Maneja el cierre del Snackbar.
-   *
-   * Evita que se cierre si el motivo es "clickaway", y actualiza el estado del mensaje para cerrarlo.
-   *
-   * @param {React.SyntheticEvent} event - Evento del cierre.
-   * @param {string} reason - Razón del cierre (por ejemplo: 'timeout' o 'clickaway').
-   */
   const handleClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+    if (reason === 'clickaway') return;
 
-    props.setMessage({
-      open: false,
-      severity: props.message.severity,
-      text: props.message.text
-    });
+    setMessage({ open: false, severity, text });
   };
 
   return (
-    <div>
-      <Snackbar
-        open={props.message.open}
-        autoHideDuration={6000}
+    <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+      <Alert
         onClose={handleClose}
+        severity={severity}
+        variant="filled"
+        sx={{ width: '100%' }}
       >
-        <Alert
-          onClose={handleClose}
-          severity={props.message.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
-          {props.message.text}
-        </Alert>
-      </Snackbar>
-    </div>
+        {text}
+      </Alert>
+    </Snackbar>
   );
 }

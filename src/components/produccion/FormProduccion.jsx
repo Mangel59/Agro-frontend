@@ -63,7 +63,18 @@ export default function FormProduccion({
   useEffect(() => {
     axios.get("/v1/pais", headers).then(res => setPaises(res.data));
     axios.get("/v1/tipo_produccion", headers).then(res => setTiposProduccion(res.data));
-    axios.get("/v1/producto", headers).then(res => setProductos(res.data));
+    axios.get("/v1/producto", headers).then(res => {
+  const data = res.data;
+  if (Array.isArray(data)) {
+    setProductos(data);
+  } else if (Array.isArray(data?.data)) {
+    setProductos(data.data); // por si viene dentro de un objeto
+  } else {
+    console.warn("Respuesta inesperada en /v1/producto:", data);
+    setProductos([]);
+  }
+});
+
   }, []);
 
   // Cascadas

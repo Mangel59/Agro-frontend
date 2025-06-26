@@ -1,37 +1,38 @@
-/**
- * FormRegistroEmpresa componente principal.
- * @component
- * @returns {JSX.Element}
- */
 import Contenido from '../dashboard/Contenido.jsx';
 import * as React from 'react';
 import {
   Button, TextField, FormControl, InputLabel, MenuItem, Select,
-  Typography, Container, Box
+  Typography, Container, Box, useTheme
 } from '@mui/material';
 import { SiteProps } from '../dashboard/SiteProps';
 import axios from '../axiosConfig';
 
 export default function FormRegistroEmpresa(props) {
-  const url = `${SiteProps.urlbasev1}/empresas/empresa-usuario`;
+  const url = import.meta.env.VITE_BACKEND_URI + '/api/v1/empresas/empresa-usuario';
+  const theme = useTheme();
+
+  const [error, setError] = React.useState('');
+  const [success, setSuccess] = React.useState('');
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const formJson = Object.fromEntries(formData.entries());
 
-    // Transformaciones y valores automáticos
     formJson.tipoIdentificacionId = parseInt(formJson.tipoIdentificacionId);
-    formJson.estado = 1; // Siempre activa
-    formJson.personaId = props.personaId; // Se inyecta desde FormRegistroPersona
-    formJson.email = formJson.correo; // Se transforma para el backend
-    delete formJson.correo;
+    formJson.estadoId = parseInt(formJson.estadoId);
+    formJson.personaId = props.personaId;
 
-    console.log('formJson limpio __', formJson);
+    const token = localStorage.getItem('token');
 
-    axios.post(url, formJson)
+    axios.post(url, formJson, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((response) => {
-        console.log('Empresa creada con éxito:', response.data);
+        setError('');
+        setSuccess('Empresa creada con éxito');
         if (response.data.usuarioEstado === 4) {
           props.setCurrentModule(
             <Contenido setCurrentModule={props.setCurrentModule} />
@@ -40,6 +41,9 @@ export default function FormRegistroEmpresa(props) {
       })
       .catch((error) => {
         console.error('Error al crear la empresa:', error);
+        const message = error.response?.data?.message || 'No se pudo crear la empresa.';
+        setError(message);
+        setSuccess('');
       });
   };
 
@@ -52,7 +56,7 @@ export default function FormRegistroEmpresa(props) {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        backgroundColor: '#FFF',
+        backgroundColor: theme.palette.background.default,
         padding: 3,
         mt: 45,
       }}
@@ -63,13 +67,25 @@ export default function FormRegistroEmpresa(props) {
           flexDirection: 'column',
           gap: 3,
           padding: 4,
-          backgroundColor: 'white',
+          backgroundColor: theme.palette.background.paper,
           borderRadius: 4,
-          boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)',
+          boxShadow: 3,
           width: '100%',
           maxWidth: 400,
         }}
       >
+        {error && (
+          <Typography color="error" variant="body2">
+            {error}
+          </Typography>
+        )}
+
+        {success && (
+          <Typography color="success.main" variant="body2">
+            {success}
+          </Typography>
+        )}
+
         <form onSubmit={handleSubmit}>
           <Typography variant="h5" component="h2" gutterBottom>
             Formulario Empresa
@@ -137,15 +153,7 @@ export default function FormRegistroEmpresa(props) {
           </FormControl>
 
           <FormControl fullWidth margin="normal">
-            <InputLabel
-              id="tipoIdentificacionId-label"
-              sx={{
-                backgroundColor: 'white',
-                padding: '0 8px',
-              }}
-            >
-              Tipo de Identificación
-            </InputLabel>
+            <InputLabel id="tipoIdentificacionId-label">Tipo de Identificación</InputLabel>
             <Select
               labelId="tipoIdentificacionId-label"
               id="tipoIdentificacionId"
@@ -169,6 +177,20 @@ export default function FormRegistroEmpresa(props) {
               variant="standard"
               defaultValue={props.selectedRow?.identificacion || ''}
             />
+          </FormControl>
+
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="estadoId-label">Estado</InputLabel>
+            <Select
+              labelId="estadoId-label"
+              id="estadoId"
+              name="estadoId"
+              defaultValue={props.selectedRow?.estadoId || 1}
+              fullWidth
+            >
+              <MenuItem value={1}>Activo</MenuItem>
+              <MenuItem value={2}>Inactivo</MenuItem>
+            </Select>
           </FormControl>
 
           <Button type="submit" variant="contained" color="primary" fullWidth>

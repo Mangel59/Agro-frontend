@@ -28,7 +28,7 @@ import FormRegistroPersona from './seguridad/FormRegistroPersona';
 import FormRegistroEmpresa from './seguridad/FormRegistroEmpresa';
 import Contenido from '../components/dashboard/Contenido';
 import PropTypes from "prop-types";
-import ForgetPassword from './ForgetPassword';
+import ForgotPassword from '../ForgotPassword';
 
 /**
  * Componente de formulario de inicio de sesión.
@@ -81,7 +81,7 @@ export default function Login(props) {
       return;
     }
 
-    axios.post(import.meta.env.VITE_URI_BACKEND+'/auth/login', {
+    axios.post(import.meta.env.VITE_BACKEND_URI+'/auth/login', {
       username,
       password,
     })
@@ -212,13 +212,13 @@ export default function Login(props) {
           {t('login')}
         </Button>
         <Button
-          variant="text"
-          onClick={() => props.setCurrentModule(<ForgetPassword setCurrentModule={props.setCurrentModule} />)}
-          sx={{ color: theme.palette.primary.main }}
-        >
-          ¿Olvidaste tu contraseña?
-        </Button>
-        <Typography
+        variant="text"
+        onClick={() => props.setCurrentModule(<ForgotPassword setCurrentModule={props.setCurrentModule} />)}
+        sx={{ color: theme.palette.primary.main }}
+      >
+        ¿Olvidaste tu contraseña?
+      </Button>
+                <Typography
           variant="body2"
           align="center"
           sx={{ marginTop: 3, color: theme.palette.text.secondary }}

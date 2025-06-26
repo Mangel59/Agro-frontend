@@ -1,59 +1,31 @@
-/**
- * @file ProfileMenu.jsx
- * @module ProfileMenu
- * @description Componente que muestra un menú desplegable de perfil con opciones de navegación y logout.
- * @component
- */
+import React, { useState } from "react";
+import {
+  Button,
+  Menu,
+  MenuItem
+} from "@mui/material";
+import AccountCircle from "@mui/icons-material/AccountCircle";
+import ChangePasswordDialog from "./ChangePasswordDialog";
+import MessageSnackBar from "./MessageSnackBar";
+import Login from "./Login";
 
-import React, { useState } from 'react';
-import { Button, Menu, MenuItem } from '@mui/material';
-import AccountCircle from '@mui/icons-material/AccountCircle';
 
-import Login from './Login';
-
-/**
- * Componente ProfileMenu.
- *
- * Muestra un botón con un menú desplegable que permite acceder al módulo de perfiles
- * o cerrar sesión. Al cerrar sesión, elimina el token del localStorage y redirige al Login.
- *
- * @function
- * @memberof module:ProfileMenu
- * @param {Object} props - Props del componente.
- * @param {Function} props.setCurrentModule - Función para cambiar el módulo visible.
- * @param {Function} props.setIsAuthenticated - Función para actualizar el estado de autenticación.
- * @returns {JSX.Element} Elemento React del menú de perfil.
- */
 const ProfileMenu = ({ setCurrentModule, setIsAuthenticated }) => {
   const [anchorEl, setAnchorEl] = useState(null);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [message, setMessage] = useState({ open: false, severity: "", text: "" });
 
-  /**
-   * Abre el menú anclado al botón de perfil.
-   * @param {React.MouseEvent<HTMLButtonElement>} event - Evento de clic.
-   */
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  /**
-   * Cierra el menú desplegable.
-   */
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  /**
-   * Cierra sesión eliminando el token, actualiza el estado de autenticación y redirige a Login.
-   */
+  const handleClick = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setIsAuthenticated(false);
     setCurrentModule(<Login setIsAuthenticated={setIsAuthenticated} setCurrentModule={setCurrentModule} />);
     handleClose();
   };
 
   return (
-    <div>
+    <>
       <Button
         aria-controls="simple-menu"
         aria-haspopup="true"
@@ -61,7 +33,7 @@ const ProfileMenu = ({ setCurrentModule, setIsAuthenticated }) => {
         color="inherit"
         startIcon={<AccountCircle />}
       >
-         Mi Perfil
+        Mi Perfil
       </Button>
       <Menu
         id="simple-menu"
@@ -70,10 +42,18 @@ const ProfileMenu = ({ setCurrentModule, setIsAuthenticated }) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
+        <MenuItem onClick={() => { setPasswordDialogOpen(true); handleClose(); }}>Cambiar Contraseña</MenuItem>
         <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
       </Menu>
-    </div>
+
+      <ChangePasswordDialog
+        open={passwordDialogOpen}
+        setOpen={setPasswordDialogOpen}
+        setMessage={setMessage}
+      />
+      {message.open && <MessageSnackBar {...message} setMessage={setMessage} />}
+    </>
   );
 };
-
 export default ProfileMenu;
+
