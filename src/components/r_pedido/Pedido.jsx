@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "../axiosConfig";
-import axiosV2 from "../axiosConfig2";
 import MessageSnackBar from "../MessageSnackBar";
 import FormPedido from "./FormPedido";
 import GridPedido from "./GridPedido";
@@ -8,7 +7,7 @@ import GridArticuloPedido from "./GridArticuloPedido";
 import FormArticuloPedido from "./FormArticuloPedido";
 import {
   Box, Typography, Divider, Button, Dialog, DialogTitle, DialogContent,
-  DialogActions, TextField, FormControl, InputLabel, Select, MenuItem
+  DialogActions, TextField
 } from "@mui/material";
 
 export default function Pedido() {
@@ -22,7 +21,9 @@ export default function Pedido() {
   const [searchResult, setSearchResult] = useState(null);
   const [articuloItems, setArticuloItems] = useState([]);
   const [selectedArticulo, setSelectedArticulo] = useState({});
+  const [selectedArticulosToPrint, setSelectedArticulosToPrint] = useState([]);
   const [reloadArticulos, setReloadArticulos] = useState(false);
+  const [presentaciones, setPresentaciones] = useState([]);
 
   const reloadData = () => {
     axios.get("/v1/pedido")
@@ -45,6 +46,9 @@ export default function Pedido() {
 
   useEffect(() => {
     reloadData();
+    axios.get("/v1/presentacion")
+      .then(res => setPresentaciones(res.data))
+      .catch(() => setPresentaciones([]));
   }, []);
 
   useEffect(() => {
@@ -58,44 +62,52 @@ export default function Pedido() {
   const handleSearch = () => {
     if (!searchId) return;
     axios.get(`/v1/pedido/${searchId}`)
-      .then((res) => setSearchResult(res.data))
+      .then((res) => {
+        setSearchResult(res.data);
+        loadArticulos(res.data.id);
+      })
       .catch(() => {
         setSearchResult(null);
+        setArticuloItems([]);
         setMessage({ open: true, severity: "error", text: "No se encontró el pedido" });
       });
   };
 
-const imprimirReportePedido = (id) => {
-  const token = localStorage.getItem("token");
+  const imprimirArticulosSeleccionados = () => {
+    const ids = selectedArticulosToPrint.map(a => a.id);
+    if (ids.length === 0) {
+      setMessage({ open: true, severity: "warning", text: "Selecciona al menos un artículo." });
+      return;
+    }
 
-  axios({
-    url: "/v2/report/pedido",
-    method: "POST",
-    data: { ped_id: Number(id) }, 
-    responseType: "blob",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-  })
-    .then((response) => {
-      const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `reporte_pedido_${id}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+    const token = localStorage.getItem("token");
+    axios({
+      url: "/v2/report/pedido", 
+      method: "POST",
+      data: { articulo_ids: ids },
+      responseType: "blob",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
     })
-    .catch(() => {
-      setMessage({
-        open: true,
-        severity: "error",
-        text: "Error al descargar el reporte del pedido",
+      .then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `articulos_seleccionados.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      })
+      .catch(() => {
+        setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al descargar el reporte.",
+        });
       });
-    });
-};
-
+  };
 
   return (
     <Box sx={{ p: 2 }}>
@@ -161,8 +173,8 @@ const imprimirReportePedido = (id) => {
           <Box>
             <GridArticuloPedido
               items={articuloItems}
-              selectedRow={selectedArticulo}
-              setSelectedRow={setSelectedArticulo}
+              setSelectedRows={() => {}}
+              presentaciones={presentaciones}
             />
           </Box>
         </>
@@ -180,27 +192,25 @@ const imprimirReportePedido = (id) => {
             margin="normal"
           />
           {searchResult && (
-            <>
-              <TextField label="Descripción" fullWidth value={searchResult.descripcion || ""} margin="dense" />
-              <FormControl fullWidth>
-                <InputLabel>Estado</InputLabel>
-                <Select value={searchResult.estadoId || ""} disabled>
-                  <MenuItem value={1}>Activo</MenuItem>
-                  <MenuItem value={0}>Inactivo</MenuItem>
-                </Select>
-              </FormControl>
-            </>
+            <Box mt={2}>
+              <Typography variant="subtitle1" gutterBottom>Artículos del Pedido</Typography>
+              <GridArticuloPedido
+                items={articuloItems}
+                setSelectedRows={setSelectedArticulosToPrint}
+                presentaciones={presentaciones}
+              />
+            </Box>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setSearchDialogOpen(false)}>Cerrar</Button>
           <Button onClick={handleSearch}>Buscar</Button>
           <Button
-            onClick={() => imprimirReportePedido(searchId)}
+            onClick={imprimirArticulosSeleccionados}
             disabled={!searchResult}
             variant="contained"
           >
-            Imprimir
+            Imprimir Seleccionados
           </Button>
         </DialogActions>
       </Dialog>

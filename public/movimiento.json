@@ -1,6 +1,0 @@
-[
-    { "id": 1, "movimientoI": "Compra proveedor", "tipo_movimiento_id": 1 },
-    { "id": 2, "movimientoI": "Venta cliente", "tipo_movimiento_id": 2 },
-    { "id": 3, "movimientoI": "Devolución", "tipo_movimiento_id": 3 }
-  ]
-  

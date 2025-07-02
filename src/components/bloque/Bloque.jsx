@@ -71,6 +71,9 @@ export default function Bloque() {
         console.error("ERROR SEDE", err.response?.status, err.response?.data);
       });
   }, [selectedMunicipio]);
+    useEffect(() => {
+    reloadData();
+  }, [selectedSede]);
 
 const reloadData = () => {
   if (!selectedSede) return setBloques([]);

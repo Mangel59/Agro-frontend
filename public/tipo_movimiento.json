@@ -1,6 +1,0 @@
-[
-    { "id": 1, "tipoI": "Entrada", "producto_id": 1 },
-    { "id": 2, "tipoI": "Salida", "producto_id": 1 },
-    { "id": 3, "tipoI": "Entrada", "producto_id": 2 }
-  ]
-  
