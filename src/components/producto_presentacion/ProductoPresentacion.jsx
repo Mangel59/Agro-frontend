@@ -32,13 +32,15 @@ export default function ProductoPresentacion() {
         axios.get("/v1/ingrediente"),
       ]);
 
-      const productoMap = Object.fromEntries(resProductos.data.map(p => [p.id, p.nombre]));
-      const unidadMap = Object.fromEntries(resUnidades.data.map(u => [u.id, u.nombre]));
-      const marcaMap = Object.fromEntries(resMarcas.data.map(m => [m.id, m.nombre]));
-      const presentacionMap = Object.fromEntries(resPresentaciones.data.map(p => [p.id, p.nombre]));
-      const ingredienteMap = Object.fromEntries(resIngredientes.data.map(i => [i.id, i.nombre]));
+      const isArray = (data) => Array.isArray(data) ? data : [];
 
-      const datos = resData.data.map((item) => ({
+      const productoMap = Object.fromEntries(isArray(resProductos.data).map(p => [p.id, p.nombre]));
+      const unidadMap = Object.fromEntries(isArray(resUnidades.data).map(u => [u.id, u.nombre]));
+      const marcaMap = Object.fromEntries(isArray(resMarcas.data).map(m => [m.id, m.nombre]));
+      const presentacionMap = Object.fromEntries(isArray(resPresentaciones.data).map(p => [p.id, p.nombre]));
+      const ingredienteMap = Object.fromEntries(isArray(resIngredientes.data).map(i => [i.id, i.nombre]));
+
+      const datos = isArray(resData.data).map((item) => ({
         ...item,
         productoNombre: productoMap[item.productoId] || "—",
         unidadNombre: unidadMap[item.unidadId] || "—",

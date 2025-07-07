@@ -25,7 +25,11 @@
       { "id": "bloque", "text": "Bloque", "icon": "Warehouse" },
       { "id": "tipo_espacio", "text": "Tipo Espacio", "icon": "LocationCity" },
       { "id": "espacio", "text": "Espacio", "icon": "LocationCity" },
-      { "id": "almacen", "text": "Almacén", "icon": "LocationCity" }
+      { "id": "almacen", "text": "Almacén", "icon": "LocationCity" },
+      { "id": "Seccion", "text": "Seccion", "icon": "Warehouse" },
+      { "id": "Subseccion", "text": "Subseccion", "icon": "Warehouse" },
+      { "id": "tipo_inventario", "text": " TipoInventario", "icon": "Warehouse" }
+     
     ]
   },
   {

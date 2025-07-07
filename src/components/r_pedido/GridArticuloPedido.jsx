@@ -1,8 +1,15 @@
 import { DataGrid } from '@mui/x-data-grid';
-import { Box } from '@mui/material';
-import { useState } from 'react';
+import {
+  Box, Typography, Divider, Button, Dialog, DialogTitle, DialogContent,
+  DialogActions, TextField
+} from "@mui/material";
 
-export default function GridArticuloPedido({ items, setSelectedRows = () => {}, presentaciones = [] }) {
+export default function GridArticuloPedido({
+  items,
+  setSelectedRow = () => {},      // para seleccionar uno (editar)
+  setSelectedRows = () => {},     // para seleccionar varios (imprimir)
+  presentaciones = []
+}) {
   const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
     { field: 'cantidad', headerName: 'Cantidad', width: 120 },
@@ -29,13 +36,16 @@ export default function GridArticuloPedido({ items, setSelectedRows = () => {}, 
       <DataGrid
         rows={items}
         columns={columns}
-        pageSizeOptions={[5, 10, 15]}
         checkboxSelection
-        onRowSelectionModelChange={(ids) => {
-          const selected = items.filter(row => ids.includes(row.id));
-          setSelectedRows(selected);
-        }}
+        pageSizeOptions={[5, 10, 15]}
         getRowId={(row) => row.id}
+        onRowSelectionModelChange={(ids) => {
+          const selectedMultiple = items.filter(row => ids.includes(row.id));
+          const selectedOne = selectedMultiple[0] || null;
+
+          setSelectedRows(selectedMultiple); // para impresión múltiple
+          setSelectedRow(selectedOne);       // para edición única
+        }}
       />
     </Box>
   );

@@ -52,11 +52,8 @@ export default function Pedido() {
   }, []);
 
   useEffect(() => {
-    if (selectedRow) {
-      loadArticulos(selectedRow.id);
-    } else {
-      setArticuloItems([]);
-    }
+    if (selectedRow) loadArticulos(selectedRow.id);
+    else setArticuloItems([]);
   }, [selectedRow, reloadArticulos]);
 
   const handleSearch = () => {
@@ -80,16 +77,11 @@ export default function Pedido() {
       return;
     }
 
-    const token = localStorage.getItem("token");
     axios({
-      url: "/v2/report/pedido", 
+      url: "/v2/report/pedido",
       method: "POST",
       data: { articulo_ids: ids },
-      responseType: "blob",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+      responseType: "blob"
     })
       .then((response) => {
         const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
@@ -100,11 +92,43 @@ export default function Pedido() {
         link.click();
         link.remove();
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("Error al descargar reporte de artículos:", err);
         setMessage({
           open: true,
           severity: "error",
           text: "Error al descargar el reporte.",
+        });
+      });
+  };
+
+  const imprimirPedidoCompletoPorBusqueda = () => {
+    if (!searchResult?.id) {
+      setMessage({ open: true, severity: "warning", text: "No hay pedido cargado." });
+      return;
+    }
+
+    axios({
+      url: "/v2/report/pedido",
+      method: "POST",
+      data: { ped_id: searchResult.id },
+      responseType: "blob",
+    })
+      .then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `pedido_${searchResult.id}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      })
+      .catch((err) => {
+        console.error("Error al generar PDF completo:", err);
+        setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al generar el reporte del pedido completo.",
         });
       });
   };
@@ -171,11 +195,11 @@ export default function Pedido() {
           </Box>
 
           <Box>
-            <GridArticuloPedido
-              items={articuloItems}
-              setSelectedRows={() => {}}
-              presentaciones={presentaciones}
-            />
+          <GridArticuloPedido
+            items={articuloItems}
+            setSelectedRow={setSelectedArticulo}
+            presentaciones={presentaciones}
+          />
           </Box>
         </>
       )}
@@ -209,8 +233,17 @@ export default function Pedido() {
             onClick={imprimirArticulosSeleccionados}
             disabled={!searchResult}
             variant="contained"
+            color="info"
           >
             Imprimir Seleccionados
+          </Button>
+          <Button
+            onClick={imprimirPedidoCompletoPorBusqueda}
+            disabled={!searchResult}
+            variant="contained"
+            color="secondary"
+          >
+            Imprimir Pedido
           </Button>
         </DialogActions>
       </Dialog>

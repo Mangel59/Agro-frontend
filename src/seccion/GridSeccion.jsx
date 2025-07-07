@@ -2,25 +2,20 @@ import React from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import PropTypes from "prop-types";
 
-export default function GridPedido({ pedidos, setSelectedRow }) {
-const handleRowSelection = (selection) => {
-  if (selection.length > 0) {
-    const selectedId = Array.isArray(selection) ? selection[0] : selection;
-    const selected = pedidos.find((a) => String(a.id) === String(selectedId));
-    setSelectedRow(selected);
-  } else {
-    setSelectedRow(null);
-  }
-};
-
+export default function GridSeccion({ secciones, setSelectedRow }) {
+  const handleRowSelection = (selection) => {
+    if (selection.length > 0) {
+      const selected = secciones.find((s) => s.id === selection[0]);
+      setSelectedRow(selected);
+    } else {
+      setSelectedRow(null);
+    }
+  };
 
   const columns = [
     { field: "id", headerName: "ID", width: 70 },
+    { field: "nombre", headerName: "Nombre", width: 180 },
     { field: "descripcion", headerName: "Descripción", width: 200 },
-    { field: "fechaHora", headerName: "Fecha y Hora", width: 180 },
-    { field: "produccionId", headerName: "Producción ID", width: 130 },
-    { field: "almacenId", headerName: "Almacén ID", width: 130 },
-    { field: "empresaId", headerName: "Empresa ID", width: 130 },
     {
       field: "estadoId",
       headerName: "Estado",
@@ -33,7 +28,7 @@ const handleRowSelection = (selection) => {
   return (
     <div style={{ height: 420, width: "100%" }}>
       <DataGrid
-        rows={pedidos}
+        rows={secciones}
         columns={columns}
         getRowId={(row) => row.id}
         onRowSelectionModelChange={handleRowSelection}
@@ -48,7 +43,7 @@ const handleRowSelection = (selection) => {
   );
 }
 
-GridPedido.propTypes = {
-  pedidos: PropTypes.array.isRequired,
+GridSeccion.propTypes = {
+  secciones: PropTypes.array.isRequired,
   setSelectedRow: PropTypes.func.isRequired,
 };

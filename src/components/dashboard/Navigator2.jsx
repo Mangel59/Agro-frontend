@@ -75,6 +75,10 @@ import Movimineto from '../Movimiento/Movimiento.jsx';
 import Proceso from '../Proceso/Proceso.jsx';
 import ArticuloKardex from  '../kardexItem/ArticuloKardex.jsx';
 import Ingrediente from '../ingrediente/ingrediente.jsx';
+import Seccion from '../../seccion/Seccion.jsx';
+import Subseccion from '../../subseccion/subseccion.jsx';
+import TipoInventario from '../tipo_inventario/Tipo_inventario.jsx';
+
 const icons = {
   DnsRounded: <DnsRoundedIcon />, Home: <HomeIcon />, People: <PeopleIcon />,
   Public: <PublicIcon />, AddShoppingCartIcon: <AddShoppingCartIcon />, Domain: <DomainIcon />,
@@ -94,7 +98,8 @@ const components = {
   tipo_produccion: TipoProduccion, persona: Persona, empresa: Empresa, r_pedido: RPedido,
   kardex:kardex, media_card: MediaCard, evaluacion_item: EvaluacionItem,
   OrdenCompra: OrdenCompra, Ocupacion: Ocupacion,
-  evaluacion:Evaluacion, grupo:Grupo, Movimiento:Movimineto, Proceso: Proceso, Ingrediente: Ingrediente
+  evaluacion:Evaluacion, grupo:Grupo, Movimiento:Movimineto, Proceso: Proceso, Ingrediente: Ingrediente,
+  Seccion:Seccion, Subseccion:Subseccion,  tipo_inventario: TipoInventario
 
 };
 
@@ -132,6 +137,9 @@ const moduleImages = {
   OrdenCompra: "/images/cards/9.jpg",
   Ocupacion: "/images/cards/5.jpg",
   Ingrediente: "/images/cards/5.jpg",
+  Seccion: "/images/cards/5.jpg",
+  Subseccion: "/images/cards/10.jpg",
+  TipoInventario: "/images/cards/6.jpg"
 };
 
 export default function Navigator2(props) {
