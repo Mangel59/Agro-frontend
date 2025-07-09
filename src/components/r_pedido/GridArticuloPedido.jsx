@@ -15,12 +15,12 @@ export default function GridArticuloPedido({
     { field: 'cantidad', headerName: 'Cantidad', width: 120 },
     { field: 'pedidoId', headerName: 'Pedido', width: 150 },
     {
-      field: 'productoPresentacionId',
+      field: 'presentacionProductoId',
       headerName: 'Presentación',
       width: 200,
       valueGetter: (params) => {
-        const match = presentaciones.find(p => p.id === params.row.productoPresentacionId);
-        return match ? match.nombre : params.row.productoPresentacionId;
+        const match = presentaciones.find(p => p.id === params.row.presentacionProductoId);
+        return match ? match.nombre : params.row.presentacionProductoId;
       }
     },
     {

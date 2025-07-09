@@ -24,6 +24,7 @@ export default function Pedido() {
   const [selectedArticulosToPrint, setSelectedArticulosToPrint] = useState([]);
   const [reloadArticulos, setReloadArticulos] = useState(false);
   const [presentaciones, setPresentaciones] = useState([]);
+  const [previewUrl, setPreviewUrl] = useState("");
 
   const reloadData = () => {
     axios.get("/v1/pedido")
@@ -62,6 +63,7 @@ export default function Pedido() {
       .then((res) => {
         setSearchResult(res.data);
         loadArticulos(res.data.id);
+        setPreviewUrl(""); // limpiar vista previa
       })
       .catch(() => {
         setSearchResult(null);
@@ -133,6 +135,27 @@ export default function Pedido() {
       });
   };
 
+  const generarVistaPreviaPDF = () => {
+    if (!searchResult?.id) {
+      setMessage({ open: true, severity: "warning", text: "No hay pedido cargado." });
+      return;
+    }
+
+    axios({
+      url: "/v2/report/pedido",
+      method: "POST",
+      data: { ped_id: searchResult.id },
+      responseType: "blob",
+    })
+      .then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+        setPreviewUrl(url);
+      })
+      .catch(() => {
+        setMessage({ open: true, severity: "error", text: "Error al generar vista previa PDF." });
+      });
+  };
+
   return (
     <Box sx={{ p: 2 }}>
       <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
@@ -195,16 +218,16 @@ export default function Pedido() {
           </Box>
 
           <Box>
-          <GridArticuloPedido
-            items={articuloItems}
-            setSelectedRow={setSelectedArticulo}
-            presentaciones={presentaciones}
-          />
+            <GridArticuloPedido
+              items={articuloItems}
+              setSelectedRow={setSelectedArticulo}
+              presentaciones={presentaciones}
+            />
           </Box>
         </>
       )}
 
-      <Dialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} fullWidth>
+      <Dialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} fullWidth maxWidth="md">
         <DialogTitle>Buscar Pedido por ID</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <TextField
@@ -223,6 +246,25 @@ export default function Pedido() {
                 setSelectedRows={setSelectedArticulosToPrint}
                 presentaciones={presentaciones}
               />
+
+              <Button
+                onClick={generarVistaPreviaPDF}
+                variant="outlined"
+                color="primary"
+                sx={{ mt: 2 }}
+              >
+                Ver Vista Previa PDF
+              </Button>
+
+              {previewUrl && (
+                <iframe
+                  src={previewUrl}
+                  width="100%"
+                  height="600px"
+                  style={{ marginTop: '20px', border: '1px solid #ccc' }}
+                  title="Vista Previa del Pedido"
+                />
+              )}
             </Box>
           )}
         </DialogContent>

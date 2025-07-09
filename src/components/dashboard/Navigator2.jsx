@@ -78,7 +78,7 @@ import Ingrediente from '../ingrediente/ingrediente.jsx';
 import Seccion from '../seccion/Seccion.jsx'
 import Subseccion from '../subseccion/subseccion.jsx';
 import TipoInventario from '../tipo_inventario/Tipo_inventario.jsx';
-import Inventario from '../inventario/Inventario.jsx';
+import Inventario from '../Inventario/Inventario.jsx';
 const icons = {
   DnsRounded: <DnsRoundedIcon />, Home: <HomeIcon />, People: <PeopleIcon />,
   Public: <PublicIcon />, AddShoppingCartIcon: <AddShoppingCartIcon />, Domain: <DomainIcon />,
