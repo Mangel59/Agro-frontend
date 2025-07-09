@@ -7,7 +7,7 @@ import {
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 
-export default function FormProductoPresentacion({ selectedRow, setSelectedRow, setMessage, reloadData }) {
+export default function FormPresentacionproducto({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = useState(false);
   const [methodName, setMethodName] = useState("");
 
@@ -175,7 +175,7 @@ export default function FormProductoPresentacion({ selectedRow, setSelectedRow, 
   );
 }
 
-FormProductoPresentacion.propTypes = {
+FormPresentacionproducto.propTypes = {
   selectedRow: PropTypes.object.isRequired,
   setSelectedRow: PropTypes.func.isRequired,
   setMessage: PropTypes.func.isRequired,

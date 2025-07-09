@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "../components/axiosConfig.js";
-import MessageSnackBar from "../components/MessageSnackBar.jsx";
+import axios from "../axiosConfig.js";
+import MessageSnackBar from "../MessageSnackBar.jsx";
 import FormSeccion from "./FromSeccion.jsx";
 import GridSeccion from "./GridSeccion.jsx";
 import {

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
-import FormProductoPresentacion from "./FormProductoPresentacion";
-import GridProductoPresentacion from "./GridProductoPresentacion";
+import FormPresentacionproducto from "./FormPresentacionproducto";
+import GridPresentacionproducto from "./GridPresentacionproducto";
 
-export default function ProductoPresentacion() {
+export default function Presentacionproducto() {
   const [selectedRow, setSelectedRow] = useState({});
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
-  const [productoPresentaciones, setProductoPresentaciones] = useState([]);
+  const [Presentacionproductoes, setPresentacionproductoes] = useState([]);
 
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 });
   const [sortModel, setSortModel] = useState([]);
@@ -49,7 +49,7 @@ export default function ProductoPresentacion() {
         ingredienteNombre: ingredienteMap[item.ingredienteId] || "—"
       }));
 
-      setProductoPresentaciones(datos);
+      setPresentacionproductoes(datos);
       setRowCount(datos.length);
     } catch (err) {
       console.error("Error al cargar datos:", err);
@@ -65,14 +65,14 @@ export default function ProductoPresentacion() {
     <div>
       <h1>Producto Presentación</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
-      <FormProductoPresentacion
+      <FormPresentacionproducto
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
         setMessage={setMessage}
         reloadData={reloadData}
       />
-      <GridProductoPresentacion
-        productoPresentaciones={productoPresentaciones}
+      <GridPresentacionproducto
+        Presentacionproductoes={Presentacionproductoes}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
         paginationModel={paginationModel}

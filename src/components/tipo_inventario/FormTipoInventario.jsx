@@ -1,12 +1,20 @@
 import * as React from "react";
 import PropTypes from "prop-types";
-import axios from "../axiosConfig.js";
+import axios from "../axiosConfig.js"; // Usa la instancia configurada
 import {
-  Button, Dialog, DialogActions, DialogContent, DialogContentText,
-  DialogTitle, FormControl, InputLabel, MenuItem, Select, TextField,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
 } from "@mui/material";
 import StackButtons from "../StackButtons";
-import { SiteProps } from "../dashboard/SiteProps";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 
@@ -41,17 +49,15 @@ export default function FormTipoInventario({ setMessage, selectedRow, setSelecte
       return;
     }
 
-    const token = localStorage.getItem("token");
-    axios.delete(`${SiteProps.urlbasev1}/tipo_inventario/${selectedRow.id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    .then(() => {
-      setMessage({ open: true, severity: "success", text: "Eliminado con éxito!" });
-      reloadData();
-    })
-    .catch((error) => {
-      setMessage({ open: true, severity: "error", text: `Error al eliminar: ${error.message}` });
-    });
+    axios
+      .delete(`/v1/tipo_inventario/${selectedRow.id}`)
+      .then(() => {
+        setMessage({ open: true, severity: "success", text: "Eliminado con éxito!" });
+        reloadData();
+      })
+      .catch((error) => {
+        setMessage({ open: true, severity: "error", text: `Error al eliminar: ${error.message}` });
+      });
   };
 
   const handleClose = () => setOpen(false);
@@ -70,18 +76,13 @@ export default function FormTipoInventario({ setMessage, selectedRow, setSelecte
           enableReinitialize
           validationSchema={TipoInventarioSchema}
           onSubmit={(values, { setSubmitting }) => {
-            const token = localStorage.getItem("token");
             const url = selectedRow?.id
-              ? `${SiteProps.urlbasev1}/tipo_inventario/${selectedRow.id}`
-              : `${SiteProps.urlbasev1}/tipo_inventario`;
+              ? `/v1/tipo_inventario/${selectedRow.id}`
+              : `/v1/tipo_inventario`;
+
             const method = selectedRow?.id ? axios.put : axios.post;
 
-            method(url, values, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            })
+            method(url, values)
               .then(() => {
                 setMessage({ open: true, severity: "success", text: "Guardado correctamente." });
                 setOpen(false);

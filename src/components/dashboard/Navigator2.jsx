@@ -43,7 +43,7 @@ import Persona from "../personas/Persona.jsx";
 import Pais from '../pais/Pais';
 import Departamento from '../departamento/Departamento';
 import Municipio from '../municipio/Municipio';
-import ProductoPresentacion from '../producto_presentacion/ProductoPresentacion';
+import Presentacionproducto from '../Presentacionproducto/Presentacionproducto.jsx';
 import Produccion from '../produccion/Produccion';
 import Empresa from '../empresas/Empresa.jsx';
 import Producto from '../producto/Producto.jsx';
@@ -75,10 +75,10 @@ import Movimineto from '../Movimiento/Movimiento.jsx';
 import Proceso from '../Proceso/Proceso.jsx';
 import ArticuloKardex from  '../kardexItem/ArticuloKardex.jsx';
 import Ingrediente from '../ingrediente/ingrediente.jsx';
-import Seccion from '../../seccion/Seccion.jsx';
-import Subseccion from '../../subseccion/subseccion.jsx';
+import Seccion from '../seccion/Seccion.jsx'
+import Subseccion from '../subseccion/subseccion.jsx';
 import TipoInventario from '../tipo_inventario/Tipo_inventario.jsx';
-
+import Inventario from '../inventario/Inventario.jsx';
 const icons = {
   DnsRounded: <DnsRoundedIcon />, Home: <HomeIcon />, People: <PeopleIcon />,
   Public: <PublicIcon />, AddShoppingCartIcon: <AddShoppingCartIcon />, Domain: <DomainIcon />,
@@ -92,14 +92,14 @@ const components = {
   departamento: Departamento, municipio: Municipio, almacen: Almacen, espacio: Espacio,
   tipo_espacio: TipoEspacio, bloque: Bloque,
   tipo_bloque: TipoBloque, tipo_sede: TipoSedes, sede: Sede,
-  producto_presentacion: ProductoPresentacion, presentacion: Presentacion,
+  presentacion_producto: Presentacionproducto, presentacion: Presentacion,
   producto_categoria: ProductoCategoria, producto: Producto, produccion: Produccion,
   ArticuloKardex: ArticuloKardex, marca: Marca, unidad: Unidad, tipo_movimiento: TipoMovimiento,
   tipo_produccion: TipoProduccion, persona: Persona, empresa: Empresa, r_pedido: RPedido,
   kardex:kardex, media_card: MediaCard, evaluacion_item: EvaluacionItem,
   OrdenCompra: OrdenCompra, Ocupacion: Ocupacion,
   evaluacion:Evaluacion, grupo:Grupo, Movimiento:Movimineto, Proceso: Proceso, Ingrediente: Ingrediente,
-  Seccion:Seccion, Subseccion:Subseccion,  tipo_inventario: TipoInventario
+  Seccion:Seccion, Subseccion:Subseccion,  tipo_inventario: TipoInventario, Inventario: Inventario
 
 };
 
@@ -124,7 +124,7 @@ const moduleImages = {
   marca: "/images/cards/8.jpg",
   unidad: "/images/cards/9.jpg",
   producto: "/images/cards/10.jpg",
-  producto_presentacion: "/images/cards/1.jpg",
+  presentacion_producto: "/images/cards/1.jpg",
   tipo_produccion: "/images/cards/2.jpg",
   tipo_movimiento: "/images/cards/3.jpg",
   produccion: "/images/cards/4.jpg",
@@ -139,7 +139,8 @@ const moduleImages = {
   Ingrediente: "/images/cards/5.jpg",
   Seccion: "/images/cards/5.jpg",
   Subseccion: "/images/cards/10.jpg",
-  TipoInventario: "/images/cards/6.jpg"
+  TipoInventario: "/images/cards/6.jpg",
+  Inventario: "/images/cards/7.jpg"
 };
 
 export default function Navigator2(props) {

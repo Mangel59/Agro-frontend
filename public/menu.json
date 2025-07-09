@@ -28,7 +28,8 @@
       { "id": "almacen", "text": "Almacén", "icon": "LocationCity" },
       { "id": "Seccion", "text": "Seccion", "icon": "Warehouse" },
       { "id": "Subseccion", "text": "Subseccion", "icon": "Warehouse" },
-      { "id": "tipo_inventario", "text": " TipoInventario", "icon": "Warehouse" }
+      { "id": "tipo_inventario", "text": " TipoInventario", "icon": "Warehouse" },
+      { "id": "Inventario", "text": "Inventario", "icon": "Warehouse" }
      
     ]
   },
@@ -49,7 +50,7 @@
       { "id": "producto", "text": "Producto", "icon": "ProductionQuantityLimitsIcon" },
       { "id": "proveedor", "text": "Proveedor", "icon": "ProductionQuantityLimitsIcon" },
       { "id": "produccion", "text": "Producción", "icon": "ProductionQuantityLimitsIcon" },
-      { "id": "producto_presentacion", "text": "Producto Presentación", "icon": "ProductionQuantityLimitsIcon" },
+      {"id": "presentacion_producto","text": "PresentacionProducto","icon": "ProductionQuantityLimitsIcon"},
       { "id": "tipo_movimiento", "text": "Tipo Movimiento", "icon": "ProductionQuantityLimitsIcon" },
       { "id": "r_pedido", "text": "Pedido", "icon": "Settings" },
       {"id": "OrdenCompra","text": "Orden Compra","icon": "Settings"},     
@@ -59,7 +60,7 @@
       
       
      
-      
+    
       
     ]
   },

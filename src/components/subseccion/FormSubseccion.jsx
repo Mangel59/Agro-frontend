@@ -4,7 +4,7 @@ import {
   TextField, Button, FormControl, InputLabel,
   Select, MenuItem, FormHelperText
 } from "@mui/material";
-import axios from "../components/axiosConfig.js";
+import axios from "../axiosConfig.js";
 
 export default function FormSubseccion({
   open = false,

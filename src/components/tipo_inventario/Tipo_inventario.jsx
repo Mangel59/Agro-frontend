@@ -1,9 +1,8 @@
-import React from "react";
-import axios from "../axiosConfig.js";
-import MessageSnackBar from "../MessageSnackBar.jsx";
+import React, { useEffect, useState } from "react";
+import axios from "../axiosConfig";
+import MessageSnackBar from "../MessageSnackBar";
 import FormTipoInventario from "./FormTipoInventario";
 import GridTipoInventario from "./GridTipoInventario";
-import { SiteProps } from "../dashboard/SiteProps";
 
 export default function TipoInventario() {
   const row = {
@@ -13,56 +12,41 @@ export default function TipoInventario() {
     estadoId: 1,
   };
 
-  const [selectedRow, setSelectedRow] = React.useState(row);
-  const [message, setMessage] = React.useState({
+  const [selectedRow, setSelectedRow] = useState(row);
+  const [message, setMessage] = useState({
     open: false,
     severity: "success",
     text: "",
   });
-  const [tipos, setTipos] = React.useState([]);
-  const [rowCount, setRowCount] = React.useState(0);
-  const [sortModel, setSortModel] = React.useState([]);
-  const [filterModel, setFilterModel] = React.useState({ items: [] });
+  const [tipos, setTipos] = useState([]);
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 5,
+  });
+  const [rowCount, setRowCount] = useState(0);
+  const [sortModel, setSortModel] = useState([]);
+  const [filterModel, setFilterModel] = useState({ items: [] });
 
   const reloadData = () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setMessage({
-        open: true,
-        severity: "error",
-        text: "Token no encontrado.",
-      });
-      return;
-    }
-
-    axios
-      .get(`${SiteProps.urlbasev1}/tipo_inventario`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    axios.get("/v1/tipo_inventario")
+      .then((res) => {
+        const filas = res.data.map((item) => ({
+          ...item,
+          estadoId: item.estado?.id || item.estadoId,
+        }));
+        setTipos(filas);
+        setRowCount(filas.length);
       })
-      .then((response) => {
-        if (Array.isArray(response.data)) {
-          setTipos(response.data);
-          setRowCount(response.data.length);
-        } else {
-          setMessage({
-            open: true,
-            severity: "error",
-            text: "Respuesta inesperada del servidor.",
-          });
-        }
-      })
-      .catch((error) => {
-        const msg =
-          error.response?.status === 403
-            ? "No tienes permiso para ver los tipos de inventario."
-            : `Error al cargar: ${error.message}`;
-        setMessage({ open: true, severity: "error", text: msg });
+      .catch(() => {
+        setMessage({
+          open: true,
+          severity: "error",
+          text: "Error al cargar tipos de inventario",
+        });
       });
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     reloadData();
   }, []);
 
@@ -77,18 +61,20 @@ export default function TipoInventario() {
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
         reloadData={reloadData}
+        tipos={tipos}
       />
 
       <GridTipoInventario
+        selectedRow={selectedRow}
+        setSelectedRow={setSelectedRow}
         tipos={tipos}
         rowCount={rowCount}
-        loading={false}
-        paginationModel={{ page: 0, pageSize: 5 }}
-        setPaginationModel={() => {}}
+        paginationModel={paginationModel}
+        setPaginationModel={setPaginationModel}
+        filterModel={filterModel}
+        setFilterModel={setFilterModel}
         sortModel={sortModel}
         setSortModel={setSortModel}
-        setFilterModel={setFilterModel}
-        setSelectedRow={setSelectedRow}
       />
     </div>
   );

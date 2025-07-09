@@ -3,8 +3,8 @@ import PropTypes from "prop-types";
 import { DataGrid } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
 
-export default function GridProductoPresentacion({
-  productoPresentaciones,
+export default function GridPresentacionproducto({
+  Presentacionproductoes,
   selectedRow,
   setSelectedRow,
   paginationModel,
@@ -34,7 +34,7 @@ export default function GridProductoPresentacion({
   return (
     <Box sx={{ width: "100%", mt: 2 }}>
       <DataGrid
-        rows={productoPresentaciones}
+        rows={Presentacionproductoes}
         columns={columns}
         getRowId={(row) => row.id}
         onRowClick={(params) => setSelectedRow(params.row)}
@@ -54,8 +54,8 @@ export default function GridProductoPresentacion({
   );
 }
 
-GridProductoPresentacion.propTypes = {
-  productoPresentaciones: PropTypes.array.isRequired,
+GridPresentacionproducto.propTypes = {
+  Presentacionproductoes: PropTypes.array.isRequired,
   selectedRow: PropTypes.object.isRequired,
   setSelectedRow: PropTypes.func.isRequired,
   paginationModel: PropTypes.object.isRequired,
