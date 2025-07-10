@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography, Alert } from '@mui/material';
 import axios from './components/axiosConfig';
-import ResetPassword from "./components/ResetPassword";
 
-export default function ForgotPassword({ setCurrentModule }) {
+export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -14,11 +13,10 @@ export default function ForgotPassword({ setCurrentModule }) {
     setMessage('');
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URI}/auth/forgot-password`, { email });
+      await axios.post(`${import.meta.env.VITE_BACKEND_URI}/auth/forgot-password`, { email });
 
-      // Simulación de redirección con un token
-      const fakeToken = 'token_simulado';
-      setCurrentModule(<ResetPassword token={fakeToken} setCurrentModule={setCurrentModule} />);
+      // En lugar de redirigir, mostramos un mensaje
+      setMessage('Revisa tu correo electrónico. Te hemos enviado un enlace para restablecer tu contraseña.');
     } catch (err) {
       setError(err.response?.data?.message || 'Error al enviar correo.');
     }
