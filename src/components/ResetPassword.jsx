@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Alert } from '@mui/material';
+import {
+  Box, TextField, Button, Typography, Alert,
+  InputAdornment, IconButton
+} from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from "./axiosConfig";
 
 export default function ResetPassword({ token: propToken, setCurrentModule }) {
@@ -7,6 +11,8 @@ export default function ResetPassword({ token: propToken, setCurrentModule }) {
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -51,21 +57,45 @@ export default function ResetPassword({ token: propToken, setCurrentModule }) {
       <form onSubmit={handleSubmit}>
         <TextField
           label="Nueva contraseña"
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           fullWidth
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           sx={{ mb: 2 }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
         />
         <TextField
           label="Confirmar contraseña"
-          type="password"
+          type={showConfirm ? 'text' : 'password'}
           fullWidth
           required
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           sx={{ mb: 2 }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  edge="end"
+                >
+                  {showConfirm ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
         />
         <Button type="submit" variant="contained" fullWidth>
           Cambiar contraseña
