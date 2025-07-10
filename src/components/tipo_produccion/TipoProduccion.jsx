@@ -1,43 +1,64 @@
-// TipoProduccion.jsx
-import * as React from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import axios from "../axiosConfig"; 
 import MessageSnackBar from "../MessageSnackBar";
 import FormTipoProduccion from "./FormTipoProduccion";
 import GridTipoProduccion from "./GridTipoProduccion";
-import { SiteProps } from "../dashboard/SiteProps";
 
 export default function TipoProduccion() {
-  const row = { id: 0, nombre: "", descripcion: "", estado: 0 };
-  const [selectedRow, setSelectedRow] = React.useState(row);
-  const [message, setMessage] = React.useState({ open: false, severity: "success", text: "" });
-  const gridRef = React.useRef(null);
+  const [selectedRow, setSelectedRow] = useState({ id: 0 });
+  const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
+  const [tipos, setTipos] = useState([]);
+  const [formOpen, setFormOpen] = useState(false);
 
-  const reloadData = () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setMessage({ open: true, severity: "error", text: "Error: Token de autenticación no encontrado." });
-      return;
+ const reloadData = () => {
+  axios.get("/v1/tipo_produccion", {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
     }
-    if (gridRef.current?.reloadData) gridRef.current.reloadData();
-  };
+  })
+    .then(res => {
+      if (Array.isArray(res.data)) {
+        setTipos(res.data);
+      } else {
+        console.error("❌ Respuesta inesperada:", res.data);
+        setMessage({ open: true, severity: "error", text: "Respuesta inválida del servidor." });
+      }
+    })
+    .catch(err => {
+      console.error("❌ Error al cargar tipos de producción:", err);
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Error al cargar tipos de producción"
+      });
+    });
+};
 
-  React.useEffect(() => { reloadData(); }, []);
+useEffect(() => {
+  reloadData();
+}, []);
+
 
   return (
-    <div style={{ height: "100%", width: "100%" }}>
-      <h1 style={{ marginBottom: "1rem" }}>Gestión de Tipos de Producción</h1>
+    <div>
+      <h1>Gestión de Tipos de Producción</h1>
+
       <MessageSnackBar message={message} setMessage={setMessage} />
+
       <FormTipoProduccion
-        setMessage={setMessage}
+        open={formOpen}
+        setOpen={setFormOpen}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
+        setMessage={setMessage}
         reloadData={reloadData}
       />
+
       <GridTipoProduccion
-        innerRef={gridRef}
+        rows={tipos}
+        selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
       />
     </div>
   );
 }
-

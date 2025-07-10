@@ -1,7 +1,15 @@
-import * as React from 'react';
-import PropTypes from 'prop-types';
-import { Box } from '@mui/material';
-import { DataGrid, GridToolbarContainer, GridToolbarFilterButton } from '@mui/x-data-grid';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import { DataGrid } from "@mui/x-data-grid";
+import { Box } from "@mui/material";
+
+
+
+export default function GridMarca({ rows = [], selectedRow = {}, setSelectedRow = () => {} }) {
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 5,
+    page: 0,
+  });
 
 const columns = [
   { field: 'id', headerName: 'ID', width: 90, type: 'number' },
@@ -25,54 +33,25 @@ function CustomToolbar() {
   );
 }
 
-export default function GridMarca({
-  marcas,
-  rowCount,
-  loading,
-  paginationModel,
-  setPaginationModel,
-  sortModel,
-  setSortModel,
-  setFilterModel,
-  setSelectedRow,
-}) {
-  return (
-    <Box sx={{ width: '100%', overflowX: 'auto' }}>
+ return (
+    <Box sx={{ width: "100%", mt: 2 }}>
       <DataGrid
-        rows={marcas || []}
+        rows={rows}
         columns={columns}
-        rowCount={rowCount}
-        loading={loading}
-        paginationMode="server"
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
-        sortingMode="server"
-        sortModel={sortModel}
-        onSortModelChange={setSortModel}
-        filterMode="server"
-        onFilterModelChange={setFilterModel}
-        pageSizeOptions={[5, 10, 20, 50]}
-        components={{ Toolbar: CustomToolbar }}
-        onRowSelectionModelChange={(newSelection) => {
-          const selectedIDs = new Set(newSelection);
-          const selectedRowData = marcas.find((row) => selectedIDs.has(row.id));
-          setSelectedRow(selectedRowData || {});
-        }}
+        pageSizeOptions={[5, 10, 25]}
+        getRowId={(row) => row.id}
+        onRowClick={(params) => setSelectedRow(params.row)}
+        disableSelectionOnClick
         autoHeight
-        sx={{ minWidth: '600px' }}
       />
     </Box>
   );
 }
 
-GridMarca.propTypes = {
-  marcas: PropTypes.array.isRequired,
-  rowCount: PropTypes.number.isRequired,
-  loading: PropTypes.bool,
-  paginationModel: PropTypes.object.isRequired,
-  setPaginationModel: PropTypes.func.isRequired,
-  sortModel: PropTypes.array.isRequired,
-  setSortModel: PropTypes.func.isRequired,
-  setFilterModel: PropTypes.func.isRequired,
-  setSelectedRow: PropTypes.func.isRequired,
-};
+  GridMarca.propTypes = {
+    rows: PropTypes.array.isRequired,
+    selectedRow: PropTypes.object.isRequired,
+    setSelectedRow: PropTypes.func.isRequired,
+  };

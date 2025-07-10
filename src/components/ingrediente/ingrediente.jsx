@@ -46,10 +46,7 @@ export default function Ingrediente() {
       <GridIngrediente
         rows={ingredientes}
         selectedRow={selectedRow}
-        setSelectedRow={(row) => {
-          setSelectedRow(row);
-          setFormOpen(true);
-        }}
+        setSelectedRow={setSelectedRow}
       />
     </div>
   );

@@ -1,60 +1,46 @@
-import * as React from "react";
+import React, { useState } from "react";
+import PropTypes from "prop-types";
 import { DataGrid } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
-import { SiteProps } from "../dashboard/SiteProps"; 
 
-const columns = [
-  { field: "id", headerName: "ID", width: 90 },
-  { field: "nombre", headerName: "Nombre", width: 200 },
-  { field: "descripcion", headerName: "Descripción", width: 300 },
-  {
-    field: "estadoId",
-    headerName: "Estado",
-    width: 150,
-    valueGetter: (params) => (params.row.estadoId === 1 ? "Activo" : "Inactivo"),
-  },
-];
+export default function GridTipoProduccion({ rows = [], selectedRow = {}, setSelectedRow = () => {} }) {
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 5,
+    page: 0,
+  });
 
-export default function GridTipoProduccion({ setSelectedRow, innerRef }) {
-  const [data, setData] = React.useState([]);
-  const [loading, setLoading] = React.useState(false);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${SiteProps.urlbasev1}/tipo_produccion`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const result = await response.json();
-      setData(result);
-    } catch (error) {
-      console.error("Error al cargar tipos de producción:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  React.useEffect(() => {
-    fetchData();
-  }, []);
-
-  React.useImperativeHandle(innerRef, () => ({
-    reloadData: fetchData,
-  }));
+  const columns = [
+    { field: 'id', headerName: 'ID', width: 90, type: 'number' },
+    { field: 'nombre', headerName: 'Nombre', width: 150, type: 'string' },
+    { field: 'descripcion', headerName: 'Descripción', width: 250, type: 'string' },
+    {
+      field: 'estadoId',
+      headerName: 'Estado',
+      width: 100,
+      type: 'number',
+      valueGetter: (params) => (params.row.estadoId === 1 ? 'Activo' : 'Inactivo'),
+    },
+  ];
 
   return (
-    <Box sx={{ height: 400, width: "100%" }}>
+    <Box sx={{ width: "100%", mt: 2 }}>
       <DataGrid
-        rows={data}
+        rows={Array.isArray(rows) ? rows : []} 
         columns={columns}
-        loading={loading}
-        pageSize={5}
-        getRowId={(row) => row.id}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[5, 10, 25]}
+        getRowId={(row) => row.id} 
         onRowClick={(params) => setSelectedRow(params.row)}
+        disableSelectionOnClick
+        autoHeight
       />
     </Box>
   );
 }
+
+GridTipoProduccion.propTypes = {
+  rows: PropTypes.array.isRequired,
+  selectedRow: PropTypes.object.isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+};

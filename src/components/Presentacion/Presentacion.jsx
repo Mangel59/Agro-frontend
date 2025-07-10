@@ -51,10 +51,7 @@ export default function Presentacion() {
       <GridPresentacion
         rows={presentaciones}
         selectedRow={selectedRow}
-        setSelectedRow={(row) => {
-          setSelectedRow(row);
-          setFormOpen(true);
-        }}
+        setSelectedRow={setSelectedRow}
       />
     </div>
   );
