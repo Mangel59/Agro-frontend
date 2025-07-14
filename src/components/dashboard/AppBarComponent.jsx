@@ -13,7 +13,7 @@ export default function AppBarComponent({ setCurrentModule }) {
   const location = useLocation();
   const toggleTheme = useThemeToggle();
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
 
   const handleLogin = () => {
     if (typeof setCurrentModule === 'function') {

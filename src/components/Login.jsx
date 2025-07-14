@@ -88,7 +88,9 @@ export default function Login(props) {
         rolId,
       });
       const token = response.data.token;
+      const expiration = Date.now() + 24 * 60 * 60 * 1000; // 24 horas en milisegundos
       localStorage.setItem("token", token);
+      localStorage.setItem("token_expiration", expiration.toString());
       if (props.setIsAuthenticated) props.setIsAuthenticated(true);
       props.setCurrentModule(<Contenido setCurrentModule={props.setCurrentModule} />);
     } catch (e) {
