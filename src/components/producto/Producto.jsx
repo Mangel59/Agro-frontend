@@ -11,31 +11,38 @@ export default function Producto() {
 
   const reloadData = async () => {
     try {
-      // Cargar todo en paralelo
-      const [resProductos, resCategorias, resUnidades] = await Promise.all([
+      const [resProductos, resCategorias, resUnidades, resIngredientes] = await Promise.all([
         axios.get("/v1/producto"),
         axios.get("/v1/producto_categoria"),
         axios.get("/v1/unidad"),
+        axios.get("v1/ingrediente-presentacion-producto")
       ]);
 
-      // Convertir a mapas rápidos
       const mapCategorias = Object.fromEntries(
         resCategorias.data.map((cat) => [cat.id, cat.nombre])
       );
       const mapUnidades = Object.fromEntries(
         resUnidades.data.map((u) => [u.id, u.nombre])
       );
+      const mapIngredientes = Object.fromEntries(
+        resIngredientes.data.map((i) => [i.id, i.nombre])
+      );
+      const mapEstados = {
+        1: "Activo",
+        2: "Inactivo"
+      };
 
-      // Añadir los nombres personalizados
       const productosConNombres = resProductos.data.map((p) => ({
         ...p,
         productoCategoriaNombre: mapCategorias[p.productoCategoriaId] || "(sin categoría)",
-        unidadMinimaNombre: mapUnidades[p.unidadMinimaId] || "(sin unidad)"
+        unidadMinimaNombre: mapUnidades[p.unidadMinimaId] || "(sin unidad)",
+        estadoNombre: mapEstados[p.estadoId] || "(desconocido)",
+        ingredientePresentacionNombre: mapIngredientes[p.ingredientePresentacionProductoId] || "(sin ingrediente)"
       }));
 
       setProductos(productosConNombres);
     } catch (err) {
-      console.error("❌ Error al cargar productos:", err);
+      console.error(" Error al cargar productos:", err);
       setMessage({
         open: true,
         severity: "error",

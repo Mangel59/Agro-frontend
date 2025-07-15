@@ -12,13 +12,15 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
 
   const [categorias, setCategorias] = useState([]);
   const [unidades, setUnidades] = useState([]);
+  const [ingredientesPresentacion, setIngredientesPresentacion] = useState([]);
 
   const initialData = {
     nombre: "",
     descripcion: "",
     productoCategoriaId: "",
     unidadMinimaId: "",
-    estado: ""
+    estado: "",
+    ingredientePresentacionProductoId: ""
   };
 
   const [formData, setFormData] = useState(initialData);
@@ -31,6 +33,10 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
     axios.get("/v1/unidad")
       .then(res => setUnidades(res.data))
       .catch(err => console.error("❌ Error al cargar unidades:", err));
+
+    axios.get("/v1/ingrediente-presentacion-producto")
+      .then(res => setIngredientesPresentacion(res.data))
+      .catch(err => console.error("❌ Error al cargar ingredientes presentación:", err));
   };
 
   const create = () => {
@@ -51,7 +57,8 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
       descripcion: selectedRow.descripcion || "",
       productoCategoriaId: selectedRow.productoCategoriaId?.toString() || "",
       unidadMinimaId: selectedRow.unidadMinimaId?.toString() || "",
-      estado: selectedRow.estadoId?.toString() || ""
+      estado: selectedRow.estadoId?.toString() || "",
+      ingredientePresentacionProductoId: selectedRow.ingredientePresentacionProductoId?.toString() || ""
     });
 
     setMethodName("Update");
@@ -88,7 +95,7 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!formData.nombre || !formData.descripcion || !formData.productoCategoriaId || !formData.unidadMinimaId || !formData.estado) {
+    if (!formData.nombre || !formData.descripcion || !formData.productoCategoriaId || !formData.unidadMinimaId || !formData.estado || !formData.ingredientePresentacionProductoId) {
       setMessage({ open: true, severity: "error", text: "Todos los campos son obligatorios." });
       return;
     }
@@ -98,7 +105,8 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
       descripcion: formData.descripcion,
       productoCategoriaId: parseInt(formData.productoCategoriaId),
       unidadMinimaId: parseInt(formData.unidadMinimaId),
-      estadoId: parseInt(formData.estado)
+      estadoId: parseInt(formData.estado),
+      ingredientePresentacionProductoId: parseInt(formData.ingredientePresentacionProductoId)
     };
 
     const method = methodName === "Add" ? axios.post : axios.put;
@@ -116,7 +124,7 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
         reloadData();
       })
       .catch(err => {
-        console.error("❌ Error al guardar producto:", err);
+        console.error(" Error al guardar producto:", err);
         setMessage({
           open: true,
           severity: "error",
@@ -165,6 +173,20 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
                 <MenuItem value="">Seleccione...</MenuItem>
                 {unidades.map(u => (
                   <MenuItem key={u.id} value={u.id}>{u.nombre}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel>Ingrediente Presentación</InputLabel>
+              <Select
+                name="ingredientePresentacionProductoId"
+                value={formData.ingredientePresentacionProductoId}
+                onChange={handleChange}
+              >
+                <MenuItem value="">Seleccione...</MenuItem>
+                {ingredientesPresentacion.map(ip => (
+                  <MenuItem key={ip.id} value={ip.id}>{ip.nombre}</MenuItem>
                 ))}
               </Select>
             </FormControl>

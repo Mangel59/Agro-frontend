@@ -7,12 +7,8 @@ const columns = [
   { field: 'descripcion', headerName: 'Descripción', width: 250 },
   { field: 'productoCategoriaNombre', headerName: 'Categoría', width: 180 },
   { field: 'unidadMinimaNombre', headerName: 'Unidad Mínima', width: 180 },
-  {
-    field: 'estadoId',
-    headerName: 'Estado',
-    width: 120,
-    valueGetter: (params) => params.row.estadoId === 1 ? "Activo" : "Inactivo"
-  }
+  { field: 'ingredientePresentacionNombre', headerName: 'Ingrediente Presentación', width: 220 },
+  { field: 'estadoNombre', headerName: 'Estado', width: 120 }
 ];
 
 export default function GridProducto({ productos, selectedRow, setSelectedRow }) {

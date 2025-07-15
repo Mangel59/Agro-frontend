@@ -16,7 +16,7 @@ export default function ({ selectedRow, setSelectedRow, setMessage, reloadData, 
     precio: "",
     fechaVencimiento: "",
     kardexId: kardexId || "",
-    productoPresentacionId: "",
+    presentacionProductoId: "",
     estadoId: "1",
   };
 
@@ -69,7 +69,7 @@ export default function ({ selectedRow, setSelectedRow, setMessage, reloadData, 
     cantidad: parseFloat(formData.cantidad),
     precio: parseFloat(formData.precio),
     kardexId: parseInt(formData.kardexId),
-    productoPresentacionId: parseInt(formData.productoPresentacionId),
+    presentacionProductoId: parseInt(formData.presentacionProductoId),
     estadoId: parseInt(formData.estadoId),
     fechaVencimiento: formData.fechaVencimiento + "T00:00:00"
     };
@@ -112,7 +112,7 @@ export default function ({ selectedRow, setSelectedRow, setMessage, reloadData, 
 
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Presentación</InputLabel>
-              <Select name="productoPresentacionId" value={formData.productoPresentacionId} onChange={handleChange}>
+              <Select name="presentacionProductoId" value={formData.presentacionProductoId} onChange={handleChange}>
                 <MenuItem value="">Seleccione...</MenuItem>
                 {presentaciones.map(p => (
                   <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>

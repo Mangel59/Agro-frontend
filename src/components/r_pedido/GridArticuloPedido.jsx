@@ -15,14 +15,14 @@ export default function GridArticuloPedido({
     { field: 'cantidad', headerName: 'Cantidad', width: 120 },
     { field: 'pedidoId', headerName: 'Pedido', width: 150 },
     {
-      field: 'presentacionProductoId',
-      headerName: 'Presentación',
-      width: 200,
-      valueGetter: (params) => {
-        const match = presentaciones.find(p => p.id === params.row.presentacionProductoId);
-        return match ? match.nombre : params.row.presentacionProductoId;
-      }
-    },
+  field: 'presentacionProductoId',
+  headerName: 'Presentación de producto',
+  width: 200,
+  valueGetter: (params) => {
+    const match = presentaciones.find(p => p.id === params.row.presentacionProductoId);
+    return match ? match.nombre : params.row.presentacionProductoId;
+  }
+},
     {
       field: 'estadoId',
       headerName: 'Estado',
@@ -43,8 +43,8 @@ export default function GridArticuloPedido({
           const selectedMultiple = items.filter(row => ids.includes(row.id));
           const selectedOne = selectedMultiple[0] || null;
 
-          setSelectedRows(selectedMultiple); // para impresión múltiple
-          setSelectedRow(selectedOne);       // para edición única
+          setSelectedRows(selectedMultiple); 
+          setSelectedRow(selectedOne);       
         }}
       />
     </Box>

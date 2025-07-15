@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Menu,
@@ -9,18 +9,33 @@ import ChangePasswordDialog from "./ChangePasswordDialog";
 import MessageSnackBar from "./MessageSnackBar";
 import Login from "./Login";
 
-
 const ProfileMenu = ({ setCurrentModule, setIsAuthenticated }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [message, setMessage] = useState({ open: false, severity: "", text: "" });
+  const [nombreUsuario, setNombreUsuario] = useState("Mi Perfil");
+
+useEffect(() => {
+  const empresaNombre = localStorage.getItem("empresaNombre");
+  if (empresaNombre) {
+    setNombreUsuario(empresaNombre);
+  }
+}, []);
+
 
   const handleClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("empresaNombre");
     setIsAuthenticated(false);
-    setCurrentModule(<Login setIsAuthenticated={setIsAuthenticated} setCurrentModule={setCurrentModule} />);
+    setCurrentModule(
+      <Login
+        setIsAuthenticated={setIsAuthenticated}
+        setCurrentModule={setCurrentModule}
+      />
+    );
     handleClose();
   };
 
@@ -33,7 +48,7 @@ const ProfileMenu = ({ setCurrentModule, setIsAuthenticated }) => {
         color="inherit"
         startIcon={<AccountCircle />}
       >
-        Mi Perfil
+        {nombreUsuario}
       </Button>
       <Menu
         id="simple-menu"
@@ -42,7 +57,9 @@ const ProfileMenu = ({ setCurrentModule, setIsAuthenticated }) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        <MenuItem onClick={() => { setPasswordDialogOpen(true); handleClose(); }}>Cambiar Contraseña</MenuItem>
+        <MenuItem onClick={() => { setPasswordDialogOpen(true); handleClose(); }}>
+          Cambiar Contraseña
+        </MenuItem>
         <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
       </Menu>
 
@@ -51,9 +68,11 @@ const ProfileMenu = ({ setCurrentModule, setIsAuthenticated }) => {
         setOpen={setPasswordDialogOpen}
         setMessage={setMessage}
       />
-      {message.open && <MessageSnackBar {...message} setMessage={setMessage} />}
+      {message.open && (
+        <MessageSnackBar {...message} setMessage={setMessage} />
+      )}
     </>
   );
 };
-export default ProfileMenu;
 
+export default ProfileMenu;

@@ -12,7 +12,7 @@ const columns = [
     valueGetter: (params) => params.row.fechaVencimiento?.substring(0, 10)
   },
   { field: 'kardexId', headerName: 'Kardex ID', width: 120 },
-  { field: 'productoPresentacionId', headerName: 'Presentación', width: 200 },
+  { field: 'presentacionProductoId', headerName: 'Presentación', width: 200 },
   {
     field: 'estadoId',
     headerName: 'Estado',

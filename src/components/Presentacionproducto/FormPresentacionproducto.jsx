@@ -36,13 +36,8 @@ export default function FormPresentacionproducto({ selectedRow, setSelectedRow, 
 
   useEffect(() => {
     axios.get("/v1/producto")
-      .then(res => {
-        setProductos(Array.isArray(res.data) ? res.data : []);
-      })
-      .catch(err => {
-        console.error("Error al cargar productos:", err);
-        setProductos([]);
-      });
+      .then(res => setProductos(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setProductos([]));
 
     axios.get("/v1/unidad")
       .then(res => setUnidades(Array.isArray(res.data) ? res.data : []))
@@ -156,13 +151,83 @@ export default function FormPresentacionproducto({ selectedRow, setSelectedRow, 
                   <InputLabel>Producto</InputLabel>
                   <Select name="productoId" value={formData.productoId} onChange={handleChange} label="Producto">
                     <MenuItem value="">Seleccione...</MenuItem>
-                    {(Array.isArray(productos) ? productos : []).map(p => (
+                    {productos.map(p => (
                       <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>
                     ))}
                   </Select>
                 </FormControl>
               </Grid>
-              {/* el resto de campos siguen igual (unidades, estado, marca, etc.) */}
+
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth required name="nombre" label="Nombre" value={formData.nombre} onChange={handleChange} />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Unidad</InputLabel>
+                  <Select name="unidadId" value={formData.unidadId} onChange={handleChange} label="Unidad">
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {unidades.map(u => (
+                      <MenuItem key={u.id} value={u.id}>{u.nombre}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth required name="descripcion" label="Descripción" value={formData.descripcion} onChange={handleChange} />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Estado</InputLabel>
+                  <Select name="estadoId" value={formData.estadoId} onChange={handleChange} label="Estado">
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    <MenuItem value="1">Activo</MenuItem>
+                    <MenuItem value="0">Inactivo</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField fullWidth required name="cantidad" label="Cantidad" type="number" inputProps={{ step: "any", min: 0 }} value={formData.cantidad} onChange={handleChange} />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Marca</InputLabel>
+                  <Select name="marcaId" value={formData.marcaId} onChange={handleChange} label="Marca">
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {marcas.map(m => (
+                      <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Presentación</InputLabel>
+                  <Select name="presentacionId" value={formData.presentacionId} onChange={handleChange} label="Presentación">
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {presentaciones.map(p => (
+                      <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel>Ingrediente</InputLabel>
+                  <Select name="ingredienteId" value={formData.ingredienteId} onChange={handleChange} label="Ingrediente">
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {ingredientes.map(i => (
+                      <MenuItem key={i.id} value={i.id}>{i.nombre}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
             </Grid>
           </DialogContent>
           <DialogActions>

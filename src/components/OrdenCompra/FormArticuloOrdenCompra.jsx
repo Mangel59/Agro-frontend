@@ -15,14 +15,14 @@ export default function FormArticuloOrdenCompra({ selectedRow, setSelectedRow, s
     cantidad: "",
     precio: "",
     ordenCompraId: ordenCompraId || "",
-    productoPresentacionId: "",
+    presentacionProductoId: "",
     estadoId: "1",
   };
 
   const [formData, setFormData] = useState(initialData);
 
   const loadData = () => {
-    axios.get("/v1/presentacion")
+    axios.get("/v1/producto_presentacion")
       .then(res => setPresentaciones(res.data))
       .catch(err => console.error("Error al cargar presentaciones:", err));
   };
@@ -68,7 +68,7 @@ export default function FormArticuloOrdenCompra({ selectedRow, setSelectedRow, s
       cantidad: parseFloat(formData.cantidad),
       precio: parseFloat(formData.precio),
       ordenCompraId: parseInt(formData.ordenCompraId),
-      productoPresentacionId: parseInt(formData.productoPresentacionId),
+      presentacionProductoId: parseInt(formData.presentacionProductoId),
       estadoId: parseInt(formData.estadoId),
     };
 
@@ -99,7 +99,7 @@ export default function FormArticuloOrdenCompra({ selectedRow, setSelectedRow, s
 
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Presentación</InputLabel>
-              <Select name="productoPresentacionId" value={formData.productoPresentacionId} onChange={handleChange}>
+              <Select name="presentacionProductoId" value={formData.presentacionProductoId} onChange={handleChange}>
                 <MenuItem value="">Seleccione...</MenuItem>
                 {presentaciones.map(p => (
                   <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>

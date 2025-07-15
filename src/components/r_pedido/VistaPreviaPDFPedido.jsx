@@ -27,7 +27,7 @@ export default function VistaPreviaPDFPedido({ pedido, articulos = [], presentac
                   <TableRow>
                     <TableCell>ID</TableCell>
                     <TableCell>Cantidad</TableCell>
-                    <TableCell>Presentación</TableCell>
+                    <TableCell>Presentación de Producto</TableCell>
                     <TableCell>Estado</TableCell>
                   </TableRow>
                 </TableHead>
@@ -36,7 +36,7 @@ export default function VistaPreviaPDFPedido({ pedido, articulos = [], presentac
                     <TableRow key={a.id}>
                       <TableCell>{a.id}</TableCell>
                       <TableCell>{a.cantidad}</TableCell>
-                      <TableCell>{getPresentacion(a.productoPresentacionId)}</TableCell>
+                      <TableCell>{getPresentacion(a.presentacionProductoId)}</TableCell>
                       <TableCell>{a.estadoId === 1 ? "Activo" : "Inactivo"}</TableCell>
                     </TableRow>
                   ))}

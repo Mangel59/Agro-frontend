@@ -41,7 +41,7 @@ export default function Proveedor() {
 
   useEffect(() => {
     reloadData();
-    axios.get("/v1/tipo_identificacion")
+    axios.get("/v1/items/tipo_identificacion/0")
       .then((res) => setTiposIdentificacion(res.data))
       .catch(() =>
         setMessage({ open: true, severity: "error", text: "Error al cargar tipos de identificación" })

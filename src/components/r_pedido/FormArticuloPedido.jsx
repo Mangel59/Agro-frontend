@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
@@ -15,14 +14,14 @@ export default function FormArticuloPedido({ selectedRow, setSelectedRow, setMes
   const initialData = {
     cantidad: "",
     pedidoId: pedidoId || "",
-    productoPresentacionId: "",
+    presentacionProductoId: "",  
     estadoId: "1"
   };
 
   const [formData, setFormData] = useState(initialData);
 
   const loadData = () => {
-    axios.get("/v1/presentacion")
+    axios.get("/v1/producto_presentacion")
       .then(res => setPresentaciones(res.data))
       .catch(err => console.error("Error al cargar presentaciones:", err));
   };
@@ -63,13 +62,16 @@ export default function FormArticuloPedido({ selectedRow, setSelectedRow, setMes
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     const payload = {
       ...formData,
       cantidad: parseFloat(formData.cantidad),
       pedidoId: parseInt(formData.pedidoId),
-      productoPresentacionId: parseInt(formData.productoPresentacionId),
+      presentacionProductoId: parseInt(formData.presentacionProductoId),  
       estadoId: parseInt(formData.estadoId)
     };
+
+    console.log("Payload a enviar:", payload);
 
     const method = methodName === "Agregar" ? axios.post : axios.put;
     const url = methodName === "Agregar"
@@ -82,7 +84,16 @@ export default function FormArticuloPedido({ selectedRow, setSelectedRow, setMes
         reloadData();
         setOpen(false);
       })
-      .catch(() => setMessage({ open: true, severity: "error", text: "Error al guardar" }));
+      .catch((err) => {
+        const serverError = err?.response?.data?.message || err?.response?.data || err.message || "Error desconocido";
+        console.error("Respuesta completa del backend:", err?.response);
+        console.error("Mensaje de error:", serverError);
+        setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al guardar: ${serverError}`
+        });
+      });
   };
 
   return (
@@ -92,12 +103,32 @@ export default function FormArticuloPedido({ selectedRow, setSelectedRow, setMes
         <form onSubmit={handleSubmit}>
           <DialogTitle>{methodName} Artículo Pedido</DialogTitle>
           <DialogContent>
-            <TextField fullWidth name="cantidad" label="Cantidad" value={formData.cantidad} onChange={handleChange} margin="dense" required />
-            <TextField fullWidth name="pedidoId" label="Pedido ID" value={formData.pedidoId} margin="dense" required disabled />
+            <TextField
+              fullWidth
+              name="cantidad"
+              label="Cantidad"
+              value={formData.cantidad}
+              onChange={handleChange}
+              margin="dense"
+              required
+            />
+            <TextField
+              fullWidth
+              name="pedidoId"
+              label="Pedido ID"
+              value={formData.pedidoId}
+              margin="dense"
+              required
+              disabled
+            />
 
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Presentación</InputLabel>
-              <Select name="productoPresentacionId" value={formData.productoPresentacionId} onChange={handleChange}>
+              <Select
+                name="presentacionProductoId"
+                value={formData.presentacionProductoId}
+                onChange={handleChange}
+              >
                 <MenuItem value="">Seleccione...</MenuItem>
                 {presentaciones.map(p => (
                   <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>
@@ -107,7 +138,11 @@ export default function FormArticuloPedido({ selectedRow, setSelectedRow, setMes
 
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Estado</InputLabel>
-              <Select name="estadoId" value={formData.estadoId} onChange={handleChange}>
+              <Select
+                name="estadoId"
+                value={formData.estadoId}
+                onChange={handleChange}
+              >
                 <MenuItem value="1">Activo</MenuItem>
                 <MenuItem value="0">Inactivo</MenuItem>
               </Select>

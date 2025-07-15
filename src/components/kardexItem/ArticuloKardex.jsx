@@ -22,7 +22,7 @@ export default function ArticuloKardex() {
 
       const itemsConNombres = resItems.data.map((item) => ({
         ...item,
-        productoPresentacionNombre: mapPresentaciones[item.productoPresentacionId] || "(sin nombre)",
+        productoPresentacionNombre: mapPresentaciones[item.presentacionProductoId] || "(sin nombre)",
       }));
 
       setItems(itemsConNombres);

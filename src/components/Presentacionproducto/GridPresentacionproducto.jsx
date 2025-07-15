@@ -16,18 +16,20 @@ export default function GridPresentacionproducto({
   rowCount,
 }) {
   const columns = [
-    { field: "descripcion", headerName: "Descripción", width: 220 },
+    { field: "id", headerName: "ID", width: 80 },
+    { field: "nombre", headerName: "Nombre", width: 180 },
+    { field: "descripcion", headerName: "Descripción", width: 250 },
     { field: "cantidad", headerName: "Cantidad", width: 100 },
     { field: "productoNombre", headerName: "Producto", width: 150 },
     { field: "unidadNombre", headerName: "Unidad", width: 120 },
     { field: "marcaNombre", headerName: "Marca", width: 150 },
     { field: "presentacionNombre", headerName: "Presentación", width: 150 },
-    { field: "ingredienteNombre", headerName: "Ingrediente", width: 160 },
     {
       field: "estadoId",
       headerName: "Estado",
       width: 100,
-      valueFormatter: ({ value }) => (value === 1 ? "Activo" : "Inactivo"),
+      valueFormatter: ({ value }) =>
+        value === 1 ? "Activo" : value === 0 ? "Inactivo" : "Otro",
     },
   ];
 

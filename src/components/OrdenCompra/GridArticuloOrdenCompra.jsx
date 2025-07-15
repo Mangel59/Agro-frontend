@@ -6,7 +6,7 @@ const columns = [
   { field: 'cantidad', headerName: 'Cantidad', width: 120 },
   { field: 'precio', headerName: 'Precio', width: 120 },
   { field: 'ordenCompraId', headerName: 'Orden ID', width: 120 },
-  { field: 'productoPresentacionId', headerName: 'Presentación', width: 200 },
+  { field: 'presentacionProductoId', headerName: 'Presentación', width: 200 },
   {
     field: 'estadoId',
     headerName: 'Estado',

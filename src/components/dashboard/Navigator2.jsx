@@ -6,7 +6,6 @@
  */
 
 import * as React from 'react';
-import axios from 'axios';
 import {
   Divider,
   List,
@@ -35,6 +34,7 @@ import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import DomainIcon from '@mui/icons-material/Domain';
 
+import axios from '../axiosConfig.js';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 
@@ -79,6 +79,7 @@ import Seccion from '../seccion/Seccion.jsx'
 import Subseccion from '../subseccion/subseccion.jsx';
 import TipoInventario from '../tipo_inventario/Tipo_inventario.jsx';
 import Inventario from '../Inventario/Inventario.jsx';
+import IngredientePresentacionProducto from '../IngredientePP/IngredientePP.jsx';
 const icons = {
   DnsRounded: <DnsRoundedIcon />, Home: <HomeIcon />, People: <PeopleIcon />,
   Public: <PublicIcon />, AddShoppingCartIcon: <AddShoppingCartIcon />, Domain: <DomainIcon />,
@@ -99,7 +100,8 @@ const components = {
   kardex:kardex, media_card: MediaCard, evaluacion_item: EvaluacionItem,
   OrdenCompra: OrdenCompra, Ocupacion: Ocupacion,
   evaluacion:Evaluacion, grupo:Grupo, Movimiento:Movimineto, Proceso: Proceso, Ingrediente: Ingrediente,
-  Seccion:Seccion, Subseccion:Subseccion,  tipo_inventario: TipoInventario, Inventario: Inventario
+  Seccion:Seccion, Subseccion:Subseccion,  tipo_inventario: TipoInventario, Inventario: Inventario,
+  IngredientePresentacionProducto: IngredientePresentacionProducto
 
 };
 
@@ -152,7 +154,7 @@ export default function Navigator2(props) {
   const [open, setOpen] = React.useState(true);
 
   React.useEffect(() => {
-    axios.get('/menu.json')
+    axios.get('/v1/menu')
       .then((response) => {
         setMenuItems(response.data);
         if (response.data.length > 0) {

@@ -50,69 +50,89 @@ export default function Login(props) {
   const handleMouseDownPassword = (event) => event.preventDefault();
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setError("");
+ const handleSubmit = async (event) => {
+  event.preventDefault();
+  setError("");
 
-    if (!validateEmail(username)) {
-      setError(t("invalid_email"));
-      return;
+  if (!validateEmail(username)) {
+    setError(t("invalid_email"));
+    return;
+  }
+
+  try {
+    const response = await axios.post(import.meta.env.VITE_BACKEND_URI + '/auth/login', {
+      username,
+      password,
+    });
+
+    const rolesPorEmpresa = response.data.rolesPorEmpresa;
+
+    if (rolesPorEmpresa.length === 1) {
+      const { empresaId, rolId, empresaNombre } = rolesPorEmpresa[0];
+
+      // Guardamos nombre de empresa directamente
+      localStorage.setItem("empresaNombre", empresaNombre);
+
+      await seleccionarEmpresa(empresaId, rolId);
+    } else {
+      setRoles(rolesPorEmpresa);
+      setShowSelection(true);
+    }
+  } catch (error) {
+    setError(t("login_error"));
+    console.error("There was an error logging in!", error);
+  }
+};
+
+const seleccionarEmpresa = async (empresaId, rolId) => {
+  try {
+    const response = await axios.post(import.meta.env.VITE_BACKEND_URI + '/auth/login/seleccion', {
+      username,
+      empresaId,
+      rolId,
+    });
+
+    const token = response.data.token;
+    const expiration = Date.now() + 24 * 60 * 60 * 1000;
+
+    localStorage.setItem("token", token);
+    localStorage.setItem("token_expiration", expiration.toString());
+
+    // buscar empresaNombre en roles para almacenarla
+    const empresaSeleccionada = roles.find(
+      (r) => r.empresaId === empresaId && r.rolId === rolId
+    );
+
+    if (empresaSeleccionada) {
+      localStorage.setItem("empresaNombre", empresaSeleccionada.empresaNombre);
     }
 
-    try {
-      const response = await axios.post(import.meta.env.VITE_BACKEND_URI + '/auth/login', {
-        username,
-        password,
-      });
+    if (props.setIsAuthenticated) props.setIsAuthenticated(true);
 
-      const rolesPorEmpresa = response.data.rolesPorEmpresa;
+    // fuerza recarga para que ProfileMenu lea localStorage actualizado
+    window.location.reload();
+  } catch (e) {
+    console.error("Error seleccionando empresa", e);
+  }
+};
 
-      if (rolesPorEmpresa.length === 1) {
-        const { empresaId, rolId } = rolesPorEmpresa[0];
-        await seleccionarEmpresa(empresaId, rolId);
-      } else {
-        setRoles(rolesPorEmpresa);
-        setShowSelection(true);
-      }
-    } catch (error) {
-      setError(t("login_error"));
-      console.error("There was an error logging in!", error);
-    }
-  };
+const handleSeleccionSubmit = async (e) => {
+  e.preventDefault();
 
-  const seleccionarEmpresa = async (empresaId, rolId) => {
-    try {
-      const response = await axios.post(import.meta.env.VITE_BACKEND_URI + '/auth/login/seleccion', {
-        username,
-        empresaId,
-        rolId,
-      });
-      const token = response.data.token;
-      const expiration = Date.now() + 24 * 60 * 60 * 1000; // 24 horas en milisegundos
-      localStorage.setItem("token", token);
-      localStorage.setItem("token_expiration", expiration.toString());
-      if (props.setIsAuthenticated) props.setIsAuthenticated(true);
-      props.setCurrentModule(<Contenido setCurrentModule={props.setCurrentModule} />);
-    } catch (e) {
-      console.error("Error seleccionando empresa", e);
-    }
-  };
+  if (!selectedEmpresa || !selectedRol) {
+    setError("Debes seleccionar una empresa y un rol antes de continuar.");
+    return;
+  }
 
-  const handleSeleccionSubmit = (e) => {
-    e.preventDefault();
-    if (selectedEmpresa && selectedRol) {
-      seleccionarEmpresa(selectedEmpresa, selectedRol);
-    }
-  };
+  try {
+    await seleccionarEmpresa(selectedEmpresa, selectedRol);
+  } catch (err) {
+    setError("Hubo un error al seleccionar la empresa.");
+    console.error("Error en selección:", err);
+  }
+};
 
-  const handleLanguageChange = (lng) => {
-    i18n.changeLanguage(lng);
-  };
 
-  Login.propTypes = {
-    setIsAuthenticated: PropTypes.func.isRequired,
-    setCurrentModule: PropTypes.func.isRequired,
-  };
 
   return (
     <Container

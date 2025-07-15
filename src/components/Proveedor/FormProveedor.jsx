@@ -158,7 +158,7 @@ export default function FormProveedor({
           >
             {tiposIdentificacion.map((tipo) => (
               <MenuItem key={tipo.id} value={tipo.id}>
-                {tipo.nombre}
+                {tipo.name}
               </MenuItem>
             ))}
           </Select>
