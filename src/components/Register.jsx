@@ -1,11 +1,11 @@
 // CREADO POR: EMANUEL
 // FECHA DE CREACION: 8/08/2024
-// MODIFICADO POR: MARIA 16/05/2024, 22/08/2024
+// MODIFICADO POR: MARIA 16/05/2024, 22/08/2024, 15/07/2025
 
 import React, { useState } from 'react';
 import {
   Container, TextField, Button, Typography, Box, Paper,
-  Snackbar, Alert, IconButton, InputAdornment, Link
+  Alert, IconButton, InputAdornment, Link
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
@@ -13,21 +13,15 @@ import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@mui/material/styles';
 
-/**
- * Componente de registro.
- * Muestra un formulario para crear una nueva cuenta.
- *
- * @component
- */
 export default function Register() {
-  const { t, i18n } = useTranslation();
-  const theme = useTheme(); // ✅ Acceder a los colores del tema (oscuro/claro)
+  const { t } = useTranslation();
+  const theme = useTheme();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
@@ -40,6 +34,7 @@ export default function Register() {
   const handleSubmit = (event) => {
     event.preventDefault();
     setError('');
+    setSuccessMessage('');
 
     if (!validateEmail(username)) {
       setError(t('invalid_email'));
@@ -51,17 +46,15 @@ export default function Register() {
       return;
     }
 
-    axios.post(import.meta.env.VITE_BACKEND_URI+'/auth/register', { username, password })
+    axios.post(import.meta.env.VITE_BACKEND_URI + '/auth/register', { username, password })
       .then(() => {
-        setOpenSnackbar(true);
-        // Optionally redirect:
-        // navigate('/login');
+        setSuccessMessage("Se ha enviado un email, por favor revisar su correo.");
       })
       .catch(error => {
         if (error.response?.status === 403) {
           setError(t('email ya existe'));
         } else {
-          setError(t('registration_failed'));
+          setError(t('Ya se ha enviado un email de verificación, por favor revisar su correo.'));
         }
       });
   };
@@ -112,6 +105,7 @@ export default function Register() {
           </Typography>
 
           {error && <Alert severity="error">{error}</Alert>}
+          {successMessage && <Alert severity="success">{successMessage}</Alert>}
 
           <TextField
             id="email-input"
@@ -180,20 +174,6 @@ export default function Register() {
           </Typography>
         </Box>
       </Paper>
-
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={3000}
-        onClose={() => setOpenSnackbar(false)}
-      >
-        <Alert
-          onClose={() => setOpenSnackbar(false)}
-          severity="success"
-          sx={{ width: '100%' }}
-        >
-          {t('registration_success')}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 }
