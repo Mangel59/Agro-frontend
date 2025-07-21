@@ -79,7 +79,7 @@ import TipoInventario from '../tipo_inventario/Tipo_inventario.jsx';
 import Inventario from '../Inventario/Inventario.jsx';
 import IngredientePresentacionProducto from '../IngredientePP/IngredientePP.jsx';
 import TipoEvaluacion from '../tipo-evaluacion/Tipo_evaluacion.jsx';
-import Re_pedido from '../RE_pedido/RE_pv.jsx';
+import Re_pedido from '../RE_pedido/re_pv.jsx';
 import RE_kardex from '../RKardex/Rkardex.jsx';
 import RE_productoVencimiento from '../RE_pv/re_pvn.jsx';
 
