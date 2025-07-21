@@ -82,7 +82,7 @@ import TipoEvaluacion from '../tipo-evaluacion/Tipo_evaluacion.jsx';
 import Re_pedido from '../RE_pedido/re_pv.jsx';
 import RE_kardex from '../RKardex/Rkardex.jsx';
 import RE_productoVencimiento from '../RE_pv/re_pvn.jsx';
-
+import RE_ordenCompra from '../RE_oc/re_oc.jsx';
 const icons = {
   DnsRounded: <DnsRoundedIcon />, Home: <HomeIcon />, People: <PeopleIcon />,
   Public: <PublicIcon />, AddShoppingCartIcon: <AddShoppingCartIcon />, Domain: <DomainIcon />,
@@ -105,7 +105,7 @@ const components = {
    grupo:Grupo, Movimiento:Movimineto, Proceso: Proceso, Ingrediente: Ingrediente,
   Seccion:Seccion, Subseccion:Subseccion,  tipo_inventario: TipoInventario, Inventario: Inventario,
   IngredientePresentacionProducto: IngredientePresentacionProducto, RE_pedido: Re_pedido,RE_kardex: RE_kardex,
-  RE_pv: RE_productoVencimiento
+  RE_pv: RE_productoVencimiento, RE_oc: RE_ordenCompra
 
 };
 
@@ -148,7 +148,8 @@ const moduleImages = {
   tipo_evaluacion: "/images/cards/8.jpg",
   RE_pedido: "/images/cards/9.jpg",
   RE_kardex: "/images/cards/10.jpg",
-  RE_productoVencimiento: "/images/cards/1.jpg"
+  RE_productoVencimiento: "/images/cards/1.jpg",
+  RE_oc: "/images/cards/2.jpg"
 };
 
 export default function Navigator2(props) {
