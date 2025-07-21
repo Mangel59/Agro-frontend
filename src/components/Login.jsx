@@ -65,7 +65,7 @@ export default function Login(props) {
       password,
     });
 
-    const rolesPorEmpresa = response.data.rolesPorEmpresa;
+    const rolesPorEmpresa = response.data.rolesByCompany;
 
     if (rolesPorEmpresa.length === 1) {
       const { empresaId, rolId, empresaNombre } = rolesPorEmpresa[0];
@@ -97,7 +97,7 @@ const seleccionarEmpresa = async (empresaId, rolId) => {
 
     localStorage.setItem("token", token);
     localStorage.setItem("token_expiration", expiration.toString());
-    localStorage.setItem("empresaId", empresaId); // ✅ línea que falta
+    localStorage.setItem("empresaId", empresaId); 
 
 
     // buscar empresaNombre en roles para almacenarla
