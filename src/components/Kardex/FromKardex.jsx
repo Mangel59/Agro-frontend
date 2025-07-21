@@ -46,7 +46,7 @@ export default function FormKardex({
     axios.get("/v1/produccion", headers).then(res => setProducciones(res.data));
     axios.get("/v1/tipo_movimiento", headers)
   .then(res => {
-    console.log("Respuesta de /v1/tipo_movimiento:", res.data); // ← AÑADE ESTO
+    console.log("Respuesta de /v1/tipo_movimiento:", res.data); 
 
     if (Array.isArray(res.data)) {
       setTiposMovimiento(res.data);

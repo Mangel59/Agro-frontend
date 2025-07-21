@@ -1,16 +1,16 @@
-import * as React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import axios from "../axiosConfig";
 import {
   Button, Dialog, DialogActions, DialogContent,
   DialogContentText, DialogTitle, TextField, FormControl,
-  InputLabel, Select, MenuItem
+  InputLabel, Select, MenuItem, FormHelperText
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 
 export default function FormTipoBloque({ selectedRow, setSelectedRow, setMessage, reloadData }) {
-  const [open, setOpen] = React.useState(false);
-  const [methodName, setMethodName] = React.useState("");
+  const [open, setOpen] = useState(false);
+  const [methodName, setMethodName] = useState("");
 
   const initialData = {
     nombre: "",
@@ -18,18 +18,21 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, setMessage
     estado: ""
   };
 
-  const [formData, setFormData] = React.useState(initialData);
-  const empresaId = JSON.parse(localStorage.getItem("user"))?.empresa?.id;
+  const [formData, setFormData] = useState(initialData);
+  const [errors, setErrors] = useState({});
+
+  const invalidCharsRegex = /[<>/"'`;(){}[\]\\]/;
 
   const create = () => {
     setFormData(initialData);
+    setErrors({});
     setMethodName("Add");
     setOpen(true);
   };
 
   const update = () => {
     if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona un tipo de bloque para editar." });
+      setMessage({ open: true, severity: "error", text: "Selecciona un tipo bloque para editar." });
       return;
     }
 
@@ -39,19 +42,20 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, setMessage
       estado: selectedRow.estadoId?.toString() || ""
     });
 
+    setErrors({});
     setMethodName("Update");
     setOpen(true);
   };
 
   const deleteRow = () => {
     if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona un tipo de bloque para eliminar." });
+      setMessage({ open: true, severity: "error", text: "Selecciona un tipo bloque para eliminar." });
       return;
     }
 
     axios.delete(`/v1/tipo_bloque/${selectedRow.id}`)
       .then(() => {
-        setMessage({ open: true, severity: "success", text: "Tipo de bloque eliminado correctamente." });
+        setMessage({ open: true, severity: "success", text: "tipo bloque eliminado correctamente." });
         setSelectedRow({});
         reloadData();
       })
@@ -71,14 +75,35 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, setMessage
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.nombre.trim()) {
+      newErrors.nombre = "El nombre es obligatorio.";
+    } else if (invalidCharsRegex.test(formData.nombre)) {
+      newErrors.nombre = "El nombre contiene caracteres no permitidos.";
+    }
+
+    if (formData.descripcion && invalidCharsRegex.test(formData.descripcion)) {
+      newErrors.descripcion = "La descripción contiene caracteres no permitidos.";
+    }
+
+    if (!["1", "2"].includes(formData.estado)) {
+      newErrors.estado = "Debe seleccionar un estado válido.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (!validate()) return;
 
     const payload = {
-      nombre: formData.nombre,
-      descripcion: formData.descripcion,
-      estadoId: parseInt(formData.estado),
-      empresaId // 👈 importante incluirlo
+      nombre: formData.nombre.trim(),
+      descripcion: formData.descripcion.trim(),
+      estadoId: parseInt(formData.estado)
     };
 
     const method = methodName === "Add" ? axios.post : axios.put;
@@ -89,7 +114,7 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, setMessage
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Tipo de bloque creado!" : "Tipo de bloque actualizado!"
+          text: methodName === "Add" ? "tipo bloque creado con éxito!" : "tipo bloque actualizado con éxito!"
         });
         setOpen(false);
         setSelectedRow({});
@@ -109,23 +134,29 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, setMessage
       <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog open={open} onClose={handleClose}>
         <form onSubmit={handleSubmit}>
-          <DialogTitle>{methodName} Tipo de Bloque</DialogTitle>
+          <DialogTitle>{methodName} tipo bloque</DialogTitle>
           <DialogContent>
-            <DialogContentText>Formulario para tipo de bloque</DialogContentText>
+            <DialogContentText>Formulario para gestionar tipo bloque</DialogContentText>
 
             <TextField
-              fullWidth margin="dense" required
-              name="nombre" label="Nombre"
+              fullWidth margin="dense"
+              name="nombre" label="Nombre del tipo bloque"
               value={formData.nombre}
               onChange={handleChange}
+              error={!!errors.nombre}
+              helperText={errors.nombre}
             />
+
             <TextField
               fullWidth margin="dense"
               name="descripcion" label="Descripción"
               value={formData.descripcion}
               onChange={handleChange}
+              error={!!errors.descripcion}
+              helperText={errors.descripcion}
             />
-            <FormControl fullWidth margin="normal" required>
+
+            <FormControl fullWidth margin="normal" error={!!errors.estado}>
               <InputLabel>Estado</InputLabel>
               <Select
                 name="estado"
@@ -137,6 +168,7 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, setMessage
                 <MenuItem value="1">Activo</MenuItem>
                 <MenuItem value="2">Inactivo</MenuItem>
               </Select>
+              {errors.estado && <FormHelperText>{errors.estado}</FormHelperText>}
             </FormControl>
           </DialogContent>
           <DialogActions>

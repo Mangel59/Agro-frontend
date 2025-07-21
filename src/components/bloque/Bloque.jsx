@@ -26,7 +26,6 @@ export default function Bloque() {
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
 
   const token = localStorage.getItem("token");
-  const empresaId = localStorage.getItem("empresaId"); // puede ser string
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
   useEffect(() => {
@@ -62,28 +61,26 @@ export default function Bloque() {
     axios.get(`/v1/sede`, headers)
       .then(res => {
         const data = Array.isArray(res.data) ? res.data : [];
-        const filtradas = data.filter(
-          s => s.municipioId == selectedMunicipio && s.empresaId == empresaId
-        );
+        const filtradas = data.filter(s => s.municipioId === parseInt(selectedMunicipio));
         setSedes(filtradas);
       })
       .catch(err => {
         console.error("ERROR SEDE", err.response?.status, err.response?.data);
       });
   }, [selectedMunicipio]);
-    useEffect(() => {
+
+  useEffect(() => {
     reloadData();
   }, [selectedSede]);
 
-const reloadData = () => {
-  if (!selectedSede) return setBloques([]);
-  axios.get(`/v1/bloque`, headers).then(res => {
-    const data = Array.isArray(res.data) ? res.data : [];
-    const filtrados = data.filter(b => String(b.sedeId) === String(selectedSede));
-    setBloques(filtrados);
-  });
-};
-
+  const reloadData = () => {
+    if (!selectedSede) return setBloques([]);
+    axios.get(`/v1/bloque`, headers).then(res => {
+      const data = Array.isArray(res.data) ? res.data : [];
+      const filtrados = data.filter(b => b.sedeId === parseInt(selectedSede));
+      setBloques(filtrados);
+    });
+  };
 
   const handleDelete = async () => {
     if (!selectedRow) return;

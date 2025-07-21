@@ -1,16 +1,16 @@
-import React, { useState } from "react";
+import * as React from "react";
 import PropTypes from "prop-types";
 import axios from "../axiosConfig";
 import {
   Button, Dialog, DialogActions, DialogContent,
   DialogContentText, DialogTitle, TextField, FormControl,
-  InputLabel, Select, MenuItem, FormHelperText
+  InputLabel, Select, MenuItem
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 
-export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, reloadData }) {
-  const [open, setOpen] = useState(false);
-  const [methodName, setMethodName] = useState("");
+export default function FormTipoEvaluacion({ selectedRow, setSelectedRow, setMessage, reloadData }) {
+  const [open, setOpen] = React.useState(false);
+  const [methodName, setMethodName] = React.useState("");
 
   const initialData = {
     nombre: "",
@@ -18,21 +18,17 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
     estado: ""
   };
 
-  const [formData, setFormData] = useState(initialData);
-  const [errors, setErrors] = useState({});
-
-  const invalidCharsRegex = /[<>/"'`;(){}[\]\\]/;
+  const [formData, setFormData] = React.useState(initialData);
 
   const create = () => {
     setFormData(initialData);
-    setErrors({});
     setMethodName("Add");
     setOpen(true);
   };
 
   const update = () => {
     if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona un grupo para editar." });
+      setMessage({ open: true, severity: "error", text: "Selecciona un tipo evaluacion para editar." });
       return;
     }
 
@@ -42,20 +38,19 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
       estado: selectedRow.estadoId?.toString() || ""
     });
 
-    setErrors({});
     setMethodName("Update");
     setOpen(true);
   };
 
   const deleteRow = () => {
     if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona un grupo para eliminar." });
+      setMessage({ open: true, severity: "error", text: "Selecciona un tipo evaluacion  para eliminar." });
       return;
     }
 
-    axios.delete(`/v1/grupo/${selectedRow.id}`)
+    axios.delete(`/v1/tipo-evaluacion/${selectedRow.id}`)
       .then(() => {
-        setMessage({ open: true, severity: "success", text: "Grupo eliminado correctamente." });
+        setMessage({ open: true, severity: "success", text: "Tipo evaluacion eliminada correctamente." });
         setSelectedRow({});
         reloadData();
       })
@@ -75,46 +70,24 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const validate = () => {
-    const newErrors = {};
-
-    if (!formData.nombre.trim()) {
-      newErrors.nombre = "El nombre es obligatorio.";
-    } else if (invalidCharsRegex.test(formData.nombre)) {
-      newErrors.nombre = "El nombre contiene caracteres no permitidos.";
-    }
-
-    if (formData.descripcion && invalidCharsRegex.test(formData.descripcion)) {
-      newErrors.descripcion = "La descripción contiene caracteres no permitidos.";
-    }
-
-    if (!["1", "2"].includes(formData.estado)) {
-      newErrors.estado = "Debe seleccionar un estado válido.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (!validate()) return;
 
     const payload = {
-      nombre: formData.nombre.trim(),
-      descripcion: formData.descripcion.trim(),
+      nombre: formData.nombre,
+      descripcion: formData.descripcion,
       estadoId: parseInt(formData.estado)
     };
 
     const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/grupo" : `/v1/grupo/${selectedRow.id}`;
+    const url = methodName === "Add" ? "/v1/tipo-evaluacion" : `/v1/tipo-evaluacion/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Grupo creado con éxito!" : "Grupo actualizado con éxito!"
+          text: methodName === "Add" ? "Tipo evaluacion creada con éxito!" : "Tipo evaluacion actualizada con éxito!"
         });
         setOpen(false);
         setSelectedRow({});
@@ -134,29 +107,23 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
       <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog open={open} onClose={handleClose}>
         <form onSubmit={handleSubmit}>
-          <DialogTitle>{methodName} Grupo</DialogTitle>
+          <DialogTitle>{methodName} Tipo evaluacion de Producto</DialogTitle>
           <DialogContent>
-            <DialogContentText>Formulario para gestionar grupo</DialogContentText>
+            <DialogContentText>Formulario para gestionar tipo evaluacion</DialogContentText>
 
             <TextField
-              fullWidth margin="dense"
-              name="nombre" label="Nombre del Grupo"
+              fullWidth margin="dense" required
+              name="nombre" label="Nombre"
               value={formData.nombre}
               onChange={handleChange}
-              error={!!errors.nombre}
-              helperText={errors.nombre}
             />
-
             <TextField
-              fullWidth margin="dense"
+              fullWidth margin="dense" required
               name="descripcion" label="Descripción"
               value={formData.descripcion}
               onChange={handleChange}
-              error={!!errors.descripcion}
-              helperText={errors.descripcion}
             />
-
-            <FormControl fullWidth margin="normal" error={!!errors.estado}>
+            <FormControl fullWidth margin="normal" required>
               <InputLabel>Estado</InputLabel>
               <Select
                 name="estado"
@@ -168,7 +135,6 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
                 <MenuItem value="1">Activo</MenuItem>
                 <MenuItem value="2">Inactivo</MenuItem>
               </Select>
-              {errors.estado && <FormHelperText>{errors.estado}</FormHelperText>}
             </FormControl>
           </DialogContent>
           <DialogActions>
@@ -181,7 +147,7 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
   );
 }
 
-FormGrupo.propTypes = {
+FormTipoEvaluacion.propTypes = {
   selectedRow: PropTypes.object.isRequired,
   setSelectedRow: PropTypes.func.isRequired,
   setMessage: PropTypes.func.isRequired,

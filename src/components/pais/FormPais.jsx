@@ -1,49 +1,29 @@
-/**
- * @file FormPais.jsx
- * @module FormPais
- * @description Componente de formulario para crear y editar países.
- *
- * Este formulario permite la creación, actualización y eliminación de países,
- * incluyendo validaciones básicas y control de estado.
- */
-
 import * as React from "react";
 import PropTypes from "prop-types";
 import axios from "../axiosConfig";
 import {
   Button, Dialog, DialogActions, DialogContent,
   DialogContentText, DialogTitle, TextField, FormControl,
-  InputLabel, Select, MenuItem
+  InputLabel, Select, MenuItem, FormHelperText
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 
-/**
- * @typedef {Object} FormPaisProps
- * @property {Object} selectedRow - Fila seleccionada para editar
- * @property {Function} setSelectedRow - Setter para la fila seleccionada
- * @property {Function} setMessage - Setter para los mensajes de alerta
- * @property {Function} reloadData - Función para recargar los datos
- */
-
-/**
- * @param {FormPaisProps} props
- * @returns {JSX.Element} Formulario de país
- */
 export default function FormPais({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
-
-  const initialData = {
+  const [formData, setFormData] = React.useState({
     nombre: "",
     codigo: "",
     acronimo: "",
     estado: ""
-  };
+  });
+  const [errors, setErrors] = React.useState({});
 
-  const [formData, setFormData] = React.useState(initialData);
+  const invalidCharsRegex = /[<>/"'`;(){}[\]\\]/;
 
   const create = () => {
-    setFormData(initialData);
+    setFormData({ nombre: "", codigo: "", acronimo: "", estado: "" });
+    setErrors({});
     setMethodName("Add");
     setOpen(true);
   };
@@ -59,6 +39,7 @@ export default function FormPais({ selectedRow, setSelectedRow, setMessage, relo
       acronimo: selectedRow.acronimo || "",
       estado: selectedRow.estadoId?.toString() || ""
     });
+    setErrors({});
     setMethodName("Update");
     setOpen(true);
   };
@@ -87,12 +68,43 @@ export default function FormPais({ selectedRow, setSelectedRow, setMessage, relo
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.nombre.trim()) {
+      newErrors.nombre = "El nombre es obligatorio.";
+    } else if (invalidCharsRegex.test(formData.nombre)) {
+      newErrors.nombre = "El nombre contiene caracteres no permitidos.";
+    }
+
+    if (!formData.codigo.toString().trim()) {
+      newErrors.codigo = "El código es obligatorio.";
+    } else if (invalidCharsRegex.test(formData.codigo.toString())) {
+      newErrors.codigo = "El código contiene caracteres no permitidos.";
+    }
+
+    if (!formData.acronimo.trim()) {
+      newErrors.acronimo = "El acrónimo es obligatorio.";
+    } else if (invalidCharsRegex.test(formData.acronimo)) {
+      newErrors.acronimo = "El acrónimo contiene caracteres no permitidos.";
+    }
+
+    if (!["1", "2"].includes(formData.estado)) {
+      newErrors.estado = "Debe seleccionar un estado válido.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (!validate()) return;
+
     const payload = {
-      nombre: formData.nombre,
+      nombre: formData.nombre.trim(),
       codigo: parseInt(formData.codigo),
-      acronimo: formData.acronimo.toUpperCase(),
+      acronimo: formData.acronimo.trim().toUpperCase(),
       estadoId: parseInt(formData.estado)
     };
 
@@ -127,18 +139,45 @@ export default function FormPais({ selectedRow, setSelectedRow, setMessage, relo
           <DialogTitle>{methodName} País</DialogTitle>
           <DialogContent>
             <DialogContentText>Formulario para gestionar país</DialogContentText>
-            <TextField fullWidth required name="nombre" label="Nombre del País" value={formData.nombre} onChange={handleChange} margin="dense" />
-            <TextField fullWidth required name="codigo" label="Código" type="number" value={formData.codigo} onChange={handleChange} margin="dense" />
-            <TextField fullWidth required name="acronimo" label="Acrónimo" inputProps={{ maxLength: 3 }} value={formData.acronimo} onChange={handleChange} margin="dense" />
-            <FormControl fullWidth required margin="normal">
+
+            <TextField
+              fullWidth margin="dense"
+              name="nombre" label="Nombre del País"
+              value={formData.nombre} onChange={handleChange}
+              error={!!errors.nombre} helperText={errors.nombre}
+            />
+
+            <TextField
+              fullWidth margin="dense"
+              name="codigo" label="Código" type="number"
+              value={formData.codigo} onChange={handleChange}
+              error={!!errors.codigo} helperText={errors.codigo}
+            />
+
+            <TextField
+              fullWidth margin="dense"
+              name="acronimo" label="Acrónimo"
+              inputProps={{ maxLength: 3 }}
+              value={formData.acronimo} onChange={handleChange}
+              error={!!errors.acronimo} helperText={errors.acronimo}
+            />
+
+            <FormControl fullWidth margin="normal" error={!!errors.estado}>
               <InputLabel>Estado</InputLabel>
-              <Select name="estado" value={formData.estado} onChange={handleChange} label="Estado">
+              <Select
+                name="estado"
+                value={formData.estado}
+                onChange={handleChange}
+                label="Estado"
+              >
                 <MenuItem value="">Seleccione...</MenuItem>
                 <MenuItem value="1">Activo</MenuItem>
                 <MenuItem value="2">Inactivo</MenuItem>
               </Select>
+              {errors.estado && <FormHelperText>{errors.estado}</FormHelperText>}
             </FormControl>
           </DialogContent>
+
           <DialogActions>
             <Button onClick={handleClose}>Cancelar</Button>
             <Button type="submit">{methodName}</Button>

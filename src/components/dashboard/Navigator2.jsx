@@ -68,18 +68,21 @@ import Proveedor from '../Proveedor/Proveedor.jsx';
 import MediaCard from '../MediaCard.jsx';
 import OrdenCompra from '../OrdenCompra/OrdenCompra.jsx';
 import Ocupacion from '../ocupacion/Ocupacion.jsx';
-import Evaluacion from '../Evaluacion/Evaluacion.jsx';
 import EvaluacionItem from '../Evaluacion_item/Evaluacion_item.jsx';
 import Grupo from '../Grupo/Grupo.jsx';
 import Movimineto from '../Movimiento/Movimiento.jsx';
 import Proceso from '../Proceso/Proceso.jsx';
-import ArticuloKardex from  '../kardexItem/ArticuloKardex.jsx';
 import Ingrediente from '../ingrediente/ingrediente.jsx';
 import Seccion from '../seccion/Seccion.jsx'
 import Subseccion from '../subseccion/subseccion.jsx';
 import TipoInventario from '../tipo_inventario/Tipo_inventario.jsx';
 import Inventario from '../Inventario/Inventario.jsx';
 import IngredientePresentacionProducto from '../IngredientePP/IngredientePP.jsx';
+import TipoEvaluacion from '../tipo-evaluacion/Tipo_evaluacion.jsx';
+import Re_pedido from '../RE_pedido/RE_pv.jsx';
+import RE_kardex from '../RKardex/Rkardex.jsx';
+import RE_productoVencimiento from '../RE_pv/re_pvn.jsx';
+
 const icons = {
   DnsRounded: <DnsRoundedIcon />, Home: <HomeIcon />, People: <PeopleIcon />,
   Public: <PublicIcon />, AddShoppingCartIcon: <AddShoppingCartIcon />, Domain: <DomainIcon />,
@@ -95,13 +98,14 @@ const components = {
   tipo_bloque: TipoBloque, tipo_sede: TipoSedes, sede: Sede,
   presentacion_producto: Presentacionproducto, presentacion: Presentacion,
   producto_categoria: ProductoCategoria, producto: Producto, produccion: Produccion,
-  ArticuloKardex: ArticuloKardex, marca: Marca, unidad: Unidad, tipo_movimiento: TipoMovimiento,
+  marca: Marca, unidad: Unidad,tipo_evaluacion:TipoEvaluacion, tipo_movimiento: TipoMovimiento,
   tipo_produccion: TipoProduccion, persona: Persona, empresa: Empresa, r_pedido: RPedido,
   kardex:kardex, media_card: MediaCard, evaluacion_item: EvaluacionItem,
   OrdenCompra: OrdenCompra, Ocupacion: Ocupacion,
-  evaluacion:Evaluacion, grupo:Grupo, Movimiento:Movimineto, Proceso: Proceso, Ingrediente: Ingrediente,
+   grupo:Grupo, Movimiento:Movimineto, Proceso: Proceso, Ingrediente: Ingrediente,
   Seccion:Seccion, Subseccion:Subseccion,  tipo_inventario: TipoInventario, Inventario: Inventario,
-  IngredientePresentacionProducto: IngredientePresentacionProducto
+  IngredientePresentacionProducto: IngredientePresentacionProducto, RE_pedido: Re_pedido,RE_kardex: RE_kardex,
+  RE_pv: RE_productoVencimiento
 
 };
 
@@ -133,16 +137,18 @@ const moduleImages = {
   r_pedido: "/images/cards/5.jpg",
   presentacion: "/images/cards/6.jpg",
   media_card: "/images/cards/7.jpg",
-  kardex: "/images/cards/8.jpg",
   evaluacion_item: "/images/cards/2.jpg",
-  evaluacion: "/images/cards/7.jpg",
   OrdenCompra: "/images/cards/9.jpg",
   Ocupacion: "/images/cards/5.jpg",
   Ingrediente: "/images/cards/5.jpg",
   Seccion: "/images/cards/5.jpg",
   Subseccion: "/images/cards/10.jpg",
   TipoInventario: "/images/cards/6.jpg",
-  Inventario: "/images/cards/7.jpg"
+  Inventario: "/images/cards/7.jpg",
+  tipo_evaluacion: "/images/cards/8.jpg",
+  RE_pedido: "/images/cards/9.jpg",
+  RE_kardex: "/images/cards/10.jpg",
+  RE_productoVencimiento: "/images/cards/1.jpg"
 };
 
 export default function Navigator2(props) {

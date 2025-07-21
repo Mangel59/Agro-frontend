@@ -18,6 +18,7 @@ export default function Pedido() {
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
   const [searchId, setSearchId] = useState("");
+  const [categoriaEstadoId, setCategoriaEstadoId] = useState("");
   const [searchResult, setSearchResult] = useState(null);
   const [articuloItems, setArticuloItems] = useState([]);
   const [selectedArticulo, setSelectedArticulo] = useState({});
@@ -25,6 +26,8 @@ export default function Pedido() {
   const [reloadArticulos, setReloadArticulos] = useState(false);
   const [presentaciones, setPresentaciones] = useState([]);
   const [previewUrl, setPreviewUrl] = useState("");
+
+  const empresaId = localStorage.getItem("empresaId");
 
   const reloadData = () => {
     axios.get("/v1/pedido")
@@ -63,7 +66,7 @@ export default function Pedido() {
       .then((res) => {
         setSearchResult(res.data);
         loadArticulos(res.data.id);
-        setPreviewUrl(""); // limpiar vista previa
+        setPreviewUrl(""); 
       })
       .catch(() => {
         setSearchResult(null);
@@ -82,7 +85,12 @@ export default function Pedido() {
     axios({
       url: "/v2/report/pedido",
       method: "POST",
-      data: { articulo_ids: ids },
+      data: {
+        articulo_ids: ids,
+        categoria_estado_id: parseInt(categoriaEstadoId),
+        emp_id: parseInt(empresaId),
+        ped_id: searchResult?.id
+      },
       responseType: "blob"
     })
       .then((response) => {
@@ -113,7 +121,11 @@ export default function Pedido() {
     axios({
       url: "/v2/report/pedido",
       method: "POST",
-      data: { ped_id: searchResult.id },
+      data: {
+        ped_id: searchResult.id,
+        categoria_estado_id: parseInt(categoriaEstadoId),
+        emp_id: parseInt(empresaId),
+      },
       responseType: "blob",
     })
       .then((response) => {
@@ -144,7 +156,11 @@ export default function Pedido() {
     axios({
       url: "/v2/report/pedido",
       method: "POST",
-      data: { ped_id: searchResult.id },
+      data: {
+        ped_id: searchResult.id,
+        categoria_estado_id: parseInt(categoriaEstadoId),
+        emp_id: parseInt(empresaId),
+      },
       responseType: "blob",
     })
       .then((response) => {
@@ -234,6 +250,14 @@ export default function Pedido() {
             label="ID de Pedido"
             value={searchId}
             onChange={(e) => setSearchId(e.target.value)}
+            fullWidth
+            type="number"
+            margin="normal"
+          />
+          <TextField
+            label="Categoría Estado"
+            value={categoriaEstadoId}
+            onChange={(e) => setCategoriaEstadoId(e.target.value)}
             fullWidth
             type="number"
             margin="normal"

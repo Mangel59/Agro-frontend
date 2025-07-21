@@ -97,6 +97,8 @@ const seleccionarEmpresa = async (empresaId, rolId) => {
 
     localStorage.setItem("token", token);
     localStorage.setItem("token_expiration", expiration.toString());
+    localStorage.setItem("empresaId", empresaId); // ✅ línea que falta
+
 
     // buscar empresaNombre en roles para almacenarla
     const empresaSeleccionada = roles.find(
@@ -242,11 +244,6 @@ const handleSeleccionSubmit = async (e) => {
             {t("register_here")}
           </Link>
         </Typography>
-
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-          <Button onClick={() => handleLanguageChange("en")}>English</Button>
-          <Button onClick={() => handleLanguageChange("es")}>Español</Button>
-        </Box>
       </Box>
     </Container>
   );

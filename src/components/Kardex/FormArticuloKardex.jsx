@@ -23,13 +23,17 @@ export default function ({ selectedRow, setSelectedRow, setMessage, reloadData, 
   const [formData, setFormData] = useState(initialData);
 
   const loadData = () => {
-    axios.get("/v1/presentacion")
+    axios.get("/v1/producto_presentacion")
       .then(res => setPresentaciones(res.data))
       .catch(err => console.error("Error al cargar presentaciones:", err));
   };
 
   const create = () => {
-    setFormData(prev => ({ ...initialData, kardexId: kardexId || "" }));
+    if (!kardexId) {
+      setMessage({ open: true, severity: "error", text: "Debes seleccionar un Kardex antes de crear un artículo." });
+      return;
+    }
+    setFormData(prev => ({ ...initialData, kardexId }));
     setMethodName("Agregar");
     loadData();
     setOpen(true);
@@ -54,7 +58,7 @@ export default function ({ selectedRow, setSelectedRow, setMessage, reloadData, 
         reloadData();
         setSelectedRow({});
       })
-      .catch(err => setMessage({ open: true, severity: "error", text: "Error al eliminar" }));
+      .catch(() => setMessage({ open: true, severity: "error", text: "Error al eliminar" }));
   };
 
   const handleChange = (e) => {
@@ -64,15 +68,22 @@ export default function ({ selectedRow, setSelectedRow, setMessage, reloadData, 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const payload = {
-    ...formData,
-    cantidad: parseFloat(formData.cantidad),
-    precio: parseFloat(formData.precio),
-    kardexId: parseInt(formData.kardexId),
-    presentacionProductoId: parseInt(formData.presentacionProductoId),
-    estadoId: parseInt(formData.estadoId),
-    fechaVencimiento: formData.fechaVencimiento + "T00:00:00"
-    };
+
+const payload = {
+  ...formData,
+  id: selectedRow.id,
+  cantidad: parseFloat(formData.cantidad),
+  precio: parseFloat(formData.precio),
+  kardexId: parseInt(formData.kardexId),
+  presentacionProductoId: parseInt(formData.presentacionProductoId),
+  estadoId: parseInt(formData.estadoId),
+  fechaVencimiento: formData.fechaVencimiento.includes("T")
+    ? formData.fechaVencimiento
+    : formData.fechaVencimiento + "T00:00:00"
+};
+
+
+    console.log("Payload enviado:", payload);
 
     const method = methodName === "Agregar" ? axios.post : axios.put;
     const url = methodName === "Agregar"
@@ -85,7 +96,21 @@ export default function ({ selectedRow, setSelectedRow, setMessage, reloadData, 
         reloadData();
         setOpen(false);
       })
-      .catch(err => setMessage({ open: true, severity: "error", text: "Error al guardar" }));
+      .catch(err => {
+        const status = err?.response?.status;
+        const backendMessage = err?.response?.data?.message;
+
+        let errorMsg = "Error al guardar";
+
+        if (status === 403) {
+          errorMsg = backendMessage || "No tienes permisos para guardar con este estado.";
+        } else if (backendMessage) {
+          errorMsg = backendMessage;
+        }
+
+        console.error("Error al guardar:", err.response || err);
+        setMessage({ open: true, severity: "error", text: errorMsg });
+      });
   };
 
   return (
@@ -95,8 +120,24 @@ export default function ({ selectedRow, setSelectedRow, setMessage, reloadData, 
         <form onSubmit={handleSubmit}>
           <DialogTitle>{methodName} Artículo Kardex</DialogTitle>
           <DialogContent>
-            <TextField fullWidth name="cantidad" label="Cantidad" value={formData.cantidad} onChange={handleChange} margin="dense" required />
-            <TextField fullWidth name="precio" label="Precio" value={formData.precio} onChange={handleChange} margin="dense" required />
+            <TextField
+              fullWidth
+              name="cantidad"
+              label="Cantidad"
+              value={formData.cantidad}
+              onChange={handleChange}
+              margin="dense"
+              required
+            />
+            <TextField
+              fullWidth
+              name="precio"
+              label="Precio"
+              value={formData.precio}
+              onChange={handleChange}
+              margin="dense"
+              required
+            />
             <TextField
               fullWidth
               type="date"
@@ -108,11 +149,23 @@ export default function ({ selectedRow, setSelectedRow, setMessage, reloadData, 
               InputLabelProps={{ shrink: true }}
               required
             />
-            <TextField fullWidth name="kardexId" label="Kardex ID" value={formData.kardexId} margin="dense" required disabled />
+            <TextField
+              fullWidth
+              name="kardexId"
+              label="Kardex ID"
+              value={formData.kardexId}
+              margin="dense"
+              required
+              disabled
+            />
 
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Presentación</InputLabel>
-              <Select name="presentacionProductoId" value={formData.presentacionProductoId} onChange={handleChange}>
+              <Select
+                name="presentacionProductoId"
+                value={formData.presentacionProductoId}
+                onChange={handleChange}
+              >
                 <MenuItem value="">Seleccione...</MenuItem>
                 {presentaciones.map(p => (
                   <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>
@@ -122,7 +175,11 @@ export default function ({ selectedRow, setSelectedRow, setMessage, reloadData, 
 
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Estado</InputLabel>
-              <Select name="estadoId" value={formData.estadoId} onChange={handleChange}>
+              <Select
+                name="estadoId"
+                value={formData.estadoId}
+                onChange={handleChange}
+              >
                 <MenuItem value="1">Activo</MenuItem>
                 <MenuItem value="2">Inactivo</MenuItem>
               </Select>
