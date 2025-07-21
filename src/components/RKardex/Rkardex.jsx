@@ -1,199 +1,225 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Box, Button, FormControl, InputLabel,
-  MenuItem, Select, TextField, Typography
+  Box, Button, Typography, Grid, TextField,
+  FormControl, InputLabel, Select, MenuItem,
+  Dialog, DialogTitle, DialogContent, DialogActions
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
 import axios from "../axiosConfig";
-import MessageSnackBar from "../MessageSnackBar"; // ajusta si cambia la ruta
+import MessageSnackBar from "../MessageSnackBar";
+import VistaPreviaPDFKardex from "../Kardex/vistapreviapdfkardex";
 
-export default function Rkardex() {
-  const [filters, setFilters] = useState({
-    producto_id: "",
-    movimiento_id: "",
-    unidad_id: "",
-    fecha_inicio: "",
-    fecha_fin: "",
+export default function RE_kardex() {
+  const token = localStorage.getItem("token");
+  const empresaId = token ? JSON.parse(atob(token.split(".")[1]))?.empresaId : null;
+
+  const [formReporte, setFormReporte] = useState({
+    pais_id: "", departamento_id: "", municipio_id: "", sede_id: "",
+    bloque_id: "", espacio_id: "", almacen_id: "",
+    producto_id: "", producto_categoria_id: "",
+    fecha_inicio: "", fecha_fin: ""
   });
 
+  const [paises, setPaises] = useState([]);
+  const [departamentos, setDepartamentos] = useState([]);
+  const [municipios, setMunicipios] = useState([]);
+  const [sedes, setSedes] = useState([]);
+  const [bloques, setBloques] = useState([]);
+  const [espacios, setEspacios] = useState([]);
+  const [almacenes, setAlmacenes] = useState([]);
   const [productos, setProductos] = useState([]);
-  const [movimientos, setMovimientos] = useState([]);
-  const [unidades, setUnidades] = useState([]);
-  const [data, setData] = useState([]);
-  const [selectedRows, setSelectedRows] = useState([]);
-  const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
+  const [categorias, setCategorias] = useState([]);
 
-  const reloadFiltros = async () => {
-    const token = localStorage.getItem("token");
-    const headers = { headers: { Authorization: `Bearer ${token}` } };
-
-    try {
-      const [resProductos, resMovimientos, resUnidades] = await Promise.all([
-        axios.get("/v1/producto", headers),
-        axios.get("/v1/movimiento", headers),
-        axios.get("/v1/unidad", headers),
-      ]);
-
-      const obtenerLista = (res) => {
-        if (Array.isArray(res.data)) return res.data;
-        if (Array.isArray(res.data?.data)) return res.data.data;
-        if (Array.isArray(res.data?.content)) return res.data.content;
-        return [];
-      };
-
-      const listaProductos = obtenerLista(resProductos).filter(p => p.estadoId === 1);
-      const listaMovimientos = obtenerLista(resMovimientos).filter(m => m.estadoId === 1);
-      const listaUnidades = obtenerLista(resUnidades).filter(u => u.estadoId === 1);
-
-      console.log("✅ Productos:", listaProductos);
-      console.log("✅ Movimientos:", listaMovimientos);
-      console.log("✅ Unidades:", listaUnidades);
-
-      setProductos(listaProductos);
-      setMovimientos(listaMovimientos);
-      setUnidades(listaUnidades);
-    } catch (err) {
-      console.error("❌ Error al cargar filtros:", err);
-      setMessage({
-        open: true,
-        severity: "error",
-        text: "Error al cargar filtros de producto/movimiento/unidad",
-      });
-    }
-  };
-
-  useEffect(() => {
-    reloadFiltros();
-  }, []);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [message, setMessage] = useState({ open: false, severity: "info", text: "" });
 
   const handleChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormReporte(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleBuscar = async () => {
-    const formatDate = (value) => {
-      if (!value) return "";
-      const [date, time] = value.split("T");
-      return `${date} ${time.length === 5 ? time + ":00" : time}`;
-    };
+  const formatoFecha = (fecha) => fecha ? fecha.replace("T", " ").slice(0, 16) : "";
 
-    const filtros = {
-      ...filters,
-      fecha_inicio: formatDate(filters.fecha_inicio),
-      fecha_fin: formatDate(filters.fecha_fin),
-    };
+  const construirParametros = () => ({
+    empresa_id: parseInt(empresaId),
+    fecha_inicio: formatoFecha(formReporte.fecha_inicio),
+    fecha_fin: formatoFecha(formReporte.fecha_fin),
+    logo_empresa: `${import.meta.env.VITE_RUTA_LOGO_EMPRESA}${empresaId}/logo_empresa.jpeg`
+  });
 
-    try {
-      const res = await axios.post("/v2/report/kardex", filtros);
-      setData(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      console.error("❌ Error al buscar reporte:", err);
-      setData([]);
+  const generarVistaPreviaPDF = () => {
+    if (!formReporte.fecha_inicio || !formReporte.fecha_fin || !empresaId) {
       setMessage({
         open: true,
-        severity: "error",
-        text: "Error al buscar reporte Kardex",
+        severity: "warning",
+        text: "Completa todos los campos requeridos."
       });
+      return;
     }
+
+    const datos = construirParametros();
+    axios.post("/v2/report/kardex", datos, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      responseType: "blob"
+    })
+      .then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+        setPreviewUrl(url);
+        setMessage({ open: true, severity: "success", text: "PDF generado correctamente." });
+      })
+      .catch((err) => {
+        console.error("❌ Error al generar PDF Kardex:", err);
+        setPreviewUrl("");
+        setMessage({ open: true, severity: "error", text: "Error al generar vista previa PDF." });
+      });
   };
 
-  const handleImprimir = () => {
-    const seleccionados = data.filter(row => selectedRows.includes(row.id));
-    console.log("🖨️ Imprimir seleccionados:", seleccionados);
+  const imprimirPDFKardex = () => {
+    if (!formReporte.fecha_inicio || !formReporte.fecha_fin || !empresaId) {
+      setMessage({
+        open: true,
+        severity: "warning",
+        text: "Completa todos los campos requeridos."
+      });
+      return;
+    }
+
+    const datos = construirParametros();
+    axios.post("/v2/report/kardex", datos, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      responseType: "blob"
+    })
+      .then((response) => {
+        const blob = new Blob([response.data], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `reporte_kardex.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      })
+      .catch((err) => {
+        console.error("❌ Error al descargar PDF Kardex:", err);
+        setMessage({ open: true, severity: "error", text: "Error al descargar el PDF." });
+      });
   };
 
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "producto", headerName: "Producto", width: 150, valueGetter: (params) => params.row.producto?.nombre || "" },
-    { field: "movimiento", headerName: "Movimiento", width: 150, valueGetter: (params) => params.row.movimiento?.nombre || "" },
-    { field: "unidad", headerName: "Unidad", width: 120, valueGetter: (params) => params.row.unidad?.nombre || "" },
-    {
-      field: "fecha_inicio",
-      headerName: "Fecha Inicio",
-      width: 180,
-      valueGetter: (params) => new Date(params.row.fecha_inicio).toLocaleString(),
-    },
-    {
-      field: "fecha_fin",
-      headerName: "Fecha Fin",
-      width: 180,
-      valueGetter: (params) => new Date(params.row.fecha_fin).toLocaleString(),
-    }
-  ];
+  // Carga jerárquica
+  useEffect(() => {
+    axios.get("/v1/pais").then(res => setPaises(res.data));
+    axios.get("/v1/producto").then(res => setProductos(res.data));
+    axios.get("/v1/producto_categoria").then(res => setCategorias(res.data));
+  }, []);
+
+  useEffect(() => {
+    if (!formReporte.pais_id) return setDepartamentos([]);
+    axios.get("/v1/departamento").then(res => {
+      setDepartamentos(res.data.filter(dep => dep.paisId === parseInt(formReporte.pais_id)));
+    });
+  }, [formReporte.pais_id]);
+
+  useEffect(() => {
+    if (!formReporte.departamento_id) return setMunicipios([]);
+    axios.get(`/v1/municipio?departamentoId=${formReporte.departamento_id}`).then(res => {
+      setMunicipios(res.data);
+    });
+  }, [formReporte.departamento_id]);
+
+  useEffect(() => {
+    if (!formReporte.municipio_id) return setSedes([]);
+    axios.get("/v1/sede").then(res => {
+      setSedes(res.data.filter(s => s.municipioId === parseInt(formReporte.municipio_id)));
+    });
+  }, [formReporte.municipio_id]);
+
+  useEffect(() => {
+    if (!formReporte.sede_id) return setBloques([]);
+    axios.get("/v1/bloque").then(res => {
+      setBloques(res.data.filter(b => b.sedeId === parseInt(formReporte.sede_id)));
+    });
+  }, [formReporte.sede_id]);
+
+  useEffect(() => {
+    if (!formReporte.bloque_id) return setEspacios([]);
+    axios.get("/v1/espacio").then(res => {
+      setEspacios(res.data.filter(e => e.bloqueId === parseInt(formReporte.bloque_id)));
+    });
+  }, [formReporte.bloque_id]);
+
+  useEffect(() => {
+    if (!formReporte.espacio_id) return setAlmacenes([]);
+    axios.get("/v1/almacen").then(res => {
+      setAlmacenes(res.data.filter(a => a.espacioId === parseInt(formReporte.espacio_id)));
+    });
+  }, [formReporte.espacio_id]);
 
   return (
-    <Box p={2}>
-      <Typography variant="h5" gutterBottom>Reporte Kardex</Typography>
+    <Box sx={{ p: 4 }}>
+      <Typography variant="h4" gutterBottom>Reporte de Kardex</Typography>
 
-      <Box display="flex" gap={2} flexWrap="wrap" mb={2}>
-        <FormControl fullWidth>
-          <InputLabel>Producto</InputLabel>
-          <Select name="producto_id" value={filters.producto_id} onChange={handleChange}>
-            {productos.map((prod) => (
-              <MenuItem key={prod.id} value={prod.id}>{prod.nombre || prod.nombreProducto || `Producto ${prod.id}`}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      <Grid container spacing={2}>
+        {[{ label: "País", name: "pais_id", options: paises },
+          { label: "Departamento", name: "departamento_id", options: departamentos },
+          { label: "Municipio", name: "municipio_id", options: municipios },
+          { label: "Sede", name: "sede_id", options: sedes },
+          { label: "Bloque", name: "bloque_id", options: bloques },
+          { label: "Espacio", name: "espacio_id", options: espacios },
+          { label: "Almacén", name: "almacen_id", options: almacenes },
+          { label: "Producto", name: "producto_id", options: productos },
+          { label: "Categoría Producto", name: "producto_categoria_id", options: categorias }
+        ].map(({ label, name, options }) => (
+          <Grid item xs={6} key={name}>
+            <FormControl fullWidth>
+              <InputLabel>{label}</InputLabel>
+              <Select name={name} value={formReporte[name]} onChange={handleChange}>
+                {options.map(opt => (
+                  <MenuItem key={opt.id} value={opt.id}>{opt.nombre}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+        ))}
+        <Grid item xs={6}>
+          <TextField
+            label="Fecha Inicio"
+            name="fecha_inicio"
+            type="datetime-local"
+            fullWidth
+            value={formReporte.fecha_inicio || ""}
+            onChange={handleChange}
+            InputLabelProps={{ shrink: true }}
+          />
+        </Grid>
+        <Grid item xs={6}>
+          <TextField
+            label="Fecha Fin"
+            name="fecha_fin"
+            type="datetime-local"
+            fullWidth
+            value={formReporte.fecha_fin || ""}
+            onChange={handleChange}
+            InputLabelProps={{ shrink: true }}
+          />
+        </Grid>
+      </Grid>
 
-        <FormControl fullWidth>
-          <InputLabel>Movimiento</InputLabel>
-          <Select name="movimiento_id" value={filters.movimiento_id} onChange={handleChange}>
-            {movimientos.map((mov) => (
-              <MenuItem key={mov.id} value={mov.id}>{mov.nombre || mov.nombreMovimiento || `Movimiento ${mov.id}`}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth>
-          <InputLabel>Unidad</InputLabel>
-          <Select name="unidad_id" value={filters.unidad_id} onChange={handleChange}>
-            {unidades.map((uni) => (
-              <MenuItem key={uni.id} value={uni.id}>{uni.nombre || uni.nombreUnidad || `Unidad ${uni.id}`}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <TextField
-          label="Fecha Inicio"
-          type="datetime-local"
-          name="fecha_inicio"
-          value={filters.fecha_inicio}
-          onChange={handleChange}
-          InputLabelProps={{ shrink: true }}
-          fullWidth
-        />
-        <TextField
-          label="Fecha Fin"
-          type="datetime-local"
-          name="fecha_fin"
-          value={filters.fecha_fin}
-          onChange={handleChange}
-          InputLabelProps={{ shrink: true }}
-          fullWidth
-        />
+      <Box mt={4} display="flex" gap={2}>
+        <Button variant="contained" onClick={generarVistaPreviaPDF}>Ver Reporte</Button>
+        <Button variant="outlined" onClick={imprimirPDFKardex}>Imprimir PDF</Button>
       </Box>
 
-      <Box display="flex" gap={2} mb={2}>
-        <Button variant="contained" color="primary" onClick={handleBuscar}>
-          Buscar
-        </Button>
-        <Button variant="outlined" color="secondary" onClick={handleImprimir} disabled={selectedRows.length === 0}>
-          Imprimir seleccionados
-        </Button>
-      </Box>
-
-      <DataGrid
-        autoHeight
-        rows={data}
-        getRowId={(row) => row.id || `${row.producto_id}-${row.fecha_inicio}`}
-        columns={columns}
-        checkboxSelection
-        pageSize={5}
-        rowsPerPageOptions={[5, 10]}
-        onSelectionModelChange={(newSelection) => {
-          setSelectedRows(newSelection);
-        }}
-      />
+      {previewUrl && (
+        <Box mt={4}>
+          <Typography variant="h6" gutterBottom>Vista previa del PDF</Typography>
+          <VistaPreviaPDFKardex url={previewUrl} />
+        </Box>
+      )}
 
       <MessageSnackBar message={message} setMessage={setMessage} />
     </Box>

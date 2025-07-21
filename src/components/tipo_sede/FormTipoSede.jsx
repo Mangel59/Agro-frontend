@@ -4,7 +4,7 @@ import axios from "../axiosConfig";
 import {
   Button, Dialog, DialogActions, DialogContent,
   DialogContentText, DialogTitle, TextField, FormControl,
-  InputLabel, Select, MenuItem
+  InputLabel, Select, MenuItem, FormHelperText
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 
@@ -19,9 +19,12 @@ export default function FormTipoSede({ selectedRow, setSelectedRow, setMessage, 
   };
 
   const [formData, setFormData] = React.useState(initialData);
+  const [errors, setErrors] = React.useState({});
+  const invalidCharsRegex = /[<>/"'`;(){}[\]\\]/;
 
   const create = () => {
     setFormData(initialData);
+    setErrors({});
     setMethodName("Add");
     setOpen(true);
   };
@@ -38,6 +41,7 @@ export default function FormTipoSede({ selectedRow, setSelectedRow, setMessage, 
       estado: selectedRow.estadoId?.toString() || ""
     });
 
+    setErrors({});
     setMethodName("Update");
     setOpen(true);
   };
@@ -70,12 +74,34 @@ export default function FormTipoSede({ selectedRow, setSelectedRow, setMessage, 
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.nombre.trim()) {
+      newErrors.nombre = "El nombre es obligatorio.";
+    } else if (invalidCharsRegex.test(formData.nombre)) {
+      newErrors.nombre = "El nombre contiene caracteres no permitidos.";
+    }
+
+    if (formData.descripcion && invalidCharsRegex.test(formData.descripcion)) {
+      newErrors.descripcion = "La descripción contiene caracteres no permitidos.";
+    }
+
+    if (!["1", "2"].includes(formData.estado)) {
+      newErrors.estado = "Debe seleccionar un estado válido.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (!validate()) return;
 
     const payload = {
-      nombre: formData.nombre,
-      descripcion: formData.descripcion,
+      nombre: formData.nombre.trim(),
+      descripcion: formData.descripcion.trim(),
       estadoId: parseInt(formData.estado)
     };
 
@@ -112,18 +138,22 @@ export default function FormTipoSede({ selectedRow, setSelectedRow, setMessage, 
             <DialogContentText>Formulario para tipo de sede</DialogContentText>
 
             <TextField
-              fullWidth margin="dense" required
+              fullWidth margin="dense"
               name="nombre" label="Nombre"
               value={formData.nombre}
               onChange={handleChange}
+              error={!!errors.nombre}
+              helperText={errors.nombre}
             />
             <TextField
               fullWidth margin="dense"
               name="descripcion" label="Descripción"
               value={formData.descripcion}
               onChange={handleChange}
+              error={!!errors.descripcion}
+              helperText={errors.descripcion}
             />
-            <FormControl fullWidth margin="normal" required>
+            <FormControl fullWidth margin="normal" error={!!errors.estado}>
               <InputLabel>Estado</InputLabel>
               <Select
                 name="estado"
@@ -135,6 +165,7 @@ export default function FormTipoSede({ selectedRow, setSelectedRow, setMessage, 
                 <MenuItem value="1">Activo</MenuItem>
                 <MenuItem value="2">Inactivo</MenuItem>
               </Select>
+              {errors.estado && <FormHelperText>{errors.estado}</FormHelperText>}
             </FormControl>
           </DialogContent>
           <DialogActions>

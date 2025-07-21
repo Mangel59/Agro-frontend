@@ -42,14 +42,53 @@ export default function FormAlmacen({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const newValue = name === "estadoId" ? Number(value) : value;
+    setFormData((prev) => ({ ...prev, [name]: newValue }));
   };
+
+  const invalidCharsRegex = /[<>/"'`;(){}[\]\\]/;
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.nombre?.trim()) newErrors.nombre = "El nombre es obligatorio.";
-    if (!formData.estadoId && formData.estadoId !== 0) newErrors.estadoId = "Debe seleccionar estado.";
-    if (!formData.espacioId) newErrors.espacioId = "Espacio no asignado.";
+
+    if (!formData.nombre?.trim()) {
+      newErrors.nombre = "El nombre es obligatorio.";
+    } else if (invalidCharsRegex.test(formData.nombre)) {
+      newErrors.nombre = "El nombre contiene caracteres no permitidos.";
+    }
+
+    if (!formData.descripcion?.trim()) {
+      newErrors.descripcion = "La descripción es obligatoria.";
+    } else if (invalidCharsRegex.test(formData.descripcion)) {
+      newErrors.descripcion = "La descripción contiene caracteres no permitidos.";
+    }
+
+    if (!formData.direccion?.trim()) {
+      newErrors.direccion = "La dirección es obligatoria.";
+    } else if (invalidCharsRegex.test(formData.direccion)) {
+      newErrors.direccion = "La dirección contiene caracteres no permitidos.";
+    }
+
+    if (!formData.geolocalizacion?.trim()) {
+      newErrors.geolocalizacion = "La geolocalización es obligatoria.";
+    } else if (invalidCharsRegex.test(formData.geolocalizacion)) {
+      newErrors.geolocalizacion = "La geolocalización contiene caracteres no permitidos.";
+    }
+
+    if (!formData.coordenadas?.trim()) {
+      newErrors.coordenadas = "Las coordenadas son obligatorias.";
+    } else if (invalidCharsRegex.test(formData.coordenadas)) {
+      newErrors.coordenadas = "Las coordenadas contienen caracteres no permitidos.";
+    }
+
+    if (![1, 2].includes(formData.estadoId)) {
+      newErrors.estadoId = "Debe seleccionar un estado válido.";
+    }
+
+    if (!formData.espacioId) {
+      newErrors.espacioId = "Espacio no asignado.";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -88,31 +127,37 @@ export default function FormAlmacen({
         <TextField
           fullWidth margin="normal" label="Descripción" name="descripcion"
           value={formData.descripcion} onChange={handleChange}
+          error={!!errors.descripcion} helperText={errors.descripcion}
         />
 
         <TextField
           fullWidth margin="normal" label="Dirección" name="direccion"
           value={formData.direccion} onChange={handleChange}
+          error={!!errors.direccion} helperText={errors.direccion}
         />
 
         <TextField
           fullWidth margin="normal" label="Geolocalización" name="geolocalizacion"
           value={formData.geolocalizacion} onChange={handleChange}
+          error={!!errors.geolocalizacion} helperText={errors.geolocalizacion}
         />
 
         <TextField
           fullWidth margin="normal" label="Coordenadas" name="coordenadas"
           value={formData.coordenadas} onChange={handleChange}
+          error={!!errors.coordenadas} helperText={errors.coordenadas}
         />
 
         <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
           <InputLabel>Estado</InputLabel>
           <Select
-            name="estadoId" value={formData.estadoId}
-            onChange={handleChange} label="Estado"
+            name="estadoId"
+            value={formData.estadoId}
+            onChange={handleChange}
+            label="Estado"
           >
             <MenuItem value={1}>Activo</MenuItem>
-            <MenuItem value={0}>Inactivo</MenuItem>
+            <MenuItem value={2}>Inactivo</MenuItem>
           </Select>
           {errors.estadoId && <FormHelperText>{errors.estadoId}</FormHelperText>}
         </FormControl>

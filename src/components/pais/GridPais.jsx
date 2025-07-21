@@ -18,16 +18,19 @@ export const columns = [
   { field: 'nombre', headerName: 'Nombre del País', width: 200 },
   { field: 'codigo', headerName: 'Código', width: 120 },
   { field: 'acronimo', headerName: 'Acrónimo', width: 120 },
-  { field: 'estadoId', headerName: 'Estado', width: 150 },
+{
+  field: 'estadoId',
+  headerName: 'Estado',
+  width: 150,
+  valueGetter: (params) => {
+    const val = params.row.estadoId;
+    return val === 1 ? "Activo" : val === 2 ? "Inactivo" : "Desconocido";
+  }
+}
+
+
 ];
 
-/**
- * @param {Object} props
- * @param {Array} props.paises - Lista de países
- * @param {Function} props.setSelectedRow - Función para establecer la fila seleccionada
- * @param {Object} props.selectedRow - Fila actualmente seleccionada
- * @returns {JSX.Element} Tabla de países
- */
 export default function GridPais({ paises, selectedRow, setSelectedRow }) {
   return (
     <Box sx={{ height: 400, width: '100%' }}>

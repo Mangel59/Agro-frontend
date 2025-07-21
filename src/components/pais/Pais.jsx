@@ -46,10 +46,9 @@ export default function Pais() {
     axios.get("/v1/pais")
       .then((res) => {
         const datosConId = res.data.map((p) => ({
-          ...p,
-          id: p.id,
-          estadoId: p.estado?.id || null,
-        }));
+        ...p,
+        id: p.id // no sobrescribas estadoId si ya viene bien
+      }));
         setPaises(datosConId);
       })
       .catch((err) => {

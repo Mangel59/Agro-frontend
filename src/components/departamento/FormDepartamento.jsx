@@ -1,12 +1,3 @@
-/**
- * @file FormDepartamento.jsx
- * @module FormDepartamento
- * @description Formulario para crear o editar un departamento.
- *
- * Este componente se encarga de gestionar la lógica de validación,
- * envío de datos y renderizado del formulario en un diálogo modal.
- */
-
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -23,29 +14,12 @@ import {
 } from "@mui/material";
 import axios from "../axiosConfig";
 
-/**
- * @typedef {Object} FormDepartamentoProps
- * @property {boolean} open - Si el diálogo está abierto
- * @property {Function} setOpen - Función para cerrar el diálogo
- * @property {number} selectedPais - ID del país seleccionado
- * @property {Object|null} selectedRow - Fila seleccionada para editar (si existe)
- * @property {("create"|"edit")} formMode - Modo del formulario (crear o editar)
- * @property {Function} setMessage - Función para mostrar mensajes snackbar
- * @property {Function} reloadData - Función para recargar los datos
- */
-
-/**
- * Formulario de creación y edición de departamentos.
- *
- * @param {FormDepartamentoProps} props - Propiedades del componente
- * @returns {JSX.Element} El formulario del departamento
- */
 export default function FormDepartamento({
   open = false,
   setOpen = () => {},
   selectedPais,
   selectedRow = null,
-  formMode = "create", 
+  formMode = "create",
   setMessage,
   reloadData,
 }) {
@@ -60,9 +34,6 @@ export default function FormDepartamento({
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
 
-  /**
-   * Establece los datos del formulario al abrir el diálogo.
-   */
   useEffect(() => {
     if (open) {
       if (formMode === "edit" && selectedRow) {
@@ -74,34 +45,47 @@ export default function FormDepartamento({
     }
   }, [open, selectedPais, formMode, selectedRow]);
 
-  /**
-   * Maneja los cambios en los inputs del formulario.
-   * @param {React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement|{name: string, value: any}>} e
-   */
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const newValue = name === "estadoId" ? Number(value) : value;
+    setFormData((prev) => ({ ...prev, [name]: newValue }));
   };
 
-  /**
-   * Valida los campos del formulario.
-   * @returns {boolean} true si no hay errores
-   */
+  const invalidCharsRegex = /[<>/"'`;(){}[\]\\]/;
+
   const validate = () => {
     const newErrors = {};
-    if (!formData.nombre?.trim()) newErrors.nombre = "El nombre es obligatorio.";
-    if (!formData.codigo?.toString().trim()) newErrors.codigo = "El código es obligatorio.";
-    if (!formData.acronimo?.trim()) newErrors.acronimo = "El acrónimo es obligatorio.";
-    if (!formData.estadoId && formData.estadoId !== 0) newErrors.estadoId = "Debe seleccionar estado.";
-    if (!formData.paisId) newErrors.paisId = "Debe seleccionar un país.";
+
+    if (!formData.nombre?.trim()) {
+      newErrors.nombre = "El nombre es obligatorio.";
+    } else if (invalidCharsRegex.test(formData.nombre)) {
+      newErrors.nombre = "El nombre contiene caracteres no permitidos.";
+    }
+
+    if (!formData.codigo?.toString().trim()) {
+      newErrors.codigo = "El código es obligatorio.";
+    } else if (invalidCharsRegex.test(formData.codigo.toString())) {
+      newErrors.codigo = "El código contiene caracteres no permitidos.";
+    }
+
+    if (!formData.acronimo?.trim()) {
+      newErrors.acronimo = "El acrónimo es obligatorio.";
+    } else if (invalidCharsRegex.test(formData.acronimo)) {
+      newErrors.acronimo = "El acrónimo contiene caracteres no permitidos.";
+    }
+
+    if (![1, 2].includes(Number(formData.estadoId))) {
+      newErrors.estadoId = "Debe seleccionar un estado válido.";
+    }
+
+    if (!formData.paisId) {
+      newErrors.paisId = "Debe seleccionar un país.";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  /**
-   * Envía los datos a la API para crear o actualizar un departamento.
-   */
   const handleSubmit = async () => {
     if (!validate()) return;
 
@@ -179,7 +163,7 @@ export default function FormDepartamento({
             label="Estado"
           >
             <MenuItem value={1}>Activo</MenuItem>
-            <MenuItem value={0}>Inactivo</MenuItem>
+            <MenuItem value={2}>Inactivo</MenuItem>
           </Select>
           {errors.estadoId && <FormHelperText>{errors.estadoId}</FormHelperText>}
         </FormControl>

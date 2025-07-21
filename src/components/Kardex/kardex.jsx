@@ -5,22 +5,10 @@ import FormKardex from "./FromKardex";
 import GridKardex from "./GridKardex";
 import GridArticuloKardex from "./GridArticuloKardex";
 import FormArticuloKardex from "./FormArticuloKardex";
-import Rkardex from "../RKardex/Rkardex";
-
+import VistaPreviaPDFKardex from "./vistapreviapdfkardex";
 import {
-  Box,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Typography,
-  Divider
+  Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
+  Typography, Divider, Grid, Select, MenuItem, InputLabel, FormControl
 } from "@mui/material";
 
 export default function Kardex() {
@@ -29,26 +17,90 @@ export default function Kardex() {
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState("create");
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
-
-  const [searchDialogOpen, setSearchDialogOpen] = useState(false);
-  const [searchId, setSearchId] = useState("");
-  const [searchResult, setSearchResult] = useState(null);
-
   const [articuloItems, setArticuloItems] = useState([]);
   const [selectedArticulo, setSelectedArticulo] = useState({});
   const [reloadArticulos, setReloadArticulos] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [reporteDialogOpen, setReporteDialogOpen] = useState(false);
 
-  const [reporteOpen, setReporteOpen] = useState(false); 
+  const [formReporte, setFormReporte] = useState({
+    pais_id: "", departamento_id: "", municipio_id: "", sede_id: "",
+    bloque_id: "", espacio_id: "", almacen_id: "",
+    producto_id: "", producto_categoria_id: "",
+    fecha_inicio: "", fecha_fin: ""
+  });
+
+  const [paises, setPaises] = useState([]);
+  const [departamentos, setDepartamentos] = useState([]);
+  const [municipios, setMunicipios] = useState([]);
+  const [sedes, setSedes] = useState([]);
+  const [bloques, setBloques] = useState([]);
+  const [espacios, setEspacios] = useState([]);
+  const [almacenes, setAlmacenes] = useState([]);
+  const [productos, setProductos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+
+  const token = localStorage.getItem("token");
+  const empresaId = token ? JSON.parse(atob(token.split(".")[1]))?.empresaId : null;
+
+  useEffect(() => {
+    reloadData();
+    axios.get("/v1/pais").then(res => setPaises(res.data));
+    axios.get("/v1/producto").then(res => setProductos(res.data));
+    axios.get("/v1/producto_categoria").then(res => setCategorias(res.data));
+  }, []);
+
+  useEffect(() => {
+    if (!formReporte.pais_id) return setDepartamentos([]);
+    axios.get("/v1/departamento").then(res => {
+      setDepartamentos(res.data.filter(dep => dep.paisId === parseInt(formReporte.pais_id)));
+    });
+  }, [formReporte.pais_id]);
+
+  useEffect(() => {
+    if (!formReporte.departamento_id) return setMunicipios([]);
+    axios.get(`/v1/municipio?departamentoId=${formReporte.departamento_id}`).then(res => {
+      setMunicipios(res.data);
+    });
+  }, [formReporte.departamento_id]);
+
+  useEffect(() => {
+    if (!formReporte.municipio_id) return setSedes([]);
+    axios.get("/v1/sede").then(res => {
+      setSedes(res.data.filter(s => s.municipioId === parseInt(formReporte.municipio_id)));
+    });
+  }, [formReporte.municipio_id]);
+
+  useEffect(() => {
+    if (!formReporte.sede_id) return setBloques([]);
+    axios.get("/v1/bloque").then(res => {
+      setBloques(res.data.filter(b => b.sedeId === parseInt(formReporte.sede_id)));
+    });
+  }, [formReporte.sede_id]);
+
+  useEffect(() => {
+    if (!formReporte.bloque_id) return setEspacios([]);
+    axios.get("/v1/espacio").then(res => {
+      setEspacios(res.data.filter(e => e.bloqueId === parseInt(formReporte.bloque_id)));
+    });
+  }, [formReporte.bloque_id]);
+
+  useEffect(() => {
+    if (!formReporte.espacio_id) return setAlmacenes([]);
+    axios.get("/v1/almacen").then(res => {
+      setAlmacenes(res.data.filter(a => a.espacioId === parseInt(formReporte.espacio_id)));
+    });
+  }, [formReporte.espacio_id]);
 
   const reloadData = () => {
-    axios.get("/v1/kardex")
-      .then((res) => {
-        setKardexes(res.data);
-      })
-      .catch((err) => {
-        console.error("Error al cargar kardexes:", err);
-        setMessage({ open: true, severity: "error", text: "Error al cargar kardexes" });
-      });
+    axios.get("/v1/kardex").then((res) => {
+      setKardexes(res.data);
+      if (res.data.length > 0 && !selectedRow) {
+        setSelectedRow(res.data[0]);
+      }
+    }).catch(() => {
+      setMessage({ open: true, severity: "error", text: "Error al cargar kardexes" });
+    });
   };
 
   const loadArticulos = (kardexId) => {
@@ -58,24 +110,85 @@ export default function Kardex() {
   };
 
   useEffect(() => {
-    reloadData();
-  }, []);
-
-  useEffect(() => {
-    if (selectedRow) {
-      loadArticulos(selectedRow.id);
-    }
+    if (selectedRow) loadArticulos(selectedRow.id);
+    else setArticuloItems([]);
   }, [selectedRow, reloadArticulos]);
 
-  const handleSearch = () => {
-    if (!searchId) return;
-    axios.get(`/v1/kardex/${searchId}`)
-      .then((res) => {
-        setSearchResult(res.data);
+  const handleChangeReporte = (e) => {
+    const { name, value } = e.target;
+    setFormReporte(prev => ({ ...prev, [name]: value }));
+  };
+// formato "YYYY-MM-DD HH:mm"
+const formatoFecha = (fecha) => {
+  return fecha ? fecha.replace("T", " ").slice(0, 16) : "";
+};
+
+const construirParametros = () => ({
+  empresa_id: parseInt(empresaId),
+  fecha_inicio: formatoFecha(formReporte.fecha_inicio),
+  fecha_fin: formatoFecha(formReporte.fecha_fin),
+  logo_empresa: `${import.meta.env.VITE_RUTA_LOGO_EMPRESA}${empresaId}/logo_empresa.jpeg`
+});
+
+  const generarVistaPreviaPDF = () => {
+    if (!formReporte.fecha_inicio || !formReporte.fecha_fin || !empresaId) {
+      setMessage({
+        open: true,
+        severity: "warning",
+        text: "Completa todos los campos requeridos."
+      });
+      return;
+    }
+
+    const datos = construirParametros();
+    axios.post("/v2/report/kardex", datos, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      responseType: "blob"
+    })
+      .then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+        setPreviewUrl(url);
+        setReporteDialogOpen(false);
       })
-      .catch(() => {
-        setSearchResult(null);
-        setMessage({ open: true, severity: "error", text: "No se encontró el Kardex" });
+      .catch((err) => {
+        console.error("❌ Error al generar PDF Kardex:", err);
+        setMessage({ open: true, severity: "error", text: "Error al generar vista previa PDF." });
+      });
+  };
+
+  const imprimirPDFKardex = () => {
+    if (!formReporte.fecha_inicio || !formReporte.fecha_fin || !empresaId) {
+      setMessage({
+        open: true,
+        severity: "warning",
+        text: "Completa todos los campos requeridos."
+      });
+      return;
+    }
+
+    const datos = construirParametros();
+    axios.post("/v2/report/kardex", datos, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      responseType: "blob"
+    })
+      .then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `reporte_kardex.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      })
+      .catch((err) => {
+        console.error("❌ Error al descargar PDF Kardex:", err);
+        setMessage({ open: true, severity: "error", text: "Error al descargar el PDF." });
       });
   };
 
@@ -83,97 +196,91 @@ export default function Kardex() {
     <Box sx={{ p: 2 }}>
       <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
         <Typography variant="h5">Gestión de Kardex</Typography>
-        <Box display="flex" gap={2}>
-          <Button variant="contained" onClick={() => setSearchDialogOpen(true)}>Buscar por ID</Button>
-          <Button variant="outlined" color="secondary" onClick={() => setReporteOpen(true)}>
-            Ver Reporte Kardex
-          </Button>
-        </Box>
+        <Button variant="outlined" color="secondary" onClick={() => setReporteDialogOpen(true)}>
+          Ver Reporte Kardex
+        </Button>
       </Box>
 
-      <FormKardex
-        open={formOpen}
-        setOpen={setFormOpen}
-        formMode={formMode}
-        setFormMode={setFormMode}
-        selectedRow={selectedRow}
-        setSelectedRow={setSelectedRow}
-        reloadData={reloadData}
-        setMessage={setMessage}
-      />
+      <FormKardex {...{ open: formOpen, setOpen: setFormOpen, formMode, setFormMode, selectedRow, setSelectedRow, reloadData, setMessage }} />
 
       <Box sx={{ height: 350, mb: 12 }}>
-        <GridKardex
-          kardexes={kardexes}
-          selectedRow={selectedRow}
-          setSelectedRow={setSelectedRow}
-          pageSizeOptions={[5, 10, 15]}
-        />
+        <GridKardex {...{ kardexes, selectedRow, setSelectedRow }} pageSizeOptions={[5, 10, 15]} />
       </Box>
 
       <Divider sx={{ my: 10 }} />
 
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} mt={2}>
         <Typography variant="h6">Artículos del Kardex seleccionado</Typography>
-        <Box display="flex" gap={2}>
-          <FormArticuloKardex
-            selectedRow={selectedArticulo}
-            kardexId={selectedRow?.id || ""}
-            setSelectedRow={setSelectedArticulo}
-            setMessage={setMessage}
-            reloadData={() => setReloadArticulos(prev => !prev)}
-          />
-        </Box>
+        <FormArticuloKardex {...{ selectedRow: selectedArticulo, kardexId: selectedRow?.id || "", setSelectedRow: setSelectedArticulo, setMessage, reloadData: () => setReloadArticulos(prev => !prev) }} />
       </Box>
 
-      <Box>
-        <GridArticuloKardex
-          items={articuloItems}
-          selectedRow={selectedArticulo}
-          setSelectedRow={setSelectedArticulo}
-        />
-      </Box>
+      <GridArticuloKardex {...{ items: articuloItems, selectedRow: selectedArticulo, setSelectedRow: setSelectedArticulo }} />
 
-      {/* Dialog para buscar por ID */}
-      <Dialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} fullWidth>
-        <DialogTitle>Buscar Kardex por ID</DialogTitle>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <TextField
-            label="ID de Kardex"
-            value={searchId}
-            onChange={(e) => setSearchId(e.target.value)}
-            fullWidth
-            type="number"
-            margin="normal"
-          />
+      <Dialog open={reporteDialogOpen} onClose={() => setReporteDialogOpen(false)} fullWidth>
+        <DialogTitle>Parámetros del Reporte Kardex</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2} mt={1}>
+            {[{ label: "País", name: "pais_id", options: paises },
+              { label: "Departamento", name: "departamento_id", options: departamentos },
+              { label: "Municipio", name: "municipio_id", options: municipios },
+              { label: "Sede", name: "sede_id", options: sedes },
+              { label: "Bloque", name: "bloque_id", options: bloques },
+              { label: "Espacio", name: "espacio_id", options: espacios },
+              { label: "Almacén", name: "almacen_id", options: almacenes },
+              { label: "Producto", name: "producto_id", options: productos },
+              { label: "Categoría Producto", name: "producto_categoria_id", options: categorias }
+            ].map(({ label, name, options }) => (
+              <Grid item xs={6} key={name}>
+                <FormControl fullWidth>
+                  <InputLabel>{label}</InputLabel>
+                  <Select name={name} value={formReporte[name]} onChange={handleChangeReporte}>
+                    {options.map(opt => (
+                      <MenuItem key={opt.id} value={opt.id}>{opt.nombre}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            ))}
+<Grid item xs={6}>
+  <TextField
+    label="Fecha Inicio"
+    name="fecha_inicio"
+    type="datetime-local"
+    fullWidth
+    value={formReporte.fecha_inicio || ""}
+    onChange={handleChangeReporte}
+    InputLabelProps={{ shrink: true }}
+  />
+</Grid>
+<Grid item xs={6}>
+  <TextField
+    label="Fecha Fin"
+    name="fecha_fin"
+    type="datetime-local"
+    fullWidth
+    value={formReporte.fecha_fin || ""}
+    onChange={handleChangeReporte}
+    InputLabelProps={{ shrink: true }}
+  />
+</Grid>
 
-          {searchResult && (
-            <>
-              <TextField label="Descripción" fullWidth value={searchResult.descripcion || ""} margin="dense" />
-              <FormControl fullWidth>
-                <InputLabel>Estado</InputLabel>
-                <Select value={searchResult.estadoId || ""} disabled>
-                  <MenuItem value={1}>Activo</MenuItem>
-                  <MenuItem value={0}>Inactivo</MenuItem>
-                </Select>
-              </FormControl>
-            </>
-          )}
+
+          </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setSearchDialogOpen(false)}>Cerrar</Button>
-          <Button onClick={handleSearch}>Buscar</Button>
+          <Button onClick={() => setReporteDialogOpen(false)}>Cancelar</Button>
+          <Button onClick={generarVistaPreviaPDF} variant="contained">Ver Reporte</Button>
+          <Button onClick={imprimirPDFKardex} variant="outlined" color="secondary">Imprimir PDF</Button>
         </DialogActions>
       </Dialog>
 
-      {/* Dialog del reporte */}
-      <Dialog open={reporteOpen} onClose={() => setReporteOpen(false)} fullWidth maxWidth="xl">
-        <DialogTitle>Reporte Kardex</DialogTitle>
+      <Dialog open={Boolean(previewUrl)} onClose={() => setPreviewUrl("")} fullWidth maxWidth="xl">
+        <DialogTitle>Vista Previa PDF</DialogTitle>
         <DialogContent>
-          <Rkardex />
+          <VistaPreviaPDFKardex url={previewUrl} />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setReporteOpen(false)}>Cerrar</Button>
+          <Button onClick={() => setPreviewUrl("")}>Cerrar</Button>
         </DialogActions>
       </Dialog>
 
