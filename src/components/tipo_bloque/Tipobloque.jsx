@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
-import Formtipobloque from "./Formtipobloque";
-import Gridtipobloque from "./Gridtipobloque";
+import Formtipobloque from "./FormTipoBloque";
+import Gridtipobloque from "./GridTipoBloque";
 
 export default function TipoBloque() {
   const [selectedRow, setSelectedRow] = useState({ id: 0 });
