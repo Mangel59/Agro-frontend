@@ -41,7 +41,7 @@ useEffect(() => {
 
   return (
     <div>
-      <h1>Gestión de Tipos de Producción</h1>
+      <h1>Gestión de Tipo de Producción</h1>
 
       <MessageSnackBar message={message} setMessage={setMessage} />
 

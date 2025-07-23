@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  Button, TextField, FormControl, InputLabel, Select, MenuItem
+  TextField, Button, Grid, FormControl, InputLabel,
+  Select, MenuItem, FormHelperText
 } from "@mui/material";
 import axios from "../axiosConfig";
 import StackButtons from "../StackButtons";
@@ -9,40 +11,32 @@ import StackButtons from "../StackButtons";
 export default function FormProducto({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = useState(false);
   const [methodName, setMethodName] = useState("");
-
+  const [formData, setFormData] = useState({
+    nombre: "",
+    productoCategoriaId: "",
+    descripcion: "",
+    estadoId: "",
+    unidadMinimaId: "",
+    ingredientePresentacionProductoId: ""
+  });
+  const [errors, setErrors] = useState({});
   const [categorias, setCategorias] = useState([]);
   const [unidades, setUnidades] = useState([]);
-  const [ingredientesPresentacion, setIngredientesPresentacion] = useState([]);
+  const [ingredientes, setIngredientes] = useState([]);
 
-  const initialData = {
-    nombre: "",
-    descripcion: "",
-    productoCategoriaId: "",
-    unidadMinimaId: "",
-    estado: "",
-    ingredientePresentacionProductoId: ""
-  };
-
-  const [formData, setFormData] = useState(initialData);
-
-  const loadData = () => {
-    axios.get("/v1/producto_categoria")
-      .then(res => setCategorias(res.data))
-      .catch(err => console.error("❌ Error al cargar categorías:", err));
-
-    axios.get("/v1/unidad")
-      .then(res => setUnidades(res.data))
-      .catch(err => console.error("❌ Error al cargar unidades:", err));
-
-    axios.get("/v1/ingrediente-presentacion-producto")
-      .then(res => setIngredientesPresentacion(res.data))
-      .catch(err => console.error("❌ Error al cargar ingredientes presentación:", err));
-  };
+  useEffect(() => {
+    axios.get("/v1/producto_categoria").then(res => setCategorias(res.data)).catch(() => {});
+    axios.get("/v1/unidad").then(res => setUnidades(res.data)).catch(() => {});
+    axios.get("/v1/ingrediente-presentacion-producto").then(res => setIngredientes(res.data)).catch(() => {});
+  }, []);
 
   const create = () => {
-    setFormData(initialData);
+    setFormData({
+      nombre: "", productoCategoriaId: "", descripcion: "",
+      estadoId: "", unidadMinimaId: "", ingredientePresentacionProductoId: ""
+    });
+    setErrors({});
     setMethodName("Add");
-    loadData();
     setOpen(true);
   };
 
@@ -51,18 +45,16 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
       setMessage({ open: true, severity: "error", text: "Selecciona un producto para editar." });
       return;
     }
-
     setFormData({
       nombre: selectedRow.nombre || "",
+      productoCategoriaId: selectedRow.productoCategoriaId || "",
       descripcion: selectedRow.descripcion || "",
-      productoCategoriaId: selectedRow.productoCategoriaId?.toString() || "",
-      unidadMinimaId: selectedRow.unidadMinimaId?.toString() || "",
-      estado: selectedRow.estadoId?.toString() || "",
-      ingredientePresentacionProductoId: selectedRow.ingredientePresentacionProductoId?.toString() || ""
+      estadoId: selectedRow.estadoId?.toString() || "",
+      unidadMinimaId: selectedRow.unidadMinimaId || "",
+      ingredientePresentacionProductoId: selectedRow.ingredientePresentacionProductoId || ""
     });
-
+    setErrors({});
     setMethodName("Update");
-    loadData();
     setOpen(true);
   };
 
@@ -71,138 +63,166 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
       setMessage({ open: true, severity: "error", text: "Selecciona un producto para eliminar." });
       return;
     }
-
     axios.delete(`/v1/producto/${selectedRow.id}`)
       .then(() => {
-        setMessage({ open: true, severity: "success", text: "Producto eliminado correctamente." });
+        setMessage({ open: true, severity: "success", text: "Eliminado correctamente." });
         setSelectedRow({});
         reloadData();
       })
-      .catch((err) => {
-        setMessage({
-          open: true,
-          severity: "error",
-          text: `Error al eliminar: ${err.message}`
-        });
+      .catch(err => {
+        setMessage({ open: true, severity: "error", text: `Error al eliminar: ${err.message}` });
       });
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: "" }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.nombre.trim()) newErrors.nombre = "Campo requerido";
+    if (!formData.productoCategoriaId) newErrors.productoCategoriaId = "Campo requerido";
+    if (!formData.descripcion.trim()) newErrors.descripcion = "Campo requerido";
+    if (!formData.estadoId) newErrors.estadoId = "Campo requerido";
+    if (!formData.unidadMinimaId) newErrors.unidadMinimaId = "Campo requerido";
+    if (!formData.ingredientePresentacionProductoId) newErrors.ingredientePresentacionProductoId = "Campo requerido";
+    return newErrors;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (!formData.nombre || !formData.descripcion || !formData.productoCategoriaId || !formData.unidadMinimaId || !formData.estado || !formData.ingredientePresentacionProductoId) {
-      setMessage({ open: true, severity: "error", text: "Todos los campos son obligatorios." });
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
 
     const payload = {
-      nombre: formData.nombre,
-      descripcion: formData.descripcion,
+      ...formData,
+      estadoId: parseInt(formData.estadoId),
       productoCategoriaId: parseInt(formData.productoCategoriaId),
       unidadMinimaId: parseInt(formData.unidadMinimaId),
-      estadoId: parseInt(formData.estado),
       ingredientePresentacionProductoId: parseInt(formData.ingredientePresentacionProductoId)
     };
 
     const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/producto" : `/v1/producto/${selectedRow.id}`;
+    const url = methodName === "Add"
+      ? "/v1/producto"
+      : `/v1/producto/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Producto creado con éxito!" : "Producto actualizado con éxito!"
+          text: methodName === "Add" ? "Creado con éxito!" : "Actualizado con éxito!"
         });
         setOpen(false);
         setSelectedRow({});
         reloadData();
       })
       .catch(err => {
-        console.error(" Error al guardar producto:", err);
-        setMessage({
-          open: true,
-          severity: "error",
-          text: `Error: ${err.response?.data?.message || err.message || "Datos inválidos"}`
-        });
+        setMessage({ open: true, severity: "error", text: `Error: ${err.message}` });
       });
   };
 
   return (
     <>
       <StackButtons methods={{ create, update, deleteRow }} />
-      <Dialog open={open} onClose={() => setOpen(false)}>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
         <form onSubmit={handleSubmit}>
           <DialogTitle>{methodName} Producto</DialogTitle>
           <DialogContent>
-            <TextField
-              fullWidth margin="dense" required name="nombre" label="Nombre"
-              value={formData.nombre} onChange={handleChange}
-            />
-            <TextField
-              fullWidth margin="dense" multiline rows={3} name="descripcion" label="Descripción"
-              value={formData.descripcion} onChange={handleChange}
-            />
+            <Grid container spacing={2} mt={1}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth name="nombre" label="Nombre"
+                  value={formData.nombre} onChange={handleChange}
+                  error={!!errors.nombre} helperText={errors.nombre}
+                />
+              </Grid>
 
-            <FormControl fullWidth margin="normal" required>
-              <InputLabel>Producto Categoría</InputLabel>
-              <Select
-                name="productoCategoriaId"
-                value={formData.productoCategoriaId}
-                onChange={handleChange}
-              >
-                <MenuItem value="">Seleccione...</MenuItem>
-                {categorias.map(cat => (
-                  <MenuItem key={cat.id} value={cat.id}>{cat.nombre}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth name="descripcion" label="Descripción"
+                  value={formData.descripcion} onChange={handleChange}
+                  error={!!errors.descripcion} helperText={errors.descripcion}
+                />
+              </Grid>
 
-            <FormControl fullWidth margin="normal" required>
-              <InputLabel>Unidad Mínima</InputLabel>
-              <Select
-                name="unidadMinimaId"
-                value={formData.unidadMinimaId}
-                onChange={handleChange}
-              >
-                <MenuItem value="">Seleccione...</MenuItem>
-                {unidades.map(u => (
-                  <MenuItem key={u.id} value={u.id}>{u.nombre}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth error={!!errors.productoCategoriaId}>
+                  <InputLabel>Categoría</InputLabel>
+                  <Select
+                    name="productoCategoriaId"
+                    value={formData.productoCategoriaId}
+                    onChange={handleChange}
+                    label="Categoría"
+                  >
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {categorias.map(cat => (
+                      <MenuItem key={cat.id} value={cat.id}>{cat.nombre}</MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText>{errors.productoCategoriaId}</FormHelperText>
+                </FormControl>
+              </Grid>
 
-            <FormControl fullWidth margin="normal" required>
-              <InputLabel>Ingrediente Presentación</InputLabel>
-              <Select
-                name="ingredientePresentacionProductoId"
-                value={formData.ingredientePresentacionProductoId}
-                onChange={handleChange}
-              >
-                <MenuItem value="">Seleccione...</MenuItem>
-                {ingredientesPresentacion.map(ip => (
-                  <MenuItem key={ip.id} value={ip.id}>{ip.nombre}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth error={!!errors.estadoId}>
+                  <InputLabel>Estado</InputLabel>
+                  <Select
+                    name="estadoId"
+                    value={formData.estadoId}
+                    onChange={handleChange}
+                    label="Estado"
+                  >
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    <MenuItem value="1">Activo</MenuItem>
+                    <MenuItem value="2">Inactivo</MenuItem>
+                  </Select>
+                  <FormHelperText>{errors.estadoId}</FormHelperText>
+                </FormControl>
+              </Grid>
 
-            <FormControl fullWidth margin="normal" required>
-              <InputLabel>Estado</InputLabel>
-              <Select
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-              >
-                <MenuItem value="">Seleccione...</MenuItem>
-                <MenuItem value="1">Activo</MenuItem>
-                <MenuItem value="2">Inactivo</MenuItem>
-              </Select>
-            </FormControl>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth error={!!errors.unidadMinimaId}>
+                  <InputLabel>Unidad mínima</InputLabel>
+                  <Select
+                    name="unidadMinimaId"
+                    value={formData.unidadMinimaId}
+                    onChange={handleChange}
+                    label="Unidad mínima"
+                  >
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {unidades.map(u => (
+                      <MenuItem key={u.id} value={u.id}>{u.nombre}</MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText>{errors.unidadMinimaId}</FormHelperText>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth error={!!errors.ingredientePresentacionProductoId}>
+                  <InputLabel>Ingrediente presentación</InputLabel>
+                  <Select
+                    name="ingredientePresentacionProductoId"
+                    value={formData.ingredientePresentacionProductoId}
+                    onChange={handleChange}
+                    label="Ingrediente presentación"
+                  >
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {ingredientes.map(i => (
+                      <MenuItem key={i.id} value={i.id}>{i.nombre}</MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText>{errors.ingredientePresentacionProductoId}</FormHelperText>
+                </FormControl>
+              </Grid>
+            </Grid>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpen(false)}>Cancelar</Button>
@@ -213,3 +233,10 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
     </>
   );
 }
+
+FormProducto.propTypes = {
+  selectedRow: PropTypes.object.isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+  setMessage: PropTypes.func.isRequired,
+  reloadData: PropTypes.func.isRequired
+};

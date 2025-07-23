@@ -9,12 +9,14 @@ import axios from "axios";
 export default function ChangePasswordDialog({ open, setOpen, setMessage }) {
   const [formData, setFormData] = useState({
     oldPassword: "",
-    newPassword: ""
+    newPassword: "",
+    confirmPassword: ""
   });
 
   const [showPassword, setShowPassword] = useState({
     old: false,
-    new: false
+    new: false,
+    confirm: false
   });
 
   const [error, setError] = useState("");
@@ -28,19 +30,34 @@ export default function ChangePasswordDialog({ open, setOpen, setMessage }) {
     setShowPassword(prev => ({ ...prev, [field]: !prev[field] }));
   };
 
+  const validarContraseñaSegura = (password) => {
+    const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    return regex.test(password);
+  };
+
   const handleSubmit = async () => {
     setError("");
     setSuccessMessage("");
 
-    const { oldPassword, newPassword } = formData;
+    const { oldPassword, newPassword, confirmPassword } = formData;
 
-    if (!oldPassword || !newPassword) {
-      setError("Debes completar ambos campos.");
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      setError("Debes completar todos los campos.");
       return;
     }
 
     if (oldPassword === newPassword) {
       setError("La nueva contraseña no puede ser igual a la anterior.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
+
+    if (!validarContraseñaSegura(newPassword)) {
+      setError("La nueva contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un símbolo.");
       return;
     }
 
@@ -58,26 +75,23 @@ export default function ChangePasswordDialog({ open, setOpen, setMessage }) {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        data: {
-          oldPassword,
-          newPassword
-        }
+        data: { oldPassword, newPassword }
       });
 
       const msg = response.data?.message || "Contraseña actualizada correctamente";
       setSuccessMessage(msg);
-
       setMessage({
         open: true,
         severity: "success",
         text: msg
       });
 
-      setFormData({ oldPassword: "", newPassword: "" });
+      setFormData({ oldPassword: "", newPassword: "", confirmPassword: "" });
+      setTimeout(() => setOpen(false), 1500);
     } catch (err) {
       console.error("Error al cambiar contraseña:", err);
       if (err.response?.status === 403) {
-        setError("No tienes permisos para cambiar la contraseña o el token es inválido.");
+        setError("Tu sesión no tiene permisos para cambiar la contraseña. Inicia sesión nuevamente.");
       } else if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
@@ -92,21 +106,19 @@ export default function ChangePasswordDialog({ open, setOpen, setMessage }) {
     }
   };
 
+  const handleClose = () => {
+  setFormData({ oldPassword: "", newPassword: "", confirmPassword: "" });
+  setError("");
+  setSuccessMessage("");
+  setOpen(false);
+};
+
   return (
-    <Dialog open={open} onClose={() => setOpen(false)}>
+    <Dialog open={open} onClose={handleClose}>
       <DialogTitle>Cambiar Contraseña</DialogTitle>
 
-      {error && (
-        <Alert severity="error" sx={{ mx: 3, mt: 1 }}>
-          {error}
-        </Alert>
-      )}
-
-      {successMessage && (
-        <Alert severity="success" sx={{ mx: 3, mt: 1 }}>
-          {successMessage}
-        </Alert>
-      )}
+      {error && <Alert severity="error" sx={{ mx: 3, mt: 1 }}>{error}</Alert>}
+      {successMessage && <Alert severity="success" sx={{ mx: 3, mt: 1 }}>{successMessage}</Alert>}
 
       <DialogContent>
         <TextField
@@ -146,11 +158,30 @@ export default function ChangePasswordDialog({ open, setOpen, setMessage }) {
             )
           }}
         />
+
+        <TextField
+          label="Confirmar nueva contraseña"
+          type={showPassword.confirm ? "text" : "password"}
+          fullWidth
+          margin="normal"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => toggleVisibility("confirm")} edge="end">
+                  {showPassword.confirm ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
+        />
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={() => setOpen(false)}>Cancelar</Button>
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
+        <Button onClick={handleClose}>Cancelar</Button>
+        <Button variant="contained" onClick={handleSubmit}>
           Cambiar
         </Button>
       </DialogActions>

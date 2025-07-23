@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import axios from "../axiosConfig";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, FormControl, InputLabel, Select, MenuItem, Grid
+  TextField, Button, FormControl, InputLabel, Select, MenuItem, Grid, FormHelperText
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 
@@ -18,6 +18,7 @@ export default function FormPresentacionproducto({ selectedRow, setSelectedRow, 
   };
 
   const [formData, setFormData] = useState(initialData);
+  const [errors, setErrors] = useState({});
 
   const [productos, setProductos] = useState([]);
   const [unidades, setUnidades] = useState([]);
@@ -35,29 +36,16 @@ export default function FormPresentacionproducto({ selectedRow, setSelectedRow, 
   }
 
   useEffect(() => {
-    axios.get("/v1/producto")
-      .then(res => setProductos(Array.isArray(res.data) ? res.data : []))
-      .catch(() => setProductos([]));
-
-    axios.get("/v1/unidad")
-      .then(res => setUnidades(Array.isArray(res.data) ? res.data : []))
-      .catch(() => setUnidades([]));
-
-    axios.get("/v1/marca")
-      .then(res => setMarcas(Array.isArray(res.data) ? res.data : []))
-      .catch(() => setMarcas([]));
-
-    axios.get("/v1/presentacion")
-      .then(res => setPresentaciones(Array.isArray(res.data) ? res.data : []))
-      .catch(() => setPresentaciones([]));
-
-    axios.get("/v1/ingrediente")
-      .then(res => setIngredientes(Array.isArray(res.data) ? res.data : []))
-      .catch(() => setIngredientes([]));
+    axios.get("/v1/producto").then(res => setProductos(res.data || [])).catch(() => setProductos([]));
+    axios.get("/v1/unidad").then(res => setUnidades(res.data || [])).catch(() => setUnidades([]));
+    axios.get("/v1/marca").then(res => setMarcas(res.data || [])).catch(() => setMarcas([]));
+    axios.get("/v1/presentacion").then(res => setPresentaciones(res.data || [])).catch(() => setPresentaciones([]));
+    axios.get("/v1/ingrediente").then(res => setIngredientes(res.data || [])).catch(() => setIngredientes([]));
   }, []);
 
   const create = () => {
     setFormData(initialData);
+    setErrors({});
     setMethodName("Add");
     setOpen(true);
   };
@@ -78,6 +66,7 @@ export default function FormPresentacionproducto({ selectedRow, setSelectedRow, 
       presentacionId: selectedRow.presentacionId || "",
       ingredienteId: selectedRow.ingredienteId || ""
     });
+    setErrors({});
     setMethodName("Update");
     setOpen(true);
   };
@@ -101,10 +90,31 @@ export default function FormPresentacionproducto({ selectedRow, setSelectedRow, 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: "" }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.productoId) newErrors.productoId = "Campo requerido";
+    if (!formData.nombre.trim()) newErrors.nombre = "Campo requerido";
+    if (!formData.unidadId) newErrors.unidadId = "Campo requerido";
+    if (!formData.descripcion.trim()) newErrors.descripcion = "Campo requerido";
+    if (!formData.estadoId) newErrors.estadoId = "Campo requerido";
+    if (!formData.cantidad) newErrors.cantidad = "Campo requerido";
+    if (!formData.marcaId) newErrors.marcaId = "Campo requerido";
+    if (!formData.presentacionId) newErrors.presentacionId = "Campo requerido";
+    if (!formData.ingredienteId) newErrors.ingredienteId = "Campo requerido";
+    return newErrors;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
     const payload = {
       ...formData,
       productoId: parseInt(formData.productoId),
@@ -146,87 +156,73 @@ export default function FormPresentacionproducto({ selectedRow, setSelectedRow, 
           <DialogTitle>{methodName} Producto Presentación</DialogTitle>
           <DialogContent>
             <Grid container spacing={2} mt={1}>
+              {[
+                { label: "Producto", name: "productoId", options: productos },
+                { label: "Unidad", name: "unidadId", options: unidades },
+                { label: "Marca", name: "marcaId", options: marcas },
+                { label: "Presentación", name: "presentacionId", options: presentaciones },
+                { label: "Ingrediente", name: "ingredienteId", options: ingredientes }
+              ].map((field, i) => (
+                <Grid item xs={12} sm={6} key={i}>
+                  <FormControl fullWidth error={!!errors[field.name]}>
+                    <InputLabel>{field.label}</InputLabel>
+                    <Select
+                      name={field.name}
+                      value={formData[field.name]}
+                      onChange={handleChange}
+                      label={field.label}
+                    >
+                      <MenuItem value="">Seleccione...</MenuItem>
+                      {field.options.map(opt => (
+                        <MenuItem key={opt.id} value={opt.id}>{opt.nombre}</MenuItem>
+                      ))}
+                    </Select>
+                    {errors[field.name] && <FormHelperText>{errors[field.name]}</FormHelperText>}
+                  </FormControl>
+                </Grid>
+              ))}
+
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Producto</InputLabel>
-                  <Select name="productoId" value={formData.productoId} onChange={handleChange} label="Producto">
-                    <MenuItem value="">Seleccione...</MenuItem>
-                    {productos.map(p => (
-                      <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <TextField
+                  fullWidth name="nombre" label="Nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  error={!!errors.nombre}
+                  helperText={errors.nombre}
+                />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField fullWidth required name="nombre" label="Nombre" value={formData.nombre} onChange={handleChange} />
+                <TextField
+                  fullWidth name="descripcion" label="Descripción"
+                  value={formData.descripcion}
+                  onChange={handleChange}
+                  error={!!errors.descripcion}
+                  helperText={errors.descripcion}
+                />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Unidad</InputLabel>
-                  <Select name="unidadId" value={formData.unidadId} onChange={handleChange} label="Unidad">
-                    <MenuItem value="">Seleccione...</MenuItem>
-                    {unidades.map(u => (
-                      <MenuItem key={u.id} value={u.id}>{u.nombre}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField fullWidth required name="descripcion" label="Descripción" value={formData.descripcion} onChange={handleChange} />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
+                <FormControl fullWidth error={!!errors.estadoId}>
                   <InputLabel>Estado</InputLabel>
                   <Select name="estadoId" value={formData.estadoId} onChange={handleChange} label="Estado">
                     <MenuItem value="">Seleccione...</MenuItem>
                     <MenuItem value="1">Activo</MenuItem>
                     <MenuItem value="0">Inactivo</MenuItem>
                   </Select>
+                  {errors.estadoId && <FormHelperText>{errors.estadoId}</FormHelperText>}
                 </FormControl>
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField fullWidth required name="cantidad" label="Cantidad" type="number" inputProps={{ step: "any", min: 0 }} value={formData.cantidad} onChange={handleChange} />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Marca</InputLabel>
-                  <Select name="marcaId" value={formData.marcaId} onChange={handleChange} label="Marca">
-                    <MenuItem value="">Seleccione...</MenuItem>
-                    {marcas.map(m => (
-                      <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Presentación</InputLabel>
-                  <Select name="presentacionId" value={formData.presentacionId} onChange={handleChange} label="Presentación">
-                    <MenuItem value="">Seleccione...</MenuItem>
-                    {presentaciones.map(p => (
-                      <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Ingrediente</InputLabel>
-                  <Select name="ingredienteId" value={formData.ingredienteId} onChange={handleChange} label="Ingrediente">
-                    <MenuItem value="">Seleccione...</MenuItem>
-                    {ingredientes.map(i => (
-                      <MenuItem key={i.id} value={i.id}>{i.nombre}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <TextField
+                  fullWidth type="number" inputProps={{ step: "any", min: 0 }}
+                  name="cantidad" label="Cantidad"
+                  value={formData.cantidad}
+                  onChange={handleChange}
+                  error={!!errors.cantidad}
+                  helperText={errors.cantidad}
+                />
               </Grid>
             </Grid>
           </DialogContent>

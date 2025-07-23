@@ -11,6 +11,7 @@ import StackButtons from "../StackButtons";
 export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
+  const [errors, setErrors] = React.useState({});
 
   const initialData = {
     nombre: "",
@@ -22,6 +23,7 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
 
   const create = () => {
     setFormData(initialData);
+    setErrors({});
     setMethodName("Add");
     setOpen(true);
   };
@@ -37,7 +39,7 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
       descripcion: selectedRow.descripcion || "",
       estado: selectedRow.estadoId?.toString() || ""
     });
-
+    setErrors({});
     setMethodName("Update");
     setOpen(true);
   };
@@ -64,8 +66,18 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.nombre.trim()) newErrors.nombre = "Este campo es obligatorio";
+    if (!formData.descripcion.trim()) newErrors.descripcion = "Este campo es obligatorio";
+    if (!formData.estado) newErrors.estado = "Selecciona un estado";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (!validate()) return;
 
     const payload = {
       nombre: formData.nombre,
@@ -102,18 +114,22 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
             <DialogContentText>Formulario para gestionar unidades</DialogContentText>
 
             <TextField
-              fullWidth margin="dense" required
+              fullWidth margin="dense"
               name="nombre" label="Nombre"
               value={formData.nombre}
               onChange={handleChange}
+              error={!!errors.nombre}
+              helperText={errors.nombre}
             />
             <TextField
-              fullWidth margin="dense" required
+              fullWidth margin="dense"
               name="descripcion" label="Descripción"
               value={formData.descripcion}
               onChange={handleChange}
+              error={!!errors.descripcion}
+              helperText={errors.descripcion}
             />
-            <FormControl fullWidth margin="normal" required>
+            <FormControl fullWidth margin="normal" error={!!errors.estado}>
               <InputLabel>Estado</InputLabel>
               <Select
                 name="estado"
@@ -125,6 +141,11 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
                 <MenuItem value="1">Activo</MenuItem>
                 <MenuItem value="2">Inactivo</MenuItem>
               </Select>
+              {errors.estado && (
+                <p style={{ color: "#d32f2f", margin: "3px 14px 0", fontSize: "0.75rem" }}>
+                  {errors.estado}
+                </p>
+              )}
             </FormControl>
           </DialogContent>
           <DialogActions>

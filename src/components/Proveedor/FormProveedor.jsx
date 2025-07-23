@@ -201,7 +201,6 @@ export default function FormProveedor({
           >
             <MenuItem value={1}>Activo</MenuItem>
             <MenuItem value={0}>Inactivo</MenuItem>
-            <MenuItem value={2}>Otro</MenuItem>
           </Select>
           {errors.estadoId && (
             <FormHelperText>{errors.estadoId}</FormHelperText>

@@ -9,7 +9,6 @@ const columns = [
   { field: "contacto", headerName: "Contacto", width: 160 },
   { field: "correo", headerName: "Correo", width: 200 },
   { field: "celular", headerName: "Celular", width: 120 },
-  { field: "empresaId", headerName: "Empresa ID", width: 100 },
   { field: "tipoIdentificacionId", headerName: "Tipo Identificación", width: 140 },
   { field: "fechaCreacion", headerName: "Fecha de Creación", width: 180 },
   {

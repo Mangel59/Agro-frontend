@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 
-
 export default function FormIngrediente({ selectedRow, setSelectedRow, setMessage, reloadData, open, setOpen }) {
   const [methodName, setMethodName] = React.useState("");
 
@@ -19,6 +18,7 @@ export default function FormIngrediente({ selectedRow, setSelectedRow, setMessag
   };
 
   const [formData, setFormData] = React.useState(initialData);
+  const [errors, setErrors] = React.useState({});
 
   React.useEffect(() => {
     if (open) {
@@ -33,16 +33,28 @@ export default function FormIngrediente({ selectedRow, setSelectedRow, setMessag
         setFormData(initialData);
         setMethodName("Agregar");
       }
+      setErrors({});
     }
   }, [open, selectedRow]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: "" }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.nombre.trim()) newErrors.nombre = "El nombre es obligatorio.";
+    if (!formData.descripcion.trim()) newErrors.descripcion = "La descripción es obligatoria.";
+    if (!formData.estado) newErrors.estado = "Debe seleccionar un estado válido.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (!validate()) return;
 
     const payload = {
       nombre: formData.nombre,
@@ -92,6 +104,7 @@ export default function FormIngrediente({ selectedRow, setSelectedRow, setMessag
         create: () => {
           setFormData(initialData);
           setMethodName("Agregar");
+          setErrors({});
           setOpen(true);
         },
         update: () => {
@@ -100,6 +113,7 @@ export default function FormIngrediente({ selectedRow, setSelectedRow, setMessag
             return;
           }
           setMethodName("Actualizar");
+          setErrors({});
           setOpen(true);
         },
         deleteRow
@@ -111,18 +125,40 @@ export default function FormIngrediente({ selectedRow, setSelectedRow, setMessag
           <DialogContent>
             <DialogContentText>Formulario para gestionar ingredientes</DialogContentText>
 
-            <TextField fullWidth margin="dense" required name="nombre" label="Nombre"
-              value={formData.nombre} onChange={handleChange} />
-            <TextField fullWidth margin="dense" required name="descripcion" label="Descripción"
-              value={formData.descripcion} onChange={handleChange} />
+            <TextField
+              fullWidth margin="dense"
+              name="nombre" label="Nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+              error={!!errors.nombre}
+              helperText={errors.nombre}
+            />
+            <TextField
+              fullWidth margin="dense"
+              name="descripcion" label="Descripción"
+              value={formData.descripcion}
+              onChange={handleChange}
+              error={!!errors.descripcion}
+              helperText={errors.descripcion}
+            />
 
-            <FormControl fullWidth margin="normal" required>
+            <FormControl fullWidth margin="normal" error={!!errors.estado}>
               <InputLabel>Estado</InputLabel>
-              <Select name="estado" value={formData.estado} onChange={handleChange} label="Estado">
+              <Select
+                name="estado"
+                value={formData.estado}
+                onChange={handleChange}
+                label="Estado"
+              >
                 <MenuItem value="">Seleccione...</MenuItem>
                 <MenuItem value="1">Activo</MenuItem>
                 <MenuItem value="2">Inactivo</MenuItem>
               </Select>
+              {errors.estado && (
+                <p style={{ color: "#d32f2f", margin: "3px 14px 0", fontSize: "0.75rem" }}>
+                  {errors.estado}
+                </p>
+              )}
             </FormControl>
           </DialogContent>
           <DialogActions>

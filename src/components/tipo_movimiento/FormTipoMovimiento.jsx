@@ -12,6 +12,7 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
   const [movimientos, setMovimientos] = React.useState([]);
+  const [errors, setErrors] = React.useState({});
 
   const initialData = {
     nombre: "",
@@ -36,8 +37,9 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
   const create = () => {
     setFormData(initialData);
     setMethodName("Add");
-    setOpen(true);
+    setErrors({});
     loadMovimientos();
+    setOpen(true);
   };
 
   const update = () => {
@@ -54,8 +56,9 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
     });
 
     setMethodName("Update");
-    setOpen(true);
+    setErrors({});
     loadMovimientos();
+    setOpen(true);
   };
 
   const deleteRow = () => {
@@ -79,15 +82,30 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
       });
   };
 
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setErrors({});
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: "" }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.nombre.trim()) newErrors.nombre = "El nombre es obligatorio.";
+    if (!formData.descripcion.trim()) newErrors.descripcion = "La descripción es obligatoria.";
+    if (!formData.movimientoId) newErrors.movimientoId = "Debe seleccionar un movimiento.";
+    if (!formData.estado) newErrors.estado = "Debe seleccionar un estado.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (!validate()) return;
 
     const token = localStorage.getItem("token");
     let empresaId = null;
@@ -115,7 +133,9 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Tipo de movimiento creado con éxito!" : "Tipo de movimiento actualizado con éxito!"
+          text: methodName === "Add"
+            ? "Tipo de movimiento creado con éxito!"
+            : "Tipo de movimiento actualizado con éxito!"
         });
         setOpen(false);
         setSelectedRow({});
@@ -140,18 +160,25 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
             <DialogContentText>Formulario para gestionar tipos de movimiento</DialogContentText>
 
             <TextField
-              fullWidth margin="dense" required
-              name="nombre" label="Nombre"
+              fullWidth margin="dense"
+              name="nombre"
+              label="Nombre"
               value={formData.nombre}
               onChange={handleChange}
+              error={!!errors.nombre}
+              helperText={errors.nombre}
             />
             <TextField
-              fullWidth margin="dense" required
-              name="descripcion" label="Descripción"
+              fullWidth margin="dense"
+              name="descripcion"
+              label="Descripción"
               value={formData.descripcion}
               onChange={handleChange}
+              error={!!errors.descripcion}
+              helperText={errors.descripcion}
             />
-            <FormControl fullWidth margin="normal" required>
+
+            <FormControl fullWidth margin="normal" error={!!errors.movimientoId}>
               <InputLabel>Movimiento</InputLabel>
               <Select
                 name="movimientoId"
@@ -164,8 +191,14 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
                   <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>
                 ))}
               </Select>
+              {errors.movimientoId && (
+                <p style={{ color: "#d32f2f", margin: "3px 14px 0", fontSize: "0.75rem" }}>
+                  {errors.movimientoId}
+                </p>
+              )}
             </FormControl>
-            <FormControl fullWidth margin="normal" required>
+
+            <FormControl fullWidth margin="normal" error={!!errors.estado}>
               <InputLabel>Estado</InputLabel>
               <Select
                 name="estado"
@@ -177,6 +210,11 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
                 <MenuItem value="1">Activo</MenuItem>
                 <MenuItem value="2">Inactivo</MenuItem>
               </Select>
+              {errors.estado && (
+                <p style={{ color: "#d32f2f", margin: "3px 14px 0", fontSize: "0.75rem" }}>
+                  {errors.estado}
+                </p>
+              )}
             </FormControl>
           </DialogContent>
           <DialogActions>

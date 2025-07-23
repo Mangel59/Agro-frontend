@@ -8,7 +8,7 @@ export const SiteProps = {
     /**
      * Nombre de la aplicación.
      */
-    appName: 'Universidad Surcolombiana',
+    appName: 'Inmero',
 
     /**
      * Ancho del drawer (barra lateral) en píxeles.

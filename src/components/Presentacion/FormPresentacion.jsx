@@ -18,6 +18,7 @@ export default function FormPresentacion({ open, setOpen, selectedRow, setSelect
   };
 
   const [formData, setFormData] = React.useState(initialData);
+  const [errors, setErrors] = React.useState({});
 
   React.useEffect(() => {
     if (open && selectedRow?.id) {
@@ -31,6 +32,7 @@ export default function FormPresentacion({ open, setOpen, selectedRow, setSelect
       setFormData(initialData);
       setMethodName("Add");
     }
+    setErrors({});
   }, [open]);
 
   const handleClose = () => setOpen(false);
@@ -38,10 +40,21 @@ export default function FormPresentacion({ open, setOpen, selectedRow, setSelect
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: "" }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.nombre.trim()) newErrors.nombre = "El nombre es obligatorio.";
+    if (!formData.descripcion.trim()) newErrors.descripcion = "La descripción es obligatoria.";
+    if (!formData.estado) newErrors.estado = "Debe seleccionar un estado válido.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (!validate()) return;
 
     const payload = {
       nombre: formData.nombre,
@@ -115,18 +128,22 @@ export default function FormPresentacion({ open, setOpen, selectedRow, setSelect
             <DialogContentText>Formulario para gestionar presentaciones de productos</DialogContentText>
 
             <TextField
-              fullWidth margin="dense" required
-              name="nombre" label="Nombre"
+              fullWidth margin="dense"
+              name="nombre" label="Nombre del Producto"
               value={formData.nombre}
               onChange={handleChange}
+              error={!!errors.nombre}
+              helperText={errors.nombre}
             />
             <TextField
-              fullWidth margin="dense" required
+              fullWidth margin="dense"
               name="descripcion" label="Descripción"
               value={formData.descripcion}
               onChange={handleChange}
+              error={!!errors.descripcion}
+              helperText={errors.descripcion}
             />
-            <FormControl fullWidth margin="normal" required>
+            <FormControl fullWidth margin="normal" error={!!errors.estado}>
               <InputLabel>Estado</InputLabel>
               <Select
                 name="estado"
@@ -138,11 +155,16 @@ export default function FormPresentacion({ open, setOpen, selectedRow, setSelect
                 <MenuItem value="1">Activo</MenuItem>
                 <MenuItem value="2">Inactivo</MenuItem>
               </Select>
+              {errors.estado && (
+                <p style={{ color: "#d32f2f", margin: "3px 14px 0", fontSize: "0.75rem" }}>
+                  {errors.estado}
+                </p>
+              )}
             </FormControl>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose}>Cancelar</Button>
-            <Button type="submit">{methodName}</Button>
+            <Button onClick={handleClose}>CANCELAR</Button>
+            <Button type="submit">{methodName.toUpperCase()}</Button>
           </DialogActions>
         </form>
       </Dialog>
