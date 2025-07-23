@@ -43,7 +43,7 @@ export default function FormKardex({
 
   useEffect(() => {
     axios.get("/v1/pais", headers).then(res => setPaises(res.data));
-    axios.get("/v1/produccion", headers).then(res => setProducciones(res.data));
+    //axios.get("/v1/produccion", headers).then(res => setProducciones(res.data));
     axios.get("/v1/tipo_movimiento", headers)
   .then(res => {
     console.log("Respuesta de /v1/tipo_movimiento:", res.data); 

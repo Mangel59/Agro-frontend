@@ -234,8 +234,9 @@ const construirParametros = () => ({
                 <FormControl fullWidth>
                   <InputLabel>{label}</InputLabel>
                   <Select name={name} value={formReporte[name]} onChange={handleChangeReporte}>
-                    {options.map(opt => (
-                      <MenuItem key={opt.id} value={opt.id}>{opt.nombre}</MenuItem>
+                    {Array.isArray(options) &&
+                      options.map(opt => (
+                        <MenuItem key={opt.id} value={opt.id}>{opt.nombre}</MenuItem>
                     ))}
                   </Select>
                 </FormControl>

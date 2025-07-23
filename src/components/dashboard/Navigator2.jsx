@@ -1,10 +1,3 @@
-/**
- * @file Navigator2.jsx
- * @module Navigator2
- * @description Componente que representa el menú de navegación lateral con submenús y renderización dinámica de componentes con imagen fija.
- * @component
- */
-
 import * as React from 'react';
 import {
   Divider,
@@ -38,7 +31,6 @@ import axios from '../axiosConfig.js';
 import { useTheme } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 
-// Componentes del sistema
 import Persona from "../personas/Persona.jsx";
 import Pais from '../pais/Pais';
 import Departamento from '../departamento/Departamento';
@@ -96,20 +88,20 @@ const icons = {
 const components = {
   tipoidentificacion: TipoIdentificacion, roll: Rol, proveedor: Proveedor, pais: Pais,
   departamento: Departamento, municipio: Municipio, almacen: Almacen, espacio: Espacio,
-  tipo_espacio: TipoEspacio, bloque: Bloque,
-  tipo_bloque: TipoBloque, tipo_sede: TipoSedes, sede: Sede,
-  presentacion_producto: Presentacionproducto, presentacion: Presentacion,
+  tipo_espacio: TipoEspacio, bloque: Bloque, tipo_bloque: TipoBloque, tipo_sede: TipoSedes,
+  sede: Sede, presentacion_producto: Presentacionproducto, presentacion: Presentacion,
   producto_categoria: ProductoCategoria, producto: Producto, produccion: Produccion,
-  marca: Marca, unidad: Unidad,tipo_evaluacion:TipoEvaluacion, tipo_movimiento: TipoMovimiento,
+  marca: Marca, unidad: Unidad, tipo_evaluacion: TipoEvaluacion, tipo_movimiento: TipoMovimiento,
   tipo_produccion: TipoProduccion, persona: Persona, empresa: Empresa, r_pedido: RPedido,
-  kardex:kardex, media_card: MediaCard, evaluacion_item: EvaluacionItem,
-  OrdenCompra: OrdenCompra, Ocupacion: Ocupacion,
-   grupo:Grupo, Movimiento:Movimineto, Proceso: Proceso, Ingrediente: Ingrediente,
-  Seccion:Seccion, Subseccion:Subseccion,  tipo_inventario: TipoInventario, Inventario: Inventario,
-  IngredientePresentacionProducto: IngredientePresentacionProducto, RE_pedido: Re_pedido,RE_kardex: RE_kardex,
-  RE_pv: RE_productoVencimiento, RE_oc: RE_ordenCompra, RE_fc: RE_fc
-
+  kardex: kardex, media_card: MediaCard, evaluacion_item: EvaluacionItem,
+  OrdenCompra: OrdenCompra, Ocupacion: Ocupacion, grupo: Grupo, Movimiento: Movimineto,
+  Proceso: Proceso, Ingrediente: Ingrediente, Seccion: Seccion, Subseccion: Subseccion,
+  tipo_inventario: TipoInventario, Inventario: Inventario,
+  IngredientePresentacionProducto: IngredientePresentacionProducto,
+  RE_pedido: Re_pedido, RE_kardex: RE_kardex, RE_pv: RE_productoVencimiento,
+  RE_oc: RE_ordenCompra, RE_fc: RE_fc
 };
+
 
 const moduleImages = {
   persona: "/images/cards/1.jpg",
@@ -155,154 +147,156 @@ const moduleImages = {
   RE_fc: "/images/cards/3.jpg"
 };
 
-export default function Navigator2(props) {
+export default function Navigator2({ setCurrentModuleItem, setMenuOpen, isAuthenticated }) {
   const { t } = useTranslation();
   const theme = useTheme();
+
   const [menuItems, setMenuItems] = React.useState([]);
   const [selectedMenu, setSelectedMenu] = React.useState(null);
+  const [open, setOpen] = React.useState(() => {
+    const stored = localStorage.getItem('sidebarOpen');
+    return stored ? JSON.parse(stored) : true;
+  });
+
   const [breadcrumb, setBreadcrumb] = React.useState([]);
-  const [open, setOpen] = React.useState(true);
 
   React.useEffect(() => {
+    if (setMenuOpen) setMenuOpen(open);
+  }, [open]);
+
+  React.useEffect(() => {
+    if (!isAuthenticated) return;
+
     axios.get('/v1/menu')
       .then((response) => {
         setMenuItems(response.data);
-        if (response.data.length > 0) {
-          const firstMenuId = response.data[0].id;
-          setSelectedMenu(firstMenuId);
-          setBreadcrumb([firstMenuId]);
+
+        const savedModule = localStorage.getItem('activeModule');
+        if (savedModule && components[savedModule]) {
+          setCurrentModuleItem(React.createElement(components[savedModule]));
+          setSelectedMenu(savedModule);
+        } else {
           const firstMenu = response.data[0];
-          if (firstMenu.children && firstMenu.children.length > 0) {
-            props.setCurrentModuleItem(renderSubmenu(firstMenu.children, firstMenuId));
+          if (firstMenu?.children?.length > 0) {
+            setSelectedMenu(firstMenu.id);
+            setCurrentModuleItem(renderSubmenu(firstMenu.children, firstMenu.id));
           }
         }
       })
-      .catch((error) => {
-        console.error('Error fetching menu data:', error);
-      });
-  }, []);
+      .catch(console.error);
+  }, [isAuthenticated]);
+
+  const toggleDrawer = () => {
+    const newOpen = !open;
+    setOpen(newOpen);
+    if (setMenuOpen) setMenuOpen(newOpen);
+    localStorage.setItem('sidebarOpen', JSON.stringify(newOpen));
+  };
 
   const handleMenuClick = (menuId) => {
     setSelectedMenu(menuId);
-    const menu = menuItems.find(item => item.id === menuId);
+    localStorage.setItem('activeModule', menuId);
     setBreadcrumb([menuId]);
 
+    const menu = menuItems.find(item => item.id === menuId);
     if (menu?.children?.length) {
-      props.setCurrentModuleItem(renderSubmenu(menu.children, menuId));
+      setCurrentModuleItem(renderSubmenu(menu.children, menuId));
     } else {
       const Component = components[menuId];
-      props.setCurrentModuleItem(Component ? <Component /> : null);
+      setCurrentModuleItem(Component ? <Component /> : null);
     }
   };
 
   const handleSubMenuClick = (subMenuId, parentMenuId) => {
-    setBreadcrumb([...breadcrumb, subMenuId]);
-    if (components[subMenuId]) {
-      props.setCurrentModuleItem(
-        React.createElement(components[subMenuId], {
-          goBack: () => handleMenuClick(parentMenuId),
-        })
-      );
-    } else {
-      props.setCurrentModuleItem(null);
-    }
+    setBreadcrumb([parentMenuId, subMenuId]);
+    localStorage.setItem('activeModule', subMenuId);
+
+    const Component = components[subMenuId];
+    setCurrentModuleItem(Component ? <Component /> : null);
   };
 
   const renderSubmenu = (children, parentMenuId) => (
-    <Grid container spacing={3} sx={{ padding: 2, marginTop: '40px' }}>
-    {children.map(({ id, text, icon }) => (
-      <Grid item xs={12} sm={6} md={4} lg={2} xl={2} key={id}>
-        <Box
-          sx={{
-            minWidth: 150,
-            height: 180,
-            boxShadow: 3,
-            borderRadius: 2,
-            overflow: 'hidden',
-            cursor: 'pointer',
-            transition: '0.3s',
-            display: 'flex',
-            flexDirection: 'column',
-            '&:hover': { transform: 'scale(1.03)' }
-          }}
-        >
-          {/* Imagen superior */}
+    <Grid container spacing={2} sx={{ p: 2 }}>
+      {children.map(({ id, text, icon }) => (
+        <Grid item xs={12} sm={6} md={4} lg={3} key={id}>
           <Box
-            component="img"
-            src={moduleImages[id] || "/images/cards/1.jpg"}
-            alt={`Imagen de ${id}`}
+            onClick={() => handleSubMenuClick(id, parentMenuId)}
             sx={{
-              width: '100%',
-              height: 80,
-              objectFit: 'cover'
+              boxShadow: 1,
+              borderRadius: 2,
+              overflow: 'hidden',
+              height: 160,
+              display: 'flex',
+              flexDirection: 'column',
+              cursor: 'pointer',
+              transition: '0.3s',
+              '&:hover': { transform: 'scale(1.03)' },
             }}
-          />
-  
-          {/* Contenido */}
-          <Box sx={{ flex: 1, padding: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <ListItemIcon sx={{ minWidth: 0, color: theme.palette.mode === 'dark' ? '#fff' : '#000' }}>
-                {icons[icon]}
-              </ListItemIcon>
-              <Typography variant="body2" fontWeight="bold" noWrap>
-                {t(text)}
-              </Typography>
-            </Box>
-  
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 1 }}>
-              <Button
-                size="small"
-                sx={{ color: theme.palette.mode === 'dark' ? '#90caf9' : '#1976d2' }}
-                onClick={() => handleSubMenuClick(id, parentMenuId)}
-              >
-                {t('Ver más')}
-              </Button>
+          >
+            <Box
+              component="img"
+              src={moduleImages[id] || "/images/cards/1.jpg"}
+              alt={id}
+              sx={{ width: '100%', height: 80, objectFit: 'cover' }}
+            />
+            <Box sx={{ flex: 1, p: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <ListItemIcon sx={{ color: theme.palette.text.primary }}>
+                  {icons[icon]}
+                </ListItemIcon>
+                <Typography variant="body2" fontWeight="bold" noWrap>
+                  {t(text)}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button size="small">{t('Ver más')}</Button>
+              </Box>
             </Box>
           </Box>
-        </Box>
-      </Grid>
-    ))}
-  </Grid>
-  
+        </Grid>
+      ))}
+    </Grid>
   );
+
+  // 🔒 Si no hay sesión, no renderizar menú
+  if (!isAuthenticated) return null;
 
   return (
     <Box
-  sx={{
-    position: 'fixed',
-    top: '65px',
-    left: 0,
-    width: {
-      xs: open ? '200px' : '60px',
-      sm: open ? '220px' : '70px',
-      md: open ? '250px' : '70px',
-    },
-    minWidth: open ? '60px' : '40px',
-    height: '100vh',
-    overflowY: 'auto',
-    backgroundColor: theme.palette.mode === 'dark' ? '#212121' : '#fff',
-    color: theme.palette.mode === 'dark' ? '#fff' : '#000',
-    boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-    transition: 'width 0.3s'
-  }}
->
-      <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer', p: 2 }} onClick={() => setOpen(!open)}>
-        <MenuIcon sx={{ mr: open ? 1 : 0, color: theme.palette.mode === 'dark' ? '#fff' : '#000' }} />
+      sx={{
+        position: 'fixed',
+        top: '65px',
+        left: 0,
+        width: {
+          xs: open ? '200px' : '60px',
+          sm: open ? '220px' : '70px',
+          md: open ? '250px' : '70px',
+        },
+        height: '100vh',
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.text.primary,
+        boxShadow: 1,
+        transition: 'width 0.3s ease-in-out',
+        zIndex: 1200,
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', p: 2, cursor: 'pointer' }} onClick={toggleDrawer}>
+        <MenuIcon sx={{ mr: open ? 1 : 0 }} />
         {open && <Typography variant="h6">{t('Menú')}</Typography>}
       </Box>
 
-      <List component="nav">
+      <List>
         {menuItems.map(({ id, text, icon }) => (
-          <ListItem disablePadding key={id} id={id} onClick={() => handleMenuClick(id)}>
+          <ListItem key={id} disablePadding onClick={() => handleMenuClick(id)}>
             <ListItemButton selected={selectedMenu === id} sx={{ justifyContent: open ? 'flex-start' : 'center' }}>
-              <ListItemIcon sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000', minWidth: 0, mr: open ? 2 : 0 }}>
+              <ListItemIcon sx={{ color: theme.palette.text.primary, minWidth: 0, mr: open ? 2 : 0 }}>
                 {icons[icon]}
               </ListItemIcon>
               {open && <ListItemText primary={t(text)} />}
             </ListItemButton>
           </ListItem>
         ))}
-        <Divider sx={{ my: 1, backgroundColor: theme.palette.mode === 'dark' ? '#757575' : '#e0e0e0' }} />
+        <Divider />
       </List>
     </Box>
   );
