@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { AppBar, Toolbar, Button, Typography, Switch } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import Login from '../Login';
@@ -6,14 +6,14 @@ import Register from '../Register';
 import ProfileMenu from '../ProfileMenu';
 import { useThemeToggle } from './ThemeToggleProvider';
 
-
-/**
- * Componente de barra superior de navegación.
- */
-export default function AppBarComponent({ setCurrentModule }) {
+export default function AppBarComponent({
+  setCurrentModule,
+  onLogout,
+  isAuthenticated,
+  setIsAuthenticated,
+}) {
   const location = useLocation();
   const { toggleTheme, darkMode } = useThemeToggle();
-  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
 
   const handleLogin = () => {
     if (typeof setCurrentModule === 'function') {
@@ -51,11 +51,10 @@ export default function AppBarComponent({ setCurrentModule }) {
         </Typography>
 
         <Switch
-        checked={darkMode}
-        onChange={toggleTheme}
-        color="default"
+          checked={darkMode}
+          onChange={toggleTheme}
+          color="default"
         />
-
 
         {!isAuthenticated ? (
           <>
@@ -70,6 +69,7 @@ export default function AppBarComponent({ setCurrentModule }) {
           <ProfileMenu
             setCurrentModule={setCurrentModule}
             setIsAuthenticated={setIsAuthenticated}
+            onLogout={onLogout}
           />
         )}
       </Toolbar>

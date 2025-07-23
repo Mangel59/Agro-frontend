@@ -145,7 +145,7 @@ useEffect(() => {
     localStorage.removeItem('token_expiration');
     localStorage.removeItem('activeModule');
     setIsAuthenticated(false);
-    setCurrentModule(<Inicio setCurrentModule={setCurrentModule} />);
+    setCurrentModule(<Inicio setCurrentModule={setCurrentModule} />)
   }
 }, []);
 
@@ -176,7 +176,12 @@ useEffect(() => {
           transition: 'margin-left 0.3s ease',
         }}
       >
-        <AppBarComponent key={isAuthenticated} setCurrentModule={setCurrentModule} />
+        <AppBarComponent
+  key={isAuthenticated}
+  setCurrentModule={setCurrentModule}
+  setIsAuthenticated={setIsAuthenticated}
+  isAuthenticated={isAuthenticated}
+/>
         <Toolbar />
           <Container
           maxWidth="lg"
