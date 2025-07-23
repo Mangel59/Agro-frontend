@@ -6,13 +6,13 @@ import Register from '../Register';
 import ProfileMenu from '../ProfileMenu';
 import { useThemeToggle } from './ThemeToggleProvider';
 
+
 /**
  * Componente de barra superior de navegación.
  */
 export default function AppBarComponent({ setCurrentModule }) {
   const location = useLocation();
-  const toggleTheme = useThemeToggle();
-
+  const { toggleTheme, darkMode } = useThemeToggle();
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
 
   const handleLogin = () => {
@@ -50,7 +50,12 @@ export default function AppBarComponent({ setCurrentModule }) {
           Agro Application
         </Typography>
 
-        <Switch onChange={toggleTheme} sx={{ mr: 2 }} />
+        <Switch
+        checked={darkMode}
+        onChange={toggleTheme}
+        color="default"
+        />
+
 
         {!isAuthenticated ? (
           <>

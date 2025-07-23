@@ -1,56 +1,39 @@
-import React, { createContext, useMemo, useState, useContext } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 
-// Crear un contexto para el cambio de tema
 const ThemeToggleContext = createContext();
 
-/**
- * Hook para usar el contexto de cambio de tema.
- * @returns {function} Función para alternar el tema.
- */
-export const useThemeToggle = () => {
-  return useContext(ThemeToggleContext);
-};
+export const useThemeToggle = () => useContext(ThemeToggleContext);
 
-// Definición del tema claro
-const lightTheme = createTheme({
-  palette: {
-    mode: 'light',
-  },
-});
-
-// Definición del tema oscuro
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
-});
-
-/**
- * Proveedor de contexto para alternar entre temas.
- * @param {Object} props - Props del componente.
- * @param {ReactNode} props.children - Componentes hijos que se renderizarán dentro del proveedor.
- * @returns {JSX.Element} Proveedor de contexto y tema.
- */
 export const ThemeToggleProvider = ({ children }) => {
-  // Estado para controlar si el modo oscuro está activo
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    const stored = localStorage.getItem('darkMode');
+    return stored ? JSON.parse(stored) : false;
+  });
 
-  // Función para alternar entre modo claro y oscuro
-  const toggleTheme = () => {
-    setDarkMode((prevMode) => !prevMode);
-  };
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+  }, [darkMode]);
 
-  // Memoización del tema basado en el estado de darkMode
-  const theme = useMemo(() => (darkMode ? darkTheme : lightTheme), [darkMode]);
+  const toggleTheme = () => setDarkMode(prev => !prev);
+
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: darkMode ? 'dark' : 'light',
+          background: {
+            default: darkMode ? '#121212' : '#f5f5f5',
+            paper: darkMode ? '#1e1e1e' : '#fff',
+          },
+        },
+      }),
+    [darkMode]
+  );
 
   return (
-    <ThemeToggleContext.Provider value={toggleTheme}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        {children}
-      </ThemeProvider>
+    <ThemeToggleContext.Provider value={{ toggleTheme, darkMode }}>
+      <ThemeProvider theme={theme}>{children}</ThemeProvider>
     </ThemeToggleContext.Provider>
   );
-}
+};
