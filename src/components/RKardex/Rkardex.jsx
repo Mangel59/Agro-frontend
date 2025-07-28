@@ -7,6 +7,7 @@ import {
 import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
 import VistaPreviaPDFKardex from "../Kardex/vistapreviapdfkardex";
+import GridArticuloKardex from "../Kardex/GridArticuloKardex";
 
 export default function RE_kardex() {
   const token = localStorage.getItem("token");
@@ -28,9 +29,11 @@ export default function RE_kardex() {
   const [almacenes, setAlmacenes] = useState([]);
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
+  const [articulos, setArticulos] = useState([]);
 
   const [previewUrl, setPreviewUrl] = useState("");
   const [message, setMessage] = useState({ open: false, severity: "info", text: "" });
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,7 +49,7 @@ export default function RE_kardex() {
     logo_empresa: `${import.meta.env.VITE_RUTA_LOGO_EMPRESA}${empresaId}/logo_empresa.jpeg`
   });
 
-  const generarVistaPreviaPDF = () => {
+  const buscarKardex = () => {
     if (!formReporte.fecha_inicio || !formReporte.fecha_fin || !empresaId) {
       setMessage({
         open: true,
@@ -57,56 +60,36 @@ export default function RE_kardex() {
     }
 
     const datos = construirParametros();
+
+    axios.get("/v1/articulo-kardex", {
+      headers: { Authorization: `Bearer ${token}` },
+      params: datos
+    })
+      .then(res => {
+        setArticulos(Array.isArray(res.data) ? res.data : []);
+        setMessage({ open: true, severity: "success", text: "Datos cargados correctamente." });
+      })
+      .catch(() => {
+        setArticulos([]);
+        setMessage({ open: true, severity: "error", text: "No se pudo obtener el Kardex." });
+      });
+  };
+
+  const verReportePDF = () => {
+    const datos = construirParametros();
+
     axios.post("/v2/report/kardex", datos, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
+      headers: { Authorization: `Bearer ${token}` },
       responseType: "blob"
     })
       .then((response) => {
         const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
         setPreviewUrl(url);
-        setMessage({ open: true, severity: "success", text: "PDF generado correctamente." });
+        setDialogOpen(true);
       })
       .catch((err) => {
         console.error("❌ Error al generar PDF Kardex:", err);
-        setPreviewUrl("");
-        setMessage({ open: true, severity: "error", text: "Error al generar vista previa PDF." });
-      });
-  };
-
-  const imprimirPDFKardex = () => {
-    if (!formReporte.fecha_inicio || !formReporte.fecha_fin || !empresaId) {
-      setMessage({
-        open: true,
-        severity: "warning",
-        text: "Completa todos los campos requeridos."
-      });
-      return;
-    }
-
-    const datos = construirParametros();
-    axios.post("/v2/report/kardex", datos, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      responseType: "blob"
-    })
-      .then((response) => {
-        const blob = new Blob([response.data], { type: "application/pdf" });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", `reporte_kardex.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      })
-      .catch((err) => {
-        console.error("❌ Error al descargar PDF Kardex:", err);
-        setMessage({ open: true, severity: "error", text: "Error al descargar el PDF." });
+        setMessage({ open: true, severity: "error", text: "Error al generar el PDF." });
       });
   };
 
@@ -178,9 +161,13 @@ export default function RE_kardex() {
             <FormControl fullWidth>
               <InputLabel>{label}</InputLabel>
               <Select name={name} value={formReporte[name]} onChange={handleChange}>
-                {options.map(opt => (
-                  <MenuItem key={opt.id} value={opt.id}>{opt.nombre}</MenuItem>
-                ))}
+                {Array.isArray(options) ? (
+                  options.map(opt => (
+                    <MenuItem key={opt.id} value={opt.id}>{opt.nombre}</MenuItem>
+                  ))
+                ) : (
+                  <MenuItem value="" disabled>No disponible</MenuItem>
+                )}
               </Select>
             </FormControl>
           </Grid>
@@ -210,14 +197,25 @@ export default function RE_kardex() {
       </Grid>
 
       <Box mt={4} display="flex" gap={2}>
-        <Button variant="contained" onClick={generarVistaPreviaPDF}>Ver Reporte</Button>
-        <Button variant="outlined" onClick={imprimirPDFKardex}>Imprimir PDF</Button>
+        <Button variant="contained" onClick={buscarKardex}>Buscar</Button>
+        <Button variant="outlined" onClick={verReportePDF}>Ver Reporte</Button>
       </Box>
 
-      {previewUrl && (
-        <Box mt={4}>
-          <Typography variant="h6" gutterBottom>Vista previa del PDF</Typography>
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="lg" fullWidth>
+        <DialogTitle>Vista previa PDF Kardex</DialogTitle>
+        <DialogContent dividers>
           <VistaPreviaPDFKardex url={previewUrl} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)}>Cerrar</Button>
+        </DialogActions>
+      </Dialog>
+
+      {articulos.length > 0 && (
+        <Box mt={4}>
+          <VistaPreviaPDFKardex kardex={articulos} />
+          <Typography variant="h6" gutterBottom>Detalle de artículos Kardex</Typography>
+          <GridArticuloKardex items={articulos} />
         </Box>
       )}
 

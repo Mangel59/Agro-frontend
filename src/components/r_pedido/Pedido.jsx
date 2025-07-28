@@ -176,7 +176,7 @@ export default function Pedido() {
     <Box sx={{ p: 2 }}>
       <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
         <Typography variant="h5">Gestión de Pedido</Typography>
-        <Button variant="contained" onClick={() => setSearchDialogOpen(true)}>Buscar por ID</Button>
+        <Button variant="contained" onClick={() => setSearchDialogOpen(true)}>Buscar reporte</Button>
       </Box>
 
       <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
@@ -244,7 +244,7 @@ export default function Pedido() {
       )}
 
       <Dialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle>Buscar Pedido por ID</DialogTitle>
+        <DialogTitle>Buscar Pedido </DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <TextField
             label="ID de Pedido"

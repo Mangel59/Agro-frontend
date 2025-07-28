@@ -5,7 +5,7 @@ import FormIngredientePresentacionP from "./FormIngredientePresentacionP.jsx";
 import GridIngredientePresentacionP from "./GridIngredientePresentacionP.jsx";
 
 export default function IngredientePresentacionProducto() {
-  const [selectedRow, setSelectedRow] = useState({ id: 0 });
+  const [selectedRow, setSelectedRow] = useState({ });
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
   const [datos, setDatos] = useState([]);
   const [formOpen, setFormOpen] = useState(false);

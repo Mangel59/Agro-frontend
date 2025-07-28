@@ -177,8 +177,9 @@ export default function FormBloque({
             onChange={handleChange}
             label="Tipo de Bloque"
           >
-            {tiposBloque.map((tipo) => (
-              <MenuItem key={tipo.id} value={tipo.id}>{tipo.nombre}</MenuItem>
+            {Array.isArray(tiposBloque) &&
+              tiposBloque.map((tipo) => (
+                <MenuItem key={tipo.id} value={tipo.id}>{tipo.nombre}</MenuItem>
             ))}
           </Select>
           {errors.tipoBloqueId && <FormHelperText>{errors.tipoBloqueId}</FormHelperText>}

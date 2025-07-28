@@ -1,7 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Box, Typography, TextField, Button, Stack
+  Box, Typography, TextField, Button, Stack, Grid, MenuItem, FormControl, InputLabel, Select
 } from "@mui/material";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+
 import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
 import VistaPreviaPDFOrdenCompra from "../OrdenCompra/vistapreviapdfordencompra";
@@ -10,15 +18,26 @@ import GridArticuloOrdenCompra from "../OrdenCompra/GridArticuloOrdenCompra";
 export default function RE_ordenCompra() {
   const empresaId = localStorage.getItem("empresaId");
   const token = localStorage.getItem("token");
-
   const logoPath = `${import.meta.env.VITE_RUTA_LOGO_EMPRESA}${empresaId}/logo_empresa.jpeg`;
+  const [previewOpen, setPreviewOpen] = useState(false);
 
-  const headers = {
-    headers: { Authorization: `Bearer ${token}` }
-  };
 
-  const [categoriaEstadoId, setCategoriaEstadoId] = useState("");
-  const [pedidoId, setPedidoId] = useState("");
+  const headers = { headers: { Authorization: `Bearer ${token}` } };
+
+  const [form, setForm] = useState({
+    pais_id: "", departamento_id: "", municipio_id: "", sede_id: "",
+    bloque_id: "", espacio_id: "", almacen_id: "",
+    producto_id: "", producto_categoria_id: "",
+    categoria_estado_id: "", pedido_id: ""
+  });
+
+  const [data, setData] = useState({
+    paises: [], departamentos: [], municipios: [], sedes: [],
+    bloques: [], espacios: [], almacenes: [],
+    productos: [], categorias: [], pedidos: [], categorias_estado: []
+  });
+
+
   const [ordenData, setOrdenData] = useState(null);
   const [articulos, setArticulos] = useState([]);
   const [presentaciones, setPresentaciones] = useState([]);
@@ -26,20 +45,100 @@ export default function RE_ordenCompra() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [message, setMessage] = useState({ open: false, severity: "info", text: "" });
 
+  // ---------- Cargar listas (paises, departamentos, etc.) ----------
+    useEffect(() => {
+      axios.get("/v1/pais", headers).then(res => setData(d => ({ ...d, paises: res.data })));
+      axios.get("/v1/producto", headers).then(res => setData(d => ({ ...d, productos: res.data })));
+      axios.get("/v1/producto_categoria", headers).then(res => setData(d => ({ ...d, categorias: res.data })));
+      axios.get("/v1/pedido", headers).then(res => setData(d => ({ ...d, pedidos: res.data })));
+      axios.get("/v1/categoria_estado", headers).then(res => setData(d => ({ ...d, categorias_estado: res.data })));
+    }, []);
+
+ useEffect(() => {
+  if (!form.pais_id) return setData(d => ({ ...d, departamentos: [] }));
+  axios.get("/v1/departamento", headers).then(res => {
+    const departamentosFiltrados = res.data.filter(dep => dep.paisId === parseInt(form.pais_id));
+    setData(d => ({ ...d, departamentos: departamentosFiltrados }));
+  });
+}, [form.pais_id]);
+
+useEffect(() => {
+  if (!form.departamento_id) return setData(d => ({ ...d, municipios: [] }));
+  axios.get(`/v1/municipio?departamentoId=${form.departamento_id}`, headers).then(res => {
+    setData(d => ({ ...d, municipios: res.data }));
+  });
+}, [form.departamento_id]);
+
+useEffect(() => {
+  if (!form.municipio_id) return setData(d => ({ ...d, sedes: [] }));
+  axios.get("/v1/sede", headers).then(res => {
+    const sedesFiltradas = res.data.filter(s => s.municipioId === parseInt(form.municipio_id));
+    setData(d => ({ ...d, sedes: sedesFiltradas }));
+  });
+}, [form.municipio_id]);
+
+useEffect(() => {
+  if (!form.sede_id) return setData(d => ({ ...d, bloques: [] }));
+  axios.get("/v1/bloque", headers).then(res => {
+    const bloquesFiltrados = res.data.filter(b => b.sedeId === parseInt(form.sede_id));
+    setData(d => ({ ...d, bloques: bloquesFiltrados }));
+  });
+}, [form.sede_id]);
+
+useEffect(() => {
+  if (!form.bloque_id) return setData(d => ({ ...d, espacios: [] }));
+  axios.get("/v1/espacio", headers).then(res => {
+    const espaciosFiltrados = res.data.filter(e => e.bloqueId === parseInt(form.bloque_id));
+    setData(d => ({ ...d, espacios: espaciosFiltrados }));
+  });
+}, [form.bloque_id]);
+
+useEffect(() => {
+  if (!form.espacio_id) return setData(d => ({ ...d, almacenes: [] }));
+  axios.get("/v1/almacen", headers).then(res => {
+    const almacenesFiltrados = res.data.filter(a => a.espacioId === parseInt(form.espacio_id));
+    setData(d => ({ ...d, almacenes: almacenesFiltrados }));
+  });
+}, [form.espacio_id]);
+
+ // ---------- Imprimir pdf ----------
+  const verPDF = () => {
+    axios({
+      url: "/v2/report/orden_compra",
+      method: "POST",
+      data: {
+        empresa_id: parseInt(empresaId),
+        pedido_id: parseInt(form.pedido_id),
+        categoria_estado_id: parseInt(form.categoria_estado_id),
+        logo_empresa: logoPath
+      },
+      responseType: "blob",
+      ...headers
+    }).then((res) => {
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      setPreviewUrl(url);
+      setPreviewOpen(true);
+      setMessage({ open: true, severity: "success", text: "Reporte generado correctamente." });
+    }).catch((err) => {
+      console.error("Error al generar reporte PDF:", err?.response || err);
+      setPreviewUrl("");
+      setMessage({ open: true, severity: "error", text: "Error al generar el reporte." });
+    });
+  };
+
+
+  // ---------- Buscar orden ----------
   const buscarOrden = async () => {
-    if (!pedidoId) {
+    if (!form.pedido_id) {
       setMessage({ open: true, severity: "warning", text: "Debes ingresar un ID de pedido." });
       return;
     }
 
     try {
-      const ordenesRes = await axios.get("/v1/orden_compra", {
-        params: { page: 0, size: 100 },
-        ...headers,
-      });
+      const ordenesRes = await axios.get("/v1/orden_compra", { params: { page: 0, size: 100 }, ...headers });
       const ordenes = ordenesRes.data.data || ordenesRes.data;
-
-      const orden = ordenes.find((o) => String(o.pedidoId) === String(pedidoId));
+      const orden = ordenes.find((o) => String(o.pedidoId) === String(form.pedido_id));
 
       if (!orden) {
         setMessage({ open: true, severity: "error", text: "No se encontró la orden para ese pedido." });
@@ -72,133 +171,115 @@ export default function RE_ordenCompra() {
     }
   };
 
-  const verPDF = () => {
-    axios({
-      url: "/v2/report/orden_compra",
-      method: "POST",
-      data: {
-        empresa_id: parseInt(empresaId),
-        pedido_id: parseInt(pedidoId),
-        categoria_estado_id: parseInt(categoriaEstadoId),
-        logo_empresa: logoPath
-      },
-      responseType: "blob",
-      ...headers
-    }).then((res) => {
-      const blob = new Blob([res.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      setPreviewUrl(url);
-      setMessage({ open: true, severity: "success", text: "PDF generado correctamente." });
-    }).catch((err) => {
-      console.error("Error al generar PDF:", err?.response || err);
-      setPreviewUrl("");
-      setMessage({ open: true, severity: "error", text: "Error al generar el PDF." });
-    });
-  };
-
-  const imprimirCompleto = () => {
-    if (!pedidoId) return;
-
-    axios({
-      url: "/v2/report/orden_compra",
-      method: "POST",
-      data: {
-        empresa_id: parseInt(empresaId),
-        pedido_id: parseInt(pedidoId),
-        categoria_estado_id: parseInt(categoriaEstadoId),
-        logo_empresa: logoPath
-      },
-      responseType: "blob",
-      ...headers
-    }).then((res) => {
-      const blob = new Blob([res.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `orden_compra_${pedidoId}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    }).catch((err) => {
-      console.error("Error al imprimir completo:", err?.response || err);
-      setMessage({ open: true, severity: "error", text: "Error al descargar el PDF completo." });
-    });
-  };
-
-  const imprimirSeleccionados = () => {
-    if (selectedRows.length === 0) {
-      setMessage({ open: true, severity: "warning", text: "Selecciona artículos primero." });
-      return;
-    }
-
-    const ids = selectedRows.map(a => a.id);
-    axios({
-      url: "/v2/report/orden_compra",
-      method: "POST",
-      data: {
-        articulo_ids: ids,
-        emp_id: parseInt(empresaId),
-        ped_id: parseInt(pedidoId),
-        categoria_estado_id: parseInt(categoriaEstadoId),
-        logo_empresa: logoPath
-      },
-      responseType: "blob",
-      ...headers
-    }).then((res) => {
-      const blob = new Blob([res.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `orden_articulos_seleccionados.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    }).catch((err) => {
-      console.error("Error al imprimir seleccionados:", err?.response || err);
-      setMessage({ open: true, severity: "error", text: "Error al descargar PDF por seleccionados." });
-    });
-  };
+  const handleChange = (event) => {
+  const { name, value } = event.target;
+  setForm(prev => ({
+    ...prev,
+    [name]: value
+  }));
+};
 
   return (
     <Box sx={{ p: 4 }}>
       <Typography variant="h4" gutterBottom>Reporte de Gestión de Orden de Compra</Typography>
 
-      <Stack direction="row" spacing={2} mb={3}>
-        <TextField
-          label="Categoría Estado"
-          type="number"
-          value={categoriaEstadoId}
-          onChange={(e) => setCategoriaEstadoId(e.target.value)}
-        />
-        <TextField
-          label="ID Pedido"
-          type="number"
-          value={pedidoId}
-          onChange={(e) => setPedidoId(e.target.value)}
-        />
-        <Button variant="contained" onClick={buscarOrden}>Buscar</Button>
-        <Button variant="outlined" onClick={verPDF} disabled={!ordenData}>Ver PDF</Button>
-      </Stack>
+      <Grid container spacing={2} mb={3}>
+        {[
+          { name: "pais_id", label: "País", items: data.paises },
+          { name: "departamento_id", label: "Departamento", items: data.departamentos },
+          { name: "municipio_id", label: "Municipio", items: data.municipios },
+          { name: "sede_id", label: "Sede", items: data.sedes },
+          { name: "bloque_id", label: "Bloque", items: data.bloques },
+          { name: "espacio_id", label: "Espacio", items: data.espacios },
+          { name: "almacen_id", label: "Almacén", items: data.almacenes },
+          { name: "producto_id", label: "Producto", items: data.productos },
+          { name: "producto_categoria_id", label: "Categoría Producto", items: data.categorias },
+        ].map((field, index) => (
+          <Grid item xs={12} md={6} key={field.name}>
+            <FormControl fullWidth>
+              <InputLabel>{field.label}</InputLabel>
+              <Select name={field.name} value={form[field.name]} label={field.label} onChange={handleChange}>
+                {field.items.map((item) => (
+                  <MenuItem key={item.id} value={item.id}>{item.nombre}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+        ))}
+
+      <Grid item xs={12} md={6}>
+        <FormControl fullWidth>
+          <InputLabel>Pedido</InputLabel>
+          <Select
+            name="pedido_id"
+            value={form.pedido_id}
+            label="Pedido"
+            onChange={handleChange}
+          >
+            {data.pedidos.map((pedido) => (
+              <MenuItem key={pedido.id} value={pedido.id}>
+                {`Pedido ${pedido.id}`}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Grid>
+
+        <Grid item xs={12} md={6}>
+          <TextField
+            fullWidth
+            label="Categoría Estado"
+            name="categoria_estado_id"
+            type="number"
+            value={form.categoria_estado_id}
+            onChange={handleChange}
+          />
+        </Grid>
+        <Grid item xs={12}>
+  <Stack direction="row" spacing={2}>
+    <Button variant="contained" onClick={buscarOrden}>Buscar</Button>
+    <Button
+      variant="outlined"
+      onClick={verPDF}
+      disabled={!form.pedido_id || !form.categoria_estado_id}
+    >
+      Ver Reporte
+    </Button>
+  </Stack>
+</Grid>
+
+        <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} fullWidth maxWidth="lg">
+      <DialogTitle>
+        Vista previa del Reporte
+        <IconButton
+          aria-label="close"
+          onClick={() => setPreviewOpen(false)}
+          sx={{ position: 'absolute', right: 8, top: 8 }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+  <DialogContent dividers>
+    {previewUrl && (
+      <iframe
+        src={previewUrl}
+        width="100%"
+        height="600px"
+        title="Vista previa PDF"
+        style={{ border: "none" }}
+      />
+    )}
+  </DialogContent>
+</Dialog>
+
+      </Grid>
+      
 
       {ordenData && (
         <>
           <VistaPreviaPDFOrdenCompra orden={ordenData} />
-
-          {previewUrl && (
-            <Box mt={4}>
-              <Typography variant="h6" gutterBottom>Vista previa del PDF</Typography>
-              <iframe
-                src={previewUrl}
-                width="100%"
-                height="600px"
-                title="Vista Previa PDF"
-                style={{ border: "1px solid #ccc" }}
-              />
-            </Box>
-          )}
-
           <Box mt={4}>
-            <Typography variant="h6" gutterBottom>Artículos de la Orden</Typography>
+            <Typography variant="h6">Artículos de la Orden</Typography>
             <GridArticuloOrdenCompra
               items={articulos}
               presentaciones={presentaciones}
@@ -206,15 +287,6 @@ export default function RE_ordenCompra() {
               setSelectedRow={() => {}}
             />
           </Box>
-
-          <Stack direction="row" spacing={2} mt={2}>
-            <Button variant="contained" color="primary" onClick={imprimirCompleto}>
-              Imprimir PDF completo
-            </Button>
-            <Button variant="contained" color="secondary" onClick={imprimirSeleccionados}>
-              Imprimir PDF por seleccionados
-            </Button>
-          </Stack>
         </>
       )}
 

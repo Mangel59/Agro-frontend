@@ -169,7 +169,7 @@ export default function OrdenCompra() {
       <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
         <Typography variant="h5">Gestión de Órdenes de Compra</Typography>
         <Stack direction="row" spacing={1}>
-          <Button variant="contained" onClick={() => setSearchDialogOpen(true)}>BUSCAR POR ID</Button>
+          <Button variant="contained" onClick={() => setSearchDialogOpen(true)}>BUSCAR REPORTE</Button>
         </Stack>
       </Box>
 

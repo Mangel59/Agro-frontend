@@ -62,10 +62,23 @@ export default function RE_productoVencimiento() {
     });
   };
 
-  useEffect(() => {
-    axios.get("/v1/producto").then(res => setProductos(res.data));
-    axios.get("/v1/producto_categoria").then(res => setCategorias(res.data));
-  }, []);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      Promise.all([
+        axios.get("/v1/producto"),
+        axios.get("/v1/producto_categoria")
+      ])
+        .then(([resProductos, resCategorias]) => {
+          setProductos(Array.isArray(resProductos.data) ? resProductos.data : []);
+          setCategorias(Array.isArray(resCategorias.data) ? resCategorias.data : []);
+        })
+        .catch(err => {
+          console.error("❌ Error al cargar datos:", err);
+        })
+        .finally(() => setLoading(false));
+    }, []);
+
 
   return (
     <Box sx={{ p: 4 }}>

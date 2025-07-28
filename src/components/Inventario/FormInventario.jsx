@@ -30,11 +30,13 @@ export default function FormInventario({
   const [errors, setErrors] = useState({});
   const [tipos, setTipos] = useState([]);
 
-  useEffect(() => {
-    axios.get("/v1/tipo_inventario")
-      .then(res => setTipos(res.data))
-      .catch(() => setTipos([]));
-  }, []);
+axios.get("/v1/tipo_inventario")
+  .then(res => {
+    const data = Array.isArray(res.data) ? res.data : [];
+    setTipos(data);
+  })
+  .catch(() => setTipos([]));
+
 
   useEffect(() => {
     if (open) {

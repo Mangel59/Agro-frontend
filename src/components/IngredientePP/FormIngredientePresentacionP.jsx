@@ -8,147 +8,162 @@ import {
 } from "@mui/material";
 import StackButtons from "../StackButtons";
 
-export default function FormIngredientePresentacionP({ open, setOpen, selectedRow, setSelectedRow, setMessage, reloadData }) {
+export default function FormIngredientePresentacionP({
+  open, setOpen, selectedRow, setSelectedRow, setMessage, reloadData
+}) {
   const [methodName, setMethodName] = React.useState("");
-
   const initialData = {
-    nombre: "",
-    descripcion: "",
-    ingredienteId: "",
-    presentacionProductoId: "",
-    estado: ""
+    nombre: "", descripcion: "",
+    ingredienteId: "", presentacionProductoId: "", estadoId: ""
   };
-
   const [formData, setFormData] = React.useState(initialData);
+  const [errors, setErrors] = React.useState({});
   const [ingredientes, setIngredientes] = React.useState([]);
   const [presentaciones, setPresentaciones] = React.useState([]);
 
   React.useEffect(() => {
-    if (open) {
-      axios.get("/v1/ingrediente").then(res => setIngredientes(res.data));
-      axios.get("/v1/producto_presentacion").then(res => setPresentaciones(res.data));
-    }
-
     if (open && selectedRow?.id) {
       setFormData({
         nombre: selectedRow.nombre || "",
         descripcion: selectedRow.descripcion || "",
-        ingredienteId: selectedRow.ingredienteId || "",
-        presentacionProductoId: selectedRow.presentacionProductoId || "",
-        estado: selectedRow.estadoId?.toString() || ""
+        ingredienteId: selectedRow.ingredienteId?.toString() || "",
+        presentacionProductoId: selectedRow.presentacionProductoId?.toString() || "",
+        estadoId: selectedRow.estadoId?.toString() || ""
       });
-      setMethodName("Actualizar");
+      setMethodName("Update");
     } else {
       setFormData(initialData);
-      setMethodName("Agregar");
+      setMethodName("Add");
     }
-  }, [open]);
+
+    setErrors({});
+
+    axios.get("/v1/ingrediente")
+      .then(res => {
+        const data = res.data;
+        setIngredientes(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setIngredientes([]));
+
+    axios.get("/v1/producto_presentacion")
+      .then(res => {
+        const data = res.data;
+        const lista = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.data)
+          ? data.data
+          : [];
+        setPresentaciones(lista);
+      })
+      .catch(err => {
+        console.error("❌ Error al cargar presentaciones:", err);
+        setPresentaciones([]);
+      });
+  }, [open, selectedRow]);
 
   const handleClose = () => setOpen(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: "" }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.nombre.trim()) newErrors.nombre = "El nombre es obligatorio.";
+    if (!formData.descripcion.trim()) newErrors.descripcion = "La descripción es obligatoria.";
+    if (!formData.ingredienteId) newErrors.ingredienteId = "Requerido.";
+    if (!formData.presentacionProductoId) newErrors.presentacionProductoId = "Requerido.";
+    if (!formData.estadoId) newErrors.estadoId = "Debe seleccionar un estado.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (!validate()) return;
 
     const payload = {
       nombre: formData.nombre,
       descripcion: formData.descripcion,
       ingredienteId: parseInt(formData.ingredienteId),
       presentacionProductoId: parseInt(formData.presentacionProductoId),
-      estadoId: parseInt(formData.estado)
+      estadoId: parseInt(formData.estadoId)
     };
 
-    const method = methodName === "Agregar" ? axios.post : axios.put;
-    const url = methodName === "Agregar"
-      ? "v1/ingrediente-presentacion-producto"
-      : `v1/ingrediente-presentacion-producto/${selectedRow.id}`;
+    const method = methodName === "Add" ? axios.post : axios.put;
+    const url = methodName === "Add"
+      ? "/v1/ingrediente-presentacion-producto"
+      : `/v1/ingrediente-presentacion-producto/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: `Registro ${methodName === "Agregar" ? "creado" : "actualizado"} con éxito!`
+          text: methodName === "Add"
+            ? "Ingrediente agregado con éxito"
+            : "Ingrediente actualizado correctamente"
         });
         setOpen(false);
         setSelectedRow({});
         reloadData();
       })
-      .catch(err => {
-        setMessage({
-          open: true,
-          severity: "error",
-          text: `Error: ${err.message}`
-        });
+      .catch((err) => {
+        setMessage({ open: true, severity: "error", text: `Error: ${err.message}` });
       });
   };
 
   const deleteRow = () => {
     if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona un registro para eliminar." });
+      setMessage({ open: true, severity: "error", text: "Selecciona una fila para eliminar." });
       return;
     }
 
-    axios.delete(`v1/ingrediente-presentacion-producto/${selectedRow.id}`)
+    axios.delete(`/v1/ingrediente-presentacion-producto/${selectedRow.id}`)
       .then(() => {
         setMessage({ open: true, severity: "success", text: "Eliminado correctamente." });
         setSelectedRow({});
         reloadData();
       })
-      .catch(err => {
-        setMessage({
-          open: true,
-          severity: "error",
-          text: `Error al eliminar: ${err.message}`,
-        });
+      .catch((err) => {
+        setMessage({ open: true, severity: "error", text: `Error al eliminar: ${err.message}` });
       });
   };
 
   return (
     <>
       <StackButtons methods={{
-        create: () => { setFormData(initialData); setMethodName("Agregar"); setOpen(true); },
+        create: () => { setFormData(initialData); setMethodName("Add"); setOpen(true); },
         update: () => {
           if (!selectedRow?.id) {
-            setMessage({ open: true, severity: "error", text: "Selecciona un registro para editar." });
+            setMessage({ open: true, severity: "error", text: "Selecciona una fila para editar." });
             return;
           }
           setOpen(true);
         },
         deleteRow
       }} />
-
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+      <Dialog open={open} onClose={handleClose}>
         <form onSubmit={handleSubmit}>
-          <DialogTitle>{methodName} Ingrediente-Presentación</DialogTitle>
+          <DialogTitle>{methodName} Ingrediente</DialogTitle>
           <DialogContent>
-            <DialogContentText>Formulario para asignar un ingrediente a una presentación de producto</DialogContentText>
+            <DialogContentText>Formulario para gestión de ingredientes por presentación</DialogContentText>
 
             <TextField
-              fullWidth
-              margin="dense"
-              required
-              name="nombre"
-              label="Nombre"
-              value={formData.nombre}
-              onChange={handleChange}
+              fullWidth margin="dense" name="nombre" label="Nombre"
+              value={formData.nombre} onChange={handleChange}
+              error={!!errors.nombre} helperText={errors.nombre}
             />
 
             <TextField
-              fullWidth
-              margin="dense"
-              required
-              name="descripcion"
-              label="Descripción"
-              value={formData.descripcion}
-              onChange={handleChange}
+              fullWidth margin="dense" name="descripcion" label="Descripción"
+              value={formData.descripcion} onChange={handleChange}
+              error={!!errors.descripcion} helperText={errors.descripcion}
             />
 
-            <FormControl fullWidth margin="dense" required>
+            <FormControl fullWidth margin="normal" error={!!errors.ingredienteId}>
               <InputLabel>Ingrediente</InputLabel>
               <Select
                 name="ingredienteId"
@@ -157,13 +172,20 @@ export default function FormIngredientePresentacionP({ open, setOpen, selectedRo
                 label="Ingrediente"
               >
                 <MenuItem value="">Seleccione...</MenuItem>
-                {ingredientes.map((item) => (
-                  <MenuItem key={item.id} value={item.id}>{item.nombre}</MenuItem>
+                {ingredientes.map((ing) => (
+                  <MenuItem key={ing.id} value={ing.id}>
+                    {ing.nombre}
+                  </MenuItem>
                 ))}
               </Select>
+              {errors.ingredienteId && (
+                <p style={{ color: "#d32f2f", fontSize: "0.75rem", margin: "3px 14px 0" }}>
+                  {errors.ingredienteId}
+                </p>
+              )}
             </FormControl>
 
-            <FormControl fullWidth margin="dense" required>
+            <FormControl fullWidth margin="normal" error={!!errors.presentacionProductoId}>
               <InputLabel>Presentación</InputLabel>
               <Select
                 name="presentacionProductoId"
@@ -172,29 +194,36 @@ export default function FormIngredientePresentacionP({ open, setOpen, selectedRo
                 label="Presentación"
               >
                 <MenuItem value="">Seleccione...</MenuItem>
-                {presentaciones.map((item) => (
-                  <MenuItem key={item.id} value={item.id}>{item.nombre}</MenuItem>
+                {presentaciones.map((pres) => (
+                  <MenuItem key={pres.id} value={pres.id}>
+                    {pres.nombre}
+                  </MenuItem>
                 ))}
               </Select>
+              {errors.presentacionProductoId && (
+                <p style={{ color: "#d32f2f", fontSize: "0.75rem", margin: "3px 14px 0" }}>
+                  {errors.presentacionProductoId}
+                </p>
+              )}
             </FormControl>
 
-            <FormControl fullWidth margin="dense" required>
+            <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
               <InputLabel>Estado</InputLabel>
-              <Select
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                label="Estado"
-              >
+              <Select name="estadoId" value={formData.estadoId} onChange={handleChange} label="Estado">
                 <MenuItem value="">Seleccione...</MenuItem>
                 <MenuItem value="1">Activo</MenuItem>
                 <MenuItem value="2">Inactivo</MenuItem>
               </Select>
+              {errors.estadoId && (
+                <p style={{ color: "#d32f2f", fontSize: "0.75rem", margin: "3px 14px 0" }}>
+                  {errors.estadoId}
+                </p>
+              )}
             </FormControl>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose}>Cancelar</Button>
-            <Button type="submit">{methodName}</Button>
+            <Button onClick={handleClose}>CANCELAR</Button>
+            <Button type="submit">{methodName.toUpperCase()}</Button>
           </DialogActions>
         </form>
       </Dialog>

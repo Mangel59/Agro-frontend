@@ -150,27 +150,29 @@ export default function RE_fc() {
       <Typography variant="h4" gutterBottom>Reporte de Factura</Typography>
 
       <Grid container spacing={2}>
-        {[{ label: "País", name: "pais_id", options: paises },
-          { label: "Departamento", name: "departamento_id", options: departamentos },
-          { label: "Municipio", name: "municipio_id", options: municipios },
-          { label: "Sede", name: "sede_id", options: sedes },
-          { label: "Bloque", name: "bloque_id", options: bloques },
-          { label: "Espacio", name: "espacio_id", options: espacios },
-          { label: "Almacén", name: "almacen_id", options: almacenes },
-          { label: "Producto", name: "producto_id", options: productos },
-          { label: "Categoría Producto", name: "producto_categoria_id", options: categorias }
-        ].map(({ label, name, options }) => (
-          <Grid item xs={6} key={name}>
-            <FormControl fullWidth>
-              <InputLabel>{label}</InputLabel>
-              <Select name={name} value={formReporte[name]} onChange={handleChange}>
-                {options.map(opt => (
-                  <MenuItem key={opt.id} value={opt.id}>{opt.nombre}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-        ))}
+  {[
+    { label: "País", name: "pais_id", options: paises },
+    { label: "Departamento", name: "departamento_id", options: departamentos },
+    { label: "Municipio", name: "municipio_id", options: municipios },
+    { label: "Sede", name: "sede_id", options: sedes },
+    { label: "Bloque", name: "bloque_id", options: bloques },
+    { label: "Espacio", name: "espacio_id", options: espacios },
+    { label: "Almacén", name: "almacen_id", options: almacenes },
+    { label: "Producto", name: "producto_id", options: productos },
+    { label: "Categoría Producto", name: "producto_categoria_id", options: categorias }
+  ].map(({ label, name, options }) => (
+    <Grid item xs={6} key={name}>
+      <FormControl fullWidth>
+        <InputLabel>{label}</InputLabel>
+        <Select name={name} value={formReporte[name]} onChange={handleChange}>
+          <MenuItem value=""><em>Seleccione</em></MenuItem>
+          {Array.isArray(options) && options.map(opt => (
+            <MenuItem key={opt.id} value={opt.id}>{opt.nombre}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Grid>
+  ))}
         <Grid item xs={6}>
           <TextField
             label="Fecha Inicio"

@@ -200,25 +200,44 @@ const handleSeleccionSubmit = async (e) => {
 
         {showSelection && (
           <>
-            <FormControl fullWidth>
-              <InputLabel>{t("empresa")}</InputLabel>
-              <Select value={selectedEmpresa} onChange={(e) => setSelectedEmpresa(e.target.value)}>
-                {roles.map((r, i) => (
-                  <MenuItem key={i} value={r.empresaId}>{r.empresaNombre}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+<FormControl fullWidth>
+  <InputLabel>{t("empresa")}</InputLabel>
+  <Select
+    value={selectedEmpresa}
+    onChange={(e) => {
+      setSelectedEmpresa(e.target.value);
+      setSelectedRol(""); // Reinicia rol al cambiar empresa
+    }}
+  >
+    {
+      [...new Map(roles.map(item => [item.empresaId, item])).values()]
+        .map((empresa) => (
+          <MenuItem key={empresa.empresaId} value={empresa.empresaId}>
+            {empresa.empresaNombre}
+          </MenuItem>
+        ))
+    }
+  </Select>
+</FormControl>
 
-            <FormControl fullWidth>
-              <InputLabel>{t("rol")}</InputLabel>
-              <Select value={selectedRol} onChange={(e) => setSelectedRol(e.target.value)}>
-                {roles
-                  .filter((r) => r.empresaId === selectedEmpresa)
-                  .map((r, i) => (
-                    <MenuItem key={i} value={r.rolId}>{r.rolNombre}</MenuItem>
-                  ))}
-              </Select>
-            </FormControl>
+<FormControl fullWidth disabled={!selectedEmpresa}>
+  <InputLabel>{t("rol")}</InputLabel>
+  <Select
+    value={selectedRol}
+    onChange={(e) => setSelectedRol(e.target.value)}
+  >
+    {
+      roles
+        .filter((r) => r.empresaId === selectedEmpresa)
+        .map((r, i) => (
+          <MenuItem key={i} value={r.rolId}>
+            {r.rolNombre}
+          </MenuItem>
+        ))
+    }
+  </Select>
+</FormControl>
+
           </>
         )}
 

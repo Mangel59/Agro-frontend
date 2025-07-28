@@ -21,18 +21,18 @@ const columns = [
   }
 ];
 
-export default function GridArticuloKardex({ items, selectedRow, setSelectedRow }) {
+export default function GridArticuloKardex({ items = [], selectedRow, setSelectedRow }) {
   return (
     <Box sx={{ height: 400, width: '100%' }}>
       <DataGrid
-        rows={items}
+        rows={Array.isArray(items) ? items : []}
         columns={columns}
         pageSizeOptions={[5, 10, 15]}
         initialState={{
           pagination: { paginationModel: { pageSize: 5, page: 0 } }
         }}
         getRowId={(row) => row.id}
-        onRowClick={(params) => setSelectedRow(params.row)}
+        onRowClick={(params) => setSelectedRow?.(params.row)}
       />
     </Box>
   );
