@@ -20,7 +20,7 @@ import { ThemeToggleProvider } from './components/dashboard/ThemeToggleProvider'
 const Main = () => (
   <React.StrictMode>
     <ThemeToggleProvider>
-      <Router>
+      <Router basename="/coagronet">
         <App />
       </Router>
     </ThemeToggleProvider>
