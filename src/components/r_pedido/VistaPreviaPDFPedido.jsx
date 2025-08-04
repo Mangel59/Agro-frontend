@@ -4,6 +4,7 @@ import {
 } from "@mui/material";
 
 export default function VistaPreviaPDFPedido({ pedido }) {
+   if (!pedido) return null; 
   return (
     <Box mt={4}>
       <Card elevation={3} sx={{ maxWidth: 500, backgroundColor: "#1e1e1e", borderRadius: 3, alignSelf: "flex-start" }}>

@@ -152,19 +152,35 @@ import img7 from "/images/cards/7.jpg";
 import img8 from "/images/cards/8.jpg";
 import img9 from "/images/cards/9.jpg";
 import img10 from "/images/cards/10.jpg";
+import persona from "/images/cards/persona.png";
+import rol from "/images/cards/rol.png";
+import tipo_identificacion from "/images/cards/tipo_identificacion.png";
+import empresa from "/images/cards/empresa.png";
+import pais from "/images/cards/pais.png";
+import departamento from "/images/cards/departamento.png";
+import municipio from "/images/cards/municipio.png";
+import tipo_sede from "/images/cards/tipo_sede.png";
+import sede from "/images/cards/sede.png";
+import tipo_bloque from "/images/cards/tipo_bloque.png";
+import bloque from "/images/cards/bloque.png";
+import grupo from "/images/cards/grupo.png";
+import tipo_evaluacion from "/images/cards/tipo_evaluacion.png";
+
 
 const moduleImages = {
-  persona: img1,
-  rol: img2,
-  tipoidentificacion: img3,
-  empresa: img4,
-  pais: img5,
-  departamento: img6,
-  municipio: img7,
-  tipo_sede: img8,
-  sede: img9,
-  tipo_bloque: img10,
-  bloque: img1,
+  persona: persona,
+  rol: rol,
+  tipoidentificacion: tipo_identificacion,
+  tipo_evaluacion: tipo_evaluacion,
+  empresa: empresa,
+  pais: pais,
+  departamento: departamento,
+  municipio: municipio,
+  grupo: grupo,
+  tipo_sede: tipo_sede,
+  sede: sede,
+  tipo_bloque: tipo_bloque,
+  bloque: bloque,
   tipo_espacio: img2,
   espacio: img3,
   almacen: img4,
@@ -189,7 +205,6 @@ const moduleImages = {
   Subseccion: img10,
   TipoInventario: img6,
   Inventario: img7,
-  tipo_evaluacion: img8,
   RE_pedido: img9,
   RE_kardex: img10,
   RE_productoVencimiento: img1,
@@ -290,12 +305,18 @@ export default function Navigator2({
               "&:hover": { transform: "scale(1.03)" },
             }}
           >
-            <Box
-              component="img"
-              src={moduleImages[id] || img1}
-              alt={id}
-              sx={{ width: "100%", height: 80, objectFit: "cover" }}
-            />
+          <Box
+            component="img"
+            src={moduleImages[id] || img1}
+            alt={id}
+            sx={{ 
+              width: "100%", 
+              height: "120px", // Aumenta altura según necesidad
+              objectFit: "scale-down", // Ajusta proporcionalmente al contenedor sin perder proporción
+              p: 1, 
+              backgroundColor: "transparent",
+            }}
+          />
             <Box
               sx={{
                 flex: 1,
@@ -314,7 +335,6 @@ export default function Navigator2({
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                <Button size="small">{t("Ver más")}</Button>
               </Box>
             </Box>
           </Box>
@@ -323,7 +343,7 @@ export default function Navigator2({
     </Grid>
   );
 
-  // 🔒 Si no hay sesión, no renderizar menú
+  // Si no hay sesión, no renderizar menú
   if (!isAuthenticated) return null;
 
   return (

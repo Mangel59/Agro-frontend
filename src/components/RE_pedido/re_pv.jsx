@@ -36,6 +36,7 @@ export default function RE_pedido() {
   const [selectedRows, setSelectedRows] = useState([]);
   const [message, setMessage] = useState({ open: false, severity: "info", text: "" });
 
+  // Carga inicial
   useEffect(() => {
     axios.get("/v1/pais", headers).then(res => setData(d => ({ ...d, paises: res.data })));
     axios.get("/v1/producto", headers).then(res => setData(d => ({ ...d, productos: res.data })));
@@ -43,59 +44,89 @@ export default function RE_pedido() {
     axios.get("/v1/pedido", headers).then(res => setData(d => ({ ...d, pedidos: res.data })));
   }, []);
 
+  // Función para limpiar cascada hacia abajo
+  const limpiarCamposDesde = (campo) => {
+    const limpiar = {
+      departamento_id: "", municipio_id: "", sede_id: "",
+      bloque_id: "", espacio_id: "", almacen_id: ""
+    };
+    const orden = ["pais_id", "departamento_id", "municipio_id", "sede_id", "bloque_id", "espacio_id", "almacen_id"];
+    const i = orden.indexOf(campo);
+    const limpiarDesde = orden.slice(i + 1);
+    const nuevoForm = { ...form };
+    limpiarDesde.forEach(c => nuevoForm[c] = "");
+    setForm(nuevoForm);
+  };
+
+  // Departamento depende de pais
   useEffect(() => {
-    if (!form.pais_id) return setData(d => ({ ...d, departamentos: [] }));
+    if (!form.pais_id) return;
+    limpiarCamposDesde("pais_id");
     axios.get("/v1/departamento", headers).then(res => {
-      setData(d => ({
-        ...d,
-        departamentos: res.data.filter(dep => dep.paisId === parseInt(form.pais_id))
-      }));
+      const filtered = res.data.filter(dep => dep.paisId === parseInt(form.pais_id));
+      setData(d => ({ ...d, departamentos: filtered }));
+      if (filtered.length === 1) {
+        setForm(f => ({ ...f, departamento_id: filtered[0].id }));
+      }
     });
   }, [form.pais_id]);
 
   useEffect(() => {
-    if (!form.departamento_id) return setData(d => ({ ...d, municipios: [] }));
-    axios.get(`/v1/municipio?departamentoId=${form.departamento_id}`, headers)
-      .then(res => setData(d => ({ ...d, municipios: res.data })));
+    if (!form.departamento_id) return;
+    limpiarCamposDesde("departamento_id");
+    axios.get(`/v1/municipio?departamentoId=${form.departamento_id}`, headers).then(res => {
+      setData(d => ({ ...d, municipios: res.data }));
+      if (res.data.length === 1) {
+        setForm(f => ({ ...f, municipio_id: res.data[0].id }));
+      }
+    });
   }, [form.departamento_id]);
 
   useEffect(() => {
-    if (!form.municipio_id) return setData(d => ({ ...d, sedes: [] }));
+    if (!form.municipio_id) return;
+    limpiarCamposDesde("municipio_id");
     axios.get("/v1/sede", headers).then(res => {
-      setData(d => ({
-        ...d,
-        sedes: res.data.filter(s => s.municipioId === parseInt(form.municipio_id))
-      }));
+      const filtered = res.data.filter(s => s.municipioId === parseInt(form.municipio_id));
+      setData(d => ({ ...d, sedes: filtered }));
+      if (filtered.length === 1) {
+        setForm(f => ({ ...f, sede_id: filtered[0].id }));
+      }
     });
   }, [form.municipio_id]);
 
   useEffect(() => {
-    if (!form.sede_id) return setData(d => ({ ...d, bloques: [] }));
+    if (!form.sede_id) return;
+    limpiarCamposDesde("sede_id");
     axios.get("/v1/bloque", headers).then(res => {
-      setData(d => ({
-        ...d,
-        bloques: res.data.filter(b => b.sedeId === parseInt(form.sede_id))
-      }));
+      const filtered = res.data.filter(b => b.sedeId === parseInt(form.sede_id));
+      setData(d => ({ ...d, bloques: filtered }));
+      if (filtered.length === 1) {
+        setForm(f => ({ ...f, bloque_id: filtered[0].id }));
+      }
     });
   }, [form.sede_id]);
 
   useEffect(() => {
-    if (!form.bloque_id) return setData(d => ({ ...d, espacios: [] }));
+    if (!form.bloque_id) return;
+    limpiarCamposDesde("bloque_id");
     axios.get("/v1/espacio", headers).then(res => {
-      setData(d => ({
-        ...d,
-        espacios: res.data.filter(e => e.bloqueId === parseInt(form.bloque_id))
-      }));
+      const filtered = res.data.filter(e => e.bloqueId === parseInt(form.bloque_id));
+      setData(d => ({ ...d, espacios: filtered }));
+      if (filtered.length === 1) {
+        setForm(f => ({ ...f, espacio_id: filtered[0].id }));
+      }
     });
   }, [form.bloque_id]);
 
   useEffect(() => {
-    if (!form.espacio_id) return setData(d => ({ ...d, almacenes: [] }));
+    if (!form.espacio_id) return;
+    limpiarCamposDesde("espacio_id");
     axios.get("/v1/almacen", headers).then(res => {
-      setData(d => ({
-        ...d,
-        almacenes: res.data.filter(a => a.espacioId === parseInt(form.espacio_id))
-      }));
+      const filtered = res.data.filter(a => a.espacioId === parseInt(form.espacio_id));
+      setData(d => ({ ...d, almacenes: filtered }));
+      if (filtered.length === 1) {
+        setForm(f => ({ ...f, almacen_id: filtered[0].id }));
+      }
     });
   }, [form.espacio_id]);
 
@@ -109,7 +140,6 @@ export default function RE_pedido() {
       setMessage({ open: true, severity: "warning", text: "Debes ingresar un ID de pedido." });
       return;
     }
-
     try {
       const [pedidoRes, articulosRes, presentacionesRes] = await Promise.all([
         axios.get(`/v1/pedido/${form.pedido_id}`, headers),

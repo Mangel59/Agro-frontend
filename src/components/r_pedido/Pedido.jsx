@@ -5,9 +5,9 @@ import FormPedido from "./FormPedido";
 import GridPedido from "./GridPedido";
 import GridArticuloPedido from "./GridArticuloPedido";
 import FormArticuloPedido from "./FormArticuloPedido";
+import RePV from "../RE_pedido/re_pv";
 import {
-  Box, Typography, Divider, Button, Dialog, DialogTitle, DialogContent,
-  DialogActions, TextField
+  Box, Typography, Divider, Button, Dialog
 } from "@mui/material";
 
 export default function Pedido() {
@@ -17,17 +17,10 @@ export default function Pedido() {
   const [formMode, setFormMode] = useState("create");
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
-  const [searchId, setSearchId] = useState("");
-  const [categoriaEstadoId, setCategoriaEstadoId] = useState("");
-  const [searchResult, setSearchResult] = useState(null);
   const [articuloItems, setArticuloItems] = useState([]);
   const [selectedArticulo, setSelectedArticulo] = useState({});
-  const [selectedArticulosToPrint, setSelectedArticulosToPrint] = useState([]);
   const [reloadArticulos, setReloadArticulos] = useState(false);
   const [presentaciones, setPresentaciones] = useState([]);
-  const [previewUrl, setPreviewUrl] = useState("");
-
-  const empresaId = localStorage.getItem("empresaId");
 
   const reloadData = () => {
     axios.get("/v1/pedido")
@@ -59,118 +52,6 @@ export default function Pedido() {
     if (selectedRow) loadArticulos(selectedRow.id);
     else setArticuloItems([]);
   }, [selectedRow, reloadArticulos]);
-
-  const handleSearch = () => {
-    if (!searchId) return;
-    axios.get(`/v1/pedido/${searchId}`)
-      .then((res) => {
-        setSearchResult(res.data);
-        loadArticulos(res.data.id);
-        setPreviewUrl(""); 
-      })
-      .catch(() => {
-        setSearchResult(null);
-        setArticuloItems([]);
-        setMessage({ open: true, severity: "error", text: "No se encontró el pedido" });
-      });
-  };
-
-  const imprimirArticulosSeleccionados = () => {
-    const ids = selectedArticulosToPrint.map(a => a.id);
-    if (ids.length === 0) {
-      setMessage({ open: true, severity: "warning", text: "Selecciona al menos un artículo." });
-      return;
-    }
-
-    axios({
-      url: "/v2/report/pedido",
-      method: "POST",
-      data: {
-        articulo_ids: ids,
-        categoria_estado_id: parseInt(categoriaEstadoId),
-        emp_id: parseInt(empresaId),
-        ped_id: searchResult?.id
-      },
-      responseType: "blob"
-    })
-      .then((response) => {
-        const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", `articulos_seleccionados.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      })
-      .catch((err) => {
-        console.error("Error al descargar reporte de artículos:", err);
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al descargar el reporte.",
-        });
-      });
-  };
-
-  const imprimirPedidoCompletoPorBusqueda = () => {
-    if (!searchResult?.id) {
-      setMessage({ open: true, severity: "warning", text: "No hay pedido cargado." });
-      return;
-    }
-
-    axios({
-      url: "/v2/report/pedido",
-      method: "POST",
-      data: {
-        ped_id: searchResult.id,
-        categoria_estado_id: parseInt(categoriaEstadoId),
-        emp_id: parseInt(empresaId),
-      },
-      responseType: "blob",
-    })
-      .then((response) => {
-        const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", `pedido_${searchResult.id}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      })
-      .catch((err) => {
-        console.error("Error al generar PDF completo:", err);
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al generar el reporte del pedido completo.",
-        });
-      });
-  };
-
-  const generarVistaPreviaPDF = () => {
-    if (!searchResult?.id) {
-      setMessage({ open: true, severity: "warning", text: "No hay pedido cargado." });
-      return;
-    }
-
-    axios({
-      url: "/v2/report/pedido",
-      method: "POST",
-      data: {
-        ped_id: searchResult.id,
-        categoria_estado_id: parseInt(categoriaEstadoId),
-        emp_id: parseInt(empresaId),
-      },
-      responseType: "blob",
-    })
-      .then((response) => {
-        const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
-        setPreviewUrl(url);
-      })
-      .catch(() => {
-        setMessage({ open: true, severity: "error", text: "Error al generar vista previa PDF." });
-      });
-  };
 
   return (
     <Box sx={{ p: 2 }}>
@@ -243,75 +124,8 @@ export default function Pedido() {
         </>
       )}
 
-      <Dialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle>Buscar Pedido </DialogTitle>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <TextField
-            label="ID de Pedido"
-            value={searchId}
-            onChange={(e) => setSearchId(e.target.value)}
-            fullWidth
-            type="number"
-            margin="normal"
-          />
-          <TextField
-            label="Categoría Estado"
-            value={categoriaEstadoId}
-            onChange={(e) => setCategoriaEstadoId(e.target.value)}
-            fullWidth
-            type="number"
-            margin="normal"
-          />
-          {searchResult && (
-            <Box mt={2}>
-              <Typography variant="subtitle1" gutterBottom>Artículos del Pedido</Typography>
-              <GridArticuloPedido
-                items={articuloItems}
-                setSelectedRows={setSelectedArticulosToPrint}
-                presentaciones={presentaciones}
-              />
-
-              <Button
-                onClick={generarVistaPreviaPDF}
-                variant="outlined"
-                color="primary"
-                sx={{ mt: 2 }}
-              >
-                Ver Vista Previa PDF
-              </Button>
-
-              {previewUrl && (
-                <iframe
-                  src={previewUrl}
-                  width="100%"
-                  height="600px"
-                  style={{ marginTop: '20px', border: '1px solid #ccc' }}
-                  title="Vista Previa del Pedido"
-                />
-              )}
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSearchDialogOpen(false)}>Cerrar</Button>
-          <Button onClick={handleSearch}>Buscar</Button>
-          <Button
-            onClick={imprimirArticulosSeleccionados}
-            disabled={!searchResult}
-            variant="contained"
-            color="info"
-          >
-            Imprimir Seleccionados
-          </Button>
-          <Button
-            onClick={imprimirPedidoCompletoPorBusqueda}
-            disabled={!searchResult}
-            variant="contained"
-            color="secondary"
-          >
-            Imprimir Pedido
-          </Button>
-        </DialogActions>
+      <Dialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} fullWidth maxWidth="lg">
+        <RePV setOpen={setSearchDialogOpen} />
       </Dialog>
 
       <MessageSnackBar message={message} setMessage={setMessage} />

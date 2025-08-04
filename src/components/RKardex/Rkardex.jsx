@@ -12,58 +12,43 @@ import GridArticuloKardex from "../Kardex/GridArticuloKardex";
 export default function RE_kardex() {
   const token = localStorage.getItem("token");
   const empresaId = token ? JSON.parse(atob(token.split(".")[1]))?.empresaId : null;
+  const headers = { headers: { Authorization: `Bearer ${token}` } };
 
-  const [formReporte, setFormReporte] = useState({
+  const [form, setForm] = useState({
     pais_id: "", departamento_id: "", municipio_id: "", sede_id: "",
     bloque_id: "", espacio_id: "", almacen_id: "",
     producto_id: "", producto_categoria_id: "",
     fecha_inicio: "", fecha_fin: ""
   });
 
-  const [paises, setPaises] = useState([]);
-  const [departamentos, setDepartamentos] = useState([]);
-  const [municipios, setMunicipios] = useState([]);
-  const [sedes, setSedes] = useState([]);
-  const [bloques, setBloques] = useState([]);
-  const [espacios, setEspacios] = useState([]);
-  const [almacenes, setAlmacenes] = useState([]);
-  const [productos, setProductos] = useState([]);
-  const [categorias, setCategorias] = useState([]);
-  const [articulos, setArticulos] = useState([]);
+  const [data, setData] = useState({
+    paises: [], departamentos: [], municipios: [], sedes: [], bloques: [], espacios: [],
+    almacenes: [], productos: [], categorias: [], pedidos: []
+  });
 
+  const [articulos, setArticulos] = useState([]);
   const [previewUrl, setPreviewUrl] = useState("");
   const [message, setMessage] = useState({ open: false, severity: "info", text: "" });
   const [dialogOpen, setDialogOpen] = useState(false);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormReporte(prev => ({ ...prev, [name]: value }));
-  };
 
   const formatoFecha = (fecha) => fecha ? fecha.replace("T", " ").slice(0, 16) : "";
 
   const construirParametros = () => ({
     empresa_id: parseInt(empresaId),
-    fecha_inicio: formatoFecha(formReporte.fecha_inicio),
-    fecha_fin: formatoFecha(formReporte.fecha_fin),
+    fecha_inicio: formatoFecha(form.fecha_inicio),
+    fecha_fin: formatoFecha(form.fecha_fin),
     logo_empresa: `${import.meta.env.VITE_RUTA_LOGO_EMPRESA}${empresaId}/logo_empresa.jpeg`
   });
 
   const buscarKardex = () => {
-    if (!formReporte.fecha_inicio || !formReporte.fecha_fin || !empresaId) {
-      setMessage({
-        open: true,
-        severity: "warning",
-        text: "Completa todos los campos requeridos."
-      });
+    if (!form.fecha_inicio || !form.fecha_fin || !empresaId) {
+      setMessage({ open: true, severity: "warning", text: "Completa todos los campos requeridos." });
       return;
     }
 
-    const datos = construirParametros();
-
     axios.get("/v1/articulo-kardex", {
-      headers: { Authorization: `Bearer ${token}` },
-      params: datos
+      ...headers,
+      params: construirParametros()
     })
       .then(res => {
         setArticulos(Array.isArray(res.data) ? res.data : []);
@@ -76,10 +61,8 @@ export default function RE_kardex() {
   };
 
   const verReportePDF = () => {
-    const datos = construirParametros();
-
-    axios.post("/v2/report/kardex", datos, {
-      headers: { Authorization: `Bearer ${token}` },
+    axios.post("/v2/report/kardex", construirParametros(), {
+      ...headers,
       responseType: "blob"
     })
       .then((response) => {
@@ -87,80 +70,109 @@ export default function RE_kardex() {
         setPreviewUrl(url);
         setDialogOpen(true);
       })
-      .catch((err) => {
-        console.error("❌ Error al generar PDF Kardex:", err);
+      .catch(() => {
         setMessage({ open: true, severity: "error", text: "Error al generar el PDF." });
       });
   };
 
-  // Carga jerárquica
   useEffect(() => {
-    axios.get("/v1/pais").then(res => setPaises(res.data));
-    axios.get("/v1/producto").then(res => setProductos(res.data));
-    axios.get("/v1/producto_categoria").then(res => setCategorias(res.data));
+    axios.get("/v1/pais", headers).then(res => setData(d => ({ ...d, paises: res.data })));
+    axios.get("/v1/producto", headers).then(res => setData(d => ({ ...d, productos: res.data })));
+    axios.get("/v1/producto_categoria", headers).then(res => setData(d => ({ ...d, categorias: res.data })));
+    axios.get("/v1/pedido", headers).then(res => setData(d => ({ ...d, pedidos: res.data })));
   }, []);
 
-  useEffect(() => {
-    if (!formReporte.pais_id) return setDepartamentos([]);
-    axios.get("/v1/departamento").then(res => {
-      setDepartamentos(res.data.filter(dep => dep.paisId === parseInt(formReporte.pais_id)));
-    });
-  }, [formReporte.pais_id]);
+  const limpiarCamposDesde = (campo) => {
+    const orden = ["pais_id", "departamento_id", "municipio_id", "sede_id", "bloque_id", "espacio_id", "almacen_id"];
+    const i = orden.indexOf(campo);
+    const nuevoForm = { ...form };
+    orden.slice(i + 1).forEach(c => nuevoForm[c] = "");
+    setForm(nuevoForm);
+  };
 
   useEffect(() => {
-    if (!formReporte.departamento_id) return setMunicipios([]);
-    axios.get(`/v1/municipio?departamentoId=${formReporte.departamento_id}`).then(res => {
-      setMunicipios(res.data);
+    if (!form.pais_id) return;
+    limpiarCamposDesde("pais_id");
+    axios.get("/v1/departamento", headers).then(res => {
+      const filtered = res.data.filter(dep => dep.paisId === parseInt(form.pais_id));
+      setData(d => ({ ...d, departamentos: filtered }));
+      if (filtered.length === 1) setForm(f => ({ ...f, departamento_id: filtered[0].id }));
     });
-  }, [formReporte.departamento_id]);
+  }, [form.pais_id]);
 
   useEffect(() => {
-    if (!formReporte.municipio_id) return setSedes([]);
-    axios.get("/v1/sede").then(res => {
-      setSedes(res.data.filter(s => s.municipioId === parseInt(formReporte.municipio_id)));
+    if (!form.departamento_id) return;
+    limpiarCamposDesde("departamento_id");
+    axios.get(`/v1/municipio?departamentoId=${form.departamento_id}`, headers).then(res => {
+      setData(d => ({ ...d, municipios: res.data }));
+      if (res.data.length === 1) setForm(f => ({ ...f, municipio_id: res.data[0].id }));
     });
-  }, [formReporte.municipio_id]);
+  }, [form.departamento_id]);
 
   useEffect(() => {
-    if (!formReporte.sede_id) return setBloques([]);
-    axios.get("/v1/bloque").then(res => {
-      setBloques(res.data.filter(b => b.sedeId === parseInt(formReporte.sede_id)));
+    if (!form.municipio_id) return;
+    limpiarCamposDesde("municipio_id");
+    axios.get("/v1/sede", headers).then(res => {
+      const filtered = res.data.filter(s => s.municipioId === parseInt(form.municipio_id));
+      setData(d => ({ ...d, sedes: filtered }));
+      if (filtered.length === 1) setForm(f => ({ ...f, sede_id: filtered[0].id }));
     });
-  }, [formReporte.sede_id]);
+  }, [form.municipio_id]);
 
   useEffect(() => {
-    if (!formReporte.bloque_id) return setEspacios([]);
-    axios.get("/v1/espacio").then(res => {
-      setEspacios(res.data.filter(e => e.bloqueId === parseInt(formReporte.bloque_id)));
+    if (!form.sede_id) return;
+    limpiarCamposDesde("sede_id");
+    axios.get("/v1/bloque", headers).then(res => {
+      const filtered = res.data.filter(b => b.sedeId === parseInt(form.sede_id));
+      setData(d => ({ ...d, bloques: filtered }));
+      if (filtered.length === 1) setForm(f => ({ ...f, bloque_id: filtered[0].id }));
     });
-  }, [formReporte.bloque_id]);
+  }, [form.sede_id]);
 
   useEffect(() => {
-    if (!formReporte.espacio_id) return setAlmacenes([]);
-    axios.get("/v1/almacen").then(res => {
-      setAlmacenes(res.data.filter(a => a.espacioId === parseInt(formReporte.espacio_id)));
+    if (!form.bloque_id) return;
+    limpiarCamposDesde("bloque_id");
+    axios.get("/v1/espacio", headers).then(res => {
+      const filtered = res.data.filter(e => e.bloqueId === parseInt(form.bloque_id));
+      setData(d => ({ ...d, espacios: filtered }));
+      if (filtered.length === 1) setForm(f => ({ ...f, espacio_id: filtered[0].id }));
     });
-  }, [formReporte.espacio_id]);
+  }, [form.bloque_id]);
+
+  useEffect(() => {
+    if (!form.espacio_id) return;
+    limpiarCamposDesde("espacio_id");
+    axios.get("/v1/almacen", headers).then(res => {
+      const filtered = res.data.filter(a => a.espacioId === parseInt(form.espacio_id));
+      setData(d => ({ ...d, almacenes: filtered }));
+      if (filtered.length === 1) setForm(f => ({ ...f, almacen_id: filtered[0].id }));
+    });
+  }, [form.espacio_id]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(f => ({ ...f, [name]: value }));
+  };
 
   return (
     <Box sx={{ p: 4 }}>
       <Typography variant="h4" gutterBottom>Reporte de Kardex</Typography>
 
       <Grid container spacing={2}>
-        {[{ label: "País", name: "pais_id", options: paises },
-          { label: "Departamento", name: "departamento_id", options: departamentos },
-          { label: "Municipio", name: "municipio_id", options: municipios },
-          { label: "Sede", name: "sede_id", options: sedes },
-          { label: "Bloque", name: "bloque_id", options: bloques },
-          { label: "Espacio", name: "espacio_id", options: espacios },
-          { label: "Almacén", name: "almacen_id", options: almacenes },
-          { label: "Producto", name: "producto_id", options: productos },
-          { label: "Categoría Producto", name: "producto_categoria_id", options: categorias }
+        {[{ label: "País", name: "pais_id", options: data.paises },
+          { label: "Departamento", name: "departamento_id", options: data.departamentos },
+          { label: "Municipio", name: "municipio_id", options: data.municipios },
+          { label: "Sede", name: "sede_id", options: data.sedes },
+          { label: "Bloque", name: "bloque_id", options: data.bloques },
+          { label: "Espacio", name: "espacio_id", options: data.espacios },
+          { label: "Almacén", name: "almacen_id", options: data.almacenes },
+          { label: "Producto", name: "producto_id", options: data.productos },
+          { label: "Categoría Producto", name: "producto_categoria_id", options: data.categorias }
         ].map(({ label, name, options }) => (
           <Grid item xs={6} key={name}>
             <FormControl fullWidth>
               <InputLabel>{label}</InputLabel>
-              <Select name={name} value={formReporte[name]} onChange={handleChange}>
+              <Select name={name} value={form[name]} onChange={handleChange}>
                 {Array.isArray(options) ? (
                   options.map(opt => (
                     <MenuItem key={opt.id} value={opt.id}>{opt.nombre}</MenuItem>
@@ -178,7 +190,7 @@ export default function RE_kardex() {
             name="fecha_inicio"
             type="datetime-local"
             fullWidth
-            value={formReporte.fecha_inicio || ""}
+            value={form.fecha_inicio || ""}
             onChange={handleChange}
             InputLabelProps={{ shrink: true }}
           />
@@ -189,7 +201,7 @@ export default function RE_kardex() {
             name="fecha_fin"
             type="datetime-local"
             fullWidth
-            value={formReporte.fecha_fin || ""}
+            value={form.fecha_fin || ""}
             onChange={handleChange}
             InputLabelProps={{ shrink: true }}
           />

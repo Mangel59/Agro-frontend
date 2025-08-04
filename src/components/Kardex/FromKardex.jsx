@@ -163,23 +163,10 @@ export default function FormKardex({
 
   return (
     <Box>
-      <Grid container spacing={2} mb={2}>
-        <Grid item>
-          <Button variant="contained" onClick={() => { setFormMode("create"); setOpen(true); }}>Nuevo</Button>
-        </Grid>
-        <Grid item>
-          <Button variant="outlined" disabled={!selectedRow} onClick={() => { setFormMode("edit"); setOpen(true); }}>Editar</Button>
-        </Grid>
-        <Grid item>
-          <Button variant="outlined" color="error" disabled={!selectedRow} onClick={handleDelete}>Eliminar</Button>
-        </Grid>
-      </Grid>
-
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
-        <DialogTitle>{formMode === "edit" ? "Editar Kardex" : "Nuevo Kardex"}</DialogTitle>
+        <DialogTitle>{formMode === "edit" ? "Editar Kardex" : "Crear Kardex"}</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
-          <TextField label="Fecha/Hora" name="fechaHora" type="datetime-local" value={formData.fechaHora} onChange={handleChange} fullWidth />
-
+         
           <FormControl fullWidth><InputLabel>País</InputLabel>
             <Select value={selectedPais} onChange={e => setSelectedPais(e.target.value)}>
               {paises.map(p => <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>)}
@@ -237,7 +224,9 @@ export default function FormKardex({
           </FormControl>
 
           <TextField label="Descripción" name="descripcion" value={formData.descripcion} onChange={handleChange} fullWidth />
-
+          
+          <TextField label="Fecha/Hora" name="fechaHora" type="datetime-local" value={formData.fechaHora} onChange={handleChange} fullWidth />
+          
           <FormControl fullWidth>
             <InputLabel>Estado</InputLabel>
             <Select name="estadoId" value={formData.estadoId} onChange={handleChange}>
