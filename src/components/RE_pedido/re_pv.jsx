@@ -202,9 +202,14 @@ export default function RE_pedido() {
             <FormControl fullWidth>
               <InputLabel>{field.label}</InputLabel>
               <Select name={field.name} value={form[field.name]} label={field.label} onChange={handleChange}>
-                {field.items.map(item => (
-                  <MenuItem key={item.id} value={item.id}>{item.nombre}</MenuItem>
-                ))}
+                {Array.isArray(field.items) ? (
+  field.items.map(item => (
+    <MenuItem key={item.id} value={item.id}>{item.nombre}</MenuItem>
+  ))
+) : (
+  <MenuItem disabled value="">Sin opciones disponibles</MenuItem>
+)}
+
               </Select>
             </FormControl>
           </Grid>
@@ -219,9 +224,10 @@ export default function RE_pedido() {
               label="Pedido"
               onChange={handleChange}
             >
-              {data.pedidos.map(pedido => (
-                <MenuItem key={pedido.id} value={pedido.id}>Pedido {pedido.id}</MenuItem>
-              ))}
+          {Array.isArray(data.pedidos) && data.pedidos.map(pedido => (
+            <MenuItem key={pedido.id} value={pedido.id}>Pedido {pedido.id}</MenuItem>
+          ))}
+
             </Select>
           </FormControl>
         </Grid>

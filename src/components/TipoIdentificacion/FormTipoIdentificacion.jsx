@@ -22,7 +22,7 @@ export default function FormTipoIdentificacion({ selectedRow, setSelectedRow, se
 
   const create = () => {
     setFormData(initialData);
-    setMethodName("Add");
+    setMethodName("Crear");
     setOpen(true);
   };
 
@@ -38,7 +38,7 @@ export default function FormTipoIdentificacion({ selectedRow, setSelectedRow, se
       estado: selectedRow.estadoId?.toString() || ""
     });
 
-    setMethodName("Update");
+    setMethodName("Actualizar");
     setOpen(true);
   };
 
@@ -80,15 +80,15 @@ export default function FormTipoIdentificacion({ selectedRow, setSelectedRow, se
       estadoId: parseInt(formData.estado)
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/tipo_identificacion" : `/v1/tipo_identificacion/${selectedRow.id}`;
+    const method = methodName === "Crear" ? axios.post : axios.put;
+    const url = methodName === "Crear" ? "/v1/tipo_identificacion" : `/v1/tipo_identificacion/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Tipo creado con éxito!" : "Tipo actualizado con éxito!"
+          text: methodName === "Crear" ? "Tipo creado con éxito!" : "Tipo actualizado con éxito!"
         });
         setOpen(false);
         setSelectedRow({});

@@ -11,6 +11,12 @@ import {
   Typography,
   Button,
 } from "@mui/material";
+
+
+import { grey } from '@mui/material/colors';
+import { alpha } from '@mui/material/styles';
+
+
 import MenuIcon from "@mui/icons-material/Menu";
 import DnsRoundedIcon from "@mui/icons-material/DnsRounded";
 import HomeIcon from "@mui/icons-material/Home";
@@ -287,61 +293,102 @@ export default function Navigator2({
     setCurrentModuleItem(Component ? <Component /> : null);
   };
 
-  const renderSubmenu = (children, parentMenuId) => (
-    <Grid container spacing={2} sx={{ p: 2 }}>
-      {children.map(({ id, text, icon }) => (
-        <Grid item xs={12} sm={6} md={4} lg={3} key={id}>
+  // Utils: detecta si un color hex es claro u oscuro
+const _hexToRgb = (hex) => {
+  let c = hex?.replace('#','') || 'ffffff';
+  if (c.length === 3) c = c.split('').map((x) => x + x).join('');
+  const n = parseInt(c, 16);
+  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+};
+const _isLight = (hex) => {
+  const { r, g, b } = _hexToRgb(hex);
+  // luminancia relativa
+  const srgb = [r, g, b].map(v => {
+    v /= 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  const L = 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
+  return L > 0.5;
+};
+
+
+const renderSubmenu = (children, parentMenuId) => (
+  <Grid container spacing={2} sx={{ p: 2 }} key={theme.palette.mode}>
+    {children.map(({ id, text, icon }) => (
+      <Grid item xs={12} sm={6} md={4} lg={3} key={id}>
+        <Box
+          onClick={() => handleSubMenuClick(id, parentMenuId)}
+          sx={(t) => ({
+            bgcolor: t.palette.background.paper,
+            border: `1px solid ${
+              t.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(59, 59, 59, 0.08)'
+            }`,
+            boxShadow: 1,
+            borderRadius: 2,
+            overflow: 'hidden',
+            height: 160,
+            display: 'flex',
+            flexDirection: 'column',
+            cursor: 'pointer',
+            transition: '0.3s',
+            '&:hover': { transform: 'scale(1.03)' },
+          })}
+        >
+          {/* HEADER (siempre distinto al paper) */}
           <Box
-            onClick={() => handleSubMenuClick(id, parentMenuId)}
-            sx={{
-              boxShadow: 1,
-              borderRadius: 2,
-              overflow: "hidden",
-              height: 160,
-              display: "flex",
-              flexDirection: "column",
-              cursor: "pointer",
-              transition: "0.3s",
-              "&:hover": { transform: "scale(1.03)" },
-            }}
+            sx={(t) => ({
+              bgcolor:
+                // usa tus tokens si los definiste en el theme:
+                t.custom?.card?.headerBg ??
+                // fallback robusto por modo:
+                (t.palette.mode === 'dark' ? '#2e2f2f' : '#EEF3F7'),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: 120,
+              p: 1,
+            })}
           >
-          <Box
-            component="img"
-            src={moduleImages[id] || img1}
-            alt={id}
-            sx={{ 
-              width: "100%", 
-              height: "120px", // Aumenta altura según necesidad
-              objectFit: "scale-down", // Ajusta proporcionalmente al contenedor sin perder proporción
-              p: 1, 
-              backgroundColor: "transparent",
-            }}
-          />
             <Box
-              sx={{
-                flex: 1,
-                p: 1,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <ListItemIcon sx={{ color: theme.palette.text.primary }}>
-                  {icons[icon]}
-                </ListItemIcon>
-                <Typography variant="body2" fontWeight="bold" noWrap>
-                  {t(text)}
-                </Typography>
-              </Box>
-              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-              </Box>
-            </Box>
+              component="img"
+              src={moduleImages[id] || img1}
+              alt={id}
+              sx={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            />
           </Box>
-        </Grid>
-      ))}
-    </Grid>
-  );
+
+          {/* FOOTER */}
+          <Box
+            sx={(t) => ({
+              bgcolor:
+                t.custom?.card?.footerBg ??
+                (t.palette.mode === 'dark' ? '#494a4b' : '#E3E9F0'),
+              flex: 1,
+              px: 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+            })}
+          >
+            <ListItemIcon sx={(t) => ({ color: t.custom?.card?.footerText ?? t.palette.text.primary })}>
+              {icons[icon]}
+            </ListItemIcon>
+            <Typography
+              variant="body2"
+              fontWeight="bold"
+              noWrap
+              sx={(t) => ({ color: t.custom?.card?.footerText ?? t.palette.text.primary })}
+            >
+              {t(text)}
+            </Typography>
+          </Box>
+        </Box>
+      </Grid>
+    ))}
+  </Grid>
+);
+
+
 
   // Si no hay sesión, no renderizar menú
   if (!isAuthenticated) return null;

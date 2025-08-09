@@ -31,6 +31,7 @@ export default function FormOrdenCompra({ setMessage, selectedRow, setSelectedRo
   const [methodName, setMethodName] = React.useState("");
   const [pedidos, setPedidos] = React.useState([]);
   const [proveedores, setProveedores] = React.useState([]);
+  const [faltanDatos, setFaltanDatos] = React.useState(false);
 
   const create = () => {
     setSelectedRow({
@@ -78,17 +79,36 @@ export default function FormOrdenCompra({ setMessage, selectedRow, setSelectedRo
   const handleClose = () => setOpen(false);
 
   React.useEffect(() => {
-    axios.get("/v1/pedido")
-      .then((res) => setPedidos(res.data))
-      .catch((err) => console.error("❌ Error cargando pedidos:", err));
+  axios.get("/v1/pedido")
+    .then((res) => {
+      const data = res.data;
+      if (Array.isArray(data) && data.length > 0) {
+        setPedidos(data);
+      } else {
+        setPedidos([]);
+        setFaltanDatos(true);
+      }
+    })
+    .catch(() => {
+      setPedidos([]);
+      setFaltanDatos(true);
+    });
 
-    axios.get("/v1/proveedor")
-      .then((res) => {
-        console.log("📦 Proveedores cargados:", res.data);
-        setProveedores(res.data);
-      })
-      .catch((err) => console.error("❌ Error cargando proveedores:", err));
-  }, []);
+  axios.get("/v1/proveedor")
+    .then((res) => {
+      const data = res.data;
+      if (Array.isArray(data) && data.length > 0) {
+        setProveedores(data);
+      } else {
+        setProveedores([]);
+        setFaltanDatos(true);
+      }
+    })
+    .catch(() => {
+      setProveedores([]);
+      setFaltanDatos(true);
+    });
+}, []);
 
   return (
     <>

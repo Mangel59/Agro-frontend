@@ -20,7 +20,7 @@ export default function RE_ordenCompra() {
   const token = localStorage.getItem("token");
   const logoPath = `${import.meta.env.VITE_RUTA_LOGO_EMPRESA}${empresaId}/logo_empresa.jpeg`;
   const [previewOpen, setPreviewOpen] = useState(false);
-
+  const [faltanDatos, setFaltanDatos] = useState(false);
 
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
@@ -46,12 +46,38 @@ export default function RE_ordenCompra() {
   const [message, setMessage] = useState({ open: false, severity: "info", text: "" });
 
   // ---------- Cargar listas (paises, departamentos, etc.) ----------
- useEffect(() => {
-    axios.get("/v1/pais", headers).then(res => setData(d => ({ ...d, paises: res.data })));
-    axios.get("/v1/producto", headers).then(res => setData(d => ({ ...d, productos: res.data })));
-    axios.get("/v1/producto_categoria", headers).then(res => setData(d => ({ ...d, categorias: res.data })));
-    axios.get("/v1/pedido", headers).then(res => setData(d => ({ ...d, pedidos: res.data })));
-  }, []);
+useEffect(() => {
+  Promise.all([
+    axios.get("/v1/pais", headers),
+    axios.get("/v1/producto", headers),
+    axios.get("/v1/producto_categoria", headers),
+    axios.get("/v1/pedido", headers),
+  ])
+    .then(([resPais, resProd, resCat, resPedido]) => {
+      setData(d => ({
+        ...d,
+        paises: resPais.data,
+        productos: resProd.data,
+        categorias: resCat.data,
+        pedidos: resPedido.data
+      }));
+
+      // Verifica si alguna lista vino vacía
+      const faltan = [
+        resPais.data,
+        resProd.data,
+        resCat.data,
+        resPedido.data
+      ].some(arr => !Array.isArray(arr) || arr.length === 0);
+
+      setFaltanDatos(faltan);
+    })
+    .catch((err) => {
+      console.error("❌ Error al cargar datos base:", err);
+      setFaltanDatos(true);
+    });
+}, []);
+
 
   const limpiarCamposDesde = (campo) => {
     const orden = ["pais_id", "departamento_id", "municipio_id", "sede_id", "bloque_id", "espacio_id", "almacen_id"];
@@ -202,6 +228,12 @@ export default function RE_ordenCompra() {
   return (
     <Box sx={{ p: 4 }}>
       <Typography variant="h4" gutterBottom>Reporte de Gestión de Orden de Compra</Typography>
+
+      {faltanDatos && (
+        <Box sx={{ p: 2, mt: 2, bgcolor: "#fff3cd", color: "#856404", border: "1px solid #ffeeba", borderRadius: 1 }}>
+          ⚠️ No se puede generar el reporte. Faltan datos esenciales como país, productos o pedidos. Contacta al administrador para completar la configuración.
+        </Box>
+      )}
 
       <Grid container spacing={2} mb={3}>
         {[

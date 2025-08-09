@@ -39,7 +39,7 @@ export default function FormPersona({ selectedRow, setSelectedRow, setMessage, r
 
   const create = () => {
     setFormData(initialData);
-    setMethodName("Add");
+    setMethodName("Crear");
     setOpen(true);
   };
 
@@ -63,7 +63,7 @@ export default function FormPersona({ selectedRow, setSelectedRow, setMessage, r
       estado: selectedRow.estado?.toString() || "1"
     });
 
-    setMethodName("Update");
+    setMethodName("Actualizar");
     setOpen(true);
   };
 
@@ -104,15 +104,15 @@ export default function FormPersona({ selectedRow, setSelectedRow, setMessage, r
       estado: parseInt(formData.estado),
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/persona" : `/v1/persona/${selectedRow.id}`;
+    const method = methodName === "Crear" ? axios.post : axios.put;
+    const url = methodName === "Crear" ? "/v1/persona" : `/v1/persona/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Persona creada!" : "Persona actualizada!"
+          text: methodName === "Crear" ? "Persona creada!" : "Persona actualizada!"
         });
         setOpen(false);
         setSelectedRow({});
@@ -156,7 +156,7 @@ export default function FormPersona({ selectedRow, setSelectedRow, setMessage, r
             <TextField fullWidth margin="dense" type="date" name="fechaNacimiento" label="Fecha de Nacimiento" value={formData.fechaNacimiento} onChange={handleChange} InputLabelProps={{ shrink: true }} />
             <TextField fullWidth margin="dense" name="estrato" label="Estrato" value={formData.estrato} onChange={handleChange} />
             <TextField fullWidth margin="dense" name="direccion" label="Dirección" value={formData.direccion} onChange={handleChange} />
-            <TextField fullWidth margin="dense" name="email" label="Email" value={formData.email} onChange={handleChange} />
+            <TextField fullWidth margin="dense" name="email" label="Email personal" value={formData.email} onChange={handleChange} />
             <TextField fullWidth margin="dense" name="celular" label="Celular" value={formData.celular} onChange={handleChange} />
 
             <FormControl fullWidth margin="normal" required>

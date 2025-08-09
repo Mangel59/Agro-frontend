@@ -103,6 +103,8 @@ export default function OrdenCompra() {
 
       <Dialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} fullWidth maxWidth="lg">
         <ReOC setOpen={setSearchDialogOpen} />
+        <Button onClick={buscarOrden}>Buscar</Button>
+
       </Dialog>
 
       <MessageSnackBar message={message} setMessage={setMessage} />

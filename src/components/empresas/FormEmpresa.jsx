@@ -90,7 +90,7 @@ export default function FormEmpresa({ selectedRow, setSelectedRow, setMessage, r
       });
       return;
     }
-    setMethodName("Update");
+    setMethodName("Actualizar ");
     setOpen(true);
   };
 
