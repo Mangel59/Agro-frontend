@@ -11,7 +11,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "serve -s dist"
   },
   "dependencies": {
     "@babel/parser": "^7.26.10",
@@ -47,6 +48,7 @@
     "react-router-dom": "^6.25.1",
     "react-slick": "^0.30.2",
     "recast": "^0.23.11",
+    "serve": "^14.2.4",
     "slick-carousel": "^1.8.1",
     "styled-components": "^6.1.12",
     "validator": "^13.12.0",
