@@ -140,6 +140,26 @@ export default function FormProceso({ selectedRow, setSelectedRow, setMessage, r
           <DialogTitle>{methodName} Proceso</DialogTitle>
           <DialogContent>
             <DialogContentText>Formulario para gestionar procesos</DialogContentText>
+            
+            <FormControl fullWidth margin="normal" error={!!errors.tipoProduccionId}>
+              <InputLabel>Tipo de Producción</InputLabel>
+              <Select
+                name="tipoProduccionId"
+                value={formData.tipoProduccionId}
+                onChange={handleChange}
+                label="Tipo de Producción"
+              >
+                <MenuItem value="">Seleccione...</MenuItem>
+                {tiposProduccion.map(tp => (
+                  <MenuItem key={tp.id} value={tp.id}>{tp.nombre}</MenuItem>
+                ))}
+              </Select>
+              {errors.tipoProduccionId && (
+                <p style={{ color: "#d32f2f", margin: "3px 14px 0", fontSize: "0.75rem" }}>
+                  {errors.tipoProduccionId}
+                </p>
+              )}
+            </FormControl>
 
             <TextField
               fullWidth
@@ -164,26 +184,6 @@ export default function FormProceso({ selectedRow, setSelectedRow, setMessage, r
               error={!!errors.descripcion}
               helperText={errors.descripcion}
             />
-
-            <FormControl fullWidth margin="normal" error={!!errors.tipoProduccionId}>
-              <InputLabel>Tipo de Producción</InputLabel>
-              <Select
-                name="tipoProduccionId"
-                value={formData.tipoProduccionId}
-                onChange={handleChange}
-                label="Tipo de Producción"
-              >
-                <MenuItem value="">Seleccione...</MenuItem>
-                {tiposProduccion.map(tp => (
-                  <MenuItem key={tp.id} value={tp.id}>{tp.nombre}</MenuItem>
-                ))}
-              </Select>
-              {errors.tipoProduccionId && (
-                <p style={{ color: "#d32f2f", margin: "3px 14px 0", fontSize: "0.75rem" }}>
-                  {errors.tipoProduccionId}
-                </p>
-              )}
-            </FormControl>
 
             <FormControl fullWidth margin="normal" error={!!errors.estado}>
               <InputLabel>Estado</InputLabel>

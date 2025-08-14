@@ -144,14 +144,6 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
                 />
               </Grid>
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth name="descripcion" label="Descripción"
-                  value={formData.descripcion} onChange={handleChange}
-                  error={!!errors.descripcion} helperText={errors.descripcion}
-                />
-              </Grid>
-
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth error={!!errors.productoCategoriaId}>
                   <InputLabel>Categoría</InputLabel>
@@ -169,24 +161,13 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
                   <FormHelperText>{errors.productoCategoriaId}</FormHelperText>
                 </FormControl>
               </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth error={!!errors.estadoId}>
-                  <InputLabel>Estado</InputLabel>
-                  <Select
-                    name="estadoId"
-                    value={formData.estadoId}
-                    onChange={handleChange}
-                    label="Estado"
-                  >
-                    <MenuItem value="">Seleccione...</MenuItem>
-                    <MenuItem value="1">Activo</MenuItem>
-                    <MenuItem value="2">Inactivo</MenuItem>
-                  </Select>
-                  <FormHelperText>{errors.estadoId}</FormHelperText>
-                </FormControl>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth name="descripcion" label="Descripción"
+                  value={formData.descripcion} onChange={handleChange}
+                  error={!!errors.descripcion} helperText={errors.descripcion}
+                />
               </Grid>
-
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth error={!!errors.unidadMinimaId}>
                   <InputLabel>Unidad mínima</InputLabel>
@@ -220,6 +201,22 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
                     ))}
                   </Select>
                   <FormHelperText>{errors.ingredientePresentacionProductoId}</FormHelperText>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth error={!!errors.estadoId}>
+                  <InputLabel>Estado</InputLabel>
+                  <Select
+                    name="estadoId"
+                    value={formData.estadoId}
+                    onChange={handleChange}
+                    label="Estado"
+                  >
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    <MenuItem value="1">Activo</MenuItem>
+                    <MenuItem value="2">Inactivo</MenuItem>
+                  </Select>
+                  <FormHelperText>{errors.estadoId}</FormHelperText>
                 </FormControl>
               </Grid>
             </Grid>

@@ -106,7 +106,7 @@ export default function FormOcupacion({ selectedRow, setSelectedRow, setMessage,
       <StackButtons methods={{ create, update, deleteRow }} />
       <Dialog open={open} onClose={() => setOpen(false)}>
         <form onSubmit={handleSubmit}>
-          <DialogTitle>{methodName} Ocupación</DialogTitle>
+          <DialogTitle>{methodName} Actividad Ocupación</DialogTitle>
           <DialogContent>
             <TextField
               fullWidth name="nombre" label="Nombre" required

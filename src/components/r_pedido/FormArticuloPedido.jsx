@@ -105,15 +105,6 @@ export default function FormArticuloPedido({ selectedRow, setSelectedRow, setMes
           <DialogContent>
             <TextField
               fullWidth
-              name="cantidad"
-              label="Cantidad"
-              value={formData.cantidad}
-              onChange={handleChange}
-              margin="dense"
-              required
-            />
-            <TextField
-              fullWidth
               name="pedidoId"
               label="Pedido ID"
               value={formData.pedidoId}
@@ -121,7 +112,6 @@ export default function FormArticuloPedido({ selectedRow, setSelectedRow, setMes
               required
               disabled
             />
-
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Presentación</InputLabel>
               <Select
@@ -135,7 +125,16 @@ export default function FormArticuloPedido({ selectedRow, setSelectedRow, setMes
                 ))}
               </Select>
             </FormControl>
-
+            <TextField
+              fullWidth
+              name="cantidad"
+              label="Cantidad"
+              value={formData.cantidad}
+              onChange={handleChange}
+              margin="dense"
+              required
+            />
+          
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Estado</InputLabel>
               <Select

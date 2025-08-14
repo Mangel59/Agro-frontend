@@ -109,7 +109,6 @@ export default function FormEvaluacionItem({
               required
             />
           </FormControl>
-
           <FormControl fullWidth margin="normal">
             <TextField
               name="evi_valor"
@@ -121,8 +120,7 @@ export default function FormEvaluacionItem({
               required
             />
           </FormControl>
-
-          <FormControl fullWidth margin="normal">
+           <FormControl fullWidth margin="normal">
             <InputLabel>Criterio de Evaluación</InputLabel>
             <Select
               name="evi_criterio_evaluacion_id"
@@ -138,7 +136,7 @@ export default function FormEvaluacionItem({
               ))}
             </Select>
           </FormControl>
-
+          
           <FormControl fullWidth margin="normal">
             <TextField
               name="evi_descripcion"

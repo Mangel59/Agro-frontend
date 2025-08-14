@@ -24,8 +24,8 @@ export default function Ocupacion() {
 
       setOcupaciones(data);
     } catch (err) {
-      console.error("❌ Error al cargar ocupaciones:", err);
-      setMessage({ open: true, severity: "error", text: "Error al cargar ocupaciones" });
+      console.error("❌ Error al cargar Actividad ocupaciones:", err);
+      setMessage({ open: true, severity: "error", text: "Error al cargar  Actividad ocupaciones" });
     }
   };
 
@@ -35,7 +35,7 @@ export default function Ocupacion() {
 
   return (
     <div>
-      <h1>Gestión de Ocupaciones</h1>
+      <h1>Gestión de Actividad Ocupaciones</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormOcupacion
         selectedRow={selectedRow}

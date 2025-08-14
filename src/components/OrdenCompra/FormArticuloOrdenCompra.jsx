@@ -93,12 +93,10 @@ export default function FormArticuloOrdenCompra({ selectedRow, setSelectedRow, s
         <form onSubmit={handleSubmit}>
           <DialogTitle>{methodName} Artículo de Orden</DialogTitle>
           <DialogContent>
-            <TextField fullWidth name="cantidad" label="Cantidad" value={formData.cantidad} onChange={handleChange} margin="dense" required />
-            <TextField fullWidth name="precio" label="Precio" value={formData.precio} onChange={handleChange} margin="dense" required />
             <TextField fullWidth name="ordenCompraId" label="Orden Compra ID" value={formData.ordenCompraId} margin="dense" required disabled />
-
+            
             <FormControl fullWidth margin="normal" required>
-              <InputLabel>Presentación</InputLabel>
+              <InputLabel>Producto Presentación</InputLabel>
               <Select name="presentacionProductoId" value={formData.presentacionProductoId} onChange={handleChange}>
                 <MenuItem value="">Seleccione...</MenuItem>
                 {presentaciones.map(p => (
@@ -106,7 +104,10 @@ export default function FormArticuloOrdenCompra({ selectedRow, setSelectedRow, s
                 ))}
               </Select>
             </FormControl>
-
+        
+            <TextField fullWidth name="cantidad" label="Cantidad" value={formData.cantidad} onChange={handleChange} margin="dense" required />
+            <TextField fullWidth name="precio" label="Precio" value={formData.precio} onChange={handleChange} margin="dense" required />
+            
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Estado</InputLabel>
               <Select name="estadoId" value={formData.estadoId} onChange={handleChange}>

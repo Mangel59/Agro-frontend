@@ -166,6 +166,8 @@ export default function FormKardex({
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
         <DialogTitle>{formMode === "edit" ? "Editar Kardex" : "Crear Kardex"}</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+
+          <TextField label="Fecha/Hora" name="fechaHora" type="datetime-local" value={formData.fechaHora} onChange={handleChange} fullWidth />
          
           <FormControl fullWidth><InputLabel>País</InputLabel>
             <Select value={selectedPais} onChange={e => setSelectedPais(e.target.value)}>
@@ -224,8 +226,6 @@ export default function FormKardex({
           </FormControl>
 
           <TextField label="Descripción" name="descripcion" value={formData.descripcion} onChange={handleChange} fullWidth />
-          
-          <TextField label="Fecha/Hora" name="fechaHora" type="datetime-local" value={formData.fechaHora} onChange={handleChange} fullWidth />
           
           <FormControl fullWidth>
             <InputLabel>Estado</InputLabel>

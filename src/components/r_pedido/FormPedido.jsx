@@ -154,6 +154,18 @@ export default function FormPedido({
     <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
       <DialogTitle>{formMode === "edit" ? "Editar Pedido" : "Nuevo Pedido"}</DialogTitle>
       <DialogContent>
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Fecha y Hora"
+          name="fechaHora"
+          type="datetime-local"
+          value={formData.fechaHora}
+          onChange={handleChange}
+          error={!!errors.fechaHora}
+          helperText={errors.fechaHora}
+          InputLabelProps={{ shrink: true }}
+        />
         <FormControl fullWidth margin="normal">
           <InputLabel>País</InputLabel>
           <Select value={selectedPais} onChange={(e) => setSelectedPais(e.target.value)}>
@@ -222,7 +234,6 @@ export default function FormPedido({
           </Select>
           {errors.produccionId && <FormHelperText>{errors.produccionId}</FormHelperText>}
         </FormControl>
-
         <TextField
           fullWidth
           margin="normal"
@@ -231,20 +242,6 @@ export default function FormPedido({
           value={formData.descripcion}
           onChange={handleChange}
         />
-
-        <TextField
-          fullWidth
-          margin="normal"
-          label="Fecha y Hora"
-          name="fechaHora"
-          type="datetime-local"
-          value={formData.fechaHora}
-          onChange={handleChange}
-          error={!!errors.fechaHora}
-          helperText={errors.fechaHora}
-          InputLabelProps={{ shrink: true }}
-        />
-
         <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
           <InputLabel>Estado</InputLabel>
           <Select
