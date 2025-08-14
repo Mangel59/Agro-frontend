@@ -144,9 +144,16 @@ export default function FormProveedor({
           error={!!errors.nombre} helperText={errors.nombre}
         />
         <TextField
-          fullWidth margin="dense" label="Identificación" name="identificacion"
-          value={formData.identificacion} onChange={handleChange}
-          error={!!errors.identificacion} helperText={errors.identificacion}
+          fullWidth
+          margin="dense"
+          label="Fecha de Creación"
+          name="fechaCreacion"
+          type="datetime-local"
+          value={formData.fechaCreacion}
+          onChange={handleChange}
+          InputLabelProps={{ shrink: true }}
+          error={!!errors.fechaCreacion}
+          helperText={errors.fechaCreacion}
         />
         <FormControl fullWidth margin="dense" error={!!errors.tipoIdentificacionId}>
           <InputLabel>Tipo de Identificación</InputLabel>
@@ -167,12 +174,9 @@ export default function FormProveedor({
           )}
         </FormControl>
         <TextField
-          fullWidth margin="dense" label="Contacto" name="contacto"
-          value={formData.contacto} onChange={handleChange}
-        />
-        <TextField
-          fullWidth margin="dense" label="Correo" name="correo"
-          value={formData.correo} onChange={handleChange}
+          fullWidth margin="dense" label="Identificación" name="identificacion"
+          value={formData.identificacion} onChange={handleChange}
+          error={!!errors.identificacion} helperText={errors.identificacion}
         />
         <TextField
           fullWidth margin="dense" label="Celular" name="celular"
@@ -180,16 +184,12 @@ export default function FormProveedor({
           error={!!errors.celular} helperText={errors.celular}
         />
         <TextField
-          fullWidth
-          margin="dense"
-          label="Fecha de Creación"
-          name="fechaCreacion"
-          type="datetime-local"
-          value={formData.fechaCreacion}
-          onChange={handleChange}
-          InputLabelProps={{ shrink: true }}
-          error={!!errors.fechaCreacion}
-          helperText={errors.fechaCreacion}
+          fullWidth margin="dense" label="Contacto" name="contacto"
+          value={formData.contacto} onChange={handleChange}
+        />
+        <TextField
+          fullWidth margin="dense" label="Correo" name="correo"
+          value={formData.correo} onChange={handleChange}
         />
         <FormControl fullWidth margin="dense" error={!!errors.estadoId}>
           <InputLabel>Estado</InputLabel>

@@ -89,24 +89,19 @@ axios.get("/v1/tipo_inventario")
     <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
       <DialogTitle>{formMode === "edit" ? "Editar Inventario" : "Nuevo Inventario"}</DialogTitle>
       <DialogContent>
-        <TextField
-          fullWidth margin="normal" label="Nombre" name="nombre"
-          value={formData.nombre} onChange={handleChange}
-          error={!!errors.nombre} helperText={errors.nombre}
-        />
-
-        <TextField
-          fullWidth margin="normal" label="Descripción" name="descripcion"
-          value={formData.descripcion} onChange={handleChange}
-        />
 
         <TextField
           fullWidth margin="normal" label="Fecha y Hora" name="fechaHora"
           type="datetime-local"
           value={formData.fechaHora} onChange={handleChange}
         />
+        <TextField
+          fullWidth margin="normal" label="Nombre" name="nombre"
+          value={formData.nombre} onChange={handleChange}
+          error={!!errors.nombre} helperText={errors.nombre}
+        />
 
-        <FormControl fullWidth margin="normal" error={!!errors.tipoInventarioId}>
+         <FormControl fullWidth margin="normal" error={!!errors.tipoInventarioId}>
           <InputLabel>Tipo de Inventario</InputLabel>
           <Select
             name="tipoInventarioId"
@@ -122,7 +117,11 @@ axios.get("/v1/tipo_inventario")
             <FormHelperText>{errors.tipoInventarioId}</FormHelperText>
           )}
         </FormControl>
-
+        <TextField
+          fullWidth margin="normal" label="Descripción" name="descripcion"
+          value={formData.descripcion} onChange={handleChange}
+        />
+        
         <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
           <InputLabel>Estado</InputLabel>
           <Select

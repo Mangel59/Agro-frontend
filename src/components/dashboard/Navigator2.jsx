@@ -388,9 +388,6 @@ const renderSubmenu = (children, parentMenuId) => (
   </Grid>
 );
 
-
-
-  // Si no hay sesión, no renderizar menú
   if (!isAuthenticated) return null;
 
   return (

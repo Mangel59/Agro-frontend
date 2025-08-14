@@ -124,7 +124,7 @@ export default function FormMarca({ open, setOpen, selectedRow, setSelectedRow, 
         <form onSubmit={handleSubmit}>
           <DialogTitle>{methodName} Marca</DialogTitle>
           <DialogContent>
-            <DialogContentText>Formulario para gestionar marcas</DialogContentText>
+            <DialogContentText>Formulario de Marcas</DialogContentText>
 
             <TextField
               fullWidth margin="dense"
