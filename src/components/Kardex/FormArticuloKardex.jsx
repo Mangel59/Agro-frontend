@@ -122,6 +122,28 @@ const payload = {
           <DialogContent>
             <TextField
               fullWidth
+              name="kardexId"
+              label="Kardex ID"
+              value={formData.kardexId}
+              margin="dense"
+              required
+              disabled
+            />
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel>Producto Presentación</InputLabel>
+              <Select
+                name="presentacionProductoId"
+                value={formData.presentacionProductoId}
+                onChange={handleChange}
+              >
+                <MenuItem value="">Seleccione...</MenuItem>
+                {presentaciones.map(p => (
+                  <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              fullWidth
               name="cantidad"
               label="Cantidad"
               value={formData.cantidad}
@@ -149,30 +171,6 @@ const payload = {
               InputLabelProps={{ shrink: true }}
               required
             />
-            <TextField
-              fullWidth
-              name="kardexId"
-              label="Kardex ID"
-              value={formData.kardexId}
-              margin="dense"
-              required
-              disabled
-            />
-
-            <FormControl fullWidth margin="normal" required>
-              <InputLabel>Presentación</InputLabel>
-              <Select
-                name="presentacionProductoId"
-                value={formData.presentacionProductoId}
-                onChange={handleChange}
-              >
-                <MenuItem value="">Seleccione...</MenuItem>
-                {presentaciones.map(p => (
-                  <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
             <FormControl fullWidth margin="normal" required>
               <InputLabel>Estado</InputLabel>
               <Select
