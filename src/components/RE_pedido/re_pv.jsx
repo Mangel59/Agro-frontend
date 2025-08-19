@@ -23,8 +23,6 @@ export default function RE_pedido() {
   };
   const uniqById = (arr) => Array.from(new Map(arr.map(o => [o.id, o])).values());
   const num = (v) => (v === "" || v === null || v === undefined ? NaN : Number(v));
-
-  // extra helper: distintas formas de traer el id de categoría del producto
   const getProdCatId = (p) =>
     p?.productoCategoriaId ??
     p?.categoriaProductoId ??
@@ -33,11 +31,15 @@ export default function RE_pedido() {
     p?.productoCategoria?.id ??
     null;
 
+  // convierte "YYYY-MM-DDTHH:mm" -> "YYYY-MM-DD HH:mm"
+  const toReportDT = (val) => (val ? String(val).replace("T", " ") : "");
+
   const [form, setForm] = useState({
     pais_id: "", departamento_id: "", municipio_id: "", sede_id: "",
     bloque_id: "", espacio_id: "", almacen_id: "",
     producto_id: "", producto_categoria_id: "",
-    categoria_estado_id: "", pedido_id: "",fecha_inicio: "", fecha_fin: ""
+    categoria_estado_id: "", pedido_id: "",
+    fecha_inicio: "", fecha_fin: ""
   });
 
   const [data, setData] = useState({
@@ -107,7 +109,7 @@ export default function RE_pedido() {
     }).catch(() => setData(d => ({ ...d, municipios: [] })));
   }, [form.departamento_id]);
 
-  // ---------- Municipio -> Sedes (filtra por empresa si está disponible)
+  // ---------- Municipio -> Sedes (filtra por empresa)
   useEffect(() => {
     if (!form.municipio_id) return;
     limpiarCamposDesde("municipio_id");
@@ -132,13 +134,12 @@ export default function RE_pedido() {
     }).catch(() => setData(d => ({ ...d, sedes: [] })));
   }, [form.municipio_id, empresaId]);
 
-  // ---------- Sede -> Bloques  (FILTRO EN CLIENTE por si el backend no acepta ?sedeId=)
+  // ---------- Sede -> Bloques (siempre filtra en cliente)
   useEffect(() => {
     if (!form.sede_id) return;
     limpiarCamposDesde("sede_id");
     axios.get("/v1/bloque", headers).then(res => {
-      let list = asArray(res.data)
-        .filter(b => String(b.sedeId) === String(form.sede_id));
+      let list = asArray(res.data).filter(b => String(b.sedeId) === String(form.sede_id));
       list = uniqById(list);
       setData(d => ({ ...d, bloques: list }));
       if (list.length === 1) setForm(f => ({ ...f, bloque_id: String(list[0].id) }));
@@ -150,8 +151,7 @@ export default function RE_pedido() {
     if (!form.bloque_id) return;
     limpiarCamposDesde("bloque_id");
     axios.get("/v1/espacio", headers).then(res => {
-      let list = asArray(res.data)
-        .filter(e => String(e.bloqueId) === String(form.bloque_id));
+      let list = asArray(res.data).filter(e => String(e.bloqueId) === String(form.bloque_id));
       list = uniqById(list);
       setData(d => ({ ...d, espacios: list }));
       if (list.length === 1) setForm(f => ({ ...f, espacio_id: String(list[0].id) }));
@@ -163,8 +163,7 @@ export default function RE_pedido() {
     if (!form.espacio_id) return;
     limpiarCamposDesde("espacio_id");
     axios.get("/v1/almacen", headers).then(res => {
-      let list = asArray(res.data)
-        .filter(a => String(a.espacioId) === String(form.espacio_id));
+      let list = asArray(res.data).filter(a => String(a.espacioId) === String(form.espacio_id));
       list = uniqById(list);
       setData(d => ({ ...d, almacenes: list }));
       if (list.length === 1) setForm(f => ({ ...f, almacen_id: String(list[0].id) }));
@@ -176,7 +175,7 @@ export default function RE_pedido() {
     setForm(f => ({ ...f, producto_id: "" }));
   }, [form.producto_categoria_id]);
 
-  // --------- Productos filtrados por categoría (robusto a distintos nombres)
+  // --------- Productos filtrados por categoría
   const filteredProducts = useMemo(() => {
     const catId = num(form.producto_categoria_id);
     const all = asArray(data.productos);
@@ -191,7 +190,6 @@ export default function RE_pedido() {
     }
   }, [filteredProducts]);
 
-  // handler de selects
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
@@ -221,17 +219,31 @@ export default function RE_pedido() {
     }
   };
 
-  // ---------- PDF
+  // ---------- PDF (incluye fechas si existen)
   const verPDF = () => {
+    // Validación simple de rango si ambos están
+    if (form.fecha_inicio && form.fecha_fin) {
+      const ini = new Date(form.fecha_inicio);
+      const fin = new Date(form.fecha_fin);
+      if (ini > fin) {
+        setMessage({ open: true, severity: "warning", text: "La fecha de inicio no puede ser mayor que la fecha fin." });
+        return;
+      }
+    }
+
+    const payload = {
+      categoria_estado_id: Number(form.categoria_estado_id),
+      emp_id: Number(empresaId),
+      ped_id: Number(form.pedido_id),
+      logo_empresa: logoPath,
+      ...(form.fecha_inicio ? { fecha_inicio: toReportDT(form.fecha_inicio) } : {}),
+      ...(form.fecha_fin ? { fecha_fin: toReportDT(form.fecha_fin) } : {}),
+    };
+
     axios({
       url: "/v2/report/pedido",
       method: "POST",
-      data: {
-        categoria_estado_id: Number(form.categoria_estado_id),
-        emp_id: Number(empresaId),
-        ped_id: Number(form.pedido_id),
-        logo_empresa: logoPath
-      },
+      data: payload,
       responseType: "blob",
       ...headers
     }).then((res) => {
@@ -313,29 +325,29 @@ export default function RE_pedido() {
             onChange={handleChange}
           />
         </Grid>
-        
-        <Grid item xs={6}>
-                  <TextField
-                    label="Fecha Inicio"
-                    name="fecha_inicio"
-                    type="datetime-local"
-                    fullWidth
-                    value={form.fecha_inicio || ""}
-                    onChange={handleChange}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                </Grid>
-                <Grid item xs={6}>
-                  <TextField
-                    label="Fecha Fin"
-                    name="fecha_fin"
-                    type="datetime-local"
-                    fullWidth
-                    value={form.fecha_fin || ""}
-                    onChange={handleChange}
-                    InputLabelProps={{ shrink: true }}
-                  />
-                </Grid>
+
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="Fecha Inicio"
+            name="fecha_inicio"
+            type="datetime-local"
+            fullWidth
+            value={form.fecha_inicio || ""}
+            onChange={handleChange}
+            InputLabelProps={{ shrink: true }}
+          />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <TextField
+            label="Fecha Fin"
+            name="fecha_fin"
+            type="datetime-local"
+            fullWidth
+            value={form.fecha_fin || ""}
+            onChange={handleChange}
+            InputLabelProps={{ shrink: true }}
+          />
+        </Grid>
 
         <Grid item xs={12}>
           <Stack direction="row" spacing={2}>
