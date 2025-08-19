@@ -272,7 +272,7 @@ export default function RE_pedido() {
 
   return (
     <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom>Reporte de Gestión de Pedido</Typography>
+      <Typography variant="h4" gutterBottom>Reporte de Pedido</Typography>
 
       <Grid container spacing={2} mb={3}>
         {fields.map(field => (
