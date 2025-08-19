@@ -16,6 +16,7 @@ export default function FormSede({
   tiposSede = [],
   reloadData = () => {},
   setMessage = () => {},
+  authHeaders = {},
 }) {
   const initialData = {
     id: null,
@@ -23,7 +24,9 @@ export default function FormSede({
     tipoSedeId: "",
     nombre: "",
     municipioId: municipioId || "",
-    area: "",
+    geolocalizacion: "",
+    coordenadas: "",
+    area: "",           // string en el input; se castea al enviar
     comuna: "",
     descripcion: "",
     estadoId: 1,
@@ -33,85 +36,96 @@ export default function FormSede({
   const [errors, setErrors] = useState({});
   const invalidCharsRegex = /[<>/"'`;(){}[\]\\]/;
 
+  // Forzar tipos al abrir
   useEffect(() => {
-    if (open) {
-      if (formMode === "edit" && selectedRow) {
-        setFormData({ ...selectedRow });
-      } else {
-        setFormData({ ...initialData, municipioId });
-      }
-      setErrors({});
+    if (!open) return;
+
+    if (formMode === "edit" && selectedRow) {
+      setFormData({
+        ...selectedRow,
+        id: Number(selectedRow.id),
+        grupoId: Number(selectedRow.grupoId),
+        tipoSedeId: Number(selectedRow.tipoSedeId),
+        municipioId: Number(selectedRow.municipioId),
+        estadoId: Number(selectedRow.estadoId),
+        area: selectedRow.area ?? "",
+      });
+    } else {
+      setFormData({
+        ...initialData,
+        municipioId: Number(municipioId || 0),
+      });
     }
+    setErrors({});
   }, [open, formMode, selectedRow, municipioId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     const newValue =
-      ["estadoId", "grupoId", "tipoSedeId"].includes(name) ? Number(value) : value;
+      ["estadoId", "grupoId", "tipoSedeId"].includes(name)
+        ? Number(value)
+        : name === "area"
+        ? value.replace(",", ".")
+        : value;
     setFormData((prev) => ({ ...prev, [name]: newValue }));
   };
 
   const validate = () => {
-    const newErrors = {};
+    const e = {};
 
-    if (!formData.nombre?.trim()) {
-      newErrors.nombre = "El nombre es obligatorio.";
-    } else if (invalidCharsRegex.test(formData.nombre)) {
-      newErrors.nombre = "El nombre contiene caracteres no permitidos.";
-    }
+    if (!formData.nombre?.trim()) e.nombre = "El nombre es obligatorio.";
+    else if (invalidCharsRegex.test(formData.nombre)) e.nombre = "El nombre contiene caracteres no permitidos.";
 
-    if (formData.area && invalidCharsRegex.test(formData.area)) {
-      newErrors.area = "El área contiene caracteres no permitidos.";
-    }
+    if (!Number(formData.grupoId)) e.grupoId = "Debe seleccionar un grupo.";
+    if (!Number(formData.tipoSedeId)) e.tipoSedeId = "Debe seleccionar un tipo de sede.";
+    if (!Number(formData.municipioId)) e.municipioId = "Municipio no asignado.";
 
-    if (formData.comuna && invalidCharsRegex.test(formData.comuna)) {
-      newErrors.comuna = "La comuna contiene caracteres no permitidos.";
-    }
+    if (formData.area !== "" && isNaN(Number(String(formData.area)))) e.area = "Área debe ser numérica.";
 
-    if (formData.descripcion && invalidCharsRegex.test(formData.descripcion)) {
-      newErrors.descripcion = "La descripción contiene caracteres no permitidos.";
-    }
+    if (formData.comuna && invalidCharsRegex.test(formData.comuna)) e.comuna = "La comuna contiene caracteres no permitidos.";
+    if (formData.descripcion && invalidCharsRegex.test(formData.descripcion)) e.descripcion = "La descripción contiene caracteres no permitidos.";
 
-    if (!formData.grupoId) {
-      newErrors.grupoId = "Debe seleccionar un grupo.";
-    }
+    if (![1, 2].includes(Number(formData.estadoId))) e.estadoId = "Debe seleccionar estado.";
 
-    if (!formData.tipoSedeId) {
-      newErrors.tipoSedeId = "Debe seleccionar un tipo de sede.";
-    }
-
-    if (!formData.municipioId) {
-      newErrors.municipioId = "Municipio no asignado.";
-    }
-
-    if (![0, 1, 2].includes(formData.estadoId)) {
-      newErrors.estadoId = "Debe seleccionar estado.";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
   const handleSubmit = async () => {
     if (!validate()) return;
 
+    const payload = {
+      grupoId: Number(formData.grupoId),
+      tipoSedeId: Number(formData.tipoSedeId),
+      nombre: formData.nombre.trim(),
+      municipioId: Number(formData.municipioId),
+      geolocalizacion: formData.geolocalizacion?.trim() || null,
+      coordenadas: formData.coordenadas?.trim() || null,
+      area: formData.area === "" ? null : Number(formData.area),
+      comuna: formData.comuna?.trim() || null,
+      descripcion: formData.descripcion?.trim() || null,
+      estadoId: Number(formData.estadoId),
+    };
+
     try {
       if (formMode === "edit" && formData.id) {
-        await axios.put(`/v1/sede/${formData.id}`, formData);
+        await axios.put(`/v1/sede/${formData.id}`, { id: Number(formData.id), ...payload }, authHeaders);
         setMessage({ open: true, severity: "success", text: "Sede actualizada correctamente." });
       } else {
-        await axios.post("/v1/sede", formData);
+        await axios.post("/v1/sede", payload, authHeaders);
         setMessage({ open: true, severity: "success", text: "Sede creada correctamente." });
       }
 
       setOpen(false);
       reloadData();
     } catch (err) {
-      setMessage({
-        open: true,
-        severity: "error",
-        text: err.response?.data?.message || "Error al guardar sede.",
-      });
+      console.error("SEDE SAVE ERR:", err.response?.status, err.response?.data || err.message);
+      const api = err.response?.data || {};
+      const txt =
+        api.message ||
+        api.error ||
+        (err.response?.status === 409 ? "Datos duplicados o restricción de base de datos." : "Error al guardar sede.");
+      setMessage({ open: true, severity: "error", text: txt });
     }
   };
 
@@ -125,66 +139,43 @@ export default function FormSede({
           error={!!errors.nombre} helperText={errors.nombre}
         />
 
-        <TextField
-          fullWidth margin="normal" label="Área" name="area"
-          value={formData.area} onChange={handleChange}
-          error={!!errors.area} helperText={errors.area}
-        />
-
-        <TextField
-          fullWidth margin="normal" label="Comuna" name="comuna"
-          value={formData.comuna} onChange={handleChange}
-          error={!!errors.comuna} helperText={errors.comuna}
-        />
-
-        <TextField
-          fullWidth margin="normal" label="Descripción" name="descripcion"
-          value={formData.descripcion} onChange={handleChange}
-          error={!!errors.descripcion} helperText={errors.descripcion}
-        />
-
-        <FormControl fullWidth margin="normal" error={!!errors.tipoSedeId}>
-          <InputLabel>Tipo de Sede</InputLabel>
-          <Select
-            name="tipoSedeId"
-            value={formData.tipoSedeId || ""}
-            onChange={handleChange}
-            label="Tipo de Sede"
-          >
-            {tiposSede.map((tipo) => (
-              <MenuItem key={tipo.id} value={tipo.id}>
-                {tipo.nombre}
-              </MenuItem>
-            ))}
-          </Select>
-          {errors.tipoSedeId && <FormHelperText>{errors.tipoSedeId}</FormHelperText>}
-        </FormControl>
-
         <FormControl fullWidth margin="normal" error={!!errors.grupoId}>
           <InputLabel>Grupo</InputLabel>
-          <Select
-            name="grupoId"
-            value={formData.grupoId || ""}
-            onChange={handleChange}
-            label="Grupo"
-          >
-            {grupos.map((grupo) => (
-              <MenuItem key={grupo.id} value={grupo.id}>
-                {grupo.nombre}
-              </MenuItem>
-            ))}
+          <Select name="grupoId" value={formData.grupoId || ""} onChange={handleChange} label="Grupo">
+            {grupos.map((g) => <MenuItem key={g.id} value={g.id}>{g.nombre}</MenuItem>)}
           </Select>
           {errors.grupoId && <FormHelperText>{errors.grupoId}</FormHelperText>}
         </FormControl>
 
+        <FormControl fullWidth margin="normal" error={!!errors.tipoSedeId}>
+          <InputLabel>Tipo de Sede</InputLabel>
+          <Select name="tipoSedeId" value={formData.tipoSedeId || ""} onChange={handleChange} label="Tipo de Sede">
+            {tiposSede.map((t) => <MenuItem key={t.id} value={t.id}>{t.nombre}</MenuItem>)}
+          </Select>
+          {errors.tipoSedeId && <FormHelperText>{errors.tipoSedeId}</FormHelperText>}
+        </FormControl>
+
+        <TextField fullWidth margin="normal" label="Geolocalización" name="geolocalizacion"
+          value={formData.geolocalizacion} onChange={handleChange} />
+
+        <TextField fullWidth margin="normal" label="Coordenadas" name="coordenadas"
+          value={formData.coordenadas} onChange={handleChange} />
+
+        <TextField fullWidth margin="normal" label="Área" name="area"
+          value={formData.area} onChange={handleChange}
+          error={!!errors.area} helperText={errors.area} />
+
+        <TextField fullWidth margin="normal" label="Comuna" name="comuna"
+          value={formData.comuna} onChange={handleChange}
+          error={!!errors.comuna} helperText={errors.comuna} />
+
+        <TextField fullWidth margin="normal" label="Descripción" name="descripcion"
+          value={formData.descripcion} onChange={handleChange}
+          error={!!errors.descripcion} helperText={errors.descripcion} />
+
         <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
           <InputLabel>Estado</InputLabel>
-          <Select
-            name="estadoId"
-            value={formData.estadoId}
-            onChange={handleChange}
-            label="Estado"
-          >
+          <Select name="estadoId" value={formData.estadoId} onChange={handleChange} label="Estado">
             <MenuItem value={1}>Activo</MenuItem>
             <MenuItem value={2}>Inactivo</MenuItem>
           </Select>

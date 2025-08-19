@@ -158,10 +158,13 @@ import img7 from "/images/cards/7.jpg";
 import img8 from "/images/cards/8.jpg";
 import img9 from "/images/cards/9.jpg";
 import img10 from "/images/cards/10.jpg";
+//seguridad
 import persona from "/images/cards/persona.png";
 import rol from "/images/cards/rol.png";
 import tipo_identificacion from "/images/cards/tipo_identificacion.png";
 import empresa from "/images/cards/empresa.png";
+import tipo_evaluacion from "/images/cards/tipo_evaluacion.png";
+//parametrizacion
 import pais from "/images/cards/pais.png";
 import departamento from "/images/cards/departamento.png";
 import municipio from "/images/cards/municipio.png";
@@ -170,11 +173,24 @@ import sede from "/images/cards/sede.png";
 import tipo_bloque from "/images/cards/tipo_bloque.png";
 import bloque from "/images/cards/bloque.png";
 import grupo from "/images/cards/grupo.png";
-import tipo_evaluacion from "/images/cards/tipo_evaluacion.png";
+import tipo_espacio  from "/images/cards/tipo_espacio.png"
+import espacio  from "/images/cards/espacio.png"
+import almacen  from "/images/cards/almacen.png"
+import seccion  from "/images/cards/seccion.png"
+import subseccion  from "/images/cards/subseccion.png"
+import tip_inventario from "/images/cards/tip_inventario.png"
+import inventario from "/images/cards/inventario.png"
+//inventario
+import ingredienteproductopresentacion from "/images/cards/ingredienteproductopresentacion.png";
+import presentacion_producto from "/images/cards/presentacion_producto.png";
+import presentacion from "/images/cards/presentacion.png";
+import producto_categoria from "/images/cards/producto_categoria.png";
+import marca from "/images/cards/marca.png";
+import ingrediente from "/images/cards/ingrediente.png";
 
-
+//C:\Users\lucyz\coagronet-frontend\public\images\cards\producto_categoria.png
 const moduleImages = {
-  persona: persona,
+  persona: persona, 
   rol: rol,
   tipoidentificacion: tipo_identificacion,
   tipo_evaluacion: tipo_evaluacion,
@@ -187,30 +203,36 @@ const moduleImages = {
   sede: sede,
   tipo_bloque: tipo_bloque,
   bloque: bloque,
-  tipo_espacio: img2,
-  espacio: img3,
-  almacen: img4,
+  tipo_espacio: tipo_espacio,
+  espacio: espacio,
+  almacen: almacen,
+  Seccion: seccion,
+  Subseccion: subseccion,
+  tipo_inventario: tip_inventario, 
+  Inventario: inventario,
+  IngredientePresentacionProducto:ingredienteproductopresentacion,
+  presentacion_producto: presentacion_producto,
+  presentacion: presentacion,
+  producto_categoria: producto_categoria,
+  marca: marca,
+  Ingrediente: ingrediente,
+
+
   Kardex: img5,
   proveedor: img6,
-  producto_categoria: img7,
-  marca: img8,
+
   unidad: img9,
   producto: img10,
-  presentacion_producto: img1,
   tipo_produccion: img2,
   tipo_movimiento: img3,
   produccion: img4,
   r_pedido: img5,
-  presentacion: img6,
+  
   media_card: img7,
   evaluacion_item: img2,
   OrdenCompra: img9,
   Ocupacion: img5,
-  Ingrediente: img5,
-  Seccion: img5,
-  Subseccion: img10,
-  TipoInventario: img6,
-  Inventario: img7,
+  
   RE_pedido: img9,
   RE_kardex: img10,
   RE_productoVencimiento: img1,
@@ -353,7 +375,13 @@ const renderSubmenu = (children, parentMenuId) => (
               component="img"
               src={moduleImages[id] || img1}
               alt={id}
-              sx={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+              sx={{
+                  width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',// hace que la imagen se recorte y llene
+                    objectPosition: "50% 30%"
+
+                  }}
             />
           </Box>
 

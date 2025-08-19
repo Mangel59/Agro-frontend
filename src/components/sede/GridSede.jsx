@@ -15,9 +15,11 @@ export default function GridSede({ sedes, setSelectedRow }) {
   const columns = [
     { field: "id", headerName: "ID", width: 70 },
     { field: "nombre", headerName: "Nombre", width: 180 },
+    { field: "municipioId", headerName: "Municipio", width: 120 },
     { field: "grupoId", headerName: "Grupo", width: 100 },
     { field: "tipoSedeId", headerName: "Tipo Sede", width: 120 },
-    { field: "municipioId", headerName: "Municipio", width: 120 },
+    { field: "geolocalizacion", headerName: "Geolocalizacion", width: 120 },
+    { field: "coordenadas", headerName: "Coordenadas", width: 120 },
     { field: "area", headerName: "Área", width: 100 },
     { field: "comuna", headerName: "Comuna", width: 100 },
     { field: "descripcion", headerName: "Descripción", width: 200 },

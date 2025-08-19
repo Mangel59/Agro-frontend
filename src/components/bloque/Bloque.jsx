@@ -28,28 +28,53 @@ export default function Bloque() {
   const token = localStorage.getItem("token");
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
+  // Helpers
+  const asArray = (payload) => {
+    if (Array.isArray(payload)) return payload;
+    if (payload && Array.isArray(payload.content)) return payload.content;
+    return [];
+  };
+  const uniqById = (arr) => Array.from(new Map(arr.map(o => [o.id, o])).values());
+
+  // ---- Cargas base
   useEffect(() => {
-    axios.get("/v1/pais", headers).then(res => setPaises(res.data));
-    axios.get("/v1/tipo_bloque", headers).then(res => setTiposBloque(res.data));
+    axios.get("/v1/pais", headers).then(res => setPaises(res.data || []));
+    axios.get("/v1/tipo_bloque", headers).then(res => setTiposBloque(res.data || []));
   }, []);
 
+  // ---- País → Departamentos
   useEffect(() => {
     if (!selectedPais) return;
     axios.get("/v1/departamento", headers).then(res => {
-      setDepartamentos(res.data.filter(d => d.paisId === parseInt(selectedPais)));
+      const list = (res.data || []).filter(d => d.paisId === parseInt(selectedPais));
+      setDepartamentos(list);
     });
   }, [selectedPais]);
 
+  // Autoselect Dept si solo hay uno
+  useEffect(() => {
+    if (departamentos.length === 1) {
+      setSelectedDepto(String(departamentos[0].id));
+    }
+  }, [departamentos]);
+
+  // ---- Depto → Municipios
   useEffect(() => {
     if (!selectedDepto) return;
-    axios.get(`/v1/municipio?departamentoId=${selectedDepto}`, headers).then(res => {
-      const data = Array.isArray(res.data) ? res.data : [];
-      setMunicipios(data);
-    }).catch(err => {
-      console.error("ERROR MUNICIPIO", err.response?.status, err.response?.data);
-    });
+    axios
+      .get(`/v1/municipio?departamentoId=${selectedDepto}`, headers)
+      .then(res => setMunicipios(asArray(res.data)))
+      .catch(err => console.error("ERROR MUNICIPIO", err.response?.status, err.response?.data));
   }, [selectedDepto]);
 
+  // Autoselect Municipio si solo hay uno
+  useEffect(() => {
+    if (municipios.length === 1) {
+      setSelectedMunicipio(String(municipios[0].id));
+    }
+  }, [municipios]);
+
+  // ---- Municipio → Sedes
   useEffect(() => {
     setSedes([]);
     setSelectedSede("");
@@ -58,28 +83,89 @@ export default function Bloque() {
 
     if (!selectedMunicipio) return;
 
-    axios.get(`/v1/sede`, headers)
+    axios
+      .get(`/v1/sede`, headers)
       .then(res => {
-        const data = Array.isArray(res.data) ? res.data : [];
-        const filtradas = data.filter(s => s.municipioId === parseInt(selectedMunicipio));
+        const filtradas = asArray(res.data).filter(s => s.municipioId === parseInt(selectedMunicipio));
         setSedes(filtradas);
       })
-      .catch(err => {
-        console.error("ERROR SEDE", err.response?.status, err.response?.data);
-      });
+      .catch(err => console.error("ERROR SEDE", err.response?.status, err.response?.data));
   }, [selectedMunicipio]);
 
+  // Autoselect Sede si solo hay una
+  useEffect(() => {
+    if (sedes.length === 1) {
+      setSelectedSede(String(sedes[0].id));
+    }
+  }, [sedes]);
+
+  // ---- Sede → Bloques
   useEffect(() => {
     reloadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSede]);
 
-  const reloadData = () => {
-    if (!selectedSede) return setBloques([]);
-    axios.get(`/v1/bloque`, headers).then(res => {
-      const data = Array.isArray(res.data) ? res.data : [];
-      const filtrados = data.filter(b => b.sedeId === parseInt(selectedSede));
-      setBloques(filtrados);
-    });
+  const reloadData = async () => {
+    // limpiar inmediato para evitar "fantasmas" al cambiar
+    setBloques([]);
+    setSelectedRow(null);
+
+    if (!selectedSede) return;
+
+    let cancelled = false;
+    try {
+      const res = await axios.get(`/v1/bloque?sedeId=${selectedSede}`, headers);
+      if (cancelled) return;
+      let lista = asArray(res.data);
+
+      // Si el backend aún no filtra por sedeId, descomenta:
+      // lista = lista.filter(b => b.sedeId === parseInt(selectedSede));
+
+      setBloques(uniqById(lista)); // sin duplicados por id
+    } catch (err) {
+      if (!cancelled) {
+        console.error("ERROR BLOQUE", err.response?.status, err.response?.data);
+        setBloques([]);
+      }
+    }
+    return () => { cancelled = true; };
+  };
+
+  // ---- Handlers que limpian dependientes al vuelo
+  const handlePaisChange = (val) => {
+    setSelectedPais(val);
+    setDepartamentos([]);
+    setSelectedDepto("");
+    setMunicipios([]);
+    setSelectedMunicipio("");
+    setSedes([]);
+    setSelectedSede("");
+    setBloques([]);
+    setSelectedRow(null);
+  };
+
+  const handleDeptoChange = (val) => {
+    setSelectedDepto(val);
+    setMunicipios([]);
+    setSelectedMunicipio("");
+    setSedes([]);
+    setSelectedSede("");
+    setBloques([]);
+    setSelectedRow(null);
+  };
+
+  const handleMunicipioChange = (val) => {
+    setSelectedMunicipio(val);
+    setSedes([]);
+    setSelectedSede("");
+    setBloques([]);
+    setSelectedRow(null);
+  };
+
+  const handleSedeChange = (val) => {
+    setSelectedSede(val);
+    setBloques([]);      // limpia inmediatamente
+    setSelectedRow(null);
   };
 
   const handleDelete = async () => {
@@ -102,29 +188,29 @@ export default function Bloque() {
 
       <FormControl fullWidth sx={{ mb: 2 }}>
         <InputLabel>País</InputLabel>
-        <Select value={selectedPais} onChange={e => setSelectedPais(e.target.value)} label="País">
-          {paises.map(p => <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>)}
+        <Select value={selectedPais} onChange={e => handlePaisChange(e.target.value)} label="País">
+          {paises.map(p => <MenuItem key={p.id} value={String(p.id)}>{p.nombre}</MenuItem>)}
         </Select>
       </FormControl>
 
       <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedPais}>
         <InputLabel>Departamento</InputLabel>
-        <Select value={selectedDepto} onChange={e => setSelectedDepto(e.target.value)} label="Departamento">
-          {departamentos.map(d => <MenuItem key={d.id} value={d.id}>{d.nombre}</MenuItem>)}
+        <Select value={selectedDepto} onChange={e => handleDeptoChange(e.target.value)} label="Departamento">
+          {departamentos.map(d => <MenuItem key={d.id} value={String(d.id)}>{d.nombre}</MenuItem>)}
         </Select>
       </FormControl>
 
       <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedDepto}>
         <InputLabel>Municipio</InputLabel>
-        <Select value={selectedMunicipio} onChange={e => setSelectedMunicipio(e.target.value)} label="Municipio">
-          {municipios.map(m => <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>)}
+        <Select value={selectedMunicipio} onChange={e => handleMunicipioChange(e.target.value)} label="Municipio">
+          {municipios.map(m => <MenuItem key={m.id} value={String(m.id)}>{m.nombre}</MenuItem>)}
         </Select>
       </FormControl>
 
       <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedMunicipio}>
         <InputLabel>Sede</InputLabel>
-        <Select value={selectedSede} onChange={e => setSelectedSede(e.target.value)} label="Sede">
-          {sedes.map(s => <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>)}
+        <Select value={selectedSede} onChange={e => handleSedeChange(e.target.value)} label="Sede">
+          {sedes.map(s => <MenuItem key={s.id} value={String(s.id)}>{s.nombre}</MenuItem>)}
         </Select>
       </FormControl>
 

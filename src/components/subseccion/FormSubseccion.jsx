@@ -15,11 +15,18 @@ export default function FormSubseccion({
   reloadData = () => {},
   setMessage = () => {},
 }) {
+  const token = localStorage.getItem("token");
+  const headers = { headers: { Authorization: `Bearer ${token}` } };
+
+  const toNum = (v) =>
+    v === "" || v === null || v === undefined ? "" : Number(v);
+
   const initialData = {
     id: null,
-    seccionId: seccionId || "",
+    seccionId: toNum(seccionId) || "",
     nombre: "",
     descripcion: "",
+    // Consistencia con el resto: 1=Activo, 2=Inactivo
     estadoId: 1,
   };
 
@@ -27,48 +34,83 @@ export default function FormSubseccion({
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    if (open) {
-      if (formMode === "edit" && selectedRow) {
-        setFormData({ ...selectedRow });
-      } else {
-        setFormData({ ...initialData, seccionId });
-      }
-      setErrors({});
+    if (!open) return;
+
+    if (formMode === "edit" && selectedRow) {
+      setFormData({
+        id: selectedRow.id,
+        seccionId: toNum(selectedRow.seccionId),
+        nombre: selectedRow.nombre ?? "",
+        descripcion: selectedRow.descripcion ?? "",
+        // Si el backend te devuelve 0 para inactivo, lo mapeamos a 2
+        estadoId: selectedRow.estadoId === 0 ? 2 : toNum(selectedRow.estadoId ?? 1),
+      });
+    } else {
+      setFormData({
+        ...initialData,
+        seccionId: toNum(seccionId),
+      });
     }
+    setErrors({});
   }, [open, formMode, selectedRow, seccionId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (["estadoId", "seccionId"].includes(name)) {
+      setFormData((prev) => ({ ...prev, [name]: toNum(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const validate = () => {
     const newErrors = {};
     if (!formData.nombre?.trim()) newErrors.nombre = "El nombre es obligatorio.";
-    if (!formData.estadoId && formData.estadoId !== 0) newErrors.estadoId = "Debe seleccionar estado.";
     if (!formData.seccionId) newErrors.seccionId = "Debe seleccionar una sección.";
+    if (
+      formData.estadoId === "" ||
+      formData.estadoId === null ||
+      Number.isNaN(Number(formData.estadoId))
+    ) {
+      newErrors.estadoId = "Debe seleccionar estado.";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
     if (!validate()) return;
+
+    const payload = {
+      nombre: formData.nombre.trim(),
+      descripcion: formData.descripcion?.trim() || "",
+      seccionId: formData.seccionId,
+      estadoId: formData.estadoId, // 1=Activo, 2=Inactivo
+    };
+
     try {
       if (formMode === "edit" && formData.id) {
-        await axios.put(`/v1/subseccion/${formData.id}`, formData);
+        await axios.put(`/v1/subseccion/${formData.id}`, payload, headers);
         setMessage({ open: true, severity: "success", text: "Subsección actualizada correctamente." });
       } else {
-        await axios.post("/v1/subseccion", formData);
+        await axios.post("/v1/subseccion", payload, headers);
         setMessage({ open: true, severity: "success", text: "Subsección creada correctamente." });
       }
       setOpen(false);
       reloadData();
     } catch (err) {
-      setMessage({
-        open: true,
-        severity: "error",
-        text: err.response?.data?.message || "Error al guardar subsección.",
-      });
+      const apiMsg =
+        err.response?.data?.message ||
+        err.response?.data?.detail || // por si tu backend expone 'detail'
+        "Error al guardar subsección.";
+
+      // pista común: 409/400 suelen ser duplicados o restricciones de DB
+      const hint =
+        err.response?.status === 409 || err.response?.status === 400
+          ? " (verifique nombre duplicado o restricciones/llaves foráneas)."
+          : "";
+
+      setMessage({ open: true, severity: "error", text: apiMsg + hint });
     }
   };
 
@@ -77,24 +119,35 @@ export default function FormSubseccion({
       <DialogTitle>{formMode === "edit" ? "Editar Subsección" : "Nueva Subsección"}</DialogTitle>
       <DialogContent>
         <TextField
-          fullWidth margin="normal" label="Nombre" name="nombre"
-          value={formData.nombre} onChange={handleChange}
-          error={!!errors.nombre} helperText={errors.nombre}
+          fullWidth
+          margin="normal"
+          label="Nombre"
+          name="nombre"
+          value={formData.nombre}
+          onChange={handleChange}
+          error={!!errors.nombre}
+          helperText={errors.nombre}
         />
 
         <TextField
-          fullWidth margin="normal" label="Descripción" name="descripcion"
-          value={formData.descripcion} onChange={handleChange}
+          fullWidth
+          margin="normal"
+          label="Descripción"
+          name="descripcion"
+          value={formData.descripcion}
+          onChange={handleChange}
         />
 
         <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
           <InputLabel>Estado</InputLabel>
           <Select
-            name="estadoId" value={formData.estadoId}
-            onChange={handleChange} label="Estado"
+            name="estadoId"
+            value={formData.estadoId}
+            onChange={handleChange}
+            label="Estado"
           >
             <MenuItem value={1}>Activo</MenuItem>
-            <MenuItem value={0}>Inactivo</MenuItem>
+            <MenuItem value={2}>Inactivo</MenuItem>
           </Select>
           {errors.estadoId && <FormHelperText>{errors.estadoId}</FormHelperText>}
         </FormControl>

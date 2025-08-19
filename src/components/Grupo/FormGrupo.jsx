@@ -26,7 +26,7 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
   const create = () => {
     setFormData(initialData);
     setErrors({});
-    setMethodName("Add");
+    setMethodName("Agregar");
     setOpen(true);
   };
 
@@ -43,7 +43,7 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
     });
 
     setErrors({});
-    setMethodName("Update");
+    setMethodName("Actualizar");
     setOpen(true);
   };
 
@@ -106,15 +106,15 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
       estadoId: parseInt(formData.estado)
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/grupo" : `/v1/grupo/${selectedRow.id}`;
+    const method = methodName === "Agregar" ? axios.post : axios.put;
+    const url = methodName === "Agregar" ? "/v1/grupo" : `/v1/grupo/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Grupo creado con éxito!" : "Grupo actualizado con éxito!"
+          text: methodName === "Agregar" ? "Grupo creado con éxito!" : "Grupo actualizado con éxito!"
         });
         setOpen(false);
         setSelectedRow({});

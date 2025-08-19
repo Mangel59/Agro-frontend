@@ -25,7 +25,7 @@ export default function FormTipoSede({ selectedRow, setSelectedRow, setMessage, 
   const create = () => {
     setFormData(initialData);
     setErrors({});
-    setMethodName("Add");
+    setMethodName("Agregar");
     setOpen(true);
   };
 
@@ -42,7 +42,7 @@ export default function FormTipoSede({ selectedRow, setSelectedRow, setMessage, 
     });
 
     setErrors({});
-    setMethodName("Update");
+    setMethodName("Actualizar");
     setOpen(true);
   };
 
@@ -105,15 +105,15 @@ export default function FormTipoSede({ selectedRow, setSelectedRow, setMessage, 
       estadoId: parseInt(formData.estado)
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/tipo_sede" : `/v1/tipo_sede/${selectedRow.id}`;
+    const method = methodName === "Agregar" ? axios.post : axios.put;
+    const url = methodName === "Agregar" ? "/v1/tipo_sede" : `/v1/tipo_sede/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Tipo de sede creado!" : "Tipo de sede actualizado!"
+          text: methodName === "Agregar" ? "Tipo de sede creado!" : "Tipo de sede actualizado!"
         });
         setOpen(false);
         setSelectedRow({});

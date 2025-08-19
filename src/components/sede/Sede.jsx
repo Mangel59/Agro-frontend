@@ -3,9 +3,7 @@ import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
 import FormSede from "./FormSede";
 import GridSede from "./GridSede";
-import {
-  Box, Typography, FormControl, InputLabel, Select, MenuItem, Button
-} from "@mui/material";
+import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Button } from "@mui/material";
 
 export default function Sede() {
   const [paises, setPaises] = useState([]);
@@ -26,31 +24,27 @@ export default function Sede() {
   const token = localStorage.getItem("token");
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
+  // Soporta array plano o { content, page }
+  const unwrapPage = (data) => (Array.isArray(data) ? data : data?.content ?? []);
+
   useEffect(() => {
-    axios.get("/v1/pais", headers)
-      .then(res => setPaises(res.data))
+    axios
+      .get("/v1/pais", { ...headers, params: { page: 0, size: 1000 } })
+      .then((res) => setPaises(unwrapPage(res.data)))
       .catch(() => setMessage({ open: true, severity: "error", text: "Error al cargar países." }));
 
-     // luego en cada request:
-axios.get("/v1/tipo_sede", headers)
-.then(res => {
-  console.log("Tipos de sede recibidos:", res.data);
-  setTiposSede(res.data);
-})
-.catch(err => {
-  console.error("Error tipos de sede:", err);
-  setMessage({ open: true, severity: "error", text: "Error al cargar tipos de sede." });
-});
+    axios
+      .get("/v1/tipo_sede", { ...headers, params: { page: 0, size: 1000 } })
+      .then((res) => setTiposSede(unwrapPage(res.data)))
+      .catch(() => setMessage({ open: true, severity: "error", text: "Error al cargar tipos de sede." }));
 
-axios.get("/v1/grupo", headers)
-.then(res => setGrupos(res.data))
-.catch(err => {
-  console.error("Error grupos:", err);
-  setMessage({ open: true, severity: "error", text: "Error al cargar grupos." });
-});
-    
+    axios
+      .get("/v1/grupo", { ...headers, params: { page: 0, size: 1000 } })
+      .then((res) => setGrupos(unwrapPage(res.data)))
+      .catch(() => setMessage({ open: true, severity: "error", text: "Error al cargar grupos." }));
   }, []);
 
+  // Departamentos por país
   useEffect(() => {
     if (!selectedPais) {
       setDepartamentos([]);
@@ -60,15 +54,23 @@ axios.get("/v1/grupo", headers)
       return;
     }
 
-    axios.get("/v1/departamento", headers)
-      .then(res => {
-        setDepartamentos(res.data.filter(dep => dep.paisId === parseInt(selectedPais)));
+    axios
+      .get("/v1/departamento", { ...headers, params: { page: 0, size: 1000 } })
+      .then((res) => {
+        const lista = unwrapPage(res.data).filter(
+          (dep) => Number(dep.paisId) === Number(selectedPais)
+        );
+        setDepartamentos(lista);
         setSelectedDepto("");
         setMunicipios([]);
         setSelectedMunicipio("");
-      });
+      })
+      .catch(() =>
+        setMessage({ open: true, severity: "error", text: "Error al cargar departamentos." })
+      );
   }, [selectedPais]);
 
+  // Municipios por departamento
   useEffect(() => {
     if (!selectedDepto) {
       setMunicipios([]);
@@ -76,31 +78,51 @@ axios.get("/v1/grupo", headers)
       return;
     }
 
-    axios.get(`/v1/municipio?departamentoId=${selectedDepto}`, headers)
-      .then(res => setMunicipios(res.data));
+    axios
+      .get("/v1/municipio", {
+        ...headers,
+        params: { departamentoId: Number(selectedDepto), page: 0, size: 1000 },
+      })
+      .then((res) => setMunicipios(unwrapPage(res.data)))
+      .catch(() =>
+        setMessage({ open: true, severity: "error", text: "Error al cargar municipios." })
+      );
   }, [selectedDepto]);
 
+  // Sedes por municipio
   const reloadData = () => {
-    if (!selectedMunicipio) return setSedes([]);
-    axios.get(`/v1/sede?municipioId=${selectedMunicipio}`, headers)
-      .then(res => {
-        setSedes(res.data.filter(s => s.municipioId === parseInt(selectedMunicipio)));
-      });
+    if (!selectedMunicipio) {
+      setSedes([]);
+      return;
+    }
+    axios
+      .get("/v1/sede", {
+        ...headers,
+        params: { municipioId: Number(selectedMunicipio), page: 0, size: 1000 },
+      })
+      .then((res) => {
+        const lista = unwrapPage(res.data).filter(
+          (s) => Number(s.municipioId) === Number(selectedMunicipio)
+        );
+        setSedes(lista);
+      })
+      .catch(() =>
+        setMessage({ open: true, severity: "error", text: "Error al cargar sedes." })
+      );
   };
-
   useEffect(() => { reloadData(); }, [selectedMunicipio]);
 
   const handleDelete = async () => {
     if (!selectedRow) return;
-    if (window.confirm(`¿Eliminar la sede "${selectedRow.nombre}"?`)) {
-      try {
-        await axios.delete(`/v1/sede/${selectedRow.id}`, headers);
-        setMessage({ open: true, severity: "success", text: "Sede eliminada correctamente." });
-        setSelectedRow(null);
-        reloadData();
-      } catch {
-        setMessage({ open: true, severity: "error", text: "Error al eliminar sede." });
-      }
+    if (!window.confirm(`¿Eliminar la sede "${selectedRow.nombre}"?`)) return;
+
+    try {
+      await axios.delete(`/v1/sede/${selectedRow.id}`, headers);
+      setMessage({ open: true, severity: "success", text: "Sede eliminada correctamente." });
+      setSelectedRow(null);
+      reloadData();
+    } catch {
+      setMessage({ open: true, severity: "error", text: "Error al eliminar sede." });
     }
   };
 
@@ -110,7 +132,11 @@ axios.get("/v1/grupo", headers)
 
       <FormControl fullWidth sx={{ mb: 2 }}>
         <InputLabel>País</InputLabel>
-        <Select value={selectedPais} onChange={(e) => setSelectedPais(e.target.value)} label="País">
+        <Select
+          value={selectedPais}
+          onChange={(e) => setSelectedPais(Number(e.target.value))}
+          label="País"
+        >
           {paises.map((pais) => (
             <MenuItem key={pais.id} value={pais.id}>{pais.nombre}</MenuItem>
           ))}
@@ -119,7 +145,11 @@ axios.get("/v1/grupo", headers)
 
       <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedPais}>
         <InputLabel>Departamento</InputLabel>
-        <Select value={selectedDepto} onChange={(e) => setSelectedDepto(e.target.value)} label="Departamento">
+        <Select
+          value={selectedDepto}
+          onChange={(e) => setSelectedDepto(Number(e.target.value))}
+          label="Departamento"
+        >
           {departamentos.map((dep) => (
             <MenuItem key={dep.id} value={dep.id}>{dep.nombre}</MenuItem>
           ))}
@@ -128,7 +158,11 @@ axios.get("/v1/grupo", headers)
 
       <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedDepto}>
         <InputLabel>Municipio</InputLabel>
-        <Select value={selectedMunicipio} onChange={(e) => setSelectedMunicipio(e.target.value)} label="Municipio">
+        <Select
+          value={selectedMunicipio}
+          onChange={(e) => setSelectedMunicipio(Number(e.target.value))}
+          label="Municipio"
+        >
           {municipios.map((mun) => (
             <MenuItem key={mun.id} value={mun.id}>{mun.nombre}</MenuItem>
           ))}
@@ -138,33 +172,15 @@ axios.get("/v1/grupo", headers)
       <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
         <Button
           variant="contained"
-          onClick={() => {
-            setFormMode("create");
-            setFormOpen(true);
-            setSelectedRow(null);
-          }}
+          onClick={() => { setFormMode("create"); setFormOpen(true); setSelectedRow(null); }}
           disabled={!selectedMunicipio}
         >
           + Agregar Sede
         </Button>
-
-        <Button
-          variant="outlined"
-          onClick={() => {
-            setFormMode("edit");
-            setFormOpen(true);
-          }}
-          disabled={!selectedRow}
-        >
+        <Button variant="outlined" onClick={() => { setFormMode("edit"); setFormOpen(true); }} disabled={!selectedRow}>
           Editar
         </Button>
-
-        <Button
-          variant="outlined"
-          color="error"
-          onClick={handleDelete}
-          disabled={!selectedRow}
-        >
+        <Button variant="outlined" color="error" onClick={handleDelete} disabled={!selectedRow}>
           Eliminar
         </Button>
       </Box>
@@ -181,6 +197,7 @@ axios.get("/v1/grupo", headers)
         municipioId={selectedMunicipio}
         grupos={grupos}
         tiposSede={tiposSede}
+        authHeaders={headers}
       />
 
       <MessageSnackBar message={message} setMessage={setMessage} />
