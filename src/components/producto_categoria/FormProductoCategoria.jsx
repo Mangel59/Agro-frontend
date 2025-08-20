@@ -24,7 +24,7 @@ export default function FormProductoCategoria({ selectedRow, setSelectedRow, set
   const create = () => {
     setFormData(initialData);
     setErrors({});
-    setMethodName("Add");
+    setMethodName("Crear");
     setOpen(true);
   };
 
@@ -41,7 +41,7 @@ export default function FormProductoCategoria({ selectedRow, setSelectedRow, set
     });
 
     setErrors({});
-    setMethodName("Update");
+    setMethodName("Actualizar");
     setOpen(true);
   };
 
@@ -96,15 +96,15 @@ export default function FormProductoCategoria({ selectedRow, setSelectedRow, set
       estadoId: parseInt(formData.estado)
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/producto_categoria" : `/v1/producto_categoria/${selectedRow.id}`;
+    const method = methodName === "Crear" ? axios.post : axios.put;
+    const url = methodName === "Crear" ? "/v1/producto_categoria" : `/v1/producto_categoria/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Categoría creada con éxito!" : "Categoría actualizada con éxito!"
+          text: methodName === "Crear" ? "Categoría creada con éxito!" : "Categoría actualizada con éxito!"
         });
         setOpen(false);
         setSelectedRow({});

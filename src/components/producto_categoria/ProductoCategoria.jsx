@@ -34,7 +34,7 @@ export default function ProductoCategoria() {
 
   return (
     <div>
-      <h1>Gestión de Categorías de Producto</h1>
+      <h1>Categorías de Producto</h1>
 
       <MessageSnackBar message={message} setMessage={setMessage} />
 

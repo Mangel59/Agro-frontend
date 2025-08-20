@@ -30,7 +30,7 @@ export default function Unidad() {
 
   return (
     <div>
-      <h1>Gestión de Unidades</h1>
+      <h1> Unidades</h1>
 
       <MessageSnackBar message={message} setMessage={setMessage} />
 

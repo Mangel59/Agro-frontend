@@ -36,7 +36,7 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
 
   const create = () => {
     setFormData(initialData);
-    setMethodName("Add");
+    setMethodName("Crear");
     setErrors({});
     loadMovimientos();
     setOpen(true);
@@ -55,7 +55,7 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
       movimientoId: selectedRow.movimientoId?.toString() || ""
     });
 
-    setMethodName("Update");
+    setMethodName("Actualizar");
     setErrors({});
     loadMovimientos();
     setOpen(true);
@@ -125,15 +125,15 @@ export default function FormTipoMovimiento({ selectedRow, setSelectedRow, setMes
       empresaId
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/tipo_movimiento" : `/v1/tipo_movimiento/${selectedRow.id}`;
+    const method = methodName === "Crear" ? axios.post : axios.put;
+    const url = methodName === "Crear" ? "/v1/tipo_movimiento" : `/v1/tipo_movimiento/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add"
+          text: methodName === "Crear"
             ? "Tipo de movimiento creado con éxito!"
             : "Tipo de movimiento actualizado con éxito!"
         });

@@ -1,70 +1,95 @@
-import React from "react";
+// src/components/Presentacionproducto/GridPresentacionproducto.jsx
+import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import { DataGrid } from "@mui/x-data-grid";
-import { Box } from "@mui/material";
+import { Chip } from "@mui/material";
 
 export default function GridPresentacionproducto({
+  // nombres nuevos (preferidos)
+  rows,
+  onPaginationModelChange,
+
+  // compat con nombres antiguos (por si quedaron en el padre)
   Presentacionproductoes,
+  setPaginationModel,
+
   selectedRow,
   setSelectedRow,
+  loading = false,
   paginationModel,
-  setPaginationModel,
   sortModel,
   setSortModel,
   filterModel,
   setFilterModel,
-  rowCount,
+  rowCount = 0,
 }) {
-  const columns = [
-    { field: "id", headerName: "ID", width: 80 },
-    { field: "nombre", headerName: "Nombre", width: 180 },
-    { field: "descripcion", headerName: "Descripción", width: 250 },
-    { field: "cantidad", headerName: "Cantidad", width: 100 },
-    { field: "productoNombre", headerName: "Producto", width: 150 },
-    { field: "unidadNombre", headerName: "Unidad", width: 120 },
-    { field: "marcaNombre", headerName: "Marca", width: 150 },
-    { field: "presentacionNombre", headerName: "Presentación", width: 150 },
-    {
+  // Fallbacks seguros
+  const safeRows = rows ?? Presentacionproductoes ?? []; 
+  const handlePaginationChange =
+    onPaginationModelChange ??
+    setPaginationModel ??
+    (() => {}); // no-op
+
+  const columns = useMemo(
+    () => [
+      { field: "id", headerName: "ID", width: 90 },
+      { field: "productoNombre", headerName: "Producto", flex: 1, minWidth: 140 },
+      { field: "nombre", headerName: "Nombre de la Presentación", flex: 1.2, minWidth: 180 },
+      { field: "unidadNombre", headerName: "Unidad", flex: 1, minWidth: 120 },
+      { field: "descripcion", headerName: "Descripción", flex: 1.5, minWidth: 200 },
+      { field: "cantidad", headerName: "Cantidad", type: "number", width: 120 },
+      { field: "marcaNombre", headerName: "Marca", flex: 1, minWidth: 140 },
+      { field: "presentacionNombre", headerName: "Tipo de Presentación", flex: 1.2, minWidth: 180 },
+      {
       field: "estadoId",
       headerName: "Estado",
-      width: 100,
-      valueFormatter: ({ value }) =>
-        value === 1 ? "Activo" : value === 0 ? "Inactivo" : "Otro",
-    },
-  ];
+      width: 150,
+      valueFormatter: ({ value }) => (value === 1 ? "Activo" : "Inactivo"),
+    }
+    ],
+    []
+  );
 
   return (
-    <Box sx={{ width: "100%", mt: 2 }}>
+    <div style={{ width: "100%", height: 520 }}>
       <DataGrid
-        rows={Presentacionproductoes}
+        rows={safeRows}                            // 👈 nunca undefined
         columns={columns}
-        getRowId={(row) => row.id}
-        onRowClick={(params) => setSelectedRow(params.row)}
-        disableSelectionOnClick
-        autoHeight
+        getRowId={(r) => r.id}
+        loading={loading}
+        rowCount={rowCount}
+        paginationMode="server"
         paginationModel={paginationModel}
-        onPaginationModelChange={setPaginationModel}
-        pageSizeOptions={[5, 10, 25]}
+        onPaginationModelChange={handlePaginationChange}  // 👈 acepta ambos
         sortingMode="client"
         sortModel={sortModel}
         onSortModelChange={setSortModel}
+        filterMode="client"
         filterModel={filterModel}
         onFilterModelChange={setFilterModel}
-        rowCount={rowCount}
+        onRowClick={(params) => setSelectedRow && setSelectedRow(params.row)}
+        initialState={{ pagination: { paginationModel } }}
       />
-    </Box>
+    </div>
   );
 }
 
 GridPresentacionproducto.propTypes = {
-  Presentacionproductoes: PropTypes.array.isRequired,
-  selectedRow: PropTypes.object.isRequired,
-  setSelectedRow: PropTypes.func.isRequired,
-  paginationModel: PropTypes.object.isRequired,
-  setPaginationModel: PropTypes.func.isRequired,
+  // nuevos
+  rows: PropTypes.array,
+  onPaginationModelChange: PropTypes.func,
+
+  // compat antiguos
+  Presentacionproductoes: PropTypes.array,
+  setPaginationModel: PropTypes.func,
+
+  selectedRow: PropTypes.object,
+  setSelectedRow: PropTypes.func,
+  loading: PropTypes.bool,
+  paginationModel: PropTypes.shape({ page: PropTypes.number, pageSize: PropTypes.number }).isRequired,
   sortModel: PropTypes.array.isRequired,
   setSortModel: PropTypes.func.isRequired,
   filterModel: PropTypes.object.isRequired,
   setFilterModel: PropTypes.func.isRequired,
-  rowCount: PropTypes.number.isRequired,
+  rowCount: PropTypes.number,
 };

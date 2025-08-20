@@ -17,14 +17,14 @@ export default function GridTipoMovimiento({
     { field: "id", headerName: "ID", width: 90 },
     { field: "nombre", headerName: "Nombre", width: 150 },
     { field: "descripcion", headerName: "Descripción", width: 250 },
+    { field: "empresaId", headerName: "Empresa", width: 130 },
+    { field: "movimientoNombre", headerName: "Movimiento", width: 180 },
     {
       field: "estado",
       headerName: "Estado",
       width: 120,
       valueGetter: (params) => (params.row.estado === 1 ? "Activo" : "Inactivo"),
-    },
-    { field: "empresaId", headerName: "Empresa ID", width: 130 },
-    { field: "movimientoNombre", headerName: "Movimiento", width: 180 },
+    }
   ];
 
   return (

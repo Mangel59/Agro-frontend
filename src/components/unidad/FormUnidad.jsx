@@ -24,7 +24,7 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
   const create = () => {
     setFormData(initialData);
     setErrors({});
-    setMethodName("Add");
+    setMethodName("Crear");
     setOpen(true);
   };
 
@@ -40,7 +40,7 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
       estado: selectedRow.estadoId?.toString() || ""
     });
     setErrors({});
-    setMethodName("Update");
+    setMethodName("Actualizar");
     setOpen(true);
   };
 
@@ -85,15 +85,15 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
       estadoId: parseInt(formData.estado)
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/unidad" : `/v1/unidad/${selectedRow.id}`;
+    const method = methodName === "Crear" ? axios.post : axios.put;
+    const url = methodName === "Crear" ? "/v1/unidad" : `/v1/unidad/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Unidad creada con éxito!" : "Unidad actualizada con éxito!"
+          text: methodName === "Crear" ? "Unidad creada con éxito!" : "Unidad actualizada con éxito!"
         });
         setOpen(false);
         setSelectedRow({});
