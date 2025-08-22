@@ -187,8 +187,19 @@ import presentacion from "/images/cards/presentacion.png";
 import producto_categoria from "/images/cards/producto_categoria.png";
 import marca from "/images/cards/marca.png";
 import ingrediente from "/images/cards/ingrediente.png";
+import tipo_produccion from "/images/cards/tipo_produccion.png";
+import produccion from "/images/cards/produccion.png";
+import proceso from "/images/cards/proceso.png";
+import tipo_movimiento from "/images/cards/tipo_movimiento.png";
+import movimiento from "/images/cards/movimiento.png";
+import unidad from "/images/cards/unidad.png";
+import productos from "/images/cards/productos.png";
+import proveedor from "/images/cards/proveedor.png";
+import pedido from "/images/cards/pedido.png";
+import orde_compra from "/images/cards/orde_compra.png";
+import kardexx from "/images/cards/kardexx.png";
+import ocupacion from "/images/cards/ocupacion.png";
 
-//C:\Users\lucyz\coagronet-frontend\public\images\cards\producto_categoria.png
 const moduleImages = {
   persona: persona, 
   rol: rol,
@@ -216,22 +227,25 @@ const moduleImages = {
   producto_categoria: producto_categoria,
   marca: marca,
   Ingrediente: ingrediente,
-
-
-  Kardex: img5,
-  proveedor: img6,
-
-  unidad: img9,
-  producto: img10,
-  tipo_produccion: img2,
-  tipo_movimiento: img3,
-  produccion: img4,
-  r_pedido: img5,
+  tipo_produccion: tipo_produccion,
+  produccion: produccion,
+  Proceso: proceso,
+  tipo_movimiento: tipo_movimiento,
+  Movimiento: movimiento,
+  unidad: unidad,
+  producto: productos,
+  proveedor: proveedor,
+  r_pedido: pedido,
+  OrdenCompra: orde_compra,
+  kardex: kardexx,
+  Ocupacion: ocupacion,
+  
+  
   
   media_card: img7,
   evaluacion_item: img2,
-  OrdenCompra: img9,
-  Ocupacion: img5,
+  
+  
   
   RE_pedido: img9,
   RE_kardex: img10,
