@@ -199,6 +199,12 @@ import pedido from "/images/cards/pedido.png";
 import orde_compra from "/images/cards/orde_compra.png";
 import kardexx from "/images/cards/kardexx.png";
 import ocupacion from "/images/cards/ocupacion.png";
+// reportes
+import r_pedidoo from "/images/cards/r_pedidoo.png";
+import r_kardexx from "/images/cards/r_kardexx.png";
+import r_factura from "/images/cards/r_factura.png";
+import prodcutos_vencidos from "/images/cards/prodcutos_vencidos.png";
+import r_orden_compra from "/images/cards/r_orden_compra.png";
 
 const moduleImages = {
   persona: persona, 
@@ -239,19 +245,19 @@ const moduleImages = {
   OrdenCompra: orde_compra,
   kardex: kardexx,
   Ocupacion: ocupacion,
-  
-  
+  RE_pedido: r_pedidoo,
+  RE_kardex: r_kardexx,
+  RE_pv: prodcutos_vencidos,
+  RE_oc: r_orden_compra,
+  RE_fc: r_factura,
   
   media_card: img7,
   evaluacion_item: img2,
   
   
   
-  RE_pedido: img9,
-  RE_kardex: img10,
-  RE_productoVencimiento: img1,
-  RE_oc: img2,
-  RE_fc: img3,
+ 
+  
 };
 
 export default function Navigator2({

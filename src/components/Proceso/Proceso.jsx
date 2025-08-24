@@ -20,7 +20,7 @@ export default function Proceso() {
         setProcesos(datosConId);
       })
       .catch((err) => {
-        console.error("❌ Error al cargar procesos:", err);
+        console.error("Error al cargar procesos:", err);
         setMessage({
           open: true,
           severity: "error",
