@@ -1,0 +1,9 @@
+/* Evita barra de desplazamiento horizontal en toda la app */
+html, body, #root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+html, body, #root {
+  max-width: 100%;
+  overflow-x: hidden;
+}

@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  CssBaseline,
-  Container,
-  Toolbar,
-  Paper,
-} from '@mui/material';
+import { Box, CssBaseline, Container, Toolbar, Paper } from '@mui/material';
 
 import { useThemeToggle } from './components/dashboard/ThemeToggleProvider';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +12,7 @@ import Inicio from './components/Inicio.jsx';
 import Contenido from './components/dashboard/Contenido.jsx';
 import Navigator2 from './components/dashboard/Navigator2.jsx';
 
-// Importación de los 45 módulos
+// Módulos
 import Persona from "./components/personas/Persona.jsx";
 import Pais from './components/pais/Pais';
 import Departamento from './components/departamento/Departamento';
@@ -113,9 +107,11 @@ const moduleMap = {
   re_fc: RE_fc
 };
 
+const APPBAR_GREEN = '#0F2327';
+
 const App = () => {
-  const { t } = useTranslation();
-  const toggleTheme = useThemeToggle();
+  useTranslation();
+  useThemeToggle();
 
   const [currentModule, setCurrentModule] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -124,93 +120,120 @@ const App = () => {
     return saved ? JSON.parse(saved) : true;
   });
 
-useEffect(() => {
-  const token = localStorage.getItem('token');
-  const expiresAt = localStorage.getItem('token_expiration');
-  const isTokenValid = token && expiresAt && Date.now() < Number(expiresAt);
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const expiresAt = localStorage.getItem('token_expiration');
+    const isTokenValid = token && expiresAt && Date.now() < Number(expiresAt);
 
-  if (isTokenValid) {
-    setIsAuthenticated(true);
-
-    const savedModule = localStorage.getItem('activeModule'); // <-- ESTA LÍNEA FALTABA
-
-    if (savedModule && moduleMap[savedModule]) {
-      const Component = moduleMap[savedModule];
-      setCurrentModule(<Component />);
+    if (isTokenValid) {
+      setIsAuthenticated(true);
+      const savedModule = localStorage.getItem('activeModule');
+      if (savedModule && moduleMap[savedModule]) {
+        const Component = moduleMap[savedModule];
+        setCurrentModule(<Component />);
+      } else {
+        setCurrentModule(<Contenido setCurrentModule={setCurrentModule} />);
+      }
     } else {
-      setCurrentModule(<Contenido setCurrentModule={setCurrentModule} />);
+      localStorage.removeItem('token');
+      localStorage.removeItem('token_expiration');
+      localStorage.removeItem('activeModule');
+      setIsAuthenticated(false);
+      setCurrentModule(<Inicio setCurrentModule={setCurrentModule} />);
     }
-  } else {
-    localStorage.removeItem('token');
-    localStorage.removeItem('token_expiration');
-    localStorage.removeItem('activeModule');
-    setIsAuthenticated(false);
-    setCurrentModule(<Inicio setCurrentModule={setCurrentModule} />)
-  }
-}, []);
+  }, []);
 
+  const isPublic = !isAuthenticated;
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <CssBaseline />
-      {isAuthenticated && (
-      <Navigator2
-        setCurrentModuleItem={setCurrentModule}
-        setMenuOpen={setMenuOpen}
-        isAuthenticated={isAuthenticated}
-       />
-    )}
 
+      {isAuthenticated && (
+        <Navigator2
+          setCurrentModuleItem={setCurrentModule}
+          setMenuOpen={setMenuOpen}
+          isAuthenticated={isAuthenticated}
+        />
+      )}
 
       <Box
+        id="app-main"
         component="main"
         sx={{
           flexGrow: 1,
           display: 'flex',
           flexDirection: 'column',
-          ml: isAuthenticated ? {
-            xs: menuOpen ? '200px' : '60px',
-            sm: menuOpen ? '220px' : '70px',
-            md: menuOpen ? '250px' : '70px',
-          } : 0,
+          ml: isAuthenticated
+            ? {
+                xs: menuOpen ? '200px' : '60px',
+                sm: menuOpen ? '220px' : '70px',
+                md: menuOpen ? '250px' : '70px',
+              }
+            : 0,
           transition: 'margin-left 0.3s ease',
+          bgcolor: 'transparent',
         }}
       >
         <AppBarComponent
-  key={isAuthenticated}
-  setCurrentModule={setCurrentModule}
-  setIsAuthenticated={setIsAuthenticated}
-  isAuthenticated={isAuthenticated}
-/>
-        <Toolbar />
-          <Container
-          maxWidth="lg"
+          key={isAuthenticated}
+          setCurrentModule={setCurrentModule}
+          setIsAuthenticated={setIsAuthenticated}
+          isAuthenticated={isAuthenticated}
+        />
+
+        {/* Offset del AppBar con el MISMO verde */}
+        <Toolbar
+          disableGutters
           sx={{
-            flex: 1,
-            py: 1,
-            px: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
+            bgcolor: APPBAR_GREEN,
+            boxShadow: 'none',
+            border: 0,
           }}
-        >
-          <Paper
-            elevation={3}
+        />
+
+        {/* Público: sin container extra */}
+        {isPublic ? (
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            {currentModule}
+            <Box sx={{ py: 2 }}>
+              <Copyright />
+            </Box>
+          </Box>
+        ) : (
+          // Autenticado: Container sin Paper para evitar fondos negros/blancos
+          <Container
+            maxWidth="lg"
+            disableGutters
             sx={{
-              p: 2,
-              width: '100%',
-              overflow: 'auto',
-              minHeight: 'calc(100vh - 160px)',
-              maxWidth: '100%',
+              flex: 1,
+              py: 1,
+              px: { xs: 1, sm: 2 },
+              display: 'flex',
+              flexDirection: 'column',
+              bgcolor: 'transparent',
             }}
           >
-            {currentModule}
-          </Paper>
-          <Copyright sx={{ pt: 2 }} />
-        </Container>
+            <Box
+              sx={{
+                flex: 1,
+                width: '100%',
+                minHeight: 'calc(100vh - 160px)',
+                overflow: 'auto',
+                bgcolor: 'transparent',
+              }}
+            >
+              {currentModule}
+            </Box>
+            <Box sx={{ pt: 2 }}>
+              <Copyright />
+            </Box>
+          </Container>
+        )}
       </Box>
     </Box>
   );
 };
+
 
 export default App;
