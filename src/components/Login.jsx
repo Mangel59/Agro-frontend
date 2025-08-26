@@ -93,7 +93,7 @@ export default function Login(props) {
       if (inferredName) localStorage.setItem("empresaNombre", inferredName);
 
       props.setIsAuthenticated?.(true);
-      window.location.replace("/");
+      window.location.replace("/coagronet"); // recarga completa para resetear estado
     } catch (err) {
       console.error("Login error:", err);
       setError(t("login_error"));
