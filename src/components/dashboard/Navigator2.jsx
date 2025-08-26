@@ -9,13 +9,8 @@ import {
   ListItemText,
   Grid,
   Typography,
-  Button,
 } from "@mui/material";
-
-
-import { grey } from '@mui/material/colors';
-import { alpha } from '@mui/material/styles';
-
+import { alpha, useTheme } from "@mui/material/styles";
 
 import MenuIcon from "@mui/icons-material/Menu";
 import DnsRoundedIcon from "@mui/icons-material/DnsRounded";
@@ -34,7 +29,6 @@ import WarehouseIcon from "@mui/icons-material/Warehouse";
 import DomainIcon from "@mui/icons-material/Domain";
 
 import axios from "../axiosConfig.js";
-import { useTheme } from "@mui/material/styles";
 import { useTranslation } from "react-i18next";
 
 import Persona from "../personas/Persona.jsx";
@@ -82,6 +76,66 @@ import RE_kardex from "../RKardex/Rkardex.jsx";
 import RE_productoVencimiento from "../RE_pv/re_pvn.jsx";
 import RE_ordenCompra from "../RE_oc/re_oc.jsx";
 import RE_fc from "../RE_fc/re_fc.jsx";
+
+// Imágenes
+import img1 from "/images/cards/1.jpg";
+import img2 from "/images/cards/2.jpg";
+import img3 from "/images/cards/3.jpg";
+import img4 from "/images/cards/4.jpg";
+import img5 from "/images/cards/5.jpg";
+import img6 from "/images/cards/6.jpg";
+import img7 from "/images/cards/7.jpg";
+import img8 from "/images/cards/8.jpg";
+import img9 from "/images/cards/9.jpg";
+import img10 from "/images/cards/10.jpg";
+
+// seguridad
+import persona from "/images/cards/persona.png";
+import rol from "/images/cards/rol.png";
+import tipo_identificacion from "/images/cards/tipo_identificacion.png";
+import empresa from "/images/cards/empresa.png";
+import tipo_evaluacion from "/images/cards/tipo_evaluacion.png";
+// parametrización
+import pais from "/images/cards/pais.png";
+import departamento from "/images/cards/departamento.png";
+import municipio from "/images/cards/municipio.png";
+import tipo_sede from "/images/cards/tipo_sede.png";
+import sede from "/images/cards/sede.png";
+import tipo_bloque from "/images/cards/tipo_bloque.png";
+import bloque from "/images/cards/bloque.png";
+import grupo from "/images/cards/grupo.png";
+import tipo_espacio from "/images/cards/tipo_espacio.png";
+import espacio from "/images/cards/espacio.png";
+import almacen from "/images/cards/almacen.png";
+import seccion from "/images/cards/seccion.png";
+import subseccion from "/images/cards/subseccion.png";
+import tip_inventario from "/images/cards/tip_inventario.png";
+import inventario from "/images/cards/inventario.png";
+// inventario
+import ingredienteproductopresentacion from "/images/cards/ingredienteproductopresentacion.png";
+import presentacion_producto from "/images/cards/presentacion_producto.png";
+import presentacion from "/images/cards/presentacion.png";
+import producto_categoria from "/images/cards/producto_categoria.png";
+import marca from "/images/cards/marca.png";
+import ingrediente from "/images/cards/ingrediente.png";
+import tipo_produccion from "/images/cards/tipo_produccion.png";
+import produccion from "/images/cards/produccion.png";
+import proceso from "/images/cards/proceso.png";
+import tipo_movimiento from "/images/cards/tipo_movimiento.png";
+import movimiento from "/images/cards/movimiento.png";
+import unidad from "/images/cards/unidad.png";
+import productos from "/images/cards/productos.png";
+import proveedor from "/images/cards/proveedor.png";
+import pedido from "/images/cards/pedido.png";
+import orde_compra from "/images/cards/orde_compra.png";
+import kardexx from "/images/cards/kardexx.png";
+import ocupacion from "/images/cards/ocupacion.png";
+// reportes
+import r_pedidoo from "/images/cards/r_pedidoo.png";
+import r_kardexx from "/images/cards/r_kardexx.png";
+import r_factura from "/images/cards/r_factura.png";
+import prodcutos_vencidos from "/images/cards/prodcutos_vencidos.png";
+import r_orden_compra from "/images/cards/r_orden_compra.png";
 
 const icons = {
   DnsRounded: <DnsRoundedIcon />,
@@ -148,96 +202,52 @@ const components = {
   RE_fc: RE_fc,
 };
 
-import img1 from "/images/cards/1.jpg";
-import img2 from "/images/cards/2.jpg";
-import img3 from "/images/cards/3.jpg";
-import img4 from "/images/cards/4.jpg";
-import img5 from "/images/cards/5.jpg";
-import img6 from "/images/cards/6.jpg";
-import img7 from "/images/cards/7.jpg";
-import img8 from "/images/cards/8.jpg";
-import img9 from "/images/cards/9.jpg";
-import img10 from "/images/cards/10.jpg";
-//seguridad
-import persona from "/images/cards/persona.png";
-import rol from "/images/cards/rol.png";
-import tipo_identificacion from "/images/cards/tipo_identificacion.png";
-import empresa from "/images/cards/empresa.png";
-import tipo_evaluacion from "/images/cards/tipo_evaluacion.png";
-//parametrizacion
-import pais from "/images/cards/pais.png";
-import departamento from "/images/cards/departamento.png";
-import municipio from "/images/cards/municipio.png";
-import tipo_sede from "/images/cards/tipo_sede.png";
-import sede from "/images/cards/sede.png";
-import tipo_bloque from "/images/cards/tipo_bloque.png";
-import bloque from "/images/cards/bloque.png";
-import grupo from "/images/cards/grupo.png";
-import tipo_espacio  from "/images/cards/tipo_espacio.png"
-import espacio  from "/images/cards/espacio.png"
-import almacen  from "/images/cards/almacen.png"
-import seccion  from "/images/cards/seccion.png"
-import subseccion  from "/images/cards/subseccion.png"
-import tip_inventario from "/images/cards/tip_inventario.png"
-import inventario from "/images/cards/inventario.png"
-//inventario
-import ingredienteproductopresentacion from "/images/cards/ingredienteproductopresentacion.png";
-import presentacion_producto from "/images/cards/presentacion_producto.png";
-import presentacion from "/images/cards/presentacion.png";
-import producto_categoria from "/images/cards/producto_categoria.png";
-import marca from "/images/cards/marca.png";
-import ingrediente from "/images/cards/ingrediente.png";
-
-//C:\Users\lucyz\coagronet-frontend\public\images\cards\producto_categoria.png
 const moduleImages = {
-  persona: persona, 
-  rol: rol,
+  persona,
+  rol,
   tipoidentificacion: tipo_identificacion,
-  tipo_evaluacion: tipo_evaluacion,
-  empresa: empresa,
-  pais: pais,
-  departamento: departamento,
-  municipio: municipio,
-  grupo: grupo,
-  tipo_sede: tipo_sede,
-  sede: sede,
-  tipo_bloque: tipo_bloque,
-  bloque: bloque,
-  tipo_espacio: tipo_espacio,
-  espacio: espacio,
-  almacen: almacen,
+  tipo_evaluacion,
+  empresa,
+  pais,
+  departamento,
+  municipio,
+  grupo,
+  tipo_sede,
+  sede,
+  tipo_bloque,
+  bloque,
+  tipo_espacio,
+  espacio,
+  almacen,
   Seccion: seccion,
   Subseccion: subseccion,
-  tipo_inventario: tip_inventario, 
+  tipo_inventario: tip_inventario,
   Inventario: inventario,
-  IngredientePresentacionProducto:ingredienteproductopresentacion,
-  presentacion_producto: presentacion_producto,
-  presentacion: presentacion,
-  producto_categoria: producto_categoria,
-  marca: marca,
+  IngredientePresentacionProducto: ingredienteproductopresentacion,
+  presentacion_producto,
+  presentacion,
+  producto_categoria,
+  marca,
   Ingrediente: ingrediente,
-
-
-  Kardex: img5,
-  proveedor: img6,
-
-  unidad: img9,
-  producto: img10,
-  tipo_produccion: img2,
-  tipo_movimiento: img3,
-  produccion: img4,
-  r_pedido: img5,
-  
+  tipo_produccion,
+  produccion,
+  Proceso: proceso,
+  tipo_movimiento,
+  Movimiento: movimiento,
+  unidad,
+  producto: productos,
+  proveedor,
+  r_pedido: pedido,
+  OrdenCompra: orde_compra,
+  kardex: kardexx,
+  Ocupacion: ocupacion,
+  RE_pedido: r_pedidoo,
+  RE_kardex: r_kardexx,
+  RE_pv: prodcutos_vencidos,
+  RE_oc: r_orden_compra,
+  RE_fc: r_factura,
   media_card: img7,
   evaluacion_item: img2,
-  OrdenCompra: img9,
-  Ocupacion: img5,
-  
-  RE_pedido: img9,
-  RE_kardex: img10,
-  RE_productoVencimiento: img1,
-  RE_oc: img2,
-  RE_fc: img3,
 };
 
 export default function Navigator2({
@@ -247,6 +257,41 @@ export default function Navigator2({
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
+  // Helper para normalizar ids al comparar con localStorage
+  const toKey = (v) => String(v);
+
+  // ===== TOKENS =====
+  const softBg = isDark ? alpha(theme.palette.primary.light, 0.08) : "#e7f6f7";
+
+  const sidebarBg = isDark
+    ? alpha(theme.palette.background.paper, 0.98)
+    : theme.palette.background.paper;
+  const dividerColor = isDark ? alpha("#fff", 0.08) : alpha("#000", 0.08);
+  const hoverBg = isDark
+    ? alpha("#FFFFFF", 0.06)
+    : alpha(theme.palette.primary.main, 0.06);
+
+  // Más contraste para dark mode
+  const selectedBg = isDark
+    ? alpha("#FFFFFF", 0.15)   // blanco con opacidad para contraste
+    : alpha(theme.palette.primary.main, 0.12);
+
+  const selectedColor = isDark
+     ? "#FFFFFF"
+    : theme.palette.primary.dark;
+
+  const selectedBar = theme.palette.primary.main;
+
+  // tiles
+  const tileBorder = isDark ? alpha("#FFFFFF", 0.12) : alpha(theme.palette.primary.main, 0.28);
+  const tileOverlayFrom = isDark ? alpha("#000", 0.05) : alpha("#000", 0.0);
+  const tileOverlayTo = isDark ? alpha("#000", 0.65) : alpha("#000", 0.55);
+  const tileTitleColor = isDark ? alpha("#fff", 0.95) : theme.palette.common.white;
+  const tileTitleShadow = isDark ? "0 1px 2px rgba(0,0,0,.85)" : "0 1px 2px rgba(0,0,0,.45)";
+  const tileIconBg = isDark ? alpha(theme.palette.primary.light, 0.22) : alpha("#fff", 0.75);
+  const tileIconFg = isDark ? "#fff" : theme.palette.primary.dark;
 
   const [menuItems, setMenuItems] = React.useState([]);
   const [selectedMenu, setSelectedMenu] = React.useState(null);
@@ -255,10 +300,8 @@ export default function Navigator2({
     return stored ? JSON.parse(stored) : true;
   });
 
-  const [breadcrumb, setBreadcrumb] = React.useState([]);
-
   React.useEffect(() => {
-    if (setMenuOpen) setMenuOpen(open);
+    setMenuOpen?.(open);
   }, [open]);
 
   React.useEffect(() => {
@@ -272,14 +315,12 @@ export default function Navigator2({
         const savedModule = localStorage.getItem("activeModule");
         if (savedModule && components[savedModule]) {
           setCurrentModuleItem(React.createElement(components[savedModule]));
-          setSelectedMenu(savedModule);
+          setSelectedMenu(toKey(savedModule));
         } else {
           const firstMenu = response.data[0];
-          if (firstMenu?.children?.length > 0) {
-            setSelectedMenu(firstMenu.id);
-            setCurrentModuleItem(
-              renderSubmenu(firstMenu.children, firstMenu.id)
-            );
+          if (firstMenu?.children?.length) {
+            setSelectedMenu(toKey(firstMenu.id));
+            setCurrentModuleItem(renderSubmenu(firstMenu.children, firstMenu.id));
           }
         }
       })
@@ -289,132 +330,136 @@ export default function Navigator2({
   const toggleDrawer = () => {
     const newOpen = !open;
     setOpen(newOpen);
-    if (setMenuOpen) setMenuOpen(newOpen);
+    setMenuOpen?.(newOpen);
     localStorage.setItem("sidebarOpen", JSON.stringify(newOpen));
   };
 
   const handleMenuClick = (menuId) => {
-    setSelectedMenu(menuId);
-    localStorage.setItem("activeModule", menuId);
-    setBreadcrumb([menuId]);
+    const key = toKey(menuId);
+    setSelectedMenu(key);
+    localStorage.setItem("activeModule", key);
 
-    const menu = menuItems.find((item) => item.id === menuId);
+    const menu = menuItems.find((item) => toKey(item.id) === key);
     if (menu?.children?.length) {
       setCurrentModuleItem(renderSubmenu(menu.children, menuId));
     } else {
-      const Component = components[menuId];
+      const Component = components[key];
       setCurrentModuleItem(Component ? <Component /> : null);
     }
   };
 
-  const handleSubMenuClick = (subMenuId, parentMenuId) => {
-    setBreadcrumb([parentMenuId, subMenuId]);
-    localStorage.setItem("activeModule", subMenuId);
-
-    const Component = components[subMenuId];
+  const handleSubMenuClick = (subMenuId) => {
+    const key = toKey(subMenuId);
+    localStorage.setItem("activeModule", key);
+    const Component = components[key];
     setCurrentModuleItem(Component ? <Component /> : null);
   };
 
-  // Utils: detecta si un color hex es claro u oscuro
-const _hexToRgb = (hex) => {
-  let c = hex?.replace('#','') || 'ffffff';
-  if (c.length === 3) c = c.split('').map((x) => x + x).join('');
-  const n = parseInt(c, 16);
-  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
-};
-const _isLight = (hex) => {
-  const { r, g, b } = _hexToRgb(hex);
-  // luminancia relativa
-  const srgb = [r, g, b].map(v => {
-    v /= 255;
-    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-  });
-  const L = 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
-  return L > 0.5;
-};
-
-
-const renderSubmenu = (children, parentMenuId) => (
-  <Grid container spacing={2} sx={{ p: 2 }} key={theme.palette.mode}>
-    {children.map(({ id, text, icon }) => (
-      <Grid item xs={12} sm={6} md={4} lg={3} key={id}>
-        <Box
-          onClick={() => handleSubMenuClick(id, parentMenuId)}
-          sx={(t) => ({
-            bgcolor: t.palette.background.paper,
-            border: `1px solid ${
-              t.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(59, 59, 59, 0.08)'
-            }`,
-            boxShadow: 1,
-            borderRadius: 2,
-            overflow: 'hidden',
-            height: 160,
-            display: 'flex',
-            flexDirection: 'column',
-            cursor: 'pointer',
-            transition: '0.3s',
-            '&:hover': { transform: 'scale(1.03)' },
-          })}
-        >
-          {/* HEADER (siempre distinto al paper) */}
-          <Box
-            sx={(t) => ({
-              bgcolor:
-                // usa tus tokens si los definiste en el theme:
-                t.custom?.card?.headerBg ??
-                // fallback robusto por modo:
-                (t.palette.mode === 'dark' ? '#2e2f2f' : '#EEF3F7'),
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: 120,
-              p: 1,
-            })}
-          >
+  // ======== SOLO CONTAINER 3 ========
+  const renderSubmenu = (children, parentMenuId) => (
+    <Box
+      key={theme.palette.mode}
+      sx={{
+        bgcolor: (t) => (t.palette.mode === "dark" ? "transparent" : "#e7f6f7"),
+        borderRadius: 3,
+        p: { xs: 2, md: 3 },
+      }}
+    >
+      <Grid container spacing={2.5}>
+        {children.map(({ id, text, icon }) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={id}>
             <Box
-              component="img"
-              src={moduleImages[id] || img1}
-              alt={id}
+              onClick={() => handleSubMenuClick(id, parentMenuId)}
               sx={{
-                  width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',// hace que la imagen se recorte y llene
-                    objectPosition: "50% 30%"
-
-                  }}
-            />
-          </Box>
-
-          {/* FOOTER */}
-          <Box
-            sx={(t) => ({
-              bgcolor:
-                t.custom?.card?.footerBg ??
-                (t.palette.mode === 'dark' ? '#494a4b' : '#E3E9F0'),
-              flex: 1,
-              px: 1,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-            })}
-          >
-            <ListItemIcon sx={(t) => ({ color: t.custom?.card?.footerText ?? t.palette.text.primary })}>
-              {icons[icon]}
-            </ListItemIcon>
-            <Typography
-              variant="body2"
-              fontWeight="bold"
-              noWrap
-              sx={(t) => ({ color: t.custom?.card?.footerText ?? t.palette.text.primary })}
+                position: "relative",
+                height: 190,
+                borderRadius: 3,
+                overflow: "hidden",
+                cursor: "pointer",
+                transition: "transform .2s ease",
+                "&:hover": { transform: "translateY(-2px)" },
+                "&:before": {
+                  content: '""',
+                  position: "absolute",
+                  inset: 0,
+                  borderRadius: 3,
+                  border: `2px solid ${tileBorder}`,
+                  pointerEvents: "none",
+                },
+              }}
             >
-              {t(text)}
-            </Typography>
-          </Box>
-        </Box>
+              {/* Imagen */}
+              <Box
+                component="img"
+                src={moduleImages[id] || img1}
+                alt={id}
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  objectPosition: "50% 35%",
+                }}
+              />
+
+              {/* Overlay gradiente */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  background: `linear-gradient(180deg, ${tileOverlayFrom} 45%, ${tileOverlayTo} 100%)`,
+                }}
+              />
+
+              {/* Icono + título */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  left: 12,
+                  right: 12,
+                  bottom: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    display: "grid",
+                    placeItems: "center",
+                    bgcolor: tileIconBg,
+                    color: tileIconFg,
+                    flex: "0 0 auto",
+                  }}
+                >
+                  {icons[icon]}
+                </Box>
+                <Typography
+                  variant="subtitle1"
+                  title={t(text)}
+                  sx={{
+                    fontWeight: 800,
+                    lineHeight: 1.1,
+                    color: tileTitleColor,
+                    textShadow: tileTitleShadow,
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {t(text)}
+                </Typography>
+              </Box>
+            </Box>
+          </Grid>
+        ))}
       </Grid>
-    ))}
-  </Grid>
-);
+    </Box>
+  );
 
   if (!isAuthenticated) return null;
 
@@ -422,37 +467,86 @@ const renderSubmenu = (children, parentMenuId) => (
     <Box
       sx={{
         position: "fixed",
-        top: "65px",
+        top: 65,
         left: 0,
         width: {
           xs: open ? "200px" : "60px",
           sm: open ? "220px" : "70px",
           md: open ? "250px" : "70px",
         },
-        height: "100vh",
-        backgroundColor: theme.palette.background.paper,
+        height: "calc(100vh - 65px)",
+        bgcolor: sidebarBg,
         color: theme.palette.text.primary,
-        boxShadow: 1,
-        transition: "width 0.3s ease-in-out",
+        borderRight: `1px solid ${dividerColor}`,
+        boxShadow: "none",
+        transition: "width 0.25s ease",
         zIndex: 1200,
+        display: "flex",
+        flexDirection: "column",
       }}
     >
+      {/* Header del sidebar */}
       <Box
-        sx={{ display: "flex", alignItems: "center", p: 2, cursor: "pointer" }}
         onClick={toggleDrawer}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          px: 2,
+          py: 1.5,
+          borderBottom: `1px solid ${dividerColor}`,
+          cursor: "pointer",
+          userSelect: "none",
+        }}
       >
-        <MenuIcon sx={{ mr: open ? 1 : 0 }} />
-        {open && <Typography variant="h6">{t("Menú")}</Typography>}
+        <MenuIcon />
+        {open && (
+          <Typography variant="h6" fontWeight={800}>
+            {t("Menú")}
+          </Typography>
+        )}
       </Box>
 
-      <List>
+      {/* Lista de módulos */}
+      <List sx={{ px: 1, py: 1, flex: 1, overflowY: "auto" }}>
         {menuItems.map(({ id, text, icon }) => (
           <ListItem key={id} disablePadding onClick={() => handleMenuClick(id)}>
             <ListItemButton
-              selected={selectedMenu === id}
-              sx={{ justifyContent: open ? "flex-start" : "center" }}
+              selected={selectedMenu === toKey(id)}
+              sx={{
+                borderRadius: 2,
+                mx: 1,
+                my: 0.5,
+                justifyContent: open ? "flex-start" : "center",
+                "&:hover": { bgcolor: hoverBg },
+                "&.Mui-selected": {
+                  bgcolor: selectedBg,
+                  color: selectedColor,
+                  "& .MuiListItemIcon-root": { color: selectedColor },
+                  "& .MuiListItemText-primary": {
+                    color: selectedColor,
+                    fontWeight: 800,
+                  },
+                  "&:hover": { bgcolor: selectedBg }, // estable al hover
+                  position: "relative",
+                  boxShadow: isDark
+                    ? `inset 0 0 0 1px ${alpha(theme.palette.primary.main, 0.25)}`
+                    : "none",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    left: 0,
+                    top: 6,
+                    bottom: 6,
+                    width: 3.5,
+                    borderRadius: "0 3px 3px 0",
+                    backgroundColor: selectedBar,
+                  },
+                },
+              }}
             >
               <ListItemIcon
+                className="MuiListItemIcon-root"
                 sx={{
                   color: theme.palette.text.primary,
                   minWidth: 0,
@@ -461,11 +555,16 @@ const renderSubmenu = (children, parentMenuId) => (
               >
                 {icons[icon]}
               </ListItemIcon>
-              {open && <ListItemText primary={t(text)} />}
+              {open && (
+                <ListItemText
+                  primary={t(text)}
+                  primaryTypographyProps={{ fontWeight: 600 }}
+                />
+              )}
             </ListItemButton>
           </ListItem>
         ))}
-        <Divider />
+        <Divider sx={{ my: 1.5, borderColor: dividerColor }} />
       </List>
     </Box>
   );

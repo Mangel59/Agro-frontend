@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, FormControl, InputLabel, Select, MenuItem
+  TextField, Button, FormControl, InputLabel, Select, MenuItem, FormHelperText
 } from "@mui/material";
 import axios from "../axiosConfig";
 import StackButtons from "../StackButtons";
@@ -9,28 +9,44 @@ import StackButtons from "../StackButtons";
 export default function FormOcupacion({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = useState(false);
   const [methodName, setMethodName] = useState("");
+
   const [tiposActividad, setTiposActividad] = useState([]);
+  const [evaluaciones, setEvaluaciones] = useState([]);
 
-  const token = localStorage.getItem("token");
-  const headers = { headers: { Authorization: `Bearer ${token}` } };
-
-  const initialData = {
+  const [formData, setFormData] = useState({
     nombre: "",
     tipoActividadId: "",
     evaluacionId: "",
     estadoId: "1",
+  });
+
+  const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+
+  const token = localStorage.getItem("token");
+  const headers = { headers: { Authorization: `Bearer ${token}` } };
+
+  const resetForm = () => {
+    setFormData({ nombre: "", tipoActividadId: "", evaluacionId: "", estadoId: "1" });
+    setErrors({});
   };
 
-  const [formData, setFormData] = useState(initialData);
-
-  const loadData = () => {
-    axios.get("/v1/tipo_actividad", headers)
-      .then(res => setTiposActividad(res.data))
-      .catch(err => console.error("Error al cargar tipos de actividad:", err));
+  const loadData = async () => {
+    try {
+      const [resTipos, resEval] = await Promise.all([
+        axios.get("/v1/tipo_actividad", headers),
+        axios.get("/v1/evaluacion", headers),
+      ]);
+      setTiposActividad(resTipos.data || []);
+      setEvaluaciones(resEval.data || []);
+    } catch (err) {
+      console.error("Error cargando catálogos:", err);
+      setMessage({ open: true, severity: "error", text: "No se pudieron cargar catálogos." });
+    }
   };
 
   const create = () => {
-    setFormData(initialData);
+    resetForm();
     setMethodName("Crear");
     loadData();
     setOpen(true);
@@ -47,22 +63,22 @@ export default function FormOcupacion({ selectedRow, setSelectedRow, setMessage,
       evaluacionId: selectedRow.evaluacionId?.toString() || "",
       estadoId: selectedRow.estadoId?.toString() || "1",
     });
+    setErrors({});
     setMethodName("Editar");
     loadData();
     setOpen(true);
   };
 
-  const deleteRow = () => {
+  const deleteRow = async () => {
     if (!selectedRow?.id) return;
-    axios.delete(`/v1/ocupacion/${selectedRow.id}`, headers)
-      .then(() => {
-        setMessage({ open: true, severity: "success", text: "Ocupación eliminada correctamente." });
-        setSelectedRow({});
-        reloadData();
-      })
-      .catch(err => {
-        setMessage({ open: true, severity: "error", text: "Error al eliminar ocupación." });
-      });
+    try {
+      await axios.delete(`/v1/ocupacion/${selectedRow.id}`, headers);
+      setMessage({ open: true, severity: "success", text: "Ocupación eliminada correctamente." });
+      setSelectedRow({});
+      reloadData();
+    } catch {
+      setMessage({ open: true, severity: "error", text: "Error al eliminar ocupación." });
+    }
   };
 
   const handleChange = (e) => {
@@ -70,72 +86,142 @@ export default function FormOcupacion({ selectedRow, setSelectedRow, setMessage,
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    const newErrors = {};
+
+    const nombre = (formData.nombre || "").trim();
+    if (!nombre) newErrors.nombre = "El nombre es obligatorio.";
+    else if (nombre.length < 3) newErrors.nombre = "Mínimo 3 caracteres.";
+    else if (nombre.length > 120) newErrors.nombre = "Máximo 120 caracteres.";
+
+    if (!formData.tipoActividadId) newErrors.tipoActividadId = "Selecciona un tipo de actividad.";
+    if (!formData.evaluacionId) newErrors.evaluacionId = "Selecciona una evaluación.";
+
+    if (!["1", "2"].includes(formData.estadoId?.toString()))
+      newErrors.estadoId = "Estado inválido.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     const payload = {
-      nombre: formData.nombre,
-      tipoActividadId: parseInt(formData.tipoActividadId),
-      evaluacionId: parseInt(formData.evaluacionId),
-      estadoId: parseInt(formData.estadoId),
+      nombre: formData.nombre.trim(),
+      tipoActividadId: parseInt(formData.tipoActividadId, 10),
+      evaluacionId: parseInt(formData.evaluacionId, 10),
+      estadoId: parseInt(formData.estadoId, 10),
     };
+
     const method = methodName === "Crear" ? axios.post : axios.put;
     const url = methodName === "Crear" ? "/v1/ocupacion" : `/v1/ocupacion/${selectedRow.id}`;
-    method(url, payload, headers)
-      .then(() => {
-        setMessage({
-          open: true,
-          severity: "success",
-          text: methodName === "Crear" ? "Ocupación creada!" : "Ocupación actualizada!"
-        });
-        setOpen(false);
-        setSelectedRow({});
-        reloadData();
-      })
-      .catch(err => {
-        console.error(err);
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al guardar ocupación."
-        });
+
+    try {
+      setSubmitting(true);
+      await method(url, payload, headers);
+      setMessage({
+        open: true,
+        severity: "success",
+        text: methodName === "Crear" ? "Ocupación creada!" : "Ocupación actualizada!",
       });
+      setOpen(false);
+      setSelectedRow({});
+      reloadData();
+    } catch (err) {
+      console.error(err);
+      const backendMsg = err?.response?.data?.message || "Error al guardar ocupación.";
+      const violations = err?.response?.data?.violations || [];
+      if (Array.isArray(violations) && violations.length) {
+        const beErrors = {};
+        violations.forEach(v => { if (v.field) beErrors[v.field] = v.message; });
+        setErrors(prev => ({ ...prev, ...beErrors }));
+      }
+      setMessage({ open: true, severity: "error", text: backendMsg });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setErrors({});
   };
 
   return (
     <>
       <StackButtons methods={{ create, update, deleteRow }} />
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <form onSubmit={handleSubmit}>
+
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+        <form onSubmit={handleSubmit} noValidate>
           <DialogTitle>{methodName} Actividad Ocupación</DialogTitle>
           <DialogContent>
+
             <TextField
-              fullWidth name="nombre" label="Nombre" required
-              margin="dense" value={formData.nombre} onChange={handleChange}
+              fullWidth
+              name="nombre"
+              label="Nombre"
+              margin="dense"
+              value={formData.nombre}
+              onChange={handleChange}
+              error={!!errors.nombre}
+              helperText={errors.nombre}
+              inputProps={{ maxLength: 120 }}
             />
-            <FormControl fullWidth margin="normal" required>
+
+            <FormControl fullWidth margin="normal" error={!!errors.tipoActividadId}>
               <InputLabel>Tipo Actividad</InputLabel>
-              <Select name="tipoActividadId" value={formData.tipoActividadId} onChange={handleChange}>
+              <Select
+                name="tipoActividadId"
+                value={formData.tipoActividadId}
+                label="Tipo Actividad"
+                onChange={handleChange}
+              >
                 <MenuItem value="">Seleccione...</MenuItem>
                 {tiposActividad.map(a => (
-                  <MenuItem key={a.id} value={a.id}>{a.nombre}</MenuItem>
+                  <MenuItem key={a.id} value={a.id.toString()}>{a.nombre}</MenuItem>
                 ))}
               </Select>
+              {!!errors.tipoActividadId && <FormHelperText>{errors.tipoActividadId}</FormHelperText>}
             </FormControl>
-            <TextField
-              fullWidth name="evaluacionId" label="Evaluación ID" required
-              margin="dense" type="number" value={formData.evaluacionId} onChange={handleChange}
-            />
-            <FormControl fullWidth margin="normal" required>
+
+            <FormControl fullWidth margin="normal" error={!!errors.evaluacionId}>
+              <InputLabel>Evaluación</InputLabel>
+              <Select
+                name="evaluacionId"
+                value={formData.evaluacionId}
+                label="Evaluación"
+                onChange={handleChange}
+              >
+                <MenuItem value="">Seleccione...</MenuItem>
+                {evaluaciones.map(ev => (
+                  <MenuItem key={ev.id} value={ev.id.toString()}>
+                    {ev.nombre ?? `Evaluación ${ev.id}`}
+                  </MenuItem>
+                ))}
+              </Select>
+              {!!errors.evaluacionId && <FormHelperText>{errors.evaluacionId}</FormHelperText>}
+            </FormControl>
+
+            <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
               <InputLabel>Estado</InputLabel>
-              <Select name="estadoId" value={formData.estadoId} onChange={handleChange}>
+              <Select
+                name="estadoId"
+                value={formData.estadoId}
+                label="Estado"
+                onChange={handleChange}
+              >
                 <MenuItem value="1">Activo</MenuItem>
                 <MenuItem value="2">Inactivo</MenuItem>
               </Select>
+              {!!errors.estadoId && <FormHelperText>{errors.estadoId}</FormHelperText>}
             </FormControl>
+
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button type="submit">{methodName}</Button>
+            <Button onClick={handleClose} disabled={submitting}>Cancelar</Button>
+            <Button type="submit" disabled={submitting}>{methodName}</Button>
           </DialogActions>
         </form>
       </Dialog>

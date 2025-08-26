@@ -80,7 +80,7 @@ export default function Producto() {
 
   return (
     <div>
-      <h1>Gestión de Productos</h1>
+      <h1>Productos</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
 
       <FormProducto

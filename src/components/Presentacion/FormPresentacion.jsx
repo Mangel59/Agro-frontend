@@ -27,10 +27,10 @@ export default function FormPresentacion({ open, setOpen, selectedRow, setSelect
         descripcion: selectedRow.descripcion || "",
         estado: selectedRow.estadoId?.toString() || ""
       });
-      setMethodName("Update");
+      setMethodName("Actualizar");
     } else {
       setFormData(initialData);
-      setMethodName("Add");
+      setMethodName("Crear");
     }
     setErrors({});
   }, [open]);
@@ -62,8 +62,8 @@ export default function FormPresentacion({ open, setOpen, selectedRow, setSelect
       estadoId: parseInt(formData.estado)
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add"
+    const method = methodName === "Crear" ? axios.post : axios.put;
+    const url = methodName === "Crear"
       ? "/v1/presentacion"
       : `/v1/presentacion/${selectedRow.id}`;
 
@@ -72,7 +72,7 @@ export default function FormPresentacion({ open, setOpen, selectedRow, setSelect
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Presentación creada con éxito!" : "Presentación actualizada con éxito!"
+          text: methodName === "Crear" ? "Presentación creada con éxito!" : "Presentación actualizada con éxito!"
         });
         setOpen(false);
         setSelectedRow({});
@@ -111,7 +111,7 @@ export default function FormPresentacion({ open, setOpen, selectedRow, setSelect
   return (
     <>
       <StackButtons methods={{
-        create: () => { setFormData(initialData); setMethodName("Add"); setOpen(true); },
+        create: () => { setFormData(initialData); setMethodName("Crear"); setOpen(true); },
         update: () => {
           if (!selectedRow?.id) {
             setMessage({ open: true, severity: "error", text: "Selecciona una presentación para editar." });

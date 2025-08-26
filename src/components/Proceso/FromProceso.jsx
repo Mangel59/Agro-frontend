@@ -31,7 +31,7 @@ export default function FormProceso({ selectedRow, setSelectedRow, setMessage, r
 
   const create = () => {
     setFormData(initialData);
-    setMethodName("Add");
+    setMethodName("Crear");
     loadTiposProduccion();
     setErrors({});
     setOpen(true);
@@ -50,7 +50,7 @@ export default function FormProceso({ selectedRow, setSelectedRow, setMessage, r
       estado: selectedRow.estadoId?.toString() || ""
     });
 
-    setMethodName("Update");
+    setMethodName("Actualizar");
     loadTiposProduccion();
     setErrors({});
     setOpen(true);
@@ -109,15 +109,15 @@ export default function FormProceso({ selectedRow, setSelectedRow, setMessage, r
       estadoId: parseInt(formData.estado)
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/proceso" : `/v1/proceso/${selectedRow.id}`;
+    const method = methodName === "Crear" ? axios.post : axios.put;
+    const url = methodName === "Crear" ? "/v1/proceso" : `/v1/proceso/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Proceso creado con éxito!" : "Proceso actualizado con éxito!"
+          text: methodName === "Crear" ? "Proceso creado con éxito!" : "Proceso actualizado con éxito!"
         });
         setOpen(false);
         setSelectedRow({});

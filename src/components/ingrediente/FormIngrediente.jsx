@@ -11,36 +11,36 @@ import StackButtons from "../StackButtons";
 export default function FormIngrediente({ selectedRow, setSelectedRow, setMessage, reloadData, open, setOpen }) {
   const [methodName, setMethodName] = React.useState("");
 
-  const initialData = {
-    nombre: "",
-    descripcion: "",
-    estado: ""
-  };
-
+  const initialData = { nombre: "", descripcion: "", estado: "" };
   const [formData, setFormData] = React.useState(initialData);
   const [errors, setErrors] = React.useState({});
 
   React.useEffect(() => {
-    if (open) {
-      if (selectedRow?.id) {
-        setFormData({
-          nombre: selectedRow.nombre || "",
-          descripcion: selectedRow.descripcion || "",
-          estado: selectedRow.estadoId?.toString() || ""
-        });
-        setMethodName("Actualizar");
-      } else {
-        setFormData(initialData);
-        setMethodName("Agregar");
-      }
-      setErrors({});
+    if (!open) return;
+    if (selectedRow?.id) {
+      setFormData({
+        nombre: selectedRow.nombre || "",
+        descripcion: selectedRow.descripcion || "",
+        estado: selectedRow.estadoId?.toString() || "",
+      });
+      setMethodName("Actualizar");
+    } else {
+      setFormData(initialData);
+      setMethodName("Agregar");
     }
+    setErrors({});
   }, [open, selectedRow]);
+
+  const handleClose = () => {
+    setOpen(false);
+    setFormData(initialData);
+    setErrors({});
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setErrors(prev => ({ ...prev, [name]: "" }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validate = () => {
@@ -52,61 +52,55 @@ export default function FormIngrediente({ selectedRow, setSelectedRow, setMessag
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!validate()) return;
 
     const payload = {
       nombre: formData.nombre,
       descripcion: formData.descripcion,
-      estadoId: parseInt(formData.estado)
+      estadoId: parseInt(formData.estado, 10),
     };
 
-    const method = methodName === "Agregar" ? axios.post : axios.put;
-    const url = methodName === "Agregar" ? "/v1/ingrediente" : `/v1/ingrediente/${selectedRow.id}`;
+    const creating = methodName === "Agregar";
+    const url = creating ? "/v1/ingrediente" : `/v1/ingrediente/${selectedRow.id}`;
+    const req = creating ? axios.post : axios.put;
 
-    method(url, payload)
-      .then(() => {
-        setMessage({
-          open: true,
-          severity: "success",
-          text: methodName === "Agregar" ? "Ingrediente creado con éxito!" : "Ingrediente actualizado con éxito!"
-        });
-        setOpen(false);
-        setSelectedRow({});
-        reloadData();
-      })
-      .catch(err => {
-        setMessage({ open: true, severity: "error", text: `Error: ${err.message}` });
+    try {
+      await req(url, payload);
+      setMessage({
+        open: true,
+        severity: "success",
+        text: creating ? "Ingrediente creado con éxito!" : "Ingrediente actualizado con éxito!",
       });
+      handleClose();
+      setSelectedRow({});
+      reloadData();
+    } catch (err) {
+      setMessage({ open: true, severity: "error", text: `Error: ${err.message}` });
+    }
   };
 
-  const deleteRow = () => {
+  const deleteRow = async () => {
     if (!selectedRow?.id) {
       setMessage({ open: true, severity: "error", text: "Selecciona un ingrediente para eliminar." });
       return;
     }
-
-    axios.delete(`/v1/ingrediente/${selectedRow.id}`)
-      .then(() => {
-        setMessage({ open: true, severity: "success", text: "Ingrediente eliminado correctamente." });
-        setSelectedRow({});
-        reloadData();
-      })
-      .catch(err => {
-        setMessage({ open: true, severity: "error", text: `Error al eliminar: ${err.message}` });
-      });
+    try {
+      await axios.delete(`/v1/ingrediente/${selectedRow.id}`);
+      setMessage({ open: true, severity: "success", text: "Ingrediente eliminado correctamente." });
+      setSelectedRow({});
+      handleClose();         // << cerrar después de eliminar
+      reloadData();
+    } catch (err) {
+      setMessage({ open: true, severity: "error", text: `Error al eliminar: ${err.message}` });
+    }
   };
 
   return (
     <>
       <StackButtons methods={{
-        create: () => {
-          setFormData(initialData);
-          setMethodName("Agregar");
-          setErrors({});
-          setOpen(true);
-        },
+        create: () => { setFormData(initialData); setMethodName("Agregar"); setErrors({}); setOpen(true); },
         update: () => {
           if (!selectedRow?.id) {
             setMessage({ open: true, severity: "error", text: "Selecciona un ingrediente para editar." });
@@ -116,10 +110,10 @@ export default function FormIngrediente({ selectedRow, setSelectedRow, setMessag
           setErrors({});
           setOpen(true);
         },
-        deleteRow
+        deleteRow,
       }} />
 
-      <Dialog open={open} onClose={() => setOpen(false)}>
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <form onSubmit={handleSubmit}>
           <DialogTitle>{methodName} Ingrediente</DialogTitle>
           <DialogContent>
@@ -144,25 +138,18 @@ export default function FormIngrediente({ selectedRow, setSelectedRow, setMessag
 
             <FormControl fullWidth margin="normal" error={!!errors.estado}>
               <InputLabel>Estado</InputLabel>
-              <Select
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                label="Estado"
-              >
+              <Select name="estado" value={formData.estado} onChange={handleChange} label="Estado">
                 <MenuItem value="">Seleccione...</MenuItem>
                 <MenuItem value="1">Activo</MenuItem>
                 <MenuItem value="2">Inactivo</MenuItem>
               </Select>
               {errors.estado && (
-                <p style={{ color: "#d32f2f", margin: "3px 14px 0", fontSize: "0.75rem" }}>
-                  {errors.estado}
-                </p>
+                <p style={{ color: "#d32f2f", margin: "3px 14px 0", fontSize: "0.75rem" }}>{errors.estado}</p>
               )}
             </FormControl>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpen(false)}>Cancelar</Button>
+            <Button onClick={handleClose}>Cancelar</Button>
             <Button type="submit">{methodName}</Button>
           </DialogActions>
         </form>

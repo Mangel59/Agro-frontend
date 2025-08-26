@@ -22,7 +22,7 @@ export default function FormMovimiento({ selectedRow, setSelectedRow, setMessage
 
   const create = () => {
     setFormData(initialData);
-    setMethodName("Add");
+    setMethodName("Crear");
     setErrors({});
     setOpen(true);
   };
@@ -38,7 +38,7 @@ export default function FormMovimiento({ selectedRow, setSelectedRow, setMessage
       estado: selectedRow.estadoId?.toString() || ""
     });
 
-    setMethodName("Update");
+    setMethodName("Actualizar");
     setErrors({});
     setOpen(true);
   };
@@ -88,15 +88,15 @@ export default function FormMovimiento({ selectedRow, setSelectedRow, setMessage
       estadoId: parseInt(formData.estado)
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/movimiento" : `/v1/movimiento/${selectedRow.id}`;
+    const method = methodName === "Crear" ? axios.post : axios.put;
+    const url = methodName === "Crear" ? "/v1/movimiento" : `/v1/movimiento/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Movimiento creado con éxito!" : "Movimiento actualizado con éxito!"
+          text: methodName === "Crear" ? "Movimiento creado con éxito!" : "Movimiento actualizado con éxito!"
         });
         setOpen(false);
         setSelectedRow({});
