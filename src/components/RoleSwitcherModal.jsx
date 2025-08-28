@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  Button, Stack, Typography, Card, CardActionArea, CardMedia, CardContent
+  Button, Stack, Typography, Card, CardActionArea, CardMedia, CardContent,
+  Grid, useTheme, Box, Paper
 } from "@mui/material";
 import axios from "axios";
 
@@ -12,20 +13,24 @@ import img3 from "/images/cards/3.jpg";
 const roleImages = { 1: img1, 2: img2, 3: img3 };
 
 function getRolesFromStorage() {
-  try { return JSON.parse(localStorage.getItem("rolesByCompany") || "[]"); }
-  catch { return []; }
+  try {
+    const raw = JSON.parse(localStorage.getItem("rolesByCompany") || "[]");
+    return Array.isArray(raw) ? raw : [];
+  } catch {
+    return [];
+  }
 }
 
 export default function RoleSwitcherModal({ open, onClose, onSwitched }) {
+  const theme = useTheme();
+
   const roles = useMemo(() => {
     const raw = getRolesFromStorage();
-    return Array.isArray(raw)
-      ? raw.map(r => ({
-          ...r,
-          empresaId: Number(r.empresaId),
-          rolId: Number(r.rolId),
-        }))
-      : [];
+    return raw.map(r => ({
+      ...r,
+      empresaId: Number(r.empresaId),
+      rolId: Number(r.rolId),
+    }));
   }, []);
 
   const empresas = useMemo(() => {
@@ -40,12 +45,6 @@ export default function RoleSwitcherModal({ open, onClose, onSwitched }) {
 
   const [empresaId, setEmpresaId] = useState(null);
   const [rolId, setRolId] = useState(null);
-
-  // Filtramos los roles por la empresa seleccionada
-  const filteredRoles = useMemo(
-    () => roles.filter(r => empresaId == null || r.empresaId === Number(empresaId)),
-    [roles, empresaId]
-  );
 
   const doSwitch = useCallback(
     async ({ empresaId: empId, rolId: rId }) => {
@@ -79,22 +78,23 @@ export default function RoleSwitcherModal({ open, onClose, onSwitched }) {
     [empresas, roles, onSwitched, onClose]
   );
 
-  // Cargar automáticamente la primera empresa y rol si solo hay 1
-  useEffect(() => {
-    if (!open) return;
-    if (empresas.length === 1) {
-      const unicaEmpresaId = empresas[0].id;
-      const rolesDeUnica = roles.filter(r => r.empresaId === unicaEmpresaId);
-      if (rolesDeUnica.length === 1) {
-        setEmpresaId(unicaEmpresaId);
-        setRolId(rolesDeUnica[0].rolId);
-      }
+  const handleConfirm = async () => {
+    try {
+      await doSwitch({ empresaId, rolId });
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Error cambiando empresa/rol";
+      console.error("switch-context error:", err?.response || err);
+      alert(msg);
     }
-  }, [open, empresas, roles]);
+  };
 
-  const handleCompanyClick = (eId) => {
-    setEmpresaId(Number(eId));
-    const rolesDeEmpresa = roles.filter(r => r.empresaId === Number(eId));
+  const handleEmpresaClick = (eId) => {
+    setEmpresaId(eId);
+    const rolesDeEmpresa = roles.filter(r => r.empresaId === eId);
     if (rolesDeEmpresa.length === 1) {
       setRolId(rolesDeEmpresa[0].rolId);
     } else {
@@ -102,94 +102,189 @@ export default function RoleSwitcherModal({ open, onClose, onSwitched }) {
     }
   };
 
-  const handleConfirm = async () => {
-    try {
-      await doSwitch({ empresaId, rolId });
-    } catch (err) {
-      const msg = err?.response?.data?.message || err?.response?.data?.error || err?.message || "Error cambiando empresa/rol";
-      console.error("switch-context error:", err?.response || err);
-      alert(msg);
-    }
+  const handleRolClick = (rId) => setRolId(rId);
+
+  const isSingleCompany = empresas.length === 1;
+
+  // Estilos reutilizables
+  const roleCardSx = {
+    width: 240,
+    flex: "0 1 240px",
+    border: (theme) => `1px solid ${theme.palette.divider}`,
+    borderRadius: 3,
+    boxShadow: 2,
+    transition: "box-shadow .15s ease",
+    "&:hover": { boxShadow: 4 },
+    bgcolor: (theme) => theme.palette.background.paper,
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Cambiar empresa/rol</DialogTitle>
       <DialogContent>
         <Stack spacing={3} sx={{ mt: 1 }}>
-          {/* Mostrar todas las empresas y sus roles juntos */}
-          <div>
-            <Typography variant="subtitle2" gutterBottom>Empresa</Typography>
-            <Stack direction="row" spacing={2} flexWrap="wrap">
-              {empresas.map((e) => (
-                <Card
+          {empresas.length === 0 ? (
+            <Stack
+              alignItems="center"
+              justifyContent="center"
+              sx={{
+                p: 4,
+                bgcolor: theme.palette.mode === "dark" ? "#333" : "#f5f5f5",
+                borderRadius: 2,
+              }}
+            >
+              <Typography variant="h6">No hay empresas disponibles</Typography>
+              <Typography variant="body2" color="text.secondary">
+                No tienes empresas asignadas aún.
+              </Typography>
+            </Stack>
+          ) : isSingleCompany ? (
+            // ====== SOLO 1 EMPRESA: empresa + roles en horizontal ======
+            empresas.map((e) => {
+              const rolesDeEmpresa = roles.filter(r => r.empresaId === e.id);
+              return (
+                <Paper
                   key={e.id}
+                  variant="outlined"
                   sx={{
-                    width: 180,
-                    border: Number(empresaId) === e.id ? "2px solid #1976d2" : "1px solid #555",
-                    boxShadow: Number(empresaId) === e.id ? 4 : 1,
-                    borderRadius: 2
+                    p: 2,
+                    borderRadius: 2,
+                    background: theme.palette.background.default,
                   }}
                 >
-                  <CardActionArea onClick={() => handleCompanyClick(e.id)}>
-                    <CardContent>
-                      <Typography align="center">{e.nombre}</Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              ))}
-            </Stack>
-          </div>
+                  {/* Cabecera de empresa */}
+                  <Box sx={{ mb: 2 }}>
+                    <Card
+                      sx={{
+                        width: 260,
+                        border: Number(empresaId) === e.id ? "2px solid #1976d2" : `1px solid ${theme.palette.divider}`,
+                        borderRadius: 2,
+                        boxShadow: Number(empresaId) === e.id ? 3 : 1,
+                        bgcolor: theme.palette.background.paper,
+                      }}
+                    >
+                      <CardActionArea onClick={() => handleEmpresaClick(e.id)}>
+                        <CardContent sx={{ py: 1.5 }}>
+                          <Typography align="center" color={theme.palette.text.primary}>
+                            {e.nombre}
+                          </Typography>
+                        </CardContent>
+                      </CardActionArea>
+                    </Card>
+                  </Box>
 
-          {/* Mostrar los roles de las empresas seleccionadas */}
-          {empresaId != null && (
-            <div>
-              <Typography variant="subtitle2" gutterBottom>
-                Rol en {empresas.find(e => e.id === Number(empresaId))?.nombre || "la empresa"}
-              </Typography>
-
-              <Stack
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, 1fr)", // Mostrar roles en 2 columnas
-                  gap: 2,
-                  justifyItems: "center",
-                }}
-              >
-                {filteredRoles.map((r) => (
-                  <Card
-                    key={`${r.empresaId}-${r.rolId}`}
-                    sx={{
-                      width: "100%",
-                      maxWidth: 320,
-                      border: Number(rolId) === r.rolId ? "3px solid #1976d2" : "1px solid #3b3b3b",
-                      boxShadow: Number(rolId) === r.rolId ? 6 : 2,
-                      borderRadius: 3,
-                      transition: "all .15s ease",
-                      "&:hover": { boxShadow: 8, transform: "translateY(-2px)" }
-                    }}
+                  {/* Roles en fila */}
+                  <Stack
+                    direction="row"
+                    useFlexGap
+                    flexWrap="wrap"
+                    spacing={2}
                   >
-                    <CardActionArea onClick={() => setRolId(r.rolId)}>
-                      <CardMedia
-                        component="img"
-                        image={roleImages[r.rolId] || img1}
-                        alt={r.rolNombre}
-                        sx={{ width: "100%", height: 160, objectFit: "cover" }}
-                      />
-                      <CardContent sx={{ bgcolor: "#222", py: 1.5 }}>
-                        <Typography
-                          align="center"
-                          variant="body1"
-                          sx={{ whiteSpace: "normal", wordBreak: "break-word" }}
+                    {rolesDeEmpresa.map((r) => (
+                      <Card
+                        key={`${r.empresaId}-${r.rolId}`}
+                        sx={{
+                          ...roleCardSx,
+                          border:
+                            Number(rolId) === r.rolId
+                              ? "2px solid #1976d2"
+                              : roleCardSx.border,
+                        }}
+                      >
+                        <CardActionArea onClick={() => handleRolClick(r.rolId)}>
+                          <CardMedia
+                            component="img"
+                            image={roleImages[r.rolId] || img1}
+                            alt={r.rolNombre}
+                            sx={{ width: "100%", height: 160, objectFit: "cover" }}
+                          />
+                          <CardContent sx={{ py: 1.5 }}>
+                            <Typography align="center" variant="body2">
+                              {r.rolNombre}
+                            </Typography>
+                          </CardContent>
+                        </CardActionArea>
+                      </Card>
+                    ))}
+                  </Stack>
+                </Paper>
+              );
+            })
+          ) : (
+            // ====== VARIAS EMPRESAS: cada empresa en su bloque con espacio ======
+            <Grid container direction="column" spacing={3}>
+              {empresas.map((e) => {
+                const rolesDeEmpresa = roles.filter(r => r.empresaId === e.id);
+                return (
+                  <Grid item xs={12} key={e.id}>
+                    <Paper
+                      variant="outlined"
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        background: theme.palette.background.default,
+                      }}
+                    >
+                      {/* Cabecera de empresa */}
+                      <Box sx={{ mb: 2 }}>
+                        <Card
+                          sx={{
+                            width: 260,
+                            border: Number(empresaId) === e.id ? "2px solid #1976d2" : `1px solid ${theme.palette.divider}`,
+                            borderRadius: 2,
+                            boxShadow: Number(empresaId) === e.id ? 3 : 1,
+                            bgcolor: theme.palette.background.paper,
+                          }}
                         >
-                          {r.rolNombre}
-                        </Typography>
-                      </CardContent>
-                    </CardActionArea>
-                  </Card>
-                ))}
-              </Stack>
-            </div>
+                          <CardActionArea onClick={() => handleEmpresaClick(e.id)}>
+                            <CardContent sx={{ py: 1.5 }}>
+                              <Typography align="center" color={theme.palette.text.primary}>
+                                {e.nombre}
+                              </Typography>
+                            </CardContent>
+                          </CardActionArea>
+                        </Card>
+                      </Box>
+
+                      {/* Roles de esa empresa (debajo) */}
+                      <Stack
+                        direction="row"
+                        useFlexGap
+                        flexWrap="wrap"
+                        spacing={2}
+                      >
+                        {rolesDeEmpresa.map((r) => (
+                          <Card
+                            key={`${r.empresaId}-${r.rolId}`}
+                            sx={{
+                              ...roleCardSx,
+                              border:
+                                Number(rolId) === r.rolId
+                                  ? "2px solid #1976d2"
+                                  : roleCardSx.border,
+                            }}
+                          >
+                            <CardActionArea onClick={() => handleRolClick(r.rolId)}>
+                              <CardMedia
+                                component="img"
+                                image={roleImages[r.rolId] || img1}
+                                alt={r.rolNombre}
+                                sx={{ width: "100%", height: 160, objectFit: "cover" }}
+                              />
+                              <CardContent sx={{ py: 1.5 }}>
+                                <Typography align="center" variant="body2">
+                                  {r.rolNombre}
+                                </Typography>
+                              </CardContent>
+                            </CardActionArea>
+                          </Card>
+                        ))}
+                      </Stack>
+                    </Paper>
+                  </Grid>
+                );
+              })}
+            </Grid>
           )}
         </Stack>
       </DialogContent>
