@@ -11,62 +11,88 @@ import { Box, Typography, Button, Dialog, Divider, useTheme } from "@mui/materia
 export default function Kardex() {
   const [kardexes, setKardexes] = useState([]);
   const [selectedRow, setSelectedRow] = useState(null);
+
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState("create");
+
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
+
+  // ✅ Artículos
   const [articuloItems, setArticuloItems] = useState([]);
   const [selectedArticulo, setSelectedArticulo] = useState({});
   const [reloadArticulos, setReloadArticulos] = useState(false);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [totalKardex, setTotalKardex] = useState(0);
 
   const theme = useTheme();
 
+  // ----------------- PAGINACIÓN KARDEX -----------------
+  const [kardexPage, setKardexPage] = useState({ page: 0, size: 10 });
+  const [totalKardex, setTotalKardex] = useState(0);
+  const [loadingKardex, setLoadingKardex] = useState(false);
+
+  // ----------------- PAGINACIÓN ARTICULOS -----------------
+  const [articuloPage, setArticuloPage] = useState({ page: 0, size: 10 });
+  const [totalArticulos, setTotalArticulos] = useState(0);
+  const [loadingArticulos, setLoadingArticulos] = useState(false);
+
+  // ----------------- FUNCIONES -----------------
   const reloadData = () => {
-    axios.get("/v1/kardex", { params: { page, size: pageSize } })
+    setLoadingKardex(true);
+    axios.get("/v1/kardex", { params: { page: kardexPage.page, size: kardexPage.size } })
       .then((res) => {
-        setKardexes(res.data.content || res.data);
-        setTotalKardex(res.data.totalElements || res.data.length);
-        if (res.data.length > 0 && !selectedRow) {
-          setSelectedRow(res.data[0]);
+        const data = res.data.content || res.data;
+        setKardexes(data);
+        setTotalKardex(res.data.page?.totalElements || data.length);
+
+        if (data.length > 0 && !selectedRow) {
+          setSelectedRow(data[0]);
         }
       })
       .catch(() => {
         setMessage({ open: true, severity: "error", text: "Error al cargar kardexes" });
-      });
+      })
+      .finally(() => setLoadingKardex(false));
   };
 
   const loadArticulos = (kardexId) => {
-    axios.get(`/v1/kardex/${kardexId}/articulos`)
-      .then(res => setArticuloItems(res.data))
-      .catch(() => setArticuloItems([]));
+    if (!kardexId) { setArticuloItems([]); return; }
+    setLoadingArticulos(true);
+    axios.get(`/v1/articulo-kardex`, {
+      params: { kardexId, page: articuloPage.page, size: articuloPage.size }
+    })
+      .then(res => {
+        const data = res.data.content || res.data;
+        setArticuloItems(data);
+        setTotalArticulos(res.data.page?.totalElements || data.length);
+      })
+      .catch(() => setArticuloItems([]))
+      .finally(() => setLoadingArticulos(false));
   };
 
+  // ----------------- EFFECTS -----------------
   useEffect(() => {
     reloadData();
-  }, []);
+  }, [kardexPage.page, kardexPage.size]);
 
   useEffect(() => {
     if (selectedRow) loadArticulos(selectedRow.id);
     else setArticuloItems([]);
-  }, [selectedRow, reloadArticulos]);
+  }, [selectedRow, reloadArticulos, articuloPage.page, articuloPage.size]);
 
-  // Contenedor principal de Kardex
+  // ----------------- ESTILOS -----------------
   const containerKardex = {
     backgroundColor: theme.palette.mode === "dark" ? "#1e2a2c" : "#c9e6fe",
     padding: 3,
     borderRadius: 2,
   };
 
-  // Contenedor de Artículos del Kardex
   const containerArticulos = {
     backgroundColor: theme.palette.mode === "dark" ? "#2c383b" : "#caddf3",
     padding: 2,
     borderRadius: 2,
   };
 
+  // ----------------- RENDER -----------------
   return (
     <Box sx={{ p: 2 }}>
       {/* Contenedor principal de Kardex */}
@@ -129,6 +155,10 @@ export default function Kardex() {
             kardexes={kardexes}
             selectedRow={selectedRow}
             setSelectedRow={setSelectedRow}
+            loading={loadingKardex}
+            paginationModel={kardexPage}
+            setPaginationModel={setKardexPage}
+            rowCount={totalKardex}
           />
         </Box>
       </Box>
@@ -152,6 +182,10 @@ export default function Kardex() {
           <GridArticuloKardex
             items={articuloItems}
             setSelectedRow={setSelectedArticulo}
+            loading={loadingArticulos}
+            paginationModel={articuloPage}
+            setPaginationModel={setArticuloPage}
+            rowCount={totalArticulos}
           />
         </Box>
       )}
