@@ -11,7 +11,6 @@ export default function Copyright({
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
-  // mismo color de fondo del sitio
   const softBg = isDark ? alpha(theme.palette.primary.light, 0.08) : "#e7f6f7";
 
   return (
@@ -29,9 +28,11 @@ export default function Copyright({
         },
         bgcolor: softBg,
         py: 3,
-        // Quitar cualquier borde y, si hay hairline, “taparlo”
         borderTop: "none !important",
         mt: seamlessAbove ? "-1px" : 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center", // esto centra todo horizontalmente
       }}
     >
       <Typography variant="body2" color="text.secondary" align="center" {...props}>
@@ -41,12 +42,21 @@ export default function Copyright({
           href="https://inmero.co/"
           target="_blank"
           rel="noopener"
-          sx={{ fontWeight: 600, textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
+          sx={{
+            fontWeight: 600,
+            textDecoration: "none",
+            "&:hover": { textDecoration: "underline" },
+          }}
         >
           {SiteProps.appName}
         </Link>{" "}
         {new Date().getFullYear()}
         {"."}
+      </Typography>
+
+      {/* Textos de versión centrados */}
+      <Typography variant="body2" color="text.secondary" align="center" gutterBottom>
+        Construcción de versionamiento 0.0.1
       </Typography>
     </Box>
   );
