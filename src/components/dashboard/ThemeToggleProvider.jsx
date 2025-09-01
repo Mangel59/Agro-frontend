@@ -44,12 +44,11 @@ export const ThemeToggleProvider = ({ children }) => {
           MuiAppBar: {
             styleOverrides: {
               root: {
-                backgroundColor: BRAND_GREEN,  // AppBar del mismo tono de verde
+                backgroundColor: BRAND_GREEN,
                 color: '#FFFFFF',
               },
             },
           },
-          // Estilo para los botones (Asegurando que todos los colores estén definidos correctamente)
           MuiButton: {
             styleOverrides: {
               root: {
@@ -90,6 +89,24 @@ export const ThemeToggleProvider = ({ children }) => {
                     },
                   }
                 : {},
+            },
+          },
+          MuiDataGrid: {
+            styleOverrides: {
+              root: {
+                border: `1px solid ${darkMode ? '#FFFFFF' : '#000000'}`, // borde externo
+              },
+              columnHeaders: {
+                borderBottom: `1px solid ${darkMode ? '#FFFFFF' : '#000000'}`, // borde encabezados
+              },
+              cell: {
+                borderBottom: `1px solid ${darkMode ? '#FFFFFF' : '#000000'}`, // borde filas
+                //borderRight: `1px solid ${darkMode ? '#FFFFFF' : '#000000'}`,
+              },
+              columnSeparator: {
+                color: darkMode ? '#FFFFFF' : '#000000', // borde entre columnas
+                display: 'none', // opcional: ocultar el separador nativo
+              },
             },
           },
         },
