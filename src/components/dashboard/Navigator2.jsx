@@ -23,10 +23,57 @@ import ApartmentIcon from "@mui/icons-material/Apartment";
 import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
 import LockIcon from "@mui/icons-material/Lock";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
-import PersonIcon from "@mui/icons-material/Person";
 import HomeWorkIcon from "@mui/icons-material/HomeWork";
 import WarehouseIcon from "@mui/icons-material/Warehouse";
 import DomainIcon from "@mui/icons-material/Domain";
+// seguridad
+import HistoryIcon from '@mui/icons-material/History';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import GroupsIcon from '@mui/icons-material/Groups';
+import SettingsApplicationsIcon from '@mui/icons-material/SettingsApplications';
+import AppsIcon from '@mui/icons-material/Apps';
+import ToggleOnIcon from '@mui/icons-material/ToggleOn';
+import BusinessIcon from '@mui/icons-material/Business';
+import LinkIcon from '@mui/icons-material/Link';
+import GroupWorkIcon from '@mui/icons-material/GroupWork';
+import PersonIcon from '@mui/icons-material/Person';
+import ViewModuleIcon from '@mui/icons-material/ViewModule';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+
+// parametrización
+
+//costos
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+
+// inventario
+import CategoryIcon from '@mui/icons-material/Category';
+import StyleIcon from '@mui/icons-material/Style';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import ScienceIcon from '@mui/icons-material/Science';
+import BiotechIcon from '@mui/icons-material/Biotech';
+import EventNoteIcon from '@mui/icons-material/EventNote';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
+import HandshakeIcon from '@mui/icons-material/Handshake';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import FolderSpecialIcon from '@mui/icons-material/FolderSpecial';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import EventSeatIcon from '@mui/icons-material/EventSeat';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import ReorderIcon from '@mui/icons-material/Reorder';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
+import ViewInArIcon from '@mui/icons-material/ViewInAr';
+import FactoryIcon from '@mui/icons-material/Factory';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+
 
 import axios from "../axiosConfig.js";
 import { useTranslation } from "react-i18next";

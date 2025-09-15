@@ -1,4 +1,4 @@
-// FormPedido.jsx con jerarquía para seleccionar almacén
+// FormPedido.jsx (almacén independiente, fix: name y normalización)
 import React, { useEffect, useState } from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
@@ -17,20 +17,8 @@ export default function FormPedido({
   setMessage = () => {},
 }) {
   const [producciones, setProducciones] = useState([]);
-  const [paises, setPaises] = useState([]);
-  const [departamentos, setDepartamentos] = useState([]);
-  const [municipios, setMunicipios] = useState([]);
-  const [sedes, setSedes] = useState([]);
-  const [bloques, setBloques] = useState([]);
-  const [espacios, setEspacios] = useState([]);
   const [almacenes, setAlmacenes] = useState([]);
-
-  const [selectedPais, setSelectedPais] = useState("");
-  const [selectedDepto, setSelectedDepto] = useState("");
-  const [selectedMunicipio, setSelectedMunicipio] = useState("");
-  const [selectedSede, setSelectedSede] = useState("");
-  const [selectedBloque, setSelectedBloque] = useState("");
-  const [selectedEspacio, setSelectedEspacio] = useState("");
+  const [loadingCombos, setLoadingCombos] = useState(false);
 
   const token = localStorage.getItem("token");
   const headers = { headers: { Authorization: `Bearer ${token}` } };
@@ -48,71 +36,61 @@ export default function FormPedido({
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    axios.get("/v1/produccion", headers)
-      .then(res => setProducciones(res.data || []))
-      .catch(() => setProducciones([]));
-    axios.get("/v1/pais", headers).then(res => setPaises(res.data));
-  }, []);
+  // Normalizador "a prueba de todo"
+  const toArray = (d) => {
+    if (Array.isArray(d)) return d;
+    if (!d || typeof d !== "object") return [];
+    return d.content ?? d.items ?? d.data ?? d.results ?? [];
+  };
+
+useEffect(() => {
+  const toArray = (d) => (Array.isArray(d) ? d : (d?.content ?? d?.items ?? d?.data ?? d?.results ?? []));
+  const loadCombos = async () => {
+    try {
+      setLoadingCombos(true);
+      const [resAlm, resProd] = await Promise.all([
+        axios.get("/v1/items/almacen/0", headers),     // <— SLASH INICIAL
+        axios.get("/v1/items/produccion/0", headers),  // <— SLASH INICIAL
+      ]);
+      setAlmacenes(toArray(resAlm.data));
+      setProducciones(toArray(resProd.data));
+    } catch (e) {
+      console.error("Error combos", e?.response?.status, e?.config?.url, e?.response?.data);
+      setAlmacenes([]);
+      setProducciones([]);
+      setMessage({
+        open: true, severity: "error",
+        text: `No se pudieron cargar Almacenes/Producciones${e?.response?.status ? ` (${e.response.status})` : ""}.`
+      });
+    } finally {
+      setLoadingCombos(false);
+    }
+  };
+  loadCombos();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
 
   useEffect(() => {
-    if (open) {
-      if (formMode === "edit" && selectedRow) {
-        setFormData({ ...selectedRow });
-      } else {
-        setFormData({ ...initialData, almacenId });
-      }
-      setErrors({});
+    if (!open) return;
+    setErrors({});
+    if (formMode === "edit" && selectedRow) {
+      setFormData({
+        id: selectedRow.id ?? null,
+        almacenId: selectedRow.almacenId ?? "",
+        produccionId: selectedRow.produccionId ?? "",
+        descripcion: selectedRow.descripcion ?? "",
+        fechaHora: selectedRow.fechaHora ?? "",
+        estadoId: (selectedRow.estadoId ?? 1),
+        empresaId: selectedRow.empresaId ?? "",
+      });
+    } else {
+      setFormData((prev) => ({
+        ...initialData,
+        almacenId: almacenId || "",
+      }));
     }
   }, [open, formMode, selectedRow, almacenId]);
-
-  useEffect(() => {
-    setDepartamentos([]); setSelectedDepto("");
-    if (selectedPais)
-      axios.get("/v1/departamento", headers).then(res => {
-        setDepartamentos(res.data.filter(d => d.paisId === parseInt(selectedPais)));
-      });
-  }, [selectedPais]);
-
-  useEffect(() => {
-    setMunicipios([]); setSelectedMunicipio("");
-    if (selectedDepto)
-      axios.get(`/v1/municipio?departamentoId=${selectedDepto}`, headers).then(res => {
-        setMunicipios(res.data);
-      });
-  }, [selectedDepto]);
-
-  useEffect(() => {
-    setSedes([]); setSelectedSede("");
-    if (selectedMunicipio)
-      axios.get("/v1/sede", headers).then(res => {
-        setSedes(res.data.filter(s => s.municipioId === parseInt(selectedMunicipio)));
-      });
-  }, [selectedMunicipio]);
-
-  useEffect(() => {
-    setBloques([]); setSelectedBloque("");
-    if (selectedSede)
-      axios.get("/v1/bloque", headers).then(res => {
-        setBloques(res.data.filter(b => b.sedeId === parseInt(selectedSede)));
-      });
-  }, [selectedSede]);
-
-  useEffect(() => {
-    setEspacios([]); setSelectedEspacio("");
-    if (selectedBloque)
-      axios.get("/v1/espacio", headers).then(res => {
-        setEspacios(res.data.filter(e => e.bloqueId === parseInt(selectedBloque)));
-      });
-  }, [selectedBloque]);
-
-  useEffect(() => {
-    setAlmacenes([]);
-    if (selectedEspacio)
-      axios.get("/v1/almacen", headers).then(res => {
-        setAlmacenes(res.data.filter(a => a.espacioId === parseInt(selectedEspacio)));
-      });
-  }, [selectedEspacio]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -121,10 +99,11 @@ export default function FormPedido({
 
   const validate = () => {
     const newErrors = {};
+    if (!formData.almacenId) newErrors.almacenId = "Almacén no asignado.";
     if (!formData.produccionId) newErrors.produccionId = "Seleccione una producción.";
     if (!formData.fechaHora) newErrors.fechaHora = "La fecha es obligatoria.";
-    if (!formData.estadoId && formData.estadoId !== 0) newErrors.estadoId = "Seleccione estado.";
-    if (!formData.almacenId) newErrors.almacenId = "Almacén no asignado.";
+    if (formData.estadoId === undefined || formData.estadoId === null || formData.estadoId === "")
+      newErrors.estadoId = "Seleccione estado.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -145,7 +124,7 @@ export default function FormPedido({
       setMessage({
         open: true,
         severity: "error",
-        text: err.response?.data?.message || "Error al guardar pedido.",
+        text: err?.response?.data?.message || "Error al guardar pedido.",
       });
     }
   };
@@ -166,74 +145,49 @@ export default function FormPedido({
           helperText={errors.fechaHora}
           InputLabelProps={{ shrink: true }}
         />
-        <FormControl fullWidth margin="normal">
-          <InputLabel>País</InputLabel>
-          <Select value={selectedPais} onChange={(e) => setSelectedPais(e.target.value)}>
-            {paises.map(p => <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>)}
-          </Select>
-        </FormControl>
 
-        <FormControl fullWidth margin="normal" disabled={!selectedPais}>
-          <InputLabel>Departamento</InputLabel>
-          <Select value={selectedDepto} onChange={(e) => setSelectedDepto(e.target.value)}>
-            {departamentos.map(d => <MenuItem key={d.id} value={d.id}>{d.nombre}</MenuItem>)}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth margin="normal" disabled={!selectedDepto}>
-          <InputLabel>Municipio</InputLabel>
-          <Select value={selectedMunicipio} onChange={(e) => setSelectedMunicipio(e.target.value)}>
-            {municipios.map(m => <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>)}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth margin="normal" disabled={!selectedMunicipio}>
-          <InputLabel>Sede</InputLabel>
-          <Select value={selectedSede} onChange={(e) => setSelectedSede(e.target.value)}>
-            {sedes.map(s => <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>)}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth margin="normal" disabled={!selectedSede}>
-          <InputLabel>Bloque</InputLabel>
-          <Select value={selectedBloque} onChange={(e) => setSelectedBloque(e.target.value)}>
-            {bloques.map(b => <MenuItem key={b.id} value={b.id}>{b.nombre}</MenuItem>)}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth margin="normal" disabled={!selectedBloque}>
-          <InputLabel>Espacio</InputLabel>
-          <Select value={selectedEspacio} onChange={(e) => setSelectedEspacio(e.target.value)}>
-            {espacios.map(e => <MenuItem key={e.id} value={e.id}>{e.nombre}</MenuItem>)}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth margin="normal" disabled={!selectedEspacio} error={!!errors.almacenId}>
+        <FormControl fullWidth margin="normal" error={!!errors.almacenId} disabled={loadingCombos}>
           <InputLabel>Almacén</InputLabel>
           <Select
             name="almacenId"
             value={formData.almacenId}
             onChange={handleChange}
+            label="Almacén"
+            displayEmpty
           >
-            {almacenes.map(a => <MenuItem key={a.id} value={a.id}>{a.nombre}</MenuItem>)}
+            <MenuItem value="">
+              <em>Seleccione un almacén</em>
+            </MenuItem>
+            {almacenes.map((a) => (
+              <MenuItem key={a.id} value={a.id}>
+              {a.name ?? a.nombre ?? `Almacén ${a.id}`}
+            </MenuItem>
+            ))}
           </Select>
           {errors.almacenId && <FormHelperText>{errors.almacenId}</FormHelperText>}
         </FormControl>
 
-        <FormControl fullWidth margin="normal" error={!!errors.produccionId}>
+        <FormControl fullWidth margin="normal" error={!!errors.produccionId} disabled={loadingCombos}>
           <InputLabel>Producción</InputLabel>
           <Select
             name="produccionId"
             value={formData.produccionId}
             onChange={handleChange}
             label="Producción"
+            displayEmpty
           >
+            <MenuItem value="">
+              <em>Seleccione una producción</em>
+            </MenuItem>
             {producciones.map((p) => (
-              <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>
+              <MenuItem key={p.id} value={p.id}>
+                {p.name ?? p.nombre ?? p.descripcion ?? `Producción ${p.id}`}
+              </MenuItem>
             ))}
           </Select>
           {errors.produccionId && <FormHelperText>{errors.produccionId}</FormHelperText>}
         </FormControl>
+
         <TextField
           fullWidth
           margin="normal"
@@ -242,6 +196,7 @@ export default function FormPedido({
           value={formData.descripcion}
           onChange={handleChange}
         />
+
         <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
           <InputLabel>Estado</InputLabel>
           <Select

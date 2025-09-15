@@ -1,16 +1,23 @@
+// src/components/ingrediente/FormIngrediente.jsx
 import * as React from "react";
 import PropTypes from "prop-types";
 import axios from "../axiosConfig";
 import {
-  Button, Dialog, DialogActions, DialogContent,
-  DialogContentText, DialogTitle, TextField, FormControl,
-  InputLabel, Select, MenuItem
+  Button, Dialog, DialogActions, DialogContent, DialogTitle
 } from "@mui/material";
 import StackButtons from "../StackButtons";
+import BaseFormCampos from "../common/BaseFormCampos";
+import { validateCamposBase } from "../utils/validations";
 
-export default function FormIngrediente({ selectedRow, setSelectedRow, setMessage, reloadData, open, setOpen }) {
+export default function FormIngrediente({
+  selectedRow,
+  setSelectedRow,
+  setMessage,
+  reloadData,
+  open,
+  setOpen,
+}) {
   const [methodName, setMethodName] = React.useState("");
-
   const initialData = { nombre: "", descripcion: "", estado: "" };
   const [formData, setFormData] = React.useState(initialData);
   const [errors, setErrors] = React.useState({});
@@ -44,10 +51,7 @@ export default function FormIngrediente({ selectedRow, setSelectedRow, setMessag
   };
 
   const validate = () => {
-    const newErrors = {};
-    if (!formData.nombre.trim()) newErrors.nombre = "El nombre es obligatorio.";
-    if (!formData.descripcion.trim()) newErrors.descripcion = "La descripción es obligatoria.";
-    if (!formData.estado) newErrors.estado = "Debe seleccionar un estado válido.";
+    const newErrors = validateCamposBase(formData); // validación centralizada (incluye XSS/SQLi si la agregaste)
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -77,7 +81,7 @@ export default function FormIngrediente({ selectedRow, setSelectedRow, setMessag
       setSelectedRow({});
       reloadData();
     } catch (err) {
-      setMessage({ open: true, severity: "error", text: `Error: ${err.message}` });
+      setMessage({ open: true, severity: "error", text: `Error: ${err.message || "Network Error"}` });
     }
   };
 
@@ -90,7 +94,7 @@ export default function FormIngrediente({ selectedRow, setSelectedRow, setMessag
       await axios.delete(`/v1/ingrediente/${selectedRow.id}`);
       setMessage({ open: true, severity: "success", text: "Ingrediente eliminado correctamente." });
       setSelectedRow({});
-      handleClose();         // << cerrar después de eliminar
+      handleClose();
       reloadData();
     } catch (err) {
       setMessage({ open: true, severity: "error", text: `Error al eliminar: ${err.message}` });
@@ -99,54 +103,31 @@ export default function FormIngrediente({ selectedRow, setSelectedRow, setMessag
 
   return (
     <>
-      <StackButtons methods={{
-        create: () => { setFormData(initialData); setMethodName("Agregar"); setErrors({}); setOpen(true); },
-        update: () => {
-          if (!selectedRow?.id) {
-            setMessage({ open: true, severity: "error", text: "Selecciona un ingrediente para editar." });
-            return;
-          }
-          setMethodName("Actualizar");
-          setErrors({});
-          setOpen(true);
-        },
-        deleteRow,
-      }} />
+      <StackButtons
+        methods={{
+          create: () => { setFormData(initialData); setMethodName("Agregar"); setErrors({}); setOpen(true); },
+          update: () => {
+            if (!selectedRow?.id) {
+              setMessage({ open: true, severity: "error", text: "Selecciona un ingrediente para editar." });
+              return;
+            }
+            setMethodName("Actualizar");
+            setErrors({});
+            setOpen(true);
+          },
+          deleteRow,
+        }}
+      />
 
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <DialogTitle>{methodName} Ingrediente</DialogTitle>
           <DialogContent>
-            <DialogContentText>Formulario para gestionar ingredientes</DialogContentText>
-
-            <TextField
-              fullWidth margin="dense"
-              name="nombre" label="Nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              error={!!errors.nombre}
-              helperText={errors.nombre}
+            <BaseFormCampos
+              formData={formData}
+              errors={errors}
+              handleChange={handleChange}
             />
-            <TextField
-              fullWidth margin="dense"
-              name="descripcion" label="Descripción"
-              value={formData.descripcion}
-              onChange={handleChange}
-              error={!!errors.descripcion}
-              helperText={errors.descripcion}
-            />
-
-            <FormControl fullWidth margin="normal" error={!!errors.estado}>
-              <InputLabel>Estado</InputLabel>
-              <Select name="estado" value={formData.estado} onChange={handleChange} label="Estado">
-                <MenuItem value="">Seleccione...</MenuItem>
-                <MenuItem value="1">Activo</MenuItem>
-                <MenuItem value="2">Inactivo</MenuItem>
-              </Select>
-              {errors.estado && (
-                <p style={{ color: "#d32f2f", margin: "3px 14px 0", fontSize: "0.75rem" }}>{errors.estado}</p>
-              )}
-            </FormControl>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Cancelar</Button>
