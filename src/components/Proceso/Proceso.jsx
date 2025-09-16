@@ -20,7 +20,7 @@ export default function Proceso() {
         setProcesos(datosConId);
       })
       .catch((err) => {
-        console.error("❌ Error al cargar procesos:", err);
+        console.error("Error al cargar procesos:", err);
         setMessage({
           open: true,
           severity: "error",
@@ -36,7 +36,7 @@ export default function Proceso() {
 
   return (
     <div>
-      <h1>Gestión de Procesos</h1>
+      <h1>Procesos</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
       <FormProceso
         selectedRow={selectedRow}

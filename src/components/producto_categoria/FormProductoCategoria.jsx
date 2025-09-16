@@ -2,29 +2,24 @@ import * as React from "react";
 import PropTypes from "prop-types";
 import axios from "../axiosConfig";
 import {
-  Button, Dialog, DialogActions, DialogContent,
-  DialogContentText, DialogTitle, TextField, FormControl,
-  InputLabel, Select, MenuItem
+  Button, Dialog, DialogActions, DialogContent, DialogTitle
 } from "@mui/material";
 import StackButtons from "../StackButtons";
+import BaseFormCampos from "../common/BaseFormCampos";
+import { validateCamposBase } from "../utils/validations";
 
 export default function FormProductoCategoria({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
 
-  const initialData = {
-    nombre: "",
-    descripcion: "",
-    estado: ""
-  };
-
+  const initialData = { nombre: "", descripcion: "", estado: "" };
   const [formData, setFormData] = React.useState(initialData);
   const [errors, setErrors] = React.useState({});
 
   const create = () => {
     setFormData(initialData);
     setErrors({});
-    setMethodName("Add");
+    setMethodName("Agregar");
     setOpen(true);
   };
 
@@ -33,15 +28,13 @@ export default function FormProductoCategoria({ selectedRow, setSelectedRow, set
       setMessage({ open: true, severity: "error", text: "Selecciona una categoría para editar." });
       return;
     }
-
     setFormData({
       nombre: selectedRow.nombre || "",
       descripcion: selectedRow.descripcion || "",
       estado: selectedRow.estadoId?.toString() || ""
     });
-
     setErrors({});
-    setMethodName("Update");
+    setMethodName("Actualizar");
     setOpen(true);
   };
 
@@ -50,7 +43,6 @@ export default function FormProductoCategoria({ selectedRow, setSelectedRow, set
       setMessage({ open: true, severity: "error", text: "Selecciona una categoría para eliminar." });
       return;
     }
-
     axios.delete(`/v1/producto_categoria/${selectedRow.id}`)
       .then(() => {
         setMessage({ open: true, severity: "success", text: "Categoría eliminada correctamente." });
@@ -58,11 +50,7 @@ export default function FormProductoCategoria({ selectedRow, setSelectedRow, set
         reloadData();
       })
       .catch((err) => {
-        setMessage({
-          open: true,
-          severity: "error",
-          text: `Error al eliminar: ${err.message}`,
-        });
+        setMessage({ open: true, severity: "error", text: `Error al eliminar: ${err.message}` });
       });
   };
 
@@ -73,15 +61,12 @@ export default function FormProductoCategoria({ selectedRow, setSelectedRow, set
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setErrors(prev => ({ ...prev, [name]: "" }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validate = () => {
-    const newErrors = {};
-    if (!formData.nombre.trim()) newErrors.nombre = "El nombre es obligatorio.";
-    if (!formData.descripcion.trim()) newErrors.descripcion = "La descripción es obligatoria.";
-    if (!formData.estado) newErrors.estado = "Debe seleccionar un estado válido.";
+    const newErrors = validateCamposBase(formData); // reutiliza validación (incluye XSS/SQLi si la agregaste allí)
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -93,79 +78,46 @@ export default function FormProductoCategoria({ selectedRow, setSelectedRow, set
     const payload = {
       nombre: formData.nombre,
       descripcion: formData.descripcion,
-      estadoId: parseInt(formData.estado)
+      estadoId: parseInt(formData.estado, 10)
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/producto_categoria" : `/v1/producto_categoria/${selectedRow.id}`;
+    const isCreate = methodName === "Agregar";
+    const method = isCreate ? axios.post : axios.put;
+    const url = isCreate ? "/v1/producto_categoria" : `/v1/producto_categoria/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Categoría creada con éxito!" : "Categoría actualizada con éxito!"
+          text: `Categoría ${isCreate ? "creada" : "actualizada"} con éxito!`
         });
         setOpen(false);
         setSelectedRow({});
         reloadData();
       })
-      .catch(err => {
-        setMessage({
-          open: true,
-          severity: "error",
-          text: `Error: ${err.message || "Network Error"}`
-        });
+      .catch((err) => {
+        setMessage({ open: true, severity: "error", text: `Error: ${err.message || "Network Error"}` });
       });
   };
 
   return (
     <>
       <StackButtons methods={{ create, update, deleteRow }} />
+
       <Dialog open={open} onClose={handleClose}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <DialogTitle>{methodName} Categoría de Producto</DialogTitle>
           <DialogContent>
-            <DialogContentText>Formulario para gestionar categorías de productos</DialogContentText>
-
-            <TextField
-              fullWidth margin="dense"
-              name="nombre" label="Nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              error={!!errors.nombre}
-              helperText={errors.nombre}
+            <BaseFormCampos
+              formData={formData}
+              errors={errors}
+              handleChange={handleChange}
             />
-            <TextField
-              fullWidth margin="dense"
-              name="descripcion" label="Descripción"
-              value={formData.descripcion}
-              onChange={handleChange}
-              error={!!errors.descripcion}
-              helperText={errors.descripcion}
-            />
-            <FormControl fullWidth margin="normal" error={!!errors.estado}>
-              <InputLabel>Estado</InputLabel>
-              <Select
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                label="Estado"
-              >
-                <MenuItem value="">Seleccione...</MenuItem>
-                <MenuItem value="1">Activo</MenuItem>
-                <MenuItem value="2">Inactivo</MenuItem>
-              </Select>
-              {errors.estado && (
-                <p style={{ color: "#d32f2f", margin: "3px 14px 0", fontSize: "0.75rem" }}>
-                  {errors.estado}
-                </p>
-              )}
-            </FormControl>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Cancelar</Button>
-            <Button type="submit">{methodName.toUpperCase()}</Button>
+            <Button type="submit">{methodName}</Button>
           </DialogActions>
         </form>
       </Dialog>

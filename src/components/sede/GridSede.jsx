@@ -6,7 +6,7 @@ export default function GridSede({ sedes, setSelectedRow }) {
   const handleRowSelection = (selection) => {
     if (selection.length > 0) {
       const selected = sedes.find((s) => s.id === selection[0]);
-      setSelectedRow(selected);
+      setSelectedRow(selected || null);
     } else {
       setSelectedRow(null);
     }
@@ -14,19 +14,42 @@ export default function GridSede({ sedes, setSelectedRow }) {
 
   const columns = [
     { field: "id", headerName: "ID", width: 70 },
-    { field: "nombre", headerName: "Nombre", width: 180 },
-    { field: "grupoId", headerName: "Grupo", width: 100 },
-    { field: "tipoSedeId", headerName: "Tipo Sede", width: 120 },
-    { field: "municipioId", headerName: "Municipio", width: 120 },
-    { field: "area", headerName: "Área", width: 100 },
-    { field: "comuna", headerName: "Comuna", width: 100 },
-    { field: "descripcion", headerName: "Descripción", width: 200 },
+    { field: "nombre", headerName: "Nombre", width: 220 },
+
+    // 👇 Mostrar NOMBRES (con fallback al id por si faltan)
+    {
+      field: "municipioNombre",
+      headerName: "Municipio",
+      width: 180,
+      valueGetter: (params) =>
+        params.row.municipioNombre ?? params.row.municipio?.name ?? params.row.municipioId ?? "",
+    },
+    {
+      field: "grupoNombre",
+      headerName: "Grupo",
+      width: 180,
+      valueGetter: (params) =>
+        params.row.grupoNombre ?? params.row.grupo?.name ?? params.row.grupoId ?? "",
+    },
+    {
+      field: "tipoSedeNombre",
+      headerName: "Tipo Sede",
+      width: 200,
+      valueGetter: (params) =>
+        params.row.tipoSedeNombre ?? params.row.tipoSede?.name ?? params.row.tipoSedeId ?? "",
+    },
+
+    { field: "geolocalizacion", headerName: "Geolocalización", width: 200 },
+    { field: "coordenadas", headerName: "Coordenadas", width: 200 },
+    { field: "area", headerName: "Área", width: 110 },
+    { field: "comuna", headerName: "Comuna", width: 140 },
+    { field: "descripcion", headerName: "Descripción", width: 280 },
     {
       field: "estadoId",
       headerName: "Estado",
-      width: 100,
+      width: 120,
       valueGetter: (params) =>
-        params.row.estadoId === 1 ? "Activo" : "Inactivo",
+        Number(params.row.estadoId) === 1 ? "Activo" : "Inactivo",
     },
   ];
 
@@ -38,9 +61,7 @@ export default function GridSede({ sedes, setSelectedRow }) {
         getRowId={(row) => row.id}
         onRowSelectionModelChange={handleRowSelection}
         initialState={{
-          pagination: {
-            paginationModel: { pageSize: 5 },
-          },
+          pagination: { paginationModel: { pageSize: 5 } },
         }}
         pageSizeOptions={[5, 10, 20]}
       />

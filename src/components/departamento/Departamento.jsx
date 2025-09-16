@@ -54,8 +54,10 @@ export default function Departamento() {
     open: false,
     severity: "success",
     text: "",
+    
   });
 
+  const unwrapPage = (data) => (Array.isArray(data) ? data : data?.content ?? []);
   /**
    * Carga la lista de países desde la API al iniciar el componente.
    */
@@ -75,35 +77,39 @@ export default function Departamento() {
   /**
    * Carga y filtra departamentos según el país seleccionado.
    */
-  const reloadData = () => {
-    if (!selectedPaisId) return;
+const reloadData = () => {
+  if (!selectedPaisId) return;
 
-    axios
-      .get("/v1/departamento")
-      .then((res) => {
-        const filtrados = res.data
-          .filter((d) => d.paisId === selectedPaisId)
-          .map((d) => {
-            const pais = paises.find((p) => p.id === d.paisId);
-            return {
-              id: d.id,
-              name: d.nombre,
-              paisNombre: pais?.nombre || d.paisId,
-              ...d,
-            };
-          });
+  axios
+    .get("/v1/departamento", {
+      // opcional: si tu API permite paginar por params
+      params: { page: 0, size: 1000 } // o el tamaño que quieras traer
+    })
+    .then((res) => {
+      const lista = unwrapPage(res.data)
+        .filter((d) => d.paisId === selectedPaisId)
+        .map((d) => {
+          const pais = paises.find((p) => p.id === d.paisId);
+          return {
+            id: d.id,
+            name: d.nombre,
+            paisNombre: pais?.nombre || d.paisId,
+            ...d,
+          };
+        });
 
-        setDepartamentos(filtrados);
-        setSelectedRow(null);
+      setDepartamentos(lista);
+      setSelectedRow(null);
+    })
+    .catch(() =>
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Error al cargar departamentos",
       })
-      .catch(() =>
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al cargar departamentos",
-        })
-      );
-  };
+    );
+};
+
 
   /**
    * Se ejecuta cada vez que cambia el país seleccionado o la lista de países.

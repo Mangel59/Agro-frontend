@@ -35,7 +35,7 @@ export default function Presentacion() {
 
   return (
     <div>
-      <h1>Gestión de Presentaciones</h1>
+      <h1>Presentaciones</h1>
 
       <MessageSnackBar message={message} setMessage={setMessage} />
 

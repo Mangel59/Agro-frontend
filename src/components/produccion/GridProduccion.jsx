@@ -5,37 +5,32 @@ import { DataGrid } from "@mui/x-data-grid";
 const columns = [
   { field: "id", headerName: "ID", width: 90 },
   { field: "nombre", headerName: "Nombre", width: 180 },
-  { field: "descripcion", headerName: "Descripción", width: 250 },
   {
     field: "tipoProduccionId",
     headerName: "Tipo Producción",
     width: 160,
   },
-  {
-    field: "productoId",
-    headerName: "Producto ID",
-    width: 120,
-  },
-  {
-    field: "empresaId",
-    headerName: "Empresa ID",
-    width: 120,
-  },
+  { field: "descripcion", headerName: "Descripción", width: 250 },
   {
     field: "fechaInicio",
-    headerName: "Inicio",
+    headerName: "Fecha Inicio",
     width: 170,
     valueGetter: (params) => new Date(params.value).toLocaleString(),
   },
   {
     field: "fechaFinal",
-    headerName: "Final",
+    headerName: "Fecha Final",
     width: 170,
     valueGetter: (params) => new Date(params.value).toLocaleString(),
   },
   {
     field: "espacioId",
-    headerName: "Espacio ID",
+    headerName: "Espacio",
+    width: 120,
+  },
+   {
+    field: "subSeccionId",
+    headerName: "SubSeccion",
     width: 120,
   },
   {

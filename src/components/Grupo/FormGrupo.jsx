@@ -1,32 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import axios from "../axiosConfig";
-import {
-  Button, Dialog, DialogActions, DialogContent,
-  DialogContentText, DialogTitle, TextField, FormControl,
-  InputLabel, Select, MenuItem, FormHelperText
-} from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import StackButtons from "../StackButtons";
+import BaseFormCampos from "../common/BaseFormCampos";
+import { validateCamposBase } from "../utils/validations";
 
 export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = useState(false);
   const [methodName, setMethodName] = useState("");
-
-  const initialData = {
-    nombre: "",
-    descripcion: "",
-    estado: ""
-  };
-
+  const initialData = { nombre: "", descripcion: "", estado: "" };
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
 
-  const invalidCharsRegex = /[<>/"'`;(){}[\]\\]/;
+  // Si el diálogo se abre por "update", precarga datos
+  useEffect(() => {
+    if (!open) return;
+    if (selectedRow?.id) {
+      setFormData({
+        nombre: selectedRow.nombre || "",
+        descripcion: selectedRow.descripcion || "",
+        estado: selectedRow.estadoId?.toString() || "",
+      });
+      setMethodName("Actualizar");
+    } else {
+      setFormData(initialData);
+      setMethodName("Agregar");
+    }
+    setErrors({});
+  }, [open, selectedRow]);
 
   const create = () => {
     setFormData(initialData);
     setErrors({});
-    setMethodName("Add");
+    setMethodName("Agregar");
     setOpen(true);
   };
 
@@ -35,15 +42,8 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
       setMessage({ open: true, severity: "error", text: "Selecciona un grupo para editar." });
       return;
     }
-
-    setFormData({
-      nombre: selectedRow.nombre || "",
-      descripcion: selectedRow.descripcion || "",
-      estado: selectedRow.estadoId?.toString() || ""
-    });
-
+    setMethodName("Actualizar");
     setErrors({});
-    setMethodName("Update");
     setOpen(true);
   };
 
@@ -52,46 +52,32 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
       setMessage({ open: true, severity: "error", text: "Selecciona un grupo para eliminar." });
       return;
     }
-
-    axios.delete(`/v1/grupo/${selectedRow.id}`)
+    axios
+      .delete(`/v1/grupo/${selectedRow.id}`)
       .then(() => {
         setMessage({ open: true, severity: "success", text: "Grupo eliminado correctamente." });
         setSelectedRow({});
         reloadData();
       })
       .catch((err) => {
-        setMessage({
-          open: true,
-          severity: "error",
-          text: `Error al eliminar: ${err.message}`,
-        });
+        setMessage({ open: true, severity: "error", text: `Error al eliminar: ${err.message}` });
       });
   };
 
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false);
+    setErrors({});
+    setFormData(initialData);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validate = () => {
-    const newErrors = {};
-
-    if (!formData.nombre.trim()) {
-      newErrors.nombre = "El nombre es obligatorio.";
-    } else if (invalidCharsRegex.test(formData.nombre)) {
-      newErrors.nombre = "El nombre contiene caracteres no permitidos.";
-    }
-
-    if (formData.descripcion && invalidCharsRegex.test(formData.descripcion)) {
-      newErrors.descripcion = "La descripción contiene caracteres no permitidos.";
-    }
-
-    if (!["1", "2"].includes(formData.estado)) {
-      newErrors.estado = "Debe seleccionar un estado válido.";
-    }
-
+    const newErrors = validateCamposBase(formData); // usa validación central (obligatorios + seguridad)
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -101,75 +87,40 @@ export default function FormGrupo({ selectedRow, setSelectedRow, setMessage, rel
     if (!validate()) return;
 
     const payload = {
-      nombre: formData.nombre.trim(),
-      descripcion: formData.descripcion.trim(),
-      estadoId: parseInt(formData.estado)
+      nombre: formData.nombre,
+      descripcion: formData.descripcion,
+      estadoId: parseInt(formData.estado, 10),
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/grupo" : `/v1/grupo/${selectedRow.id}`;
+    const isCreate = methodName === "Agregar";
+    const method = isCreate ? axios.post : axios.put;
+    const url = isCreate ? "/v1/grupo" : `/v1/grupo/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Grupo creado con éxito!" : "Grupo actualizado con éxito!"
+          text: `Grupo ${isCreate ? "creado" : "actualizado"} con éxito!`,
         });
-        setOpen(false);
+        handleClose();
         setSelectedRow({});
         reloadData();
       })
-      .catch(err => {
-        setMessage({
-          open: true,
-          severity: "error",
-          text: `Error: ${err.message || "Network Error"}`
-        });
+      .catch((err) => {
+        setMessage({ open: true, severity: "error", text: `Error: ${err.message || "Network Error"}` });
       });
   };
 
   return (
     <>
       <StackButtons methods={{ create, update, deleteRow }} />
+
       <Dialog open={open} onClose={handleClose}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <DialogTitle>{methodName} Grupo</DialogTitle>
           <DialogContent>
-            <DialogContentText>Formulario para gestionar grupo</DialogContentText>
-
-            <TextField
-              fullWidth margin="dense"
-              name="nombre" label="Nombre del Grupo"
-              value={formData.nombre}
-              onChange={handleChange}
-              error={!!errors.nombre}
-              helperText={errors.nombre}
-            />
-
-            <TextField
-              fullWidth margin="dense"
-              name="descripcion" label="Descripción"
-              value={formData.descripcion}
-              onChange={handleChange}
-              error={!!errors.descripcion}
-              helperText={errors.descripcion}
-            />
-
-            <FormControl fullWidth margin="normal" error={!!errors.estado}>
-              <InputLabel>Estado</InputLabel>
-              <Select
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                label="Estado"
-              >
-                <MenuItem value="">Seleccione...</MenuItem>
-                <MenuItem value="1">Activo</MenuItem>
-                <MenuItem value="2">Inactivo</MenuItem>
-              </Select>
-              {errors.estado && <FormHelperText>{errors.estado}</FormHelperText>}
-            </FormControl>
+            <BaseFormCampos formData={formData} errors={errors} handleChange={handleChange} />
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Cancelar</Button>

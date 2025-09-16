@@ -5,15 +5,7 @@ import {
 } from "@mui/material";
 import axios from "../axiosConfig";
 
-export default function FormMunicipio({
-  open = false,
-  setOpen = () => {},
-  selectedDepartamento,
-  selectedRow = null,
-  formMode = "create",
-  setMessage,
-  reloadData
-}) {
+export default function FormMunicipio({ open=false, setOpen=()=>{}, selectedDepartamento, selectedRow=null, formMode="create", setMessage, reloadData }) {
   const initialData = {
     nombre: "",
     codigo: "",
@@ -24,54 +16,51 @@ export default function FormMunicipio({
 
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
-
   const invalidCharsRegex = /[<>/"'`;(){}[\]\\]/;
 
+  // 👉 Forzar tipos al abrir y separar casos de create/edit
   useEffect(() => {
-    if (open) {
-      if (formMode === "edit" && selectedRow) {
-        setFormData({ ...selectedRow });
-      } else {
-        setFormData({ ...initialData, departamentoId: selectedDepartamento });
-      }
-      setErrors({});
+    if (!open) return;
+
+    if (formMode === "edit" && selectedRow) {
+      setFormData({
+        ...selectedRow,
+        id: Number(selectedRow.id),
+        departamentoId: Number(selectedRow.departamentoId),
+        estadoId: Number(selectedRow.estadoId),
+        codigo: String(selectedRow.codigo ?? ""), // para el TextField
+      });
+    } else {
+      setFormData({
+        ...initialData,
+        departamentoId: Number(selectedDepartamento || 0),
+      });
     }
+    setErrors({});
   }, [open, formMode, selectedRow, selectedDepartamento]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     const newValue = name === "estadoId" ? Number(value) : value;
-    setFormData((prev) => ({ ...prev, [name]: newValue }));
+    setFormData(prev => ({ ...prev, [name]: newValue }));
   };
 
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.nombre?.trim()) {
-      newErrors.nombre = "El nombre es obligatorio.";
-    } else if (invalidCharsRegex.test(formData.nombre)) {
-      newErrors.nombre = "El nombre contiene caracteres no permitidos.";
+    if (!formData.nombre?.trim()) newErrors.nombre = "El nombre es obligatorio.";
+    else if (invalidCharsRegex.test(formData.nombre)) newErrors.nombre = "El nombre contiene caracteres no permitidos.";
+
+    if (formData.codigo === "" || isNaN(Number(formData.codigo))) {
+      newErrors.codigo = "El código es obligatorio y numérico.";
     }
 
-    if (!formData.codigo?.toString().trim()) {
-      newErrors.codigo = "El código es obligatorio.";
-    } else if (invalidCharsRegex.test(formData.codigo.toString())) {
-      newErrors.codigo = "El código contiene caracteres no permitidos.";
-    }
+    if (!formData.acronimo?.trim()) newErrors.acronimo = "El acrónimo es obligatorio.";
+    else if (invalidCharsRegex.test(formData.acronimo)) newErrors.acronimo = "El acrónimo contiene caracteres no permitidos.";
 
-    if (!formData.acronimo?.trim()) {
-      newErrors.acronimo = "El acrónimo es obligatorio.";
-    } else if (invalidCharsRegex.test(formData.acronimo)) {
-      newErrors.acronimo = "El acrónimo contiene caracteres no permitidos.";
-    }
+    if (![1, 2].includes(Number(formData.estadoId))) newErrors.estadoId = "Debe seleccionar un estado válido.";
 
-    if (![0, 1, 2].includes(formData.estadoId)) {
-      newErrors.estadoId = "Debe seleccionar un estado válido.";
-    }
-
-    if (!formData.departamentoId) {
-      newErrors.departamentoId = "Debe seleccionar un departamento.";
-    }
+    if (!Number(formData.departamentoId)) newErrors.departamentoId = "Debe seleccionar un departamento.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -80,34 +69,67 @@ export default function FormMunicipio({
   const handleSubmit = async () => {
     if (!validate()) return;
 
+    const payloadBase = {
+      nombre: formData.nombre.trim(),
+      departamentoId: Number(formData.departamentoId),
+      codigo: Number(formData.codigo),
+      acronimo: formData.acronimo.trim(),
+      estadoId: Number(formData.estadoId),
+    };
+
+    // ✅ Duplicados: crear -> valida todo | editar -> excluye su propio id
+    const cache = window.__MUN_CACHE || [];
+    const exists = (lista, field, val, excludeId = null) =>
+      (lista || []).some(m =>
+        String(m[field]).toLowerCase() === String(val).toLowerCase() &&
+        (excludeId == null || Number(m.id) !== Number(excludeId))
+      );
+
+    if (formMode === "create") {
+      if (exists(cache, "nombre", formData.nombre)) {
+        setMessage({ open: true, severity: "error", text: "Ya existe un municipio con ese nombre." });
+        return;
+      }
+      if (exists(cache, "codigo", formData.codigo)) {
+        setMessage({ open: true, severity: "error", text: "Ya existe un municipio con ese código." });
+        return;
+      }
+    } else if (formMode === "edit" && selectedRow?.id) {
+      if (exists(cache, "nombre", formData.nombre, selectedRow.id)) {
+        setMessage({ open: true, severity: "error", text: "Ese nombre ya está usado por otro municipio." });
+        return;
+      }
+      if (exists(cache, "codigo", formData.codigo, selectedRow.id)) {
+        setMessage({ open: true, severity: "error", text: "Ese código ya está usado por otro municipio." });
+        return;
+      }
+    }
+
     try {
       if (formMode === "edit" && selectedRow?.id) {
-        await axios.put(`/v1/municipio/${selectedRow.id}`, formData);
-        setMessage({
-          open: true,
-          severity: "success",
-          text: "Municipio actualizado correctamente.",
-        });
+        // 👉 muchos backends exigen el id en el body
+        const payloadEdit = { id: Number(selectedRow.id), ...payloadBase };
+        await axios.put(`/v1/municipio/${selectedRow.id}`, payloadEdit);
+        setMessage({ open: true, severity: "success", text: "Municipio actualizado correctamente." });
       } else {
-        await axios.post("/v1/municipio", formData);
-        setMessage({
-          open: true,
-          severity: "success",
-          text: "Municipio creado correctamente.",
-        });
+        await axios.post("/v1/municipio", payloadBase);
+        setMessage({ open: true, severity: "success", text: "Municipio creado correctamente." });
       }
 
       setOpen(false);
       reloadData?.();
     } catch (err) {
-      setMessage({
-        open: true,
-        severity: "error",
-        text: err.response?.data?.message || "Error al guardar municipio.",
-      });
+      console.error("ERR PUT/POST:", err.response?.status, err.response?.data || err.message);
+
+      // Mensaje más explícito cuando la BD rechaza (409)
+      const txt =
+        err.response?.status === 409
+          ? "No se pudo actualizar: hay un dato duplicado (nombre o código) o una restricción de la base de datos."
+          : err.response?.data?.message || err.response?.data?.error || "Error al guardar municipio.";
+
+      setMessage({ open: true, severity: "error", text: txt });
     }
   };
-
   return (
     <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
       <DialogTitle>{formMode === "edit" ? "Editar Municipio" : "Nuevo Municipio"}</DialogTitle>

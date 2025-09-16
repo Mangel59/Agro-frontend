@@ -16,12 +16,24 @@ export default function FormEspacio({
   reloadData = () => {},
   setMessage = () => {},
 }) {
+  // Helpers
+  const asArray = (payload) => {
+    if (Array.isArray(payload)) return payload;
+    if (payload && Array.isArray(payload.content)) return payload.content;
+    return [];
+  };
+  const toNum = (v) => (v === "" || v === null || v === undefined ? "" : Number(v));
+
+  const token = localStorage.getItem("token");
+  const headers = { headers: { Authorization: `Bearer ${token}` } };
+
   const initialData = {
     id: null,
     bloqueId: bloqueId || "",
     tipoEspacioId: "",
     nombre: "",
     descripcion: "",
+    // IMPORTANTE: 1 = Activo, 2 = Inactivo (coincide con lo que suele usar tu backend)
     estadoId: 1,
   };
 
@@ -31,29 +43,45 @@ export default function FormEspacio({
 
   useEffect(() => {
     if (!tiposEspacio.length) {
-      axios.get("/v1/tipo_espacio")
-        .then(res => {
-          const data = Array.isArray(res.data) ? res.data : [];
-          setTiposEspacioLocal(data);
-        })
+      axios.get("/v1/tipo_espacio", headers)
+        .then(res => setTiposEspacioLocal(asArray(res.data)))
         .catch(() => setTiposEspacioLocal([]));
     }
   }, [tiposEspacio]);
 
   useEffect(() => {
-    if (open) {
-      if (formMode === "edit" && selectedRow) {
-        setFormData({ ...selectedRow });
-      } else {
-        setFormData({ ...initialData, bloqueId });
-      }
-      setErrors({});
+    if (!open) return;
+
+    if (formMode === "edit" && selectedRow) {
+      // normaliza numéricos
+      setFormData({
+        id: selectedRow.id,
+        bloqueId: toNum(selectedRow.bloqueId),
+        tipoEspacioId: toNum(selectedRow.tipoEspacioId),
+        nombre: selectedRow.nombre ?? "",
+        descripcion: selectedRow.descripcion ?? "",
+        estadoId: toNum(
+          // si viene 0 desde atrás, mapeamos a 2 para "Inactivo"
+          selectedRow.estadoId === 0 ? 2 : selectedRow.estadoId ?? 1
+        ),
+      });
+    } else {
+      setFormData({
+        ...initialData,
+        bloqueId: toNum(bloqueId),
+      });
     }
+    setErrors({});
   }, [open, formMode, selectedRow, bloqueId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    // fuerza numérico en selects clave
+    if (["tipoEspacioId", "estadoId", "bloqueId"].includes(name)) {
+      setFormData(prev => ({ ...prev, [name]: toNum(value) }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const validate = () => {
@@ -61,19 +89,29 @@ export default function FormEspacio({
     if (!formData.nombre?.trim()) newErrors.nombre = "El nombre es obligatorio.";
     if (!formData.tipoEspacioId) newErrors.tipoEspacioId = "Debe seleccionar un tipo de espacio.";
     if (!formData.bloqueId) newErrors.bloqueId = "Bloque no asignado.";
-    if (!formData.estadoId && formData.estadoId !== 0) newErrors.estadoId = "Debe seleccionar estado.";
+    if (!formData.estadoId) newErrors.estadoId = "Debe seleccionar estado.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
     if (!validate()) return;
+
+    // payload limpio (por si el backend no admite campos extra)
+    const payload = {
+      nombre: formData.nombre.trim(),
+      descripcion: formData.descripcion?.trim() || "",
+      tipoEspacioId: formData.tipoEspacioId,
+      bloqueId: formData.bloqueId,
+      estadoId: formData.estadoId, // 1=Activo, 2=Inactivo
+    };
+
     try {
       if (formMode === "edit" && formData.id) {
-        await axios.put(`/v1/espacio/${formData.id}`, formData);
+        await axios.put(`/v1/espacio/${formData.id}`, payload, headers);
         setMessage({ open: true, severity: "success", text: "Espacio actualizado correctamente." });
       } else {
-        await axios.post("/v1/espacio", formData);
+        await axios.post("/v1/espacio", payload, headers);
         setMessage({ open: true, severity: "success", text: "Espacio creado correctamente." });
       }
       setOpen(false);
@@ -118,7 +156,7 @@ export default function FormEspacio({
             label="Tipo de Espacio"
           >
             {tipos.map(tipo => (
-              <MenuItem key={tipo.id} value={tipo.id}>{tipo.nombre}</MenuItem>
+              <MenuItem key={tipo.id} value={Number(tipo.id)}>{tipo.nombre}</MenuItem>
             ))}
           </Select>
           {errors.tipoEspacioId && <FormHelperText>{errors.tipoEspacioId}</FormHelperText>}
@@ -133,7 +171,7 @@ export default function FormEspacio({
             label="Estado"
           >
             <MenuItem value={1}>Activo</MenuItem>
-            <MenuItem value={0}>Inactivo</MenuItem>
+            <MenuItem value={2}>Inactivo</MenuItem>
           </Select>
           {errors.estadoId && <FormHelperText>{errors.estadoId}</FormHelperText>}
         </FormControl>
