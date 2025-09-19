@@ -1,155 +1,155 @@
 import * as React from "react";
 import PropTypes from "prop-types";
-import axios from "../axiosConfig.js"; // Usa la instancia configurada
+import axios from "../axiosConfig";
 import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
+  Button, Dialog, DialogActions, DialogContent,
+  DialogContentText, DialogTitle, TextField, FormControl,
+  InputLabel, Select, MenuItem
 } from "@mui/material";
 import StackButtons from "../StackButtons";
-import { Formik, Form } from "formik";
-import * as Yup from "yup";
 
-const TipoInventarioSchema = Yup.object().shape({
-  nombre: Yup.string().trim().required("El nombre es obligatorio."),
-  descripcion: Yup.string().trim().required("La descripción es obligatoria."),
-  estadoId: Yup.number().oneOf([0, 1], "Estado inválido"),
-});
-
-export default function FormTipoInventario({ setMessage, selectedRow, setSelectedRow, reloadData }) {
+export default function FormTipoInventario({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
 
+  const initialData = {
+    nombre: "",
+    descripcion: "",
+    estado: ""
+  };
+
+  const [formData, setFormData] = React.useState(initialData);
+
   const create = () => {
-    setSelectedRow({ id: 0, nombre: "", descripcion: "", estadoId: 1 });
-    setMethodName("Agregar");
+    setFormData(initialData);
+    setMethodName("Add");
     setOpen(true);
   };
 
   const update = () => {
     if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona una fila para actualizar" });
+      setMessage({ open: true, severity: "error", text: "Selecciona un tipo de inventario para editar." });
       return;
     }
-    setMethodName("Actualizar");
+
+    setFormData({
+      nombre: selectedRow.nombre || "",
+      descripcion: selectedRow.descripcion || "",
+      estado: selectedRow.estadoId?.toString() || ""
+    });
+
+    setMethodName("Update");
     setOpen(true);
   };
 
   const deleteRow = () => {
     if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona una fila para eliminar" });
+      setMessage({ open: true, severity: "error", text: "Selecciona un tipo de inventario para eliminar." });
       return;
     }
 
-    axios
-      .delete(`/v1/tipo_inventario/${selectedRow.id}`)
+    axios.delete(`/v1/tipo_inventario/${selectedRow.id}`)
       .then(() => {
-        setMessage({ open: true, severity: "success", text: "Eliminado con éxito!" });
+        setMessage({ open: true, severity: "success", text: "Tipo de inventario eliminado correctamente." });
+        setSelectedRow({});
         reloadData();
       })
-      .catch((error) => {
-        setMessage({ open: true, severity: "error", text: `Error al eliminar: ${error.message}` });
+      .catch((err) => {
+        setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al eliminar: ${err.message}`,
+        });
       });
   };
 
   const handleClose = () => setOpen(false);
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const payload = {
+      nombre: formData.nombre,
+      descripcion: formData.descripcion,
+      estadoId: parseInt(formData.estado)
+    };
+
+    const method = methodName === "Add" ? axios.post : axios.put;
+    const url = methodName === "Add" ? "/v1/tipo_inventario" : `/v1/tipo_inventario/${selectedRow.id}`;
+
+    method(url, payload)
+      .then(() => {
+        setMessage({
+          open: true,
+          severity: "success",
+          text: methodName === "Add" ? "Tipo de inventario creado!" : "Tipo de inventario actualizado!"
+        });
+        setOpen(false);
+        setSelectedRow({});
+        reloadData();
+      })
+      .catch(err => {
+        setMessage({
+          open: true,
+          severity: "error",
+          text: `Error: ${err.message || "Network Error"}`
+        });
+      });
+  };
+
   return (
     <>
       <StackButtons methods={{ create, update, deleteRow }} />
-
       <Dialog open={open} onClose={handleClose}>
-        <Formik
-          initialValues={{
-            nombre: selectedRow?.nombre || "",
-            descripcion: selectedRow?.descripcion || "",
-            estadoId: selectedRow?.estadoId ?? 1,
-          }}
-          enableReinitialize
-          validationSchema={TipoInventarioSchema}
-          onSubmit={(values, { setSubmitting }) => {
-            const url = selectedRow?.id
-              ? `/v1/tipo_inventario/${selectedRow.id}`
-              : `/v1/tipo_inventario`;
+        <form onSubmit={handleSubmit}>
+          <DialogTitle>{methodName} Tipo de Inventario</DialogTitle>
+          <DialogContent>
+            <DialogContentText>Formulario para tipo de inventario</DialogContentText>
 
-            const method = selectedRow?.id ? axios.put : axios.post;
-
-            method(url, values)
-              .then(() => {
-                setMessage({ open: true, severity: "success", text: "Guardado correctamente." });
-                setOpen(false);
-                reloadData();
-              })
-              .catch((error) => {
-                setMessage({ open: true, severity: "error", text: `Error: ${error.message}` });
-              })
-              .finally(() => setSubmitting(false));
-          }}
-        >
-          {({ values, errors, touched, handleChange }) => (
-            <Form>
-              <DialogTitle>{methodName} Tipo de Inventario</DialogTitle>
-              <DialogContent>
-                <DialogContentText>Completa el formulario.</DialogContentText>
-
-                <FormControl fullWidth margin="normal">
-                  <TextField
-                    name="nombre"
-                    label="Nombre"
-                    value={values.nombre}
-                    onChange={handleChange}
-                    error={touched.nombre && Boolean(errors.nombre)}
-                    helperText={touched.nombre && errors.nombre}
-                  />
-                </FormControl>
-
-                <FormControl fullWidth margin="normal">
-                  <TextField
-                    name="descripcion"
-                    label="Descripción"
-                    value={values.descripcion}
-                    onChange={handleChange}
-                    error={touched.descripcion && Boolean(errors.descripcion)}
-                    helperText={touched.descripcion && errors.descripcion}
-                  />
-                </FormControl>
-
-                <FormControl fullWidth margin="normal">
-                  <InputLabel id="estado-label">Estado</InputLabel>
-                  <Select
-                    labelId="estado-label"
-                    name="estadoId"
-                    value={values.estadoId}
-                    onChange={handleChange}
-                  >
-                    <MenuItem value={1}>Activo</MenuItem>
-                    <MenuItem value={0}>Inactivo</MenuItem>
-                  </Select>
-                </FormControl>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleClose}>Cancelar</Button>
-                <Button type="submit">{methodName}</Button>
-              </DialogActions>
-            </Form>
-          )}
-        </Formik>
+            <TextField
+              fullWidth margin="dense" required
+              name="nombre" label="Nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+            />
+            <TextField
+              fullWidth margin="dense"
+              name="descripcion" label="Descripción"
+              value={formData.descripcion}
+              onChange={handleChange}
+            />
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel>Estado</InputLabel>
+              <Select
+                name="estado"
+                value={formData.estado}
+                onChange={handleChange}
+                label="Estado"
+              >
+                <MenuItem value="">Seleccione...</MenuItem>
+                <MenuItem value="1">Activo</MenuItem>
+                <MenuItem value="2">Inactivo</MenuItem>
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancelar</Button>
+            <Button type="submit">{methodName}</Button>
+          </DialogActions>
+        </form>
       </Dialog>
     </>
   );
 }
 
 FormTipoInventario.propTypes = {
-  setMessage: PropTypes.func.isRequired,
   selectedRow: PropTypes.object.isRequired,
   setSelectedRow: PropTypes.func.isRequired,
+  setMessage: PropTypes.func.isRequired,
   reloadData: PropTypes.func.isRequired,
 };

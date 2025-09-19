@@ -12,6 +12,8 @@ export default function FormSeccion({
   formMode = "create",
   selectedRow = null,
   espacioId = "",
+  espacios = [],
+  authHeaders = {},
   reloadData = () => {},
   setMessage = () => {},
 }) {
@@ -129,6 +131,26 @@ export default function FormSeccion({
           value={formData.descripcion}
           onChange={handleChange}
         />
+
+        {/* Select de espacio - se muestra solo si no hay espacioId precargado */}
+        {!espacioId && (
+          <FormControl fullWidth margin="normal" error={!!errors.espacioId}>
+            <InputLabel>Espacio</InputLabel>
+            <Select
+              name="espacioId"
+              value={formData.espacioId}
+              onChange={handleChange}
+              label="Espacio"
+            >
+              {espacios.map(espacio => (
+                <MenuItem key={espacio.id} value={espacio.id}>
+                  {espacio.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+            {errors.espacioId && <FormHelperText>{errors.espacioId}</FormHelperText>}
+          </FormControl>
+        )}
 
         <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
           <InputLabel>Estado</InputLabel>

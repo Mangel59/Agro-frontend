@@ -6,8 +6,11 @@ import {
 } from "@mui/material";
 
 /**
- * Modal genérico de filtros.
- * @param {Array} fields -> { name,label,getOptions,dependsOn,disabled,clearChildren }
+ * Modal genérico de filtros con limpieza automática de campos dependientes.
+ * @param {Array} fields -> { name, label, getOptions, dependsOn, disabled, clearChildren }
+ * - clearChildren: Array de nombres de campos que se limpiarán cuando este campo cambie
+ * - dependsOn: Array de nombres de campos de los que depende este campo
+ * - disabled: Función que determina si el campo está deshabilitado basado en values
  */
 export default function CrudFilterModal({
   open, onClose, title,
@@ -16,11 +19,35 @@ export default function CrudFilterModal({
 }) {
   const [options, setOptions] = useState({});
 
+  // Función para manejar cambios con limpieza automática de hijos
+  const handleFieldChange = (fieldName, value) => {
+    const field = fields.find(f => f.name === fieldName);
+    
+    // Primero, actualizar el campo actual
+    onChange({ name: fieldName, value });
+    
+    // Luego, limpiar los campos hijos si existen
+    if (field?.clearChildren && field.clearChildren.length > 0) {
+      field.clearChildren.forEach(childName => {
+        onChange({ name: childName, value: "" });
+      });
+    }
+  };
+
   useEffect(() => {
     fields.forEach(async (f) => {
       if (f.getOptions) {
         const opts = await f.getOptions(values);
         setOptions((prev) => ({ ...prev, [f.name]: opts }));
+        
+        // Auto-seleccionar si solo hay una opción y el campo está vacío
+        if (opts.length === 1 && !values[f.name]) {
+          const field = fields.find(field => field.name === f.name);
+          // Solo auto-completar si el campo no está deshabilitado
+          if (!field?.disabled?.(values)) {
+            handleFieldChange(f.name, opts[0].value);
+          }
+        }
       }
     });
   }, [fields, values]);
@@ -36,7 +63,7 @@ export default function CrudFilterModal({
               <Select
                 value={values[f.name] || ""}
                 onChange={(e) =>
-                  onChange({ name: f.name, value: e.target.value })
+                  handleFieldChange(f.name, e.target.value)
                 }
               >
                 <MenuItem value="">Todos</MenuItem>

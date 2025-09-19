@@ -1,47 +1,30 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
 import FormTipoInventario from "./FormTipoInventario";
 import GridTipoInventario from "./GridTipoInventario";
 
 export default function TipoInventario() {
-  const row = {
-    id: 0,
-    nombre: "",
-    descripcion: "",
-    estadoId: 1,
-  };
-
-  const [selectedRow, setSelectedRow] = useState(row);
-  const [message, setMessage] = useState({
-    open: false,
-    severity: "success",
-    text: "",
-  });
-  const [tipos, setTipos] = useState([]);
-  const [paginationModel, setPaginationModel] = useState({
-    page: 0,
-    pageSize: 5,
-  });
-  const [rowCount, setRowCount] = useState(0);
-  const [sortModel, setSortModel] = useState([]);
-  const [filterModel, setFilterModel] = useState({ items: [] });
+  const [selectedRow, setSelectedRow] = useState({ id: 0 });
+  const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
+  const [tiposInventario, setTiposInventario] = useState([]);
 
   const reloadData = () => {
     axios.get("/v1/tipo_inventario")
       .then((res) => {
-        const filas = res.data.map((item) => ({
+        const datos = res.data.map((item) => ({
           ...item,
-          estadoId: item.estado?.id || item.estadoId,
+          id: item.id,
+          estadoId: item.estadoId
         }));
-        setTipos(filas);
-        setRowCount(filas.length);
+        setTiposInventario(datos);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("❌ Error al cargar tipos de inventario:", err);
         setMessage({
           open: true,
           severity: "error",
-          text: "Error al cargar tipos de inventario",
+          text: "Error al cargar datos",
         });
       });
   };
@@ -51,30 +34,19 @@ export default function TipoInventario() {
   }, []);
 
   return (
-    <div style={{ height: "100%", width: "100%" }}>
-      <h1>Tipo de Inventario</h1>
-
+    <div>
+      <h1>Gestión de Tipos de Inventario</h1>
       <MessageSnackBar message={message} setMessage={setMessage} />
-
       <FormTipoInventario
+        selectedRow={selectedRow}
+        setSelectedRow={setSelectedRow}
         setMessage={setMessage}
-        selectedRow={selectedRow}
-        setSelectedRow={setSelectedRow}
         reloadData={reloadData}
-        tipos={tipos}
       />
-
       <GridTipoInventario
+        tiposInventario={tiposInventario}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        tipos={tipos}
-        rowCount={rowCount}
-        paginationModel={paginationModel}
-        setPaginationModel={setPaginationModel}
-        filterModel={filterModel}
-        setFilterModel={setFilterModel}
-        sortModel={sortModel}
-        setSortModel={setSortModel}
       />
     </div>
   );

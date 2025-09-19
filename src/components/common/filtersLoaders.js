@@ -87,8 +87,8 @@ export const makeLoaders = (headers, opts = {}) => {
       params: { sedeId: values.sedeId, page: 0, size: 2000 },
     });
     let list = unwrap(data);
-    // Si el backend NO filtra por sedeId, descomenta:
-    // list = list.filter((b) => String(b.sedeId) === String(values.sedeId));
+    // Filtrar localmente por sedeId por si el backend no filtra correctamente
+    list = list.filter((b) => String(b.sedeId) === String(values.sedeId));
     list = uniqById(list);
     return list.map((b) => ({ value: b.id, label: b.nombre }));
   };
@@ -101,8 +101,8 @@ export const makeLoaders = (headers, opts = {}) => {
       params: { bloqueId: values.bloqueId, page: 0, size: 2000 },
     });
     let list = unwrap(data);
-    // Si el backend NO filtra por bloqueId, descomenta:
-    // list = list.filter((e) => String(e.bloqueId) === String(values.bloqueId));
+    // Filtrar localmente por bloqueId por si el backend no filtra correctamente
+    list = list.filter((e) => String(e.bloqueId) === String(values.bloqueId));
     list = uniqById(list);
     return list.map((e) => ({ value: e.id, label: e.nombre }));
   };
@@ -115,8 +115,8 @@ export const makeLoaders = (headers, opts = {}) => {
       params: { espacioId: values.espacioId, page: 0, size: 2000 },
     });
     let list = unwrap(data);
-    // Si el backend NO filtra por espacioId:
-    // list = list.filter((s) => String(s.espacioId) === String(values.espacioId));
+    // Filtrar localmente por espacioId por si el backend no filtra correctamente
+    list = list.filter((s) => String(s.espacioId) === String(values.espacioId));
     list = uniqById(list);
     return list.map((s) => ({ value: s.id, label: s.nombre }));
   };
@@ -129,8 +129,8 @@ export const makeLoaders = (headers, opts = {}) => {
       params: { seccionId: values.seccionId, page: 0, size: 2000 },
     });
     let list = unwrap(data);
-    // Si el backend NO filtra por seccionId:
-    // list = list.filter((ss) => String(ss.seccionId) === String(values.seccionId));
+    // Filtrar localmente por seccionId por si el backend no filtra correctamente
+    list = list.filter((ss) => String(ss.seccionId) === String(values.seccionId));
     list = uniqById(list);
     return list.map((ss) => ({ value: ss.id, label: ss.nombre }));
   };
