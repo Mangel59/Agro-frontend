@@ -1,155 +1,116 @@
-import * as React from "react";
-import PropTypes from "prop-types";
-import axios from "../axiosConfig";
+import React, { useState, useEffect } from "react";
 import {
-  Button, Dialog, DialogActions, DialogContent,
-  DialogContentText, DialogTitle, TextField, FormControl,
-  InputLabel, Select, MenuItem
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, Button, MenuItem, FormControl, InputLabel, Select, FormHelperText
 } from "@mui/material";
-import StackButtons from "../StackButtons";
+import axios from "../axiosConfig";
 
-export default function FormTipoInventario({ selectedRow, setSelectedRow, setMessage, reloadData }) {
-  const [open, setOpen] = React.useState(false);
-  const [methodName, setMethodName] = React.useState("");
-
+export default function FormTipoInventario({ open=false, setOpen=()=>{}, formMode="create", selectedRow=null, setMessage, reloadData, authHeaders }) {
   const initialData = {
     nombre: "",
     descripcion: "",
-    estado: ""
+    estadoId: 1,
   };
 
-  const [formData, setFormData] = React.useState(initialData);
+  const [formData, setFormData] = useState(initialData);
+  const [errors, setErrors] = useState({});
+  const invalidCharsRegex = /[<>/"'`;(){}[\]\\]/;
 
-  const create = () => {
-    setFormData(initialData);
-    setMethodName("Add");
-    setOpen(true);
-  };
+  // Efecto para actualizar formulario cuando se abre
+  useEffect(() => {
+    if (!open) return;
 
-  const update = () => {
-    if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona un tipo de inventario para editar." });
-      return;
-    }
-
-    setFormData({
-      nombre: selectedRow.nombre || "",
-      descripcion: selectedRow.descripcion || "",
-      estado: selectedRow.estadoId?.toString() || ""
-    });
-
-    setMethodName("Update");
-    setOpen(true);
-  };
-
-  const deleteRow = () => {
-    if (!selectedRow?.id) {
-      setMessage({ open: true, severity: "error", text: "Selecciona un tipo de inventario para eliminar." });
-      return;
-    }
-
-    axios.delete(`/v1/tipo_inventario/${selectedRow.id}`)
-      .then(() => {
-        setMessage({ open: true, severity: "success", text: "Tipo de inventario eliminado correctamente." });
-        setSelectedRow({});
-        reloadData();
-      })
-      .catch((err) => {
-        setMessage({
-          open: true,
-          severity: "error",
-          text: `Error al eliminar: ${err.message}`,
-        });
+    if (formMode === "edit" && selectedRow) {
+      setFormData({
+        ...selectedRow,
+        id: Number(selectedRow.id),
+        estadoId: Number(selectedRow.estadoId),
+        descripcion: selectedRow.descripcion || "",
       });
-  };
-
-  const handleClose = () => setOpen(false);
+    } else {
+      setFormData(initialData);
+    }
+    setErrors({});
+  }, [open, formMode, selectedRow]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const newValue = name === "estadoId" ? Number(value) : value;
+    setFormData(prev => ({ ...prev, [name]: newValue }));
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const validate = () => {
+    const newErrors = {};
 
-    const payload = {
-      nombre: formData.nombre,
-      descripcion: formData.descripcion,
-      estadoId: parseInt(formData.estado)
+    if (!formData.nombre?.trim()) newErrors.nombre = "El nombre es obligatorio.";
+    else if (invalidCharsRegex.test(formData.nombre)) newErrors.nombre = "El nombre contiene caracteres no permitidos.";
+
+    if (![1, 2].includes(Number(formData.estadoId))) newErrors.estadoId = "Debe seleccionar un estado válido.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validate()) return;
+
+    const payloadBase = {
+      nombre: formData.nombre.trim(),
+      descripcion: formData.descripcion?.trim() || "",
+      estadoId: Number(formData.estadoId),
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/tipo_inventario" : `/v1/tipo_inventario/${selectedRow.id}`;
+    try {
+      if (formMode === "edit" && selectedRow?.id) {
+        const payloadEdit = { id: Number(selectedRow.id), ...payloadBase };
+        await axios.put(`/v1/tipo_inventario/${selectedRow.id}`, payloadEdit, authHeaders);
+        setMessage({ open: true, severity: "success", text: "Tipo de inventario actualizado correctamente." });
+      } else {
+        await axios.post("/v1/tipo_inventario", payloadBase, authHeaders);
+        setMessage({ open: true, severity: "success", text: "Tipo de inventario creado correctamente." });
+      }
 
-    method(url, payload)
-      .then(() => {
-        setMessage({
-          open: true,
-          severity: "success",
-          text: methodName === "Add" ? "Tipo de inventario creado!" : "Tipo de inventario actualizado!"
-        });
-        setOpen(false);
-        setSelectedRow({});
-        reloadData();
-      })
-      .catch(err => {
-        setMessage({
-          open: true,
-          severity: "error",
-          text: `Error: ${err.message || "Network Error"}`
-        });
-      });
+      setOpen(false);
+      reloadData?.();
+    } catch (err) {
+      console.error("ERR PUT/POST:", err.response?.status, err.response?.data || err.message);
+      const txt = err.response?.data?.message || err.response?.data?.error || "Error al guardar tipo de inventario.";
+      setMessage({ open: true, severity: "error", text: txt });
+    }
   };
 
   return (
-    <>
-      <StackButtons methods={{ create, update, deleteRow }} />
-      <Dialog open={open} onClose={handleClose}>
-        <form onSubmit={handleSubmit}>
-          <DialogTitle>{methodName} Tipo de Inventario</DialogTitle>
-          <DialogContent>
-            <DialogContentText>Formulario para tipo de inventario</DialogContentText>
-
-            <TextField
-              fullWidth margin="dense" required
-              name="nombre" label="Nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-            />
-            <TextField
-              fullWidth margin="dense"
-              name="descripcion" label="Descripción"
-              value={formData.descripcion}
-              onChange={handleChange}
-            />
-            <FormControl fullWidth margin="normal" required>
-              <InputLabel>Estado</InputLabel>
-              <Select
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                label="Estado"
-              >
-                <MenuItem value="">Seleccione...</MenuItem>
-                <MenuItem value="1">Activo</MenuItem>
-                <MenuItem value="2">Inactivo</MenuItem>
-              </Select>
-            </FormControl>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>Cancelar</Button>
-            <Button type="submit">{methodName}</Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-    </>
+    <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+      <DialogTitle>{formMode === "edit" ? "Editar Tipo de Inventario" : "Nuevo Tipo de Inventario"}</DialogTitle>
+      <DialogContent>
+        <TextField
+          fullWidth margin="normal" label="Nombre" name="nombre"
+          value={formData.nombre} onChange={handleChange}
+          error={!!errors.nombre} helperText={errors.nombre}
+        />
+        <TextField
+          fullWidth margin="normal" label="Descripción" name="descripcion"
+          value={formData.descripcion} onChange={handleChange}
+          multiline rows={3}
+        />
+        <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
+          <InputLabel>Estado</InputLabel>
+          <Select
+            name="estadoId"
+            value={formData.estadoId}
+            onChange={handleChange}
+            label="Estado"
+          >
+            <MenuItem value={1}>Activo</MenuItem>
+            <MenuItem value={2}>Inactivo</MenuItem>
+          </Select>
+          {errors.estadoId && <FormHelperText>{errors.estadoId}</FormHelperText>}
+        </FormControl>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setOpen(false)}>Cancelar</Button>
+        <Button onClick={handleSubmit} variant="contained">Guardar</Button>
+      </DialogActions>
+    </Dialog>
   );
 }
-
-FormTipoInventario.propTypes = {
-  selectedRow: PropTypes.object.isRequired,
-  setSelectedRow: PropTypes.func.isRequired,
-  setMessage: PropTypes.func.isRequired,
-  reloadData: PropTypes.func.isRequired,
-};
