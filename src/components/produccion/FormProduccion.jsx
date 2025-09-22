@@ -8,57 +8,61 @@ import axios from "../axiosConfig";
 export default function FormProduccion({
   open = false,
   setOpen = () => {},
-  formMode = "create",
+  formMode = "create",            // 'create' | 'edit'
   selectedRow = null,
   reloadData = () => {},
   setMessage = () => {},
 }) {
+  const token = localStorage.getItem("token");
+  const headers = { headers: { Authorization: `Bearer ${token}` } };
+
   const initialForm = {
     id: undefined,
     nombre: "",
     descripcion: "",
-    fechaInicio: "",
+    fechaInicio: "",      // 'YYYY-MM-DDTHH:mm' (para <input type="datetime-local">)
     fechaFinal: "",
     tipoProduccionId: "",
     espacioId: "",
     subSeccionId: "",
-    estadoId: 1,
+    estadoId: 1,          // 1=Activo, 2=Inactivo (ajusta si tu backend usa otros)
   };
 
   const [formData, setFormData] = useState(initialForm);
-
-  const [paises, setPaises] = useState([]);
-  const [departamentos, setDepartamentos] = useState([]);
-  const [municipios, setMunicipios] = useState([]);
-  const [sedes, setSedes] = useState([]);
-  const [bloques, setBloques] = useState([]);
-  const [espacios, setEspacios] = useState([]);
   const [tiposProduccion, setTiposProduccion] = useState([]);
+  const [espacios, setEspacios] = useState([]);        // /v1/items/espacio/0
   const [subsecciones, setSubsecciones] = useState([]);
-
-  const [selectedPais, setSelectedPais] = useState("");
-  const [selectedDepto, setSelectedDepto] = useState("");
-  const [selectedMunicipio, setSelectedMunicipio] = useState("");
-  const [selectedSede, setSelectedSede] = useState("");
-  const [selectedBloque, setSelectedBloque] = useState("");
-
   const [errors, setErrors] = useState({});
 
-  const token = localStorage.getItem("token");
-  const headers = { headers: { Authorization: `Bearer ${token}` } };
-
-  // Helper para respuestas paginadas o planas
+  // Normaliza respuesta (paginada o plana)
   const takeList = (data) =>
     Array.isArray(data) ? data :
     Array.isArray(data?.content) ? data.content :
     Array.isArray(data?.data) ? data.data : [];
 
-  // Prefill al abrir
+  // Cargar catálogos + prefill
   useEffect(() => {
     if (!open) return;
 
+    (async () => {
+      try {
+        const [tp, esp, ss] = await Promise.all([
+          axios.get("/v1/items/tipo_produccion/0", headers),
+          axios.get("/v1/items/espacio/0", headers),           // 👈 CAMBIO CLAVE: espacio (no almacen)
+          axios.get("/v1/items/sub_seccion/0", headers),
+        ]);
+        setTiposProduccion(takeList(tp.data));
+        setEspacios(takeList(esp.data));
+        setSubsecciones(takeList(ss.data));
+      } catch (e) {
+        console.error("[FormProduccion] Error cargando catálogos:", e);
+        setTiposProduccion([]); setEspacios([]); setSubsecciones([]);
+      }
+    })();
+
+    // Prefill en modo edición
     if (formMode === "edit" && selectedRow) {
-      const toLocal = (iso) => (iso || "").replace("Z", "").slice(0, 16);
+      const toLocal = (iso) => (iso ? String(iso).replace("Z", "").slice(0, 16) : "");
       setFormData({
         id: selectedRow.id,
         nombre: selectedRow.nombre ?? "",
@@ -70,81 +74,16 @@ export default function FormProduccion({
         subSeccionId: selectedRow.subSeccionId ?? "",
         estadoId: selectedRow.estadoId ?? 1,
       });
+      setErrors({});
     } else {
       setFormData(initialForm);
-      setSelectedPais("");
-      setSelectedDepto("");
-      setSelectedMunicipio("");
-      setSelectedSede("");
-      setSelectedBloque("");
+      setErrors({});
     }
-    setErrors({});
   }, [open, formMode, selectedRow]);
-
-  // Carga catálogos
-  useEffect(() => {
-    axios.get("/v1/pais", headers)
-      .then(res => setPaises(takeList(res.data))).catch(() => setPaises([]));
-
-    axios.get("/v1/tipo_produccion", headers)
-      .then(res => setTiposProduccion(takeList(res.data))).catch(() => setTiposProduccion([]));
-
-    axios.get("/v1/subseccion", headers)
-      .then(res => setSubsecciones(takeList(res.data))).catch(() => setSubsecciones([]));
-  }, []);
-
-  // Cascadas
-  useEffect(() => {
-    setDepartamentos([]); setSelectedDepto("");
-    setMunicipios([]); setSelectedMunicipio("");
-    setSedes([]); setSelectedSede("");
-    setBloques([]); setSelectedBloque("");
-    setEspacios([]); setFormData(f => ({ ...f, espacioId: "" }));
-    if (!selectedPais) return;
-    axios.get("/v1/departamento", headers)
-      .then(res => setDepartamentos(takeList(res.data).filter(d => d.paisId === Number(selectedPais))))
-      .catch(() => setDepartamentos([]));
-  }, [selectedPais]);
-
-  useEffect(() => {
-    setMunicipios([]); setSelectedMunicipio("");
-    setSedes([]); setSelectedSede("");
-    setBloques([]); setSelectedBloque("");
-    setEspacios([]); setFormData(f => ({ ...f, espacioId: "" }));
-    if (!selectedDepto) return;
-    axios.get(`/v1/municipio?departamentoId=${selectedDepto}`, headers)
-      .then(res => setMunicipios(takeList(res.data))).catch(() => setMunicipios([]));
-  }, [selectedDepto]);
-
-  useEffect(() => {
-    setSedes([]); setSelectedSede("");
-    setBloques([]); setSelectedBloque("");
-    setEspacios([]); setFormData(f => ({ ...f, espacioId: "" }));
-    if (!selectedMunicipio) return;
-    axios.get("/v1/sede", headers)
-      .then(res => setSedes(takeList(res.data).filter(s => s.municipioId === Number(selectedMunicipio))))
-      .catch(() => setSedes([]));
-  }, [selectedMunicipio]);
-
-  useEffect(() => {
-    setBloques([]); setSelectedBloque("");
-    setEspacios([]); setFormData(f => ({ ...f, espacioId: "" }));
-    if (!selectedSede) return;
-    axios.get(`/v1/bloque?sedeId=${selectedSede}`, headers)
-      .then(res => setBloques(takeList(res.data))).catch(() => setBloques([]));
-  }, [selectedSede]);
-
-  useEffect(() => {
-    setEspacios([]); setFormData(f => ({ ...f, espacioId: "" }));
-    if (!selectedBloque) return;
-    axios.get(`/v1/espacio?bloqueId=${selectedBloque}`, headers)
-      .then(res => setEspacios(takeList(res.data))).catch(() => setEspacios([]));
-  }, [selectedBloque]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setErrors(prev => ({ ...prev, [name]: "" }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const validate = () => {
@@ -156,124 +95,189 @@ export default function FormProduccion({
     if (!formData.espacioId) e.espacioId = "Obligatorio";
     if (!formData.subSeccionId) e.subSeccionId = "Obligatorio";
     if (!formData.estadoId) e.estadoId = "Obligatorio";
+
+    // coherencia de fechas
+    if (formData.fechaInicio && formData.fechaFinal) {
+      const a = new Date(formData.fechaInicio);
+      const b = new Date(formData.fechaFinal);
+      if (a > b) e.fechaFinal = "La fecha final debe ser >= a la fecha inicio";
+    }
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  const fixDate = (val) => (val ? `${val}:00` : "");
+  // Helpers numéricos/fecha para el payload
+  const asIntOrNull = (v) => {
+    if (v === "" || v === null || v === undefined) return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
+
+  const addSeconds = (val) => (val ? (val.length === 16 ? `${val}:00` : val) : null);
 
   const handleSubmit = async () => {
     if (!validate()) return;
 
     const payload = {
-      ...formData,
-      tipoProduccionId: Number(formData.tipoProduccionId),
-      espacioId: Number(formData.espacioId),
-      subSeccionId: Number(formData.subSeccionId),
-      estadoId: Number(formData.estadoId),
-      fechaInicio: fixDate(formData.fechaInicio),
-      fechaFinal: fixDate(formData.fechaFinal),
+      id: asIntOrNull(formData.id),
+      nombre: formData.nombre?.trim() ?? "",
+      descripcion: formData.descripcion?.trim() ?? "",
+      fechaInicio: addSeconds(formData.fechaInicio), // "YYYY-MM-DDTHH:mm:ss"
+      fechaFinal: addSeconds(formData.fechaFinal),
+      tipoProduccionId: asIntOrNull(formData.tipoProduccionId),
+      espacioId: asIntOrNull(formData.espacioId),
+      subSeccionId: asIntOrNull(formData.subSeccionId),
+      estadoId: asIntOrNull(formData.estadoId),
     };
+
+    console.groupCollapsed("[FormProduccion] Payload a enviar");
+    console.table(payload);
+    console.groupEnd();
 
     const method = formMode === "edit" ? axios.put : axios.post;
     const url = formMode === "edit" ? `/v1/produccion/${formData.id}` : "/v1/produccion";
 
     try {
       await method(url, payload, headers);
-      reloadData();
-      setMessage({ open: true, severity: "success", text: `Producción ${formMode === "edit" ? "actualizada" : "creada"}` });
+      reloadData?.();
+      setMessage?.({
+        open: true,
+        severity: "success",
+        text: `Producción ${formMode === "edit" ? "actualizada" : "creada"} correctamente`,
+      });
       setOpen(false);
     } catch (err) {
-      console.error(err);
-      setMessage({ open: true, severity: "error", text: "Error al guardar producción" });
+      const status = err?.response?.status;
+      const api = err?.response?.data;
+
+      console.group("[FormProduccion] Error al guardar");
+      console.log("status:", status);
+      console.log("api.data:", api);
+      console.log("payload:", payload);
+      console.groupEnd();
+
+      const serverMsg =
+        api?.message ||
+        api?.error ||
+        (Array.isArray(api?.errors) && api.errors.join(", ")) ||
+        (Array.isArray(api?.fieldErrors) &&
+          api.fieldErrors.map((fe) => `${fe.field}: ${fe.message}`).join(" | ")) ||
+        "Solicitud inválida (400). Revisa los datos.";
+
+      setMessage?.({
+        open: true,
+        severity: "error",
+        text: `Error ${status ?? ""}: ${serverMsg}`,
+      });
     }
   };
 
   return (
-    <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
+    <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="sm">
       <DialogTitle>{formMode === "edit" ? "Editar Producción" : "Nueva Producción"}</DialogTitle>
 
       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
         <TextField
-          label="Nombre" name="nombre" value={formData.nombre}
-          onChange={handleChange} error={!!errors.nombre} helperText={errors.nombre} fullWidth
+          label="Nombre"
+          name="nombre"
+          value={formData.nombre}
+          onChange={handleChange}
+          error={!!errors.nombre}
+          helperText={errors.nombre}
+          fullWidth
         />
 
         <FormControl fullWidth error={!!errors.tipoProduccionId}>
-          <InputLabel>Tipo Producción</InputLabel>
-          <Select name="tipoProduccionId" value={formData.tipoProduccionId} label="Tipo Producción" onChange={handleChange}>
-            {tiposProduccion.map(tp => <MenuItem key={tp.id} value={tp.id}>{tp.nombre}</MenuItem>)}
+          <InputLabel>Tipo de Producción</InputLabel>
+          <Select
+            name="tipoProduccionId"
+            value={formData.tipoProduccionId}
+            label="Tipo de Producción"
+            onChange={handleChange}
+          >
+            {tiposProduccion.map((tp) => (
+              <MenuItem key={tp.id} value={tp.id}>
+                {tp.nombre || tp.name}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
-
-        <TextField label="Descripción" name="descripcion" value={formData.descripcion} onChange={handleChange} fullWidth />
 
         <TextField
-          label="Fecha Inicio" name="fechaInicio" type="datetime-local"
-          value={formData.fechaInicio} onChange={handleChange}
-          error={!!errors.fechaInicio} helperText={errors.fechaInicio}
-          fullWidth InputLabelProps={{ shrink: true }}
+          label="Descripción"
+          name="descripcion"
+          value={formData.descripcion}
+          onChange={handleChange}
+          fullWidth
+          multiline
+          minRows={2}
         />
+
         <TextField
-          label="Fecha Final" name="fechaFinal" type="datetime-local"
-          value={formData.fechaFinal} onChange={handleChange}
-          error={!!errors.fechaFinal} helperText={errors.fechaFinal}
-          fullWidth InputLabelProps={{ shrink: true }}
+          label="Fecha inicio"
+          name="fechaInicio"
+          type="datetime-local"
+          value={formData.fechaInicio}
+          onChange={handleChange}
+          error={!!errors.fechaInicio}
+          helperText={errors.fechaInicio}
+          fullWidth
+          InputLabelProps={{ shrink: true }}
         />
 
-        {/* Cascada de espacio */}
-        <FormControl fullWidth>
-          <InputLabel>País</InputLabel>
-          <Select value={selectedPais} label="País" onChange={(e) => setSelectedPais(e.target.value)}>
-            {paises.map(p => <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>)}
-          </Select>
-        </FormControl>
+        <TextField
+          label="Fecha final"
+          name="fechaFinal"
+          type="datetime-local"
+          value={formData.fechaFinal}
+          onChange={handleChange}
+          error={!!errors.fechaFinal}
+          helperText={errors.fechaFinal}
+          fullWidth
+          InputLabelProps={{ shrink: true }}
+        />
 
-        <FormControl fullWidth disabled={!selectedPais}>
-          <InputLabel>Departamento</InputLabel>
-          <Select value={selectedDepto} label="Departamento" onChange={(e) => setSelectedDepto(e.target.value)}>
-            {departamentos.map(d => <MenuItem key={d.id} value={d.id}>{d.nombre}</MenuItem>)}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth disabled={!selectedDepto}>
-          <InputLabel>Municipio</InputLabel>
-          <Select value={selectedMunicipio} label="Municipio" onChange={(e) => setSelectedMunicipio(e.target.value)}>
-            {municipios.map(m => <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>)}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth disabled={!selectedMunicipio}>
-          <InputLabel>Sede</InputLabel>
-          <Select value={selectedSede} label="Sede" onChange={(e) => setSelectedSede(e.target.value)}>
-            {sedes.map(s => <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>)}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth disabled={!selectedSede}>
-          <InputLabel>Bloque</InputLabel>
-          <Select value={selectedBloque} label="Bloque" onChange={(e) => setSelectedBloque(e.target.value)}>
-            {bloques.map(b => <MenuItem key={b.id} value={b.id}>{b.nombre}</MenuItem>)}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth disabled={!selectedBloque} error={!!errors.espacioId}>
+        <FormControl fullWidth error={!!errors.espacioId}>
           <InputLabel>Espacio</InputLabel>
-          <Select name="espacioId" value={formData.espacioId} label="Espacio" onChange={handleChange}>
-            {espacios.map(e => <MenuItem key={e.id} value={e.id}>{e.nombre}</MenuItem>)}
+          <Select
+            name="espacioId"
+            value={formData.espacioId}
+            label="Espacio"
+            onChange={handleChange}
+          >
+            {espacios.map((e) => (
+              <MenuItem key={e.id} value={e.id}>
+                {e.nombre || e.name}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
 
         <FormControl fullWidth error={!!errors.subSeccionId}>
           <InputLabel>Subsección</InputLabel>
-          <Select name="subSeccionId" value={formData.subSeccionId} label="Subsección" onChange={handleChange}>
-            {subsecciones.map(ss => <MenuItem key={ss.id} value={ss.id}>{ss.nombre}</MenuItem>)}
+          <Select
+            name="subSeccionId"
+            value={formData.subSeccionId}
+            label="Subsección"
+            onChange={handleChange}
+          >
+            {subsecciones.map((ss) => (
+              <MenuItem key={ss.id} value={ss.id}>
+                {ss.nombre || ss.name}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
 
         <FormControl fullWidth error={!!errors.estadoId}>
           <InputLabel>Estado</InputLabel>
-          <Select name="estadoId" value={formData.estadoId} label="Estado" onChange={handleChange}>
+          <Select
+            name="estadoId"
+            value={formData.estadoId}
+            label="Estado"
+            onChange={handleChange}
+          >
             <MenuItem value={1}>Activo</MenuItem>
             <MenuItem value={2}>Inactivo</MenuItem>
           </Select>
@@ -282,7 +286,7 @@ export default function FormProduccion({
 
       <DialogActions>
         <Button onClick={() => setOpen(false)}>Cancelar</Button>
-        <Button onClick={handleSubmit}>Guardar</Button>
+        <Button onClick={handleSubmit} variant="contained">Guardar</Button>
       </DialogActions>
     </Dialog>
   );
