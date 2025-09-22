@@ -16,7 +16,7 @@ const toList = (payload) => {
   return [];
 };
 
-const toMap = (payload, key = "id", label = "nombre") => {
+const toMap = (payload, key = "id", label = "name") => {
   const arr = toList(payload);
   return Object.fromEntries(arr.map((e) => [e?.[key], e?.[label]]));
 };
@@ -55,11 +55,11 @@ export default function Producto() {
         const dataProd = resProductos?.data ?? {};
         const lista = Array.isArray(dataProd?.content) ? dataProd.content : [];
 
-        // catálogos
-        const mapCategorias   = toMap(resCategorias?.data);
-        const mapUnidades     = toMap(resUnidades?.data);
-        const mapIngredientes = toMap(resIngredientes?.data);
-        const mapEstados = { 1: "Activo", 2: "Inactivo" };
+        // catálogos (mapeados por name)
+        const mapCategorias   = toMap(resCategorias?.data, "id", "name");
+        const mapUnidades     = toMap(resUnidades?.data, "id", "name");
+        const mapIngredientes = toMap(resIngredientes?.data, "id", "name");
+        const mapEstados = { 1: "Activo", 2: "Inactivo" }; // ajusta si tu backend usa otros IDs
 
         const productosConNombres = lista.map((p) => ({
           ...p,
@@ -131,7 +131,7 @@ export default function Producto() {
       <MessageSnackBar message={message} setMessage={setMessage} />
 
       <FormProducto
-        selectedRow={selectedRow}               // opcional
+        selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
         setMessage={setMessage}
         reloadData={() => reloadData(page, size)}
@@ -147,8 +147,8 @@ export default function Producto() {
         rowsPerPage={size}
         totalElements={totalElements}
         totalPages={totalPages}
-        onPageChange={handleChangePage}               // (event, newPage)
-        onRowsPerPageChange={handleChangeRowsPerPage} // (event | number)
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
       />
     </div>
   );

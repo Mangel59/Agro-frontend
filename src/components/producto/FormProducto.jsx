@@ -17,7 +17,7 @@ const toList = (data) =>
 const MENU_PROPS = { PaperProps: { style: { maxHeight: 48 * 6.5 + 8 } } };
 
 export default function FormProducto({
-  selectedRow = null,          // ← default param (sin defaultProps)
+  selectedRow = null,
   setSelectedRow,
   setMessage,
   reloadData,
@@ -45,7 +45,7 @@ export default function FormProducto({
   const [loadingUnidades, setLoadingUnidades] = useState(false);
   const [loadingIngr, setLoadingIngr] = useState(false);
 
-  // Carga de catálogos (tolerante a {content} o array)
+  // Carga de catálogos (por name)
   useEffect(() => {
     setLoadingCats(true);
     axios.get("/v1/items/producto_categoria/0")
@@ -60,7 +60,7 @@ export default function FormProducto({
       .finally(() => setLoadingUnidades(false));
 
     setLoadingIngr(true);
-    axios.get("/v1/items/ingrediente-presentacion-producto/0")
+    axios.get("/v1/items/producto_presentacion_ingrediente/0")
       .then(res => setIngredientes(toList(res.data)))
       .catch(() => setIngredientes([]))
       .finally(() => setLoadingIngr(false));
@@ -172,117 +172,117 @@ export default function FormProducto({
             </Typography>
           </DialogTitle>
 
-        <DialogContent dividers sx={{ pt: 2 }}>
-          {/* Sección: Información general */}
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="overline" color="text.secondary">Información general</Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={8}>
-                <TextField
-                  fullWidth size="small"
-                  name="nombre" label="Nombre"
-                  value={formData.nombre} onChange={handleChange}
-                  error={!!errors.nombre} helperText={errors.nombre}
-                />
-              </Grid>
+          <DialogContent dividers sx={{ pt: 2 }}>
+            {/* Sección: Información general */}
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="overline" color="text.secondary">Información general</Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={8}>
+                  <TextField
+                    fullWidth size="small"
+                    name="nombre" label="Nombre"
+                    value={formData.nombre} onChange={handleChange}
+                    error={!!errors.nombre} helperText={errors.nombre}
+                  />
+                </Grid>
 
-              <Grid item xs={12} sm={4}>
-                <FormControl fullWidth size="small" error={!!errors.productoCategoriaId}>
-                  <InputLabel>Categoría</InputLabel>
-                  <Select
-                    name="productoCategoriaId"
-                    value={formData.productoCategoriaId}
-                    onChange={handleChange}
-                    label="Categoría"
-                    MenuProps={MENU_PROPS}
-                    disabled={loadingCats}
-                  >
-                    <MenuItem value="">Seleccione...</MenuItem>
-                    {categorias.map(cat => (
-                      <MenuItem key={cat.id} value={cat.id}>{cat.nombre}</MenuItem>
-                    ))}
-                  </Select>
-                  <FormHelperText>{errors.productoCategoriaId}</FormHelperText>
-                </FormControl>
-              </Grid>
+                <Grid item xs={12} sm={4}>
+                  <FormControl fullWidth size="small" error={!!errors.productoCategoriaId}>
+                    <InputLabel>Categoría</InputLabel>
+                    <Select
+                      name="productoCategoriaId"
+                      value={formData.productoCategoriaId}
+                      onChange={handleChange}
+                      label="Categoría"
+                      MenuProps={MENU_PROPS}
+                      disabled={loadingCats}
+                    >
+                      <MenuItem value="">Seleccione...</MenuItem>
+                      {categorias.map(cat => (
+                        <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>{errors.productoCategoriaId}</FormHelperText>
+                  </FormControl>
+                </Grid>
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth size="small" multiline minRows={3}
-                  name="descripcion" label="Descripción"
-                  value={formData.descripcion} onChange={handleChange}
-                  error={!!errors.descripcion} helperText={errors.descripcion}
-                />
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth size="small" multiline minRows={3}
+                    name="descripcion" label="Descripción"
+                    value={formData.descripcion} onChange={handleChange}
+                    error={!!errors.descripcion} helperText={errors.descripcion}
+                  />
+                </Grid>
               </Grid>
-            </Grid>
-          </Box>
+            </Box>
 
-          {/* Sección: Configuración */}
-          <Box sx={{ mt: 1 }}>
-            <Typography variant="overline" color="text.secondary">Configuración</Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={4}>
-                <FormControl fullWidth size="small" error={!!errors.unidadMinimaId}>
-                  <InputLabel>Unidad mínima</InputLabel>
-                  <Select
-                    name="unidadMinimaId"
-                    value={formData.unidadMinimaId}
-                    onChange={handleChange}
-                    label="Unidad mínima"
-                    MenuProps={MENU_PROPS}
-                    disabled={loadingUnidades}
-                  >
-                    <MenuItem value="">Seleccione...</MenuItem>
-                    {unidades.map(u => (
-                      <MenuItem key={u.id} value={u.id}>{u.nombre}</MenuItem>
-                    ))}
-                  </Select>
-                  <FormHelperText>{errors.unidadMinimaId}</FormHelperText>
-                </FormControl>
-              </Grid>
+            {/* Sección: Configuración */}
+            <Box sx={{ mt: 1 }}>
+              <Typography variant="overline" color="text.secondary">Configuración</Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={4}>
+                  <FormControl fullWidth size="small" error={!!errors.unidadMinimaId}>
+                    <InputLabel>Unidad mínima</InputLabel>
+                    <Select
+                      name="unidadMinimaId"
+                      value={formData.unidadMinimaId}
+                      onChange={handleChange}
+                      label="Unidad mínima"
+                      MenuProps={MENU_PROPS}
+                      disabled={loadingUnidades}
+                    >
+                      <MenuItem value="">Seleccione...</MenuItem>
+                      {unidades.map(u => (
+                        <MenuItem key={u.id} value={u.id}>{u.name}</MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>{errors.unidadMinimaId}</FormHelperText>
+                  </FormControl>
+                </Grid>
 
-              <Grid item xs={12} sm={4}>
-                <FormControl fullWidth size="small" error={!!errors.ingredientePresentacionProductoId}>
-                  <InputLabel>Ingrediente presentación</InputLabel>
-                  <Select
-                    name="ingredientePresentacionProductoId"
-                    value={formData.ingredientePresentacionProductoId}
-                    onChange={handleChange}
-                    label="Ingrediente presentación"
-                    MenuProps={MENU_PROPS}
-                    disabled={loadingIngr}
-                  >
-                    <MenuItem value="">Seleccione...</MenuItem>
-                    {ingredientes.map(i => (
-                      <MenuItem key={i.id} value={i.id}>{i.nombre}</MenuItem>
-                    ))}
-                  </Select>
-                  <FormHelperText>{errors.ingredientePresentacionProductoId}</FormHelperText>
-                </FormControl>
-              </Grid>
+                <Grid item xs={12} sm={4}>
+                  <FormControl fullWidth size="small" error={!!errors.ingredientePresentacionProductoId}>
+                    <InputLabel>Ingrediente presentación</InputLabel>
+                    <Select
+                      name="ingredientePresentacionProductoId"
+                      value={formData.ingredientePresentacionProductoId}
+                      onChange={handleChange}
+                      label="Ingrediente presentación"
+                      MenuProps={MENU_PROPS}
+                      disabled={loadingIngr}
+                    >
+                      <MenuItem value="">Seleccione...</MenuItem>
+                      {ingredientes.map(i => (
+                        <MenuItem key={i.id} value={i.id}>{i.name}</MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>{errors.ingredientePresentacionProductoId}</FormHelperText>
+                  </FormControl>
+                </Grid>
 
-              <Grid item xs={12} sm={4}>
-                <FormControl fullWidth size="small" error={!!errors.estadoId}>
-                  <InputLabel>Estado</InputLabel>
-                  <Select
-                    name="estadoId"
-                    value={formData.estadoId}
-                    onChange={handleChange}
-                    label="Estado"
-                    MenuProps={MENU_PROPS}
-                  >
-                    <MenuItem value="">Seleccione...</MenuItem>
-                    <MenuItem value="1">Activo</MenuItem>
-                    <MenuItem value="2">Inactivo</MenuItem>
-                  </Select>
-                  <FormHelperText>{errors.estadoId}</FormHelperText>
-                </FormControl>
+                <Grid item xs={12} sm={4}>
+                  <FormControl fullWidth size="small" error={!!errors.estadoId}>
+                    <InputLabel>Estado</InputLabel>
+                    <Select
+                      name="estadoId"
+                      value={formData.estadoId}
+                      onChange={handleChange}
+                      label="Estado"
+                      MenuProps={MENU_PROPS}
+                    >
+                      <MenuItem value="">Seleccione...</MenuItem>
+                      <MenuItem value="1">Activo</MenuItem>
+                      <MenuItem value="2">Inactivo</MenuItem>
+                    </Select>
+                    <FormHelperText>{errors.estadoId}</FormHelperText>
+                  </FormControl>
+                </Grid>
               </Grid>
-            </Grid>
-          </Box>
-        </DialogContent>
+            </Box>
+          </DialogContent>
 
           <DialogActions sx={{ p: 2 }}>
             <Button onClick={() => setOpen(false)}>Cancelar</Button>
@@ -295,7 +295,7 @@ export default function FormProducto({
 }
 
 FormProducto.propTypes = {
-  selectedRow: PropTypes.object, // opcional
+  selectedRow: PropTypes.object,
   setSelectedRow: PropTypes.func.isRequired,
   setMessage: PropTypes.func.isRequired,
   reloadData: PropTypes.func.isRequired,
