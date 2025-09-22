@@ -1,4 +1,4 @@
-// FormPedido.jsx (almacén independiente, fix: name y normalización)
+// FormPedido.jsx
 import React, { useEffect, useState } from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
@@ -18,6 +18,7 @@ export default function FormPedido({
 }) {
   const [producciones, setProducciones] = useState([]);
   const [almacenes, setAlmacenes] = useState([]);
+  const [estados, setEstados] = useState([]);           // <-- NUEVO
   const [loadingCombos, setLoadingCombos] = useState(false);
 
   const token = localStorage.getItem("token");
@@ -29,47 +30,42 @@ export default function FormPedido({
     produccionId: "",
     descripcion: "",
     fechaHora: "",
-    estadoId: 1,
+    estadoId: 10,                                       // <-- default: Activo (catálogo)
     empresaId: "",
   };
 
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
 
-  // Normalizador "a prueba de todo"
-  const toArray = (d) => {
-    if (Array.isArray(d)) return d;
-    if (!d || typeof d !== "object") return [];
-    return d.content ?? d.items ?? d.data ?? d.results ?? [];
-  };
-
-useEffect(() => {
+  // Normalizador
   const toArray = (d) => (Array.isArray(d) ? d : (d?.content ?? d?.items ?? d?.data ?? d?.results ?? []));
-  const loadCombos = async () => {
-    try {
-      setLoadingCombos(true);
-      const [resAlm, resProd] = await Promise.all([
-        axios.get("/v1/items/almacen/0", headers),     // <— SLASH INICIAL
-        axios.get("/v1/items/produccion/0", headers),  // <— SLASH INICIAL
-      ]);
-      setAlmacenes(toArray(resAlm.data));
-      setProducciones(toArray(resProd.data));
-    } catch (e) {
-      console.error("Error combos", e?.response?.status, e?.config?.url, e?.response?.data);
-      setAlmacenes([]);
-      setProducciones([]);
-      setMessage({
-        open: true, severity: "error",
-        text: `No se pudieron cargar Almacenes/Producciones${e?.response?.status ? ` (${e.response.status})` : ""}.`
-      });
-    } finally {
-      setLoadingCombos(false);
-    }
-  };
-  loadCombos();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
 
+  useEffect(() => {
+    const loadCombos = async () => {
+      try {
+        setLoadingCombos(true);
+        const [resAlm, resProd, resEst] = await Promise.all([
+          axios.get("/v1/items/almacen/0", headers),
+          axios.get("/v1/items/produccion/0", headers),
+          axios.get("/v1/items/pedido_estado/0", headers),   // <-- CARGA ESTADOS
+        ]);
+        setAlmacenes(toArray(resAlm.data));
+        setProducciones(toArray(resProd.data));
+        setEstados(toArray(resEst.data));
+      } catch (e) {
+        console.error("Error combos", e?.response?.status, e?.config?.url, e?.response?.data);
+        setAlmacenes([]); setProducciones([]); setEstados([]);
+        setMessage({
+          open: true, severity: "error",
+          text: `No se pudieron cargar Almacenes/Producciones/Estados${e?.response?.status ? ` (${e.response.status})` : ""}.`
+        });
+      } finally {
+        setLoadingCombos(false);
+      }
+    };
+    loadCombos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -81,20 +77,23 @@ useEffect(() => {
         produccionId: selectedRow.produccionId ?? "",
         descripcion: selectedRow.descripcion ?? "",
         fechaHora: selectedRow.fechaHora ?? "",
-        estadoId: (selectedRow.estadoId ?? 1),
+        // intenta leer estado anidado o plano
+        estadoId: Number(selectedRow.estadoId ?? selectedRow.estado?.id ?? 10),
         empresaId: selectedRow.empresaId ?? "",
       });
     } else {
-      setFormData((prev) => ({
-        ...initialData,
-        almacenId: almacenId || "",
-      }));
+      setFormData((prev) => ({ ...initialData, almacenId: almacenId || "" }));
     }
   }, [open, formMode, selectedRow, almacenId]);
 
+  // Fuerza numérico para los ids
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const numericFields = new Set(["almacenId", "produccionId", "estadoId"]);
+    setFormData((prev) => ({
+      ...prev,
+      [name]: numericFields.has(name) && value !== "" ? Number(value) : value,
+    }));
   };
 
   const validate = () => {
@@ -102,8 +101,7 @@ useEffect(() => {
     if (!formData.almacenId) newErrors.almacenId = "Almacén no asignado.";
     if (!formData.produccionId) newErrors.produccionId = "Seleccione una producción.";
     if (!formData.fechaHora) newErrors.fechaHora = "La fecha es obligatoria.";
-    if (formData.estadoId === undefined || formData.estadoId === null || formData.estadoId === "")
-      newErrors.estadoId = "Seleccione estado.";
+    if (!formData.estadoId) newErrors.estadoId = "Seleccione estado.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -148,20 +146,10 @@ useEffect(() => {
 
         <FormControl fullWidth margin="normal" error={!!errors.almacenId} disabled={loadingCombos}>
           <InputLabel>Almacén</InputLabel>
-          <Select
-            name="almacenId"
-            value={formData.almacenId}
-            onChange={handleChange}
-            label="Almacén"
-            displayEmpty
-          >
-            <MenuItem value="">
-              <em>Seleccione un almacén</em>
-            </MenuItem>
+          <Select name="almacenId" value={formData.almacenId || ""} onChange={handleChange} label="Almacén" displayEmpty>
+            <MenuItem value=""><em>Seleccione un almacén</em></MenuItem>
             {almacenes.map((a) => (
-              <MenuItem key={a.id} value={a.id}>
-              {a.name ?? a.nombre ?? `Almacén ${a.id}`}
-            </MenuItem>
+              <MenuItem key={a.id} value={a.id}>{a.name ?? a.nombre ?? `Almacén ${a.id}`}</MenuItem>
             ))}
           </Select>
           {errors.almacenId && <FormHelperText>{errors.almacenId}</FormHelperText>}
@@ -169,20 +157,10 @@ useEffect(() => {
 
         <FormControl fullWidth margin="normal" error={!!errors.produccionId} disabled={loadingCombos}>
           <InputLabel>Producción</InputLabel>
-          <Select
-            name="produccionId"
-            value={formData.produccionId}
-            onChange={handleChange}
-            label="Producción"
-            displayEmpty
-          >
-            <MenuItem value="">
-              <em>Seleccione una producción</em>
-            </MenuItem>
+          <Select name="produccionId" value={formData.produccionId || ""} onChange={handleChange} label="Producción" displayEmpty>
+            <MenuItem value=""><em>Seleccione una producción</em></MenuItem>
             {producciones.map((p) => (
-              <MenuItem key={p.id} value={p.id}>
-                {p.name ?? p.nombre ?? p.descripcion ?? `Producción ${p.id}`}
-              </MenuItem>
+              <MenuItem key={p.id} value={p.id}>{p.name ?? p.nombre ?? p.descripcion ?? `Producción ${p.id}`}</MenuItem>
             ))}
           </Select>
           {errors.produccionId && <FormHelperText>{errors.produccionId}</FormHelperText>}
@@ -197,16 +175,14 @@ useEffect(() => {
           onChange={handleChange}
         />
 
-        <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
+        {/* ESTADOS DEL CATÁLOGO */}
+        <FormControl fullWidth margin="normal" error={!!errors.estadoId} disabled={loadingCombos}>
           <InputLabel>Estado</InputLabel>
-          <Select
-            name="estadoId"
-            value={formData.estadoId}
-            onChange={handleChange}
-            label="Estado"
-          >
-            <MenuItem value={1}>Activo</MenuItem>
-            <MenuItem value={0}>Inactivo</MenuItem>
+          <Select name="estadoId" value={formData.estadoId || ""} onChange={handleChange} label="Estado" displayEmpty>
+            <MenuItem value=""><em>Seleccione un estado</em></MenuItem>
+            {estados.map((e) => (
+              <MenuItem key={e.id} value={e.id}>{e.name ?? e.nombre ?? `Estado ${e.id}`}</MenuItem>
+            ))}
           </Select>
           {errors.estadoId && <FormHelperText>{errors.estadoId}</FormHelperText>}
         </FormControl>

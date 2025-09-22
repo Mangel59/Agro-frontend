@@ -5,10 +5,9 @@ import PropTypes from "prop-types";
 export default function GridPedido({
   pedidos,
   setSelectedRow,
-  // NUEVO: listas para mostrar nombres
   producciones = [],
   almacenes = [],
-  // paginación server (opcional)
+  estados = [],              // 👈 NUEVO: lista del catálogo de estados
   loading = false,
   rowCount,
   paginationModel,
@@ -17,15 +16,10 @@ export default function GridPedido({
 }) {
   const handleRowSelection = (selection) => {
     const id = Array.isArray(selection) ? selection[0] : selection;
-    if (id != null) {
-      const selected = pedidos.find((a) => String(a.id) === String(id));
-      setSelectedRow(selected || null);
-    } else {
-      setSelectedRow(null);
-    }
+    setSelectedRow(id != null ? (pedidos.find(a => String(a.id) === String(id)) || null) : null);
   };
 
-  // Mapas id -> name para lookups rápidos
+  // Mapas id -> name
   const prodById = useMemo(() => {
     const m = {};
     for (const p of producciones) m[String(p.id)] = p.name ?? p.nombre ?? `Producción ${p.id}`;
@@ -37,6 +31,12 @@ export default function GridPedido({
     for (const a of almacenes) m[String(a.id)] = a.name ?? a.nombre ?? `Almacén ${a.id}`;
     return m;
   }, [almacenes]);
+
+  const estById = useMemo(() => {                // 👈 NUEVO
+    const m = {};
+    for (const e of estados) m[String(e.id)] = e.name ?? e.nombre ?? `Estado ${e.id}`;
+    return m;
+  }, [estados]);
 
   const columns = [
     { field: "id", headerName: "ID", width: 70 },
@@ -54,12 +54,19 @@ export default function GridPedido({
       width: 200,
       valueGetter: (params) => almById[String(params.row.almacenId)] ?? params.row.almacenId,
     },
-    { field: "empresaId", headerName: "Empresa ID", width: 130 },
     {
       field: "estadoId",
       headerName: "Estado",
-      width: 110,
-      valueGetter: (params) => (params.row.estadoId === 1 ? "Activo" : "Inactivo"),
+      width: 200,
+      valueGetter: (params) => {
+        const id = params.row.estado?.id ?? params.row.estadoId;
+        return (
+          params.row.estado?.name ??
+          params.row.estado?.nombre ??
+          estById[String(id)] ??
+          String(id ?? "")
+        );
+      },
     },
   ];
 
@@ -96,8 +103,9 @@ export default function GridPedido({
 GridPedido.propTypes = {
   pedidos: PropTypes.array.isRequired,
   setSelectedRow: PropTypes.func.isRequired,
-  producciones: PropTypes.array,   // NUEVO
-  almacenes: PropTypes.array,      // NUEVO
+  producciones: PropTypes.array,
+  almacenes: PropTypes.array,
+  estados: PropTypes.array,          
   loading: PropTypes.bool,
   rowCount: PropTypes.number,
   paginationModel: PropTypes.shape({ page: PropTypes.number, pageSize: PropTypes.number }),

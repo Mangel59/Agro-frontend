@@ -1,4 +1,3 @@
-// src/components/Login.jsx
 import React, { useState } from "react";
 import {
   Box, TextField, Button, Typography, IconButton,
@@ -13,19 +12,30 @@ import PropTypes from "prop-types";
 import axios from "axios";
 import ForgotPassword from "../ForgotPassword";
 
+// --- helper: decodifica payload del JWT sin librerías ---
+const decodeJwt = (jwt) => {
+  try {
+    const [, payload] = jwt.split(".");
+    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    return JSON.parse(json);
+  } catch {
+    return {};
+  }
+};
+
 export default function Login(props) {
   const { t } = useTranslation();
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
-  // Fondo de página (mantenemos tu “suave”)
+  // Fondo de página (suave)
   const softBg = isDark ? alpha(theme.palette.primary.light, 0.08) : "#e7f6f7";
 
   // --- Tokens fuertes para oscuro ---
-  const cardBg       = isDark ? theme.palette.background.paper : "#fff";                 // card oscuro vs blanco
-  const inputBg      = isDark ? alpha(theme.palette.common.white, 0.06) : "#fff";        // fondo input
-  const inputText    = isDark ? alpha("#FFFFFF", 0.92) : theme.palette.text.primary;     // texto input
-  const labelColor   = isDark ? alpha("#FFFFFF", 0.75) : theme.palette.text.secondary;   // label
+  const cardBg       = isDark ? theme.palette.background.paper : "#fff";
+  const inputBg      = isDark ? alpha(theme.palette.common.white, 0.06) : "#fff";
+  const inputText    = isDark ? alpha("#FFFFFF", 0.92) : theme.palette.text.primary;
+  const labelColor   = isDark ? alpha("#FFFFFF", 0.75) : theme.palette.text.secondary;
   const borderBase   = isDark ? alpha("#FFFFFF", 0.18) : alpha(theme.palette.primary.main, 0.35);
   const borderFocus  = theme.palette.primary.main;
   const borderWrap   = isDark ? alpha(theme.palette.primary.light, 0.45)
@@ -75,9 +85,25 @@ export default function Login(props) {
         return;
       }
 
-      const expiration = Date.now() + 3 * 60 * 60 * 1000;
+      // --- NUEVO: usar exp y tver del JWT ---
+      const { exp, tver } = decodeJwt(token); // exp (segundos desde epoch)
+      const expiration = exp ? exp * 1000 : Date.now() + 3 * 60 * 60 * 1000;
+
+      // Limpiar credenciales viejas antes de setear las nuevas
+      try {
+        localStorage.removeItem("token");
+        localStorage.removeItem("token_expiration");
+        localStorage.removeItem("tver");
+        localStorage.removeItem("empresaId");
+        localStorage.removeItem("rolId");
+        localStorage.removeItem("empresaNombre");
+        localStorage.removeItem("rolesByCompany");
+      } catch { /* no-op */ }
+
+      // Guardar credenciales nuevas
       localStorage.setItem("token", token);
       localStorage.setItem("token_expiration", String(expiration));
+      if (typeof tver !== "undefined") localStorage.setItem("tver", String(tver));
       if (empresaId != null) localStorage.setItem("empresaId", String(empresaId));
       if (rolId != null) localStorage.setItem("rolId", String(rolId));
       localStorage.setItem("rolesByCompany", JSON.stringify(rolesByCompany || []));
@@ -92,11 +118,20 @@ export default function Login(props) {
         "";
       if (inferredName) localStorage.setItem("empresaNombre", inferredName);
 
+      // Si gestionas el Authorization header en otro lado, no toques axios aquí.
+      // Si no, podrías habilitar:
+      // axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+
       props.setIsAuthenticated?.(true);
       window.location.replace("/coagronet"); // recarga completa para resetear estado
     } catch (err) {
       console.error("Login error:", err);
-      setError(t("login_error"));
+      // Diferenciar credenciales inválidas de errores genéricos
+      if (err?.response?.status === 401) {
+        setError(t("invalid_credentials") || "Usuario o contraseña inválidos");
+      } else {
+        setError(t("login_error") || "Ocurrió un error iniciando sesión");
+      }
       setSubmitting(false);
     }
   };
@@ -128,7 +163,7 @@ export default function Login(props) {
           maxWidth: 440,
           p: { xs: 3, md: 4 },
           borderRadius: 3,
-          bgcolor: cardBg,           // oscuro/white
+          bgcolor: cardBg,
           boxShadow: "none",
           position: "relative",
           "&:before": {

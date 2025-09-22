@@ -12,6 +12,17 @@ import img2 from "/images/cards/2.jpg";
 import img3 from "/images/cards/3.jpg";
 const roleImages = { 1: img1, 2: img2, 3: img3 };
 
+// --- helper: decodifica payload del JWT sin librerías ---
+const decodeJwt = (jwt) => {
+  try {
+    const [, payload] = jwt.split(".");
+    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+    return JSON.parse(json);
+  } catch {
+    return {};
+  }
+};
+
 function getRolesFromStorage() {
   try {
     const raw = JSON.parse(localStorage.getItem("rolesByCompany") || "[]");
@@ -45,6 +56,7 @@ export default function RoleSwitcherModal({ open, onClose, onSwitched }) {
 
   const [empresaId, setEmpresaId] = useState(null);
   const [rolId, setRolId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const doSwitch = useCallback(
     async ({ empresaId: empId, rolId: rId }) => {
@@ -62,7 +74,30 @@ export default function RoleSwitcherModal({ open, onClose, onSwitched }) {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      localStorage.setItem("token", data.token);
+      const newToken = data?.token;
+      if (!newToken) {
+        throw new Error("Respuesta inválida del servidor (sin token).");
+      }
+
+      // --- NUEVO: usar exp y tver del JWT y limpiar antes de guardar
+      const { exp, tver } = decodeJwt(newToken); // exp en segundos
+      const expiration = exp ? exp * 1000 : Date.now() + 3 * 60 * 60 * 1000;
+
+      try {
+        localStorage.removeItem("token");
+        localStorage.removeItem("token_expiration");
+        localStorage.removeItem("tver");
+        // mantenemos rolesByCompany; viene del login
+        // limpiamos nombres/contexto previos
+        localStorage.removeItem("empresaId");
+        localStorage.removeItem("rolId");
+        localStorage.removeItem("empresaNombre");
+        localStorage.removeItem("rolNombre");
+      } catch { /* no-op */ }
+
+      localStorage.setItem("token", newToken);
+      localStorage.setItem("token_expiration", String(expiration));
+      if (typeof tver !== "undefined") localStorage.setItem("tver", String(tver));
       localStorage.setItem("empresaId", String(payload.empresaId));
       localStorage.setItem("rolId", String(payload.rolId));
 
@@ -79,7 +114,9 @@ export default function RoleSwitcherModal({ open, onClose, onSwitched }) {
   );
 
   const handleConfirm = async () => {
+    if (empresaId == null || rolId == null) return;
     try {
+      setSubmitting(true);
       await doSwitch({ empresaId, rolId });
     } catch (err) {
       const msg =
@@ -89,6 +126,8 @@ export default function RoleSwitcherModal({ open, onClose, onSwitched }) {
         "Error cambiando empresa/rol";
       console.error("switch-context error:", err?.response || err);
       alert(msg);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -174,12 +213,7 @@ export default function RoleSwitcherModal({ open, onClose, onSwitched }) {
                   </Box>
 
                   {/* Roles en fila */}
-                  <Stack
-                    direction="row"
-                    useFlexGap
-                    flexWrap="wrap"
-                    spacing={2}
-                  >
+                  <Stack direction="row" useFlexGap flexWrap="wrap" spacing={2}>
                     {rolesDeEmpresa.map((r) => (
                       <Card
                         key={`${r.empresaId}-${r.rolId}`}
@@ -247,12 +281,7 @@ export default function RoleSwitcherModal({ open, onClose, onSwitched }) {
                       </Box>
 
                       {/* Roles de esa empresa (debajo) */}
-                      <Stack
-                        direction="row"
-                        useFlexGap
-                        flexWrap="wrap"
-                        spacing={2}
-                      >
+                      <Stack direction="row" useFlexGap flexWrap="wrap" spacing={2}>
                         {rolesDeEmpresa.map((r) => (
                           <Card
                             key={`${r.empresaId}-${r.rolId}`}
@@ -290,13 +319,13 @@ export default function RoleSwitcherModal({ open, onClose, onSwitched }) {
       </DialogContent>
 
       <DialogActions sx={{ p: 2 }}>
-        <Button onClick={onClose}>Cancelar</Button>
+        <Button onClick={onClose} disabled={submitting}>Cancelar</Button>
         <Button
           variant="contained"
-          disabled={empresaId == null || rolId == null}
+          disabled={empresaId == null || rolId == null || submitting}
           onClick={handleConfirm}
         >
-          Cambiar
+          {submitting ? "Cambiando..." : "Cambiar"}
         </Button>
       </DialogActions>
     </Dialog>

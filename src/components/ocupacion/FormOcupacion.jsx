@@ -34,8 +34,8 @@ export default function FormOcupacion({ selectedRow, setSelectedRow, setMessage,
   const loadData = async () => {
     try {
       const [resTipos, resEval] = await Promise.all([
-        axios.get("/v1/tipo_actividad", headers),
-        axios.get("/v1/evaluacion", headers),
+        axios.get("/v1/items/tipo_actividad/0", headers),
+        axios.get("/v1/items/evaluacion/0", headers),
       ]);
       setTiposActividad(resTipos.data || []);
       setEvaluaciones(resEval.data || []);

@@ -52,15 +52,21 @@ export default function Pedido() {
   };
   const [producciones, setProducciones] = useState([]);
   const [almacenes, setAlmacenes] = useState([]);
+  const [estados, setEstados] = useState([]); 
 
   useEffect(() => {
+    const toArray = (d) => (Array.isArray(d) ? d : (d?.content ?? d?.items ?? d?.data ?? d?.results ?? []));
     axios.get("/v1/items/almacen/0")
-      .then(r => setAlmacenes(Array.isArray(r.data) ? r.data : []))
+      .then(r => setAlmacenes(toArray(r.data)))
       .catch(() => setAlmacenes([]));
 
     axios.get("/v1/items/produccion/0")
-      .then(r => setProducciones(Array.isArray(r.data) ? r.data : []))
+      .then(r => setProducciones(toArray(r.data)))
       .catch(() => setProducciones([]));
+
+    axios.get("/v1/items/pedido_estado/0")          
+      .then(r => setEstados(toArray(r.data)))
+      .catch(() => setEstados([]));
   }, []);
 
   const reloadData = async () => {
@@ -226,6 +232,7 @@ export default function Pedido() {
             onPaginationModelChange={setPedidoPaginationModel}
             producciones={producciones}   // <- NUEVO
             almacenes={almacenes}   
+            estados={estados}
           />
         </Box>
       </Box>
