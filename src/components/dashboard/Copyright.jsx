@@ -1,31 +1,63 @@
-/**
- * @file Copyright.jsx
- * @module Copyright
- * @description Muestra el pie de página con derechos de autor y nombre de la aplicación.
- * @component
- */
+import React from "react";
+import { Box, Typography, Link } from "@mui/material";
+import { useTheme, alpha } from "@mui/material/styles";
+import { SiteProps } from "./SiteProps";
 
-import Typography from '@mui/material/Typography';
-import Link from '@mui/material/Link';
-import { SiteProps } from './SiteProps';
+export default function Copyright({
+  fullWidth = true,
+  seamlessAbove = true,
+  ...props
+}) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
 
-/**
- * Componente Copyright.
- *
- * Muestra el texto de copyright en el pie de página, incluyendo el nombre de la app y el año actual.
- *
- * @param {Object} props - Propiedades adicionales que serán pasadas al componente Typography.
- * @returns {JSX.Element} El componente de copyright renderizado.
- */
-export default function Copyright(props) {
+  const softBg = isDark ? alpha(theme.palette.primary.light, 0.08) : "#e7f6f7";
+
   return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://inmero.co/">
-        {SiteProps.appName}
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
+    <Box
+      component="footer"
+      sx={{
+        position: "relative",
+        width: fullWidth ? "100svw" : "100%",
+        ml: fullWidth ? "calc(50% - 50svw)" : 0,
+        mr: fullWidth ? "calc(50% - 50svw)" : 0,
+        "@supports not (width: 100svw)": {
+          width: fullWidth ? "100vw" : "100%",
+          ml: fullWidth ? "calc(50% - 50vw)" : 0,
+          mr: fullWidth ? "calc(50% - 50vw)" : 0,
+        },
+        bgcolor: softBg,
+        py: 3,
+        borderTop: "none !important",
+        mt: seamlessAbove ? "-1px" : 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center", // esto centra todo horizontalmente
+      }}
+    >
+      <Typography variant="body2" color="text.secondary" align="center" {...props}>
+        {"Copyright © "}
+        <Link
+          color="inherit"
+          href="https://inmero.co/"
+          target="_blank"
+          rel="noopener"
+          sx={{
+            fontWeight: 600,
+            textDecoration: "none",
+            "&:hover": { textDecoration: "underline" },
+          }}
+        >
+          {SiteProps.appName}
+        </Link>{" "}
+        {new Date().getFullYear()}
+        {"."}
+      </Typography>
+
+      {/* Textos de versión centrados */}
+      <Typography variant="body2" color="text.secondary" align="center" gutterBottom>
+        Construcción de versionamiento 0.0.1
+      </Typography>
+    </Box>
   );
 }

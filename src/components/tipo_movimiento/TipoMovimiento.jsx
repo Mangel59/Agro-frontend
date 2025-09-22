@@ -48,7 +48,7 @@ export default function TipoMovimiento() {
 
   return (
     <div>
-      <h1>Gestión de Tipo de Movimiento</h1>
+      <h1>Tipo de Movimiento</h1>
 
       <MessageSnackBar message={message} setMessage={setMessage} />
 

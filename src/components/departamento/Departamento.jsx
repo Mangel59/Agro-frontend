@@ -12,15 +12,14 @@ import axios from "../axiosConfig";
 import GridDepartamento from "./GridDepartamento";
 import FormDepartamento from "./FormDepartamento";
 import MessageSnackBar from "../MessageSnackBar";
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Box,
-  Typography,
-  Button,
-} from "@mui/material";
+import { Box, Typography, Button, Tooltip, Stack } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+
+// Modal genérico de filtros + loaders
+import CrudFilterModal from "../common/CrudFilterModal";
+import { makeLoaders, unwrap as unwrapPage } from "../common/filtersLoaders";
 
 /**
  * @typedef {Object} DepartamentoRow
@@ -44,9 +43,23 @@ import {
  * @returns {JSX.Element} El módulo de gestión de departamentos
  */
 export default function Departamento() {
+  // ===========================
+  // ESTADO Y CONFIGURACIÓN
+  // ===========================
+  
+  // Filtros (vía modal) - Para Departamento: Solo País
+  const [filters, setFilters] = useState({
+    paisId: ""
+  });
+  const [openFilters, setOpenFilters] = useState(false);
+
+  // Catálogos "items" (única fuente de nombres)
+  const [paisesItems, setPaisesItems] = useState([]); // [{id, name}]
+
+  // Datos principales
   const [departamentos, setDepartamentos] = useState([]);
-  const [paises, setPaises] = useState([]);
-  const [selectedPaisId, setSelectedPaisId] = useState("");
+
+  // UI CRUD
   const [selectedRow, setSelectedRow] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState("create");
@@ -56,158 +69,241 @@ export default function Departamento() {
     text: "",
   });
 
-  /**
-   * Carga la lista de países desde la API al iniciar el componente.
-   */
+  // ===========================
+  // CONFIGURACIÓN Y HELPERS
+  // ===========================
+  
+  // Auth / headers
+  const token = localStorage.getItem("token");
+  const headers = { headers: { Authorization: `Bearer ${token}` } };
+
+  // Loaders del modal (usan /v1)
+  const { getPaises } = makeLoaders(headers);
+
+  // Normalizaciones para los formularios (esperan [{id, nombre}])
+  const paisesForm = paisesItems.map(p => ({ id: p.id, nombre: p.name }));
+
+  // Campos del modal SOLO para Departamento
+  const fieldsDepartamento = [
+    { name: "paisId", label: "País", getOptions: getPaises },
+  ];
+
+  // ===========================
+  // EFECTOS - CARGA DE DATOS
+  // ===========================
+  
+  // Cargar países (items)
   useEffect(() => {
-    axios
-      .get("/v1/pais")
-      .then((res) => setPaises(res.data))
-      .catch(() =>
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al cargar países",
-        })
-      );
+    // Países: intentar /v1/items/pais/0 y si falla, caer a /v1/pais
+    (async () => {
+      try {
+        const r = await axios.get("/v1/items/pais/0");
+        const arr = Array.isArray(r.data) ? r.data : [];
+        if (arr.length) {
+          setPaisesItems(arr); // [{id,name}]
+          return;
+        }
+        throw new Error("empty");
+      } catch {
+        try {
+          const { data } = await axios.get("/v1/pais", {
+            ...headers,
+            params: { page: 0, size: 1000 },
+          });
+          // normaliza a shape "items"
+          const list = (Array.isArray(data) ? data : data?.content ?? []).map((p) => ({
+            id: p.id,
+            name: p.nombre, // <-- importante
+          }));
+          setPaisesItems(list);
+        } catch {
+          setPaisesItems([]);
+          setMessage({
+            open: true,
+            severity: "error",
+            text: "Error al cargar países",
+          });
+        }
+      }
+    })();
   }, []);
 
-  /**
-   * Carga y filtra departamentos según el país seleccionado.
-   */
+  // Efectos para recargar departamentos
+  useEffect(() => { reloadData(); }, []); // mount
+  useEffect(() => { reloadData(); }, [filters.paisId]); // al aplicar filtro de país
+  useEffect(() => {
+    if (paisesItems.length) reloadData();
+  }, [paisesItems]);
+
+  // ===========================
+  // FUNCIONES DE DATOS
+  // ===========================
+  
+  // Cargar departamentos (CRUD)
   const reloadData = () => {
-    if (!selectedPaisId) return;
+    const { paisId } = filters;
 
-    axios
-      .get("/v1/departamento")
+    const req = paisId
+      ? axios.get("/v1/departamento", { ...headers, params: { paisId: Number(paisId), page: 0, size: 1000 } })
+      : axios.get("/v1/departamento", { ...headers, params: { page: 0, size: 1000 } });
+
+    req
       .then((res) => {
-        const filtrados = res.data
-          .filter((d) => d.paisId === selectedPaisId)
-          .map((d) => {
-            const pais = paises.find((p) => p.id === d.paisId);
-            return {
-              id: d.id,
-              name: d.nombre,
-              paisNombre: pais?.nombre || d.paisId,
-              ...d,
-            };
-          });
+        const lista = unwrapPage(res.data);
 
-        setDepartamentos(filtrados);
+        // Mapear IDs → nombres usando ÚNICAMENTE los catálogos "items"
+        const normalizadas = lista.map((d) => {
+          const paisIdNum = d.paisId ?? d.pais?.id ?? d.pais_id ?? "";
+          const pais = paisesItems.find((p) => Number(p.id) === Number(paisIdNum));
+
+          return {
+            ...d,
+            paisId: Number(paisIdNum) || "",
+            paisNombre: pais?.name ?? "",
+            name: d.nombre, // Para compatibilidad con código existente
+          };
+        });
+
+        const final = paisId
+          ? normalizadas.filter((d) => Number(d.paisId) === Number(paisId))
+          : normalizadas;
+
+        setDepartamentos(final);
         setSelectedRow(null);
       })
       .catch(() =>
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al cargar departamentos",
-        })
+        setMessage({ open: true, severity: "error", text: "Error al cargar departamentos." })
       );
   };
 
-  /**
-   * Se ejecuta cada vez que cambia el país seleccionado o la lista de países.
-   */
-  useEffect(() => {
-    reloadData();
-  }, [selectedPaisId, paises]);
-
-  /**
-   * Maneja la eliminación de un departamento seleccionado.
-   */
+  // ===========================
+  // HANDLERS DE EVENTOS
+  // ===========================
+  
+  // Acciones CRUD
   const handleDelete = async () => {
     if (!selectedRow) return;
-    if (window.confirm(`¿Eliminar el departamento "${selectedRow.name}"?`)) {
-      try {
-        await axios.delete(`/v1/departamento/${selectedRow.id}`);
-        setMessage({
-          open: true,
-          severity: "success",
-          text: "Departamento eliminado correctamente.",
-        });
-        reloadData();
-      } catch (err) {
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al eliminar departamento.",
-        });
-      }
+    if (!window.confirm(`¿Eliminar el departamento "${selectedRow.name}"?`)) return;
+    try {
+      await axios.delete(`/v1/departamento/${selectedRow.id}`, headers);
+      setMessage({
+        open: true,
+        severity: "success",
+        text: "Departamento eliminado correctamente.",
+      });
+      setSelectedRow(null);
+      reloadData();
+    } catch {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Error al eliminar departamento.",
+      });
     }
   };
 
+  // Handlers del modal de filtros
+  const handleFiltersChange = ({ name, value }) =>
+    setFilters((f) => ({ ...f, [name]: value }));
+
+  const handleFiltersClear = () =>
+    setFilters({ paisId: "" });
+
+  const handleFiltersApply = () => {
+    setOpenFilters(false);
+    reloadData();
+  };
+
+  // ===========================
+  // RENDER
+  // ===========================
   return (
-    <Box sx={{ padding: 2 }}>
-      <Typography variant="h5" gutterBottom>
-        Gestión de Departamento
-      </Typography>
+    <Box sx={{ p: 2 }}>
+      {/* Header con título y filtros */}
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+        <Typography variant="h5">Gestión de Departamento</Typography>
 
-      <FormControl fullWidth sx={{ mb: 2 }}>
-        <InputLabel id="pais-select-label">País</InputLabel>
-        <Select
-          labelId="pais-select-label"
-          value={selectedPaisId}
-          label="País"
-          onChange={(e) => setSelectedPaisId(Number(e.target.value))}
-        >
-          {paises.map((pais) => (
-            <MenuItem key={pais.id} value={pais.id}>
-              {pais.nombre}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+        <Stack direction="row" spacing={1}>
+          <Button onClick={() => setOpenFilters(true)}>
+            Mostrar filtros
+          </Button>
+          {Boolean(filters.paisId) && (
+            <Button onClick={handleFiltersClear}>
+              Limpiar filtros
+            </Button>
+          )}
+        </Stack>
+      </Stack>
 
+      {/* Botones de acción CRUD */}
       <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
-        <Button
-          variant="contained"
-          onClick={() => {
-            setFormMode("create");
-            setFormOpen(true);
-            setSelectedRow(null);
-          }}
-          disabled={!selectedPaisId}
-        >
-          + Agregar Departamento
-        </Button>
+        <Tooltip title="Crear">
+          <Button
+            variant="contained"
+            onClick={() => { setFormMode("create"); setSelectedRow(null); setFormOpen(true); }}
+            startIcon={<AddIcon />}
+          >
+            Agregar
+          </Button>
+        </Tooltip>
 
-        <Button
-          variant="outlined"
-          onClick={() => {
-            setFormMode("edit");
-            setFormOpen(true);
-          }}
-          disabled={!selectedRow}
-        >
-          Editar
-        </Button>
+        <Tooltip title="Editar">
+          <Button
+            variant="outlined"
+            onClick={() => { setFormMode("edit"); setFormOpen(true); }}
+            disabled={!selectedRow}
+            startIcon={<EditIcon />}
+          >
+            Actualizar
+          </Button>
+        </Tooltip>
 
-        <Button
-          variant="outlined"
-          color="error"
-          onClick={handleDelete}
-          disabled={!selectedRow}
-        >
-          Eliminar
-        </Button>
+        <Tooltip title="Eliminar">
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleDelete}
+            disabled={!selectedRow}
+            startIcon={<DeleteIcon />}
+          >
+            Eliminar
+          </Button>
+        </Tooltip>
       </Box>
 
+      {/* Grid de departamentos */}
       <GridDepartamento
         departamentos={departamentos}
         setSelectedRow={setSelectedRow}
       />
 
+      {/* Formulario modal */}
       <FormDepartamento
         open={formOpen}
         setOpen={setFormOpen}
-        selectedPais={selectedPaisId}
-        selectedRow={selectedRow}
         formMode={formMode}
-        setMessage={setMessage}
+        selectedRow={selectedRow}
         reloadData={reloadData}
+        setMessage={setMessage}
+        paisId={filters.paisId || ""}     // si hay filtro se precarga; si no, el form muestra select de país
+        paises={paisesForm}               // items → [{id,nombre}] para el select en el form
+        authHeaders={headers}
       />
 
+      {/* Componentes auxiliares */}
       <MessageSnackBar message={message} setMessage={setMessage} />
+
+      {/* Modal de filtros */}
+      <CrudFilterModal
+        open={openFilters}
+        onClose={() => setOpenFilters(false)}
+        title="Filtros de Departamento"
+        fields={fieldsDepartamento}
+        values={filters}
+        onChange={handleFiltersChange}
+        onClear={handleFiltersClear}
+        onApply={handleFiltersApply}
+      />
     </Box>
   );
 }

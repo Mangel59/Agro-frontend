@@ -1,0 +1,49 @@
+/* Evita barra de desplazamiento horizontal en toda la app */
+html, body, #root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+html, body, #root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+.empresas-container {
+  display: flex;
+  gap: 20px; /* espacio entre empresas */
+}
+
+.empresa-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.empresas-container {
+  display: flex;
+  flex-direction: column; /* empresas una debajo de la otra */
+  gap: 20px; /* espacio entre empresas */
+  width: 100%;
+}
+
+.empresa-card {
+  background: #3a3a3a;
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.empresa-card h3 {
+  margin: 0;
+  font-size: 16px;
+  color: white;
+}
+
+.contenedor-roles {
+  display: flex;
+  flex-direction: row;   /* ahora en fila */
+  gap: 16px;             /* espacio entre ellos */
+  justify-content: center; /* centrados horizontal */
+  flex-wrap: wrap;       /* si no caben, bajan */
+}

@@ -1,9 +1,11 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import React, { createContext, useContext, useMemo, useState, useEffect } from 'react';
+import { ThemeProvider, createTheme, alpha } from '@mui/material/styles';
 
 const ThemeToggleContext = createContext();
-
 export const useThemeToggle = () => useContext(ThemeToggleContext);
+
+// VERDE OSCURO
+const BRAND_GREEN = '#0F2327';
 
 export const ThemeToggleProvider = ({ children }) => {
   const [darkMode, setDarkMode] = useState(() => {
@@ -15,98 +17,102 @@ export const ThemeToggleProvider = ({ children }) => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
   }, [darkMode]);
 
-  const toggleTheme = () => setDarkMode(prev => !prev); // Agregado correctamente
-const theme = useMemo(
-  () =>
-    createTheme({
-      palette: {
-        mode: darkMode ? 'dark' : 'light',
+  const toggleTheme = () => setDarkMode(v => !v);
 
-        // Diferencia clara entre fondo general y tarjetas
-      background: {
-        default: darkMode ? '#0B0F14' : '#E6ECF2', // panel exterior
-        paper:   darkMode ? '#1E1E1E' : '#FFFFFF', // tarjeta
-
-        // NUEVO: zonas internas de la tarjeta (siempre distinto a 'paper')
-        cardHeader: darkMode ? '#5a5b5d' : '#E9EEF3', // parte superior (icono)
-        cardFooter: darkMode ? '#1D2631' : '#DDE3EA', // barra del título
-      },
-
-        text: {
-          primary:   darkMode ? '#E0E0E0' : '#2B3445',
-          secondary: darkMode ? '#B0B0B0' : '#5B667C',
-        },
-
-        primary:   { main: darkMode ? '#4DB6AC' : '#005B4F' },
-        secondary: { main: darkMode ? '#80CBC4' : '#00897B' },
-      },
-
-      typography: {
-        fontFamily: 'Roboto, sans-serif',
-        button: { textTransform: 'none', fontWeight: 500 },
-      },
-
-      components: {
-        // Fuerza contraste por elevación: contenedor vs tarjeta
-        MuiPaper: {
-          styleOverrides: {
-            root: {
-              borderRadius: 10,
-              backgroundImage: 'none',
-              boxShadow: darkMode
-                ? '0 3px 6px rgba(0,0,0,0.5)'
-                : '0 3px 10px rgba(0,0,0,0.08)',
-            },
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: darkMode ? 'dark' : 'light',
+          primary: { main: BRAND_GREEN },               // verde de marca
+          background: {
+            default: darkMode ? BRAND_GREEN : '#E7F6F7',
+            paper:   darkMode ? '#1B1F22' : '#FFFFFF',
           },
-          variants: [
-            // Paper "plano" para secciones grandes (afuera)
-            {
-              props: { elevation: 0 },
-              style: {
-                backgroundColor: darkMode ? '#151515' : '#ECEFF1',
-              },
-            },
-            // Tarjetas (adentro)
-            {
-              props: { elevation: 1 },
-              style: {
-                backgroundColor: darkMode ? '#1F1F1F' : '#FFFFFF',
-              },
-            },
-            // Outlined con otro pelín de contraste
-            {
-              props: { variant: 'outlined' },
-              style: {
-                backgroundColor: darkMode ? '#1A1A1A' : '#F7F7F9',
-                borderColor: darkMode ? '#2A2A2A' : '#E6E8F0',
-              },
-            },
-          ],
-        },
-
-        MuiCard: {
-          styleOverrides: {
-            root: {
-              backgroundColor: darkMode ? '#1F1F1F' : '#FFFFFF',
-            },
+          text: {
+            primary: darkMode ? '#E0E0E0' : '#2B3445',
+            secondary: darkMode ? '#B0B0B0' : '#5B667C',
+          },
+          action: {
+            active: darkMode ? '#FFFFFF' : '#000000',
+            hover: darkMode ? alpha('#FFFFFF', 0.12) : alpha('#000000', 0.08),
+            disabled: darkMode ? alpha('#FFFFFF', 0.26) : alpha('#000000', 0.26),
+            selected: darkMode ? alpha('#FFFFFF', 0.08) : alpha('#000000', 0.12),
           },
         },
-
-        MuiAppBar: {
-          styleOverrides: {
-            root: {
-              backgroundColor: darkMode ? '#1B1B1B' : '#005B4F',
-              color: '#FFFFFF',
+        components: {
+          MuiAppBar: {
+            styleOverrides: {
+              root: {
+                backgroundColor: BRAND_GREEN,
+                color: '#FFFFFF',
+              },
+            },
+          },
+          MuiButton: {
+            styleOverrides: {
+              root: {
+                borderRadius: 8,
+                fontWeight: 600,
+                letterSpacing: 0.2,
+              },
+              outlined: darkMode
+                ? {
+                    color: '#FFFFFF',
+                    borderColor: 'rgba(255,255,255,0.9)',
+                    '&:hover': {
+                      borderColor: '#FFFFFF',
+                      backgroundColor: alpha('#FFFFFF', 0.08),
+                    },
+                    '&.Mui-disabled': {
+                      color: 'rgba(255,255,255,0.35)',
+                      borderColor: 'rgba(255,255,255,0.25)',
+                    },
+                  }
+                : {},
+              text: darkMode
+                ? {
+                    color: '#FFFFFF',
+                    '&:hover': { backgroundColor: alpha('#FFFFFF', 0.06) },
+                    '&.Mui-disabled': { color: 'rgba(255,255,255,0.35)' },
+                  }
+                : {},
+              contained: darkMode
+                ? {
+                    backgroundColor: '#FFFFFF',
+                    color: BRAND_GREEN,
+                    boxShadow: '0 2px 6px rgba(0,0,0,.35)',
+                    '&:hover': { backgroundColor: '#F5F7F8' },
+                    '&.Mui-disabled': {
+                      backgroundColor: 'rgba(255,255,255,0.25)',
+                      color: alpha(BRAND_GREEN, 0.55),
+                    },
+                  }
+                : {},
+            },
+          },
+          MuiDataGrid: {
+            styleOverrides: {
+              root: {
+                border: `1px solid ${darkMode ? '#FFFFFF' : '#000000'}`, // borde externo
+              },
+              columnHeaders: {
+                borderBottom: `1px solid ${darkMode ? '#FFFFFF' : '#000000'}`, // borde encabezados
+              },
+              cell: {
+                borderBottom: `1px solid ${darkMode ? '#FFFFFF' : '#000000'}`, // borde filas
+                //borderRight: `1px solid ${darkMode ? '#FFFFFF' : '#000000'}`,
+              },
+              columnSeparator: {
+                color: darkMode ? '#FFFFFF' : '#000000', // borde entre columnas
+                display: 'none', // opcional: ocultar el separador nativo
+              },
             },
           },
         },
-        MuiButton: {
-          styleOverrides: { root: { borderRadius: 6 } },
-        },
-      },
-    }),
-  [darkMode]
-);
+      }),
+    [darkMode]
+  );
 
   return (
     <ThemeToggleContext.Provider value={{ toggleTheme, darkMode }}>

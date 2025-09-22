@@ -2,29 +2,24 @@ import * as React from "react";
 import PropTypes from "prop-types";
 import axios from "../axiosConfig";
 import {
-  Button, Dialog, DialogActions, DialogContent,
-  DialogContentText, DialogTitle, TextField, FormControl,
-  InputLabel, Select, MenuItem
+  Button, Dialog, DialogActions, DialogContent, DialogTitle
 } from "@mui/material";
 import StackButtons from "../StackButtons";
+import BaseFormCampos from "../common/BaseFormCampos";
+import { validateCamposBase } from "../utils/validations";
 
 export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
   const [errors, setErrors] = React.useState({});
 
-  const initialData = {
-    nombre: "",
-    descripcion: "",
-    estado: ""
-  };
-
+  const initialData = { nombre: "", descripcion: "", estado: "" };
   const [formData, setFormData] = React.useState(initialData);
 
   const create = () => {
     setFormData(initialData);
     setErrors({});
-    setMethodName("Add");
+    setMethodName("Agregar");
     setOpen(true);
   };
 
@@ -33,14 +28,13 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
       setMessage({ open: true, severity: "error", text: "Selecciona una unidad para editar." });
       return;
     }
-
     setFormData({
       nombre: selectedRow.nombre || "",
       descripcion: selectedRow.descripcion || "",
       estado: selectedRow.estadoId?.toString() || ""
     });
     setErrors({});
-    setMethodName("Update");
+    setMethodName("Actualizar");
     setOpen(true);
   };
 
@@ -49,7 +43,6 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
       setMessage({ open: true, severity: "error", text: "Selecciona una unidad para eliminar." });
       return;
     }
-
     axios.delete(`/v1/unidad/${selectedRow.id}`)
       .then(() => {
         setMessage({ open: true, severity: "success", text: "Unidad eliminada correctamente." });
@@ -61,16 +54,20 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
       });
   };
 
+  const handleClose = () => {
+    setOpen(false);
+    setErrors({});
+    setFormData(initialData);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validate = () => {
-    const newErrors = {};
-    if (!formData.nombre.trim()) newErrors.nombre = "Este campo es obligatorio";
-    if (!formData.descripcion.trim()) newErrors.descripcion = "Este campo es obligatorio";
-    if (!formData.estado) newErrors.estado = "Selecciona un estado";
+    const newErrors = validateCamposBase(formData); // ✔ usa la validación central (obligatorios + seguridad)
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -82,74 +79,45 @@ export default function FormUnidad({ selectedRow, setSelectedRow, setMessage, re
     const payload = {
       nombre: formData.nombre,
       descripcion: formData.descripcion,
-      estadoId: parseInt(formData.estado)
+      estadoId: parseInt(formData.estado, 10)
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/unidad" : `/v1/unidad/${selectedRow.id}`;
+    const isCreate = methodName === "Agregar";
+    const method = isCreate ? axios.post : axios.put;
+    const url = isCreate ? "/v1/unidad" : `/v1/unidad/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "Unidad creada con éxito!" : "Unidad actualizada con éxito!"
+          text: `Unidad ${isCreate ? "creada" : "actualizada"} con éxito!`
         });
-        setOpen(false);
+        handleClose();
         setSelectedRow({});
         reloadData();
       })
-      .catch(err => {
-        setMessage({ open: true, severity: "error", text: `Error: ${err.message}` });
+      .catch((err) => {
+        setMessage({ open: true, severity: "error", text: `Error: ${err.message || "Network Error"}` });
       });
   };
 
   return (
     <>
       <StackButtons methods={{ create, update, deleteRow }} />
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <form onSubmit={handleSubmit}>
+
+      <Dialog open={open} onClose={handleClose}>
+        <form onSubmit={handleSubmit} noValidate>
           <DialogTitle>{methodName} Unidad</DialogTitle>
           <DialogContent>
-            <DialogContentText>Formulario para gestionar unidades</DialogContentText>
-
-            <TextField
-              fullWidth margin="dense"
-              name="nombre" label="Nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              error={!!errors.nombre}
-              helperText={errors.nombre}
+            <BaseFormCampos
+              formData={formData}
+              errors={errors}
+              handleChange={handleChange}
             />
-            <TextField
-              fullWidth margin="dense"
-              name="descripcion" label="Descripción"
-              value={formData.descripcion}
-              onChange={handleChange}
-              error={!!errors.descripcion}
-              helperText={errors.descripcion}
-            />
-            <FormControl fullWidth margin="normal" error={!!errors.estado}>
-              <InputLabel>Estado</InputLabel>
-              <Select
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                label="Estado"
-              >
-                <MenuItem value="">Seleccione...</MenuItem>
-                <MenuItem value="1">Activo</MenuItem>
-                <MenuItem value="2">Inactivo</MenuItem>
-              </Select>
-              {errors.estado && (
-                <p style={{ color: "#d32f2f", margin: "3px 14px 0", fontSize: "0.75rem" }}>
-                  {errors.estado}
-                </p>
-              )}
-            </FormControl>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpen(false)}>Cancelar</Button>
+            <Button onClick={handleClose}>Cancelar</Button>
             <Button type="submit">{methodName}</Button>
           </DialogActions>
         </form>

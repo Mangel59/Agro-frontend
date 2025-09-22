@@ -3,18 +3,19 @@ import { Box } from '@mui/material';
 
 const columns = [
   { field: 'id', headerName: 'ID', width: 90 },
-  { field: 'nombre', headerName: 'Nombre', width: 200 },
-  { field: 'descripcion', headerName: 'Descripción', width: 250 },
   {
     field: 'tipoProduccionId',
     headerName: 'Tipo de Producción',
     width: 180
   },
+  { field: 'nombre', headerName: 'Nombre', width: 200 },
+  { field: 'descripcion', headerName: 'Descripción', width: 250 },
   {
-    field: 'estadoId',
-    headerName: 'Estado',
-    width: 120
-  }
+      field: "estadoId",
+      headerName: "Estado",
+      width: 150,
+      valueFormatter: ({ value }) => (value === 1 ? "Activo" : "Inactivo"),
+    },
 ];
 
 export default function GridProceso({ procesos, selectedRow, setSelectedRow }) {

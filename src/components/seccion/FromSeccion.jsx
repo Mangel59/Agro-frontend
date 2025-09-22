@@ -12,14 +12,23 @@ export default function FormSeccion({
   formMode = "create",
   selectedRow = null,
   espacioId = "",
+  espacios = [],
+  authHeaders = {},
   reloadData = () => {},
   setMessage = () => {},
 }) {
+  const token = localStorage.getItem("token");
+  const headers = { headers: { Authorization: `Bearer ${token}` } };
+
+  const toNum = (v) =>
+    v === "" || v === null || v === undefined ? "" : Number(v);
+
   const initialData = {
     id: null,
-    espacioId: espacioId || "",
+    espacioId: toNum(espacioId) || "",
     nombre: "",
     descripcion: "",
+    // 1 = Activo, 2 = Inactivo (recomendado por consistencia con otros formularios)
     estadoId: 1,
   };
 
@@ -27,38 +36,67 @@ export default function FormSeccion({
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    if (open) {
-      if (formMode === "edit" && selectedRow) {
-        setFormData({ ...selectedRow });
-      } else {
-        setFormData({ ...initialData, espacioId });
-      }
-      setErrors({});
+    if (!open) return;
+
+    if (formMode === "edit" && selectedRow) {
+      setFormData({
+        id: selectedRow.id,
+        espacioId: toNum(selectedRow.espacioId),
+        nombre: selectedRow.nombre ?? "",
+        descripcion: selectedRow.descripcion ?? "",
+        // si tu backend te devuelve 0 para inactivo, lo mapeamos a 2
+        estadoId: selectedRow.estadoId === 0 ? 2 : toNum(selectedRow.estadoId ?? 1),
+      });
+    } else {
+      setFormData({
+        ...initialData,
+        espacioId: toNum(espacioId),
+      });
     }
+    setErrors({});
   }, [open, formMode, selectedRow, espacioId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (["estadoId", "espacioId"].includes(name)) {
+      setFormData((prev) => ({ ...prev, [name]: toNum(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const validate = () => {
     const newErrors = {};
     if (!formData.nombre?.trim()) newErrors.nombre = "El nombre es obligatorio.";
-    if (!formData.estadoId && formData.estadoId !== 0) newErrors.estadoId = "Debe seleccionar estado.";
     if (!formData.espacioId) newErrors.espacioId = "Debe seleccionar un espacio.";
+    // acepta 1 o 2; rechaza vacío/null/NaN
+    if (
+      formData.estadoId === "" ||
+      formData.estadoId === null ||
+      Number.isNaN(Number(formData.estadoId))
+    ) {
+      newErrors.estadoId = "Debe seleccionar estado.";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
     if (!validate()) return;
+
+    const payload = {
+      nombre: formData.nombre.trim(),
+      descripcion: formData.descripcion?.trim() || "",
+      espacioId: formData.espacioId,
+      estadoId: formData.estadoId, // 1=Activo, 2=Inactivo
+    };
+
     try {
       if (formMode === "edit" && formData.id) {
-        await axios.put(`/v1/seccion/${formData.id}`, formData);
+        await axios.put(`/v1/seccion/${formData.id}`, payload, headers);
         setMessage({ open: true, severity: "success", text: "Sección actualizada correctamente." });
       } else {
-        await axios.post("/v1/seccion", formData);
+        await axios.post("/v1/seccion", payload, headers);
         setMessage({ open: true, severity: "success", text: "Sección creada correctamente." });
       }
       setOpen(false);
@@ -77,24 +115,53 @@ export default function FormSeccion({
       <DialogTitle>{formMode === "edit" ? "Editar Sección" : "Nueva Sección"}</DialogTitle>
       <DialogContent>
         <TextField
-          fullWidth margin="normal" label="Nombre" name="nombre"
-          value={formData.nombre} onChange={handleChange}
-          error={!!errors.nombre} helperText={errors.nombre}
+          fullWidth margin="normal"
+          label="Nombre"
+          name="nombre"
+          value={formData.nombre}
+          onChange={handleChange}
+          error={!!errors.nombre}
+          helperText={errors.nombre}
         />
 
         <TextField
-          fullWidth margin="normal" label="Descripción" name="descripcion"
-          value={formData.descripcion} onChange={handleChange}
+          fullWidth margin="normal"
+          label="Descripción"
+          name="descripcion"
+          value={formData.descripcion}
+          onChange={handleChange}
         />
+
+        {/* Select de espacio - se muestra solo si no hay espacioId precargado */}
+        {!espacioId && (
+          <FormControl fullWidth margin="normal" error={!!errors.espacioId}>
+            <InputLabel>Espacio</InputLabel>
+            <Select
+              name="espacioId"
+              value={formData.espacioId}
+              onChange={handleChange}
+              label="Espacio"
+            >
+              {espacios.map(espacio => (
+                <MenuItem key={espacio.id} value={espacio.id}>
+                  {espacio.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+            {errors.espacioId && <FormHelperText>{errors.espacioId}</FormHelperText>}
+          </FormControl>
+        )}
 
         <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
           <InputLabel>Estado</InputLabel>
           <Select
-            name="estadoId" value={formData.estadoId}
-            onChange={handleChange} label="Estado"
+            name="estadoId"
+            value={formData.estadoId}
+            onChange={handleChange}
+            label="Estado"
           >
             <MenuItem value={1}>Activo</MenuItem>
-            <MenuItem value={0}>Inactivo</MenuItem>
+            <MenuItem value={2}>Inactivo</MenuItem>
           </Select>
           {errors.estadoId && <FormHelperText>{errors.estadoId}</FormHelperText>}
         </FormControl>

@@ -17,21 +17,24 @@ export default function Produccion() {
   const [formMode, setFormMode] = useState("create");
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
 
-  const reloadData = () => {
-    axios.get("/v1/produccion")
-      .then((res) => {
-        const datos = res.data.map(item => ({
-          ...item,
-          estadoId: item.estado?.id || item.estadoId,
-          espacioId: item.espacio?.id || item.espacioId,
-        }));
-        setProducciones(datos);
-      })
-      .catch((err) => {
-        console.error("Error al cargar producciones:", err);
-        setMessage({ open: true, severity: "error", text: "Error al cargar producciones" });
-      });
-  };
+const reloadData = () => {
+  axios.get("/v1/produccion")
+    .then((res) => {
+      const arr = Array.isArray(res?.data?.content) ? res.data.content : [];
+      const datos = arr.map((item) => ({
+        ...item,
+        estadoId: item?.estado?.id ?? item?.estadoId ?? null,
+        espacioId: item?.espacio?.id ?? item?.espacioId ?? null,
+      }));
+      setProducciones(datos);
+    })
+    .catch((err) => {
+      console.error("Error al cargar producciones:", err);
+      setMessage({ open: true, severity: "error", text: "Error al cargar producciones" });
+      setProducciones([]);
+    });
+};
+
 
   const handleDelete = () => {
     if (!selectedRow) return;

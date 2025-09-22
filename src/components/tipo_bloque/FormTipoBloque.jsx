@@ -26,7 +26,7 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, setMessage
   const create = () => {
     setFormData(initialData);
     setErrors({});
-    setMethodName("Add");
+    setMethodName("Agregar");
     setOpen(true);
   };
 
@@ -43,7 +43,7 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, setMessage
     });
 
     setErrors({});
-    setMethodName("Update");
+    setMethodName("Actualizar");
     setOpen(true);
   };
 
@@ -106,15 +106,15 @@ export default function FormTipoBloque({ selectedRow, setSelectedRow, setMessage
       estadoId: parseInt(formData.estado)
     };
 
-    const method = methodName === "Add" ? axios.post : axios.put;
-    const url = methodName === "Add" ? "/v1/tipo_bloque" : `/v1/tipo_bloque/${selectedRow.id}`;
+    const method = methodName === "Agregar" ? axios.post : axios.put;
+    const url = methodName === "Agregar" ? "/v1/tipo_bloque" : `/v1/tipo_bloque/${selectedRow.id}`;
 
     method(url, payload)
       .then(() => {
         setMessage({
           open: true,
           severity: "success",
-          text: methodName === "Add" ? "tipo bloque creado con éxito!" : "tipo bloque actualizado con éxito!"
+          text: methodName === "Agregar" ? "tipo bloque creado con éxito!" : "tipo bloque actualizado con éxito!"
         });
         setOpen(false);
         setSelectedRow({});

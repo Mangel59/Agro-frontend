@@ -18,21 +18,46 @@ import StackButtons from "../StackButtons";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 
+/* ==================== Helpers ==================== */
+const toArray = (data) =>
+  Array.isArray(data)
+    ? data
+    : Array.isArray(data?.content)
+    ? data.content
+    : Array.isArray(data?.data)
+    ? data.data
+    : [];
+
+// Helper para validar números requeridos (acepta "" y lo transforma a undefined)
+const numberRequired = (msg) =>
+  Yup.number()
+    .transform((v, orig) => (orig === "" || orig === null ? undefined : Number(orig)))
+    .typeError(msg)
+    .required(msg);
+
+/* ==================== Schema ==================== */
 const OrdenCompraSchema = Yup.object().shape({
   fechaHora: Yup.string().required("La fecha es obligatoria."),
-  pedidoId: Yup.number().required("El pedido es obligatorio."),
-  proveedorId: Yup.number().required("El proveedor es obligatorio."),
+  pedidoId: numberRequired("El pedido es obligatorio."),
+  proveedorId: numberRequired("El proveedor es obligatorio."),
   descripcion: Yup.string(),
-  estadoId: Yup.number().oneOf([0, 1], "Estado inválido"),
+  // Ya NO validamos contra 0/1. Ahora es catálogo dinámico:
+  estadoId: numberRequired("El estado es obligatorio."),
 });
 
-export default function FormOrdenCompra({ setMessage, selectedRow, setSelectedRow, reloadData }) {
+export default function FormOrdenCompra({
+  setMessage,
+  selectedRow,
+  setSelectedRow,
+  reloadData,
+}) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
   const [pedidos, setPedidos] = React.useState([]);
   const [proveedores, setProveedores] = React.useState([]);
-  const [faltanDatos, setFaltanDatos] = React.useState(false);
+  const [estados, setEstados] = React.useState([]); // 👈 Nuevos estados dinámicos
 
+  /* ========== Acciones CRUD del toolbar ========== */
   const create = () => {
     setSelectedRow({
       id: 0,
@@ -40,15 +65,19 @@ export default function FormOrdenCompra({ setMessage, selectedRow, setSelectedRo
       pedidoId: "",
       proveedorId: "",
       descripcion: "",
-      estadoId: 1,
+      estadoId: "", // 👈 vacío; el usuario debe seleccionar
     });
     setMethodName("Agregar");
     setOpen(true);
   };
 
   const update = () => {
-    if (!selectedRow || selectedRow.id === 0) {
-      setMessage({ open: true, severity: "error", text: "Selecciona una fila para actualizar" });
+    if (!selectedRow || !selectedRow.id) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Selecciona una fila para actualizar",
+      });
       return;
     }
     setMethodName("Actualizar");
@@ -56,15 +85,23 @@ export default function FormOrdenCompra({ setMessage, selectedRow, setSelectedRo
   };
 
   const deleteRow = () => {
-    if (!selectedRow?.id || selectedRow.id === 0) {
-      setMessage({ open: true, severity: "error", text: "Selecciona una fila para eliminar" });
+    if (!selectedRow?.id) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Selecciona una fila para eliminar",
+      });
       return;
     }
 
     axios
-      .delete(`/v1/orden_compra/${selectedRow.id}`)
+      .delete(`/v1/orden-compra/${selectedRow.id}`)
       .then(() => {
-        setMessage({ open: true, severity: "success", text: "Orden eliminada con éxito!" });
+        setMessage({
+          open: true,
+          severity: "success",
+          text: "Orden eliminada con éxito!",
+        });
         reloadData();
       })
       .catch((error) => {
@@ -78,37 +115,24 @@ export default function FormOrdenCompra({ setMessage, selectedRow, setSelectedRo
 
   const handleClose = () => setOpen(false);
 
+  /* ========== Cargar catálogos ========== */
   React.useEffect(() => {
-  axios.get("/v1/pedido")
-    .then((res) => {
-      const data = res.data;
-      if (Array.isArray(data) && data.length > 0) {
-        setPedidos(data);
-      } else {
-        setPedidos([]);
-        setFaltanDatos(true);
-      }
-    })
-    .catch(() => {
-      setPedidos([]);
-      setFaltanDatos(true);
-    });
+    axios
+      .get("/v1/items/pedido/0")
+      .then((res) => setPedidos(toArray(res.data)))
+      .catch(() => setPedidos([]));
 
-  axios.get("/v1/proveedor")
-    .then((res) => {
-      const data = res.data;
-      if (Array.isArray(data) && data.length > 0) {
-        setProveedores(data);
-      } else {
-        setProveedores([]);
-        setFaltanDatos(true);
-      }
-    })
-    .catch(() => {
-      setProveedores([]);
-      setFaltanDatos(true);
-    });
-}, []);
+    axios
+      .get("/v1/items/proveedor/0")
+      .then((res) => setProveedores(toArray(res.data)))
+      .catch(() => setProveedores([]));
+
+    // 👇 Estados dinámicos
+    axios
+      .get("/v1/items/orden_compra_estado/0")
+      .then((res) => setEstados(toArray(res.data)))
+      .catch(() => setEstados([]));
+  }, []);
 
   return (
     <>
@@ -118,26 +142,35 @@ export default function FormOrdenCompra({ setMessage, selectedRow, setSelectedRo
         <Formik
           initialValues={{
             fechaHora: selectedRow?.fechaHora || "",
-            pedidoId: selectedRow?.pedidoId || "",
-            proveedorId: selectedRow?.proveedorId || "",
+            pedidoId: selectedRow?.pedidoId ?? "",
+            proveedorId: selectedRow?.proveedorId ?? "",
             descripcion: selectedRow?.descripcion || "",
-            estadoId: selectedRow?.estadoId ?? 1,
+            estadoId: selectedRow?.estadoId ?? "", // 👈 sin default 0/1
           }}
           enableReinitialize
           validationSchema={OrdenCompraSchema}
           onSubmit={(values, { setSubmitting }) => {
             const id = selectedRow?.id || 0;
-            const url = methodName === "Agregar"
-              ? "/v1/orden_compra"
-              : `/v1/orden_compra/${id}`;
+            const url =
+              methodName === "Agregar" ? "/v1/orden-compra" : `/v1/orden-compra/${id}`;
             const method = methodName === "Agregar" ? axios.post : axios.put;
 
-            method(url, values)
+            // Asegurar tipos numéricos en ids
+            const payload = {
+              ...values,
+              pedidoId: Number(values.pedidoId),
+              proveedorId: Number(values.proveedorId),
+              estadoId: Number(values.estadoId),
+            };
+
+            method(url, payload)
               .then(() => {
                 setMessage({
                   open: true,
                   severity: "success",
-                  text: `Orden ${methodName === "Agregar" ? "creada" : "actualizada"} con éxito!`,
+                  text: `Orden ${
+                    methodName === "Agregar" ? "creada" : "actualizada"
+                  } con éxito!`,
                 });
                 setSubmitting(false);
                 setOpen(false);
@@ -154,9 +187,10 @@ export default function FormOrdenCompra({ setMessage, selectedRow, setSelectedRo
               });
           }}
         >
-          {({ values, errors, touched, handleChange }) => (
+          {({ values, errors, touched, handleChange, setFieldValue, isSubmitting }) => (
             <Form>
               <DialogTitle>{methodName} Orden de Compra</DialogTitle>
+
               <DialogContent>
                 <DialogContentText>Completa el formulario.</DialogContentText>
 
@@ -173,14 +207,14 @@ export default function FormOrdenCompra({ setMessage, selectedRow, setSelectedRo
                   />
                 </FormControl>
 
-                <FormControl fullWidth margin="normal">
+                <FormControl fullWidth margin="normal" error={touched.pedidoId && Boolean(errors.pedidoId)}>
                   <InputLabel id="pedidoId-label">Pedido</InputLabel>
                   <Select
                     labelId="pedidoId-label"
+                    label="Pedido"
                     name="pedidoId"
                     value={values.pedidoId}
-                    onChange={handleChange}
-                    error={touched.pedidoId && Boolean(errors.pedidoId)}
+                    onChange={(e) => setFieldValue("pedidoId", Number(e.target.value))}
                   >
                     {pedidos.length === 0 && (
                       <MenuItem disabled value="">
@@ -189,20 +223,24 @@ export default function FormOrdenCompra({ setMessage, selectedRow, setSelectedRo
                     )}
                     {pedidos.map((p) => (
                       <MenuItem key={p.id} value={p.id}>
-                        {p.descripcion || `#${p.id} - ${new Date(p.fechaHora).toLocaleDateString()}`}
+                        {p.descripcion ?? `#${p.id}`}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
 
-                <FormControl fullWidth margin="normal">
+                <FormControl
+                  fullWidth
+                  margin="normal"
+                  error={touched.proveedorId && Boolean(errors.proveedorId)}
+                >
                   <InputLabel id="proveedorId-label">Proveedor</InputLabel>
                   <Select
                     labelId="proveedorId-label"
+                    label="Proveedor"
                     name="proveedorId"
                     value={values.proveedorId}
-                    onChange={handleChange}
-                    error={touched.proveedorId && Boolean(errors.proveedorId)}
+                    onChange={(e) => setFieldValue("proveedorId", Number(e.target.value))}
                   >
                     {proveedores.length === 0 && (
                       <MenuItem disabled value="">
@@ -211,7 +249,7 @@ export default function FormOrdenCompra({ setMessage, selectedRow, setSelectedRo
                     )}
                     {proveedores.map((p) => (
                       <MenuItem key={p.id} value={p.id}>
-                        {p.nombre || `Proveedor ${p.id} - ${p.identificacion}`}
+                        {p.name ?? p.nombre ?? `Proveedor ${p.id}`}
                       </MenuItem>
                     ))}
                   </Select>
@@ -228,23 +266,41 @@ export default function FormOrdenCompra({ setMessage, selectedRow, setSelectedRo
                   />
                 </FormControl>
 
-                <FormControl fullWidth margin="normal">
+                {/* ====== Estado dinámico ====== */}
+                <FormControl
+                  fullWidth
+                  margin="normal"
+                  error={touched.estadoId && Boolean(errors.estadoId)}
+                >
                   <InputLabel id="estadoId-label">Estado</InputLabel>
                   <Select
                     labelId="estadoId-label"
+                    label="Estado"
                     name="estadoId"
                     value={values.estadoId}
-                    onChange={handleChange}
+                    onChange={(e) => setFieldValue("estadoId", Number(e.target.value))}
                   >
-                    <MenuItem value={1}>Activo</MenuItem>
-                    <MenuItem value={0}>Inactivo</MenuItem>
+                    {estados.length === 0 && (
+                      <MenuItem disabled value="">
+                        (No hay estados configurados)
+                      </MenuItem>
+                    )}
+                    {estados.map((it) => (
+                      <MenuItem key={it.id} value={it.id}>
+                        {it.nombre ?? it.name ?? it.descripcion ?? `Estado ${it.id}`}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </DialogContent>
 
               <DialogActions>
-                <Button onClick={handleClose}>Cancelar</Button>
-                <Button type="submit">{methodName}</Button>
+                <Button onClick={handleClose} disabled={isSubmitting}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {methodName}
+                </Button>
               </DialogActions>
             </Form>
           )}

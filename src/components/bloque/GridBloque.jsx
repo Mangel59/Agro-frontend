@@ -16,7 +16,8 @@ export default function GridBloque({ bloques, setSelectedRow }) {
   const columns = [
     { field: "id", headerName: "ID", width: 70 },
     { field: "nombre", headerName: "Nombre", width: 180 },
-    { field: "tipoBloqueId", headerName: "Tipo Bloque", width: 120 },
+    { field: "tipoBloqueNombre", headerName: "Tipo Bloque", width: 120 },
+    { field: "sedeNombre", headerName: "Sede", width: 150 },
     { field: "numeroPisos", headerName: "Pisos", width: 100 },
     { field: "descripcion", headerName: "Descripción", width: 200 },
     { field: "direccion", headerName: "Dirección", width: 200 },

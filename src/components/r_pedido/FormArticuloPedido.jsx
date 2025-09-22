@@ -20,11 +20,30 @@ export default function FormArticuloPedido({ selectedRow, setSelectedRow, setMes
 
   const [formData, setFormData] = useState(initialData);
 
-  const loadData = () => {
-    axios.get("/v1/producto_presentacion")
-      .then(res => setPresentaciones(res.data))
-      .catch(err => console.error("Error al cargar presentaciones:", err));
+// dentro del componente
+  const toArray = (d) => {
+    if (Array.isArray(d)) return d;
+    if (!d || typeof d !== "object") return [];
+    return d.content ?? d.items ?? d.data ?? d.results ?? [];
   };
+
+  const loadData = async () => {
+    try {
+      // usa slash inicial; intenta /0 si el primero falla
+      let res;
+      try {
+        res = await axios.get("/v1/items/producto_presentacion", /* headers opcionales */);
+      } catch (e1) {
+        res = await axios.get("/v1/items/producto_presentacion/0");
+      }
+      const arr = toArray(res.data);
+      setPresentaciones(Array.isArray(arr) ? arr : []);
+    } catch (err) {
+      console.error("Error al cargar presentaciones:", err?.response?.status, err?.config?.url, err?.response?.data);
+      setPresentaciones([]); // evita el .map is not a function
+    }
+  };
+
 
   const create = () => {
     setFormData(prev => ({ ...initialData, pedidoId: pedidoId || "" }));
@@ -113,18 +132,25 @@ export default function FormArticuloPedido({ selectedRow, setSelectedRow, setMes
               disabled
             />
             <FormControl fullWidth margin="normal" required>
-              <InputLabel>Presentación</InputLabel>
-              <Select
-                name="presentacionProductoId"
-                value={formData.presentacionProductoId}
-                onChange={handleChange}
-              >
-                <MenuItem value="">Seleccione...</MenuItem>
-                {presentaciones.map(p => (
-                  <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <InputLabel>Presentación de prodcuto</InputLabel>
+            <Select
+              name="presentacionProductoId"
+              value={formData.presentacionProductoId}
+              onChange={handleChange}
+              label="Presentación"
+              displayEmpty
+            >
+              <MenuItem value="">
+                <em>Seleccione...</em>
+              </MenuItem>
+
+              {(presentaciones || []).map((p) => (
+                <MenuItem key={p.id} value={p.id}>
+                  {p.name ?? p.nombre ?? `Presentación ${p.id}`}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
             <TextField
               fullWidth
               name="cantidad"

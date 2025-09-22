@@ -3,175 +3,216 @@ import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
 import FormAlmacen from "./FormAlmacen";
 import GridAlmacen from "./GridAlmacen";
-import {
-  Box, Typography, FormControl, InputLabel, Select, MenuItem, Button
-} from "@mui/material";
+import { Box, Typography, Button, Tooltip, Stack } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+
+// Modal genérico de filtros + loaders
+import CrudFilterModal from "../common/CrudFilterModal";
+import { makeLoaders, unwrap as unwrapPage } from "../common/filtersLoaders";
 
 export default function Almacen() {
-  const [paises, setPaises] = useState([]);
-  const [departamentos, setDepartamentos] = useState([]);
-  const [municipios, setMunicipios] = useState([]);
-  const [sedes, setSedes] = useState([]);
-  const [bloques, setBloques] = useState([]);
-  const [espacios, setEspacios] = useState([]);
+  // ===========================
+  // ESTADO Y CONFIGURACIÓN
+  // ===========================
+  
+  // Filtros (vía modal) - Para Almacén: País → Depto → Municipio → Sede → Bloque → Espacio
+  const [filters, setFilters] = useState({
+    paisId: "", deptoId: "", municipioId: "", sedeId: "", bloqueId: "", espacioId: ""
+  });
+  const [openFilters, setOpenFilters] = useState(false);
+
+  // Catálogos "items" (única fuente de nombres)
+  const [espaciosItems, setEspaciosItems] = useState([]); // [{id, name}] - para normalización
+
+  // Datos principales
   const [almacenes, setAlmacenes] = useState([]);
 
-  const [selectedPais, setSelectedPais] = useState("");
-  const [selectedDepto, setSelectedDepto] = useState("");
-  const [selectedMunicipio, setSelectedMunicipio] = useState("");
-  const [selectedSede, setSelectedSede] = useState("");
-  const [selectedBloque, setSelectedBloque] = useState("");
-  const [selectedEspacio, setSelectedEspacio] = useState("");
-
+  // UI CRUD
   const [selectedRow, setSelectedRow] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState("create");
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
 
+  // ===========================
+  // CONFIGURACIÓN Y HELPERS
+  // ===========================
+  
+  // Auth / headers
   const token = localStorage.getItem("token");
+  const empresaId = localStorage.getItem("empresaId"); // opcional si filtras sedes por empresa
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
+  // Loaders del modal (usan /v1) con empresaId
+  const { getPaises, getDepartamentos, getMunicipios, getSedes, getBloques, getEspacios } = makeLoaders(headers, { empresaId });
+
+  // Campos del modal para Almacén (cadena completa)
+  const fieldsAlmacen = [
+    { name: "paisId", label: "País", getOptions: getPaises, clearChildren: ["deptoId", "municipioId", "sedeId", "bloqueId", "espacioId"] },
+    { name: "deptoId", label: "Departamento", getOptions: getDepartamentos, dependsOn: ["paisId"], disabled: (v) => !v.paisId, clearChildren: ["municipioId", "sedeId", "bloqueId", "espacioId"] },
+    { name: "municipioId", label: "Municipio", getOptions: getMunicipios, dependsOn: ["deptoId"], disabled: (v) => !v.deptoId, clearChildren: ["sedeId", "bloqueId", "espacioId"] },
+    { name: "sedeId", label: "Sede", getOptions: getSedes, dependsOn: ["municipioId"], disabled: (v) => !v.municipioId, clearChildren: ["bloqueId", "espacioId"] },
+    { name: "bloqueId", label: "Bloque", getOptions: getBloques, dependsOn: ["sedeId"], disabled: (v) => !v.sedeId, clearChildren: ["espacioId"] },
+    { name: "espacioId", label: "Espacio", getOptions: getEspacios, dependsOn: ["bloqueId"], disabled: (v) => !v.bloqueId },
+  ];
+
+  // ===========================
+  // EFECTOS - CARGA DE DATOS
+  // ===========================
+  
+  // Cargar catálogos (items)
   useEffect(() => {
-    axios.get("/v1/pais", headers).then(res => setPaises(res.data));
+    // Cargar espacios para normalización de nombres
+    axios
+      .get("/v1/espacio", { ...headers, params: { page: 0, size: 2000 } })
+      .then((res) => {
+        const lista = Array.isArray(res.data) ? res.data : res.data?.content ?? [];
+        const espaciosNormalizados = lista.map(e => ({ id: e.id, name: e.nombre }));
+        setEspaciosItems(espaciosNormalizados);
+      })
+      .catch(() => setEspaciosItems([]));
   }, []);
 
+  // Efectos para recargar almacenes
+  useEffect(() => { reloadData(); }, []); // mount
+  useEffect(() => { reloadData(); }, [filters.espacioId]); // al aplicar filtro de espacio
   useEffect(() => {
-    setDepartamentos([]); setSelectedDepto("");
-    setMunicipios([]); setSelectedMunicipio("");
-    setSedes([]); setSelectedSede("");
-    setBloques([]); setSelectedBloque("");
-    setEspacios([]); setSelectedEspacio("");
-    setAlmacenes([]);
-    if (!selectedPais) return;
-    axios.get("/v1/departamento", headers).then(res => {
-      setDepartamentos(res.data.filter(dep => dep.paisId === parseInt(selectedPais)));
-    });
-  }, [selectedPais]);
+    if (espaciosItems.length) reloadData();
+  }, [espaciosItems]);
 
-  useEffect(() => {
-    setMunicipios([]); setSelectedMunicipio("");
-    setSedes([]); setSelectedSede("");
-    setBloques([]); setSelectedBloque("");
-    setEspacios([]); setSelectedEspacio("");
-    setAlmacenes([]);
-    if (!selectedDepto) return;
-    axios.get(`/v1/municipio?departamentoId=${selectedDepto}`, headers).then(res => {
-      setMunicipios(res.data);
-    });
-  }, [selectedDepto]);
-
-  useEffect(() => {
-    setSedes([]); setSelectedSede("");
-    setBloques([]); setSelectedBloque("");
-    setEspacios([]); setSelectedEspacio("");
-    setAlmacenes([]);
-    if (!selectedMunicipio) return;
-    axios.get("/v1/sede", headers).then(res => {
-      setSedes(res.data.filter(s => s.municipioId === parseInt(selectedMunicipio)));
-    });
-  }, [selectedMunicipio]);
-
-  useEffect(() => {
-    setBloques([]); setSelectedBloque("");
-    setEspacios([]); setSelectedEspacio("");
-    setAlmacenes([]);
-    if (!selectedSede) return;
-    axios.get(`/v1/bloque`, headers).then(res => {
-      const filtrados = res.data.filter(b => b.sedeId === parseInt(selectedSede));
-      setBloques(filtrados);
-    });
-  }, [selectedSede]);
-
-  useEffect(() => {
-    setEspacios([]); setSelectedEspacio("");
-    setAlmacenes([]);
-    if (!selectedBloque) return;
-    axios.get(`/v1/espacio`, headers).then(res => {
-      const filtrados = res.data.filter(e => e.bloqueId === parseInt(selectedBloque));
-      setEspacios(filtrados);
-    });
-  }, [selectedBloque]);
-
+  // ===========================
+  // FUNCIONES DE DATOS
+  // ===========================
+  
+  // Cargar almacenes (CRUD)
   const reloadData = () => {
-  if (!selectedEspacio) return setAlmacenes([]);
-  axios.get(`/v1/almacen`, headers).then(res => {
-    const filtrados = res.data.filter(a => a.espacioId === parseInt(selectedEspacio));
-    setAlmacenes(filtrados);
-  });
-};
+    const { espacioId } = filters;
 
-  useEffect(() => {
-    reloadData();
-  }, [selectedEspacio]);
+    const req = espacioId
+      ? axios.get("/v1/almacen", { ...headers, params: { espacioId: Number(espacioId), page: 0, size: 2000 } })
+      : axios.get("/v1/almacen", { ...headers, params: { page: 0, size: 2000 } });
 
+    req
+      .then((res) => {
+        const lista = unwrapPage(res.data);
+
+        // Mapear IDs → nombres usando catálogos "items" y respuesta directa del API
+        const normalizadas = lista.map((a) => {
+          // Para espacio, usar el catálogo cargado o el objeto anidado
+          const espacioId = a.espacioId ?? a.espacio?.id ?? "";
+          const espacio = espaciosItems.find(e => Number(e.id) === Number(espacioId));
+          const espacioNombre = a.espacio?.nombre || espacio?.name || "";
+
+          return {
+            ...a,
+            espacioNombre,
+          };
+        });
+
+        const final = espacioId
+          ? normalizadas.filter((a) => Number(a.espacioId) === Number(espacioId))
+          : normalizadas;
+
+        setAlmacenes(final);
+        setSelectedRow(null);
+      })
+      .catch(() =>
+        setMessage({ open: true, severity: "error", text: "Error al cargar almacenes." })
+      );
+  };
+
+  // ===========================
+  // HANDLERS DE EVENTOS
+  // ===========================
+  
+  // Acciones CRUD
   const handleDelete = async () => {
     if (!selectedRow) return;
-    if (window.confirm(`¿Eliminar el almacén "${selectedRow.nombre}"?`)) {
-      try {
-        await axios.delete(`/v1/almacen/${selectedRow.id}`, headers);
-        setMessage({ open: true, severity: "success", text: "Almacén eliminado correctamente." });
-        setSelectedRow(null);
-        reloadData();
-      } catch {
-        setMessage({ open: true, severity: "error", text: "Error al eliminar almacén." });
-      }
+    if (!window.confirm(`¿Eliminar el almacén "${selectedRow.nombre}"?`)) return;
+    try {
+      await axios.delete(`/v1/almacen/${selectedRow.id}`, headers);
+      setMessage({ open: true, severity: "success", text: "Almacén eliminado correctamente." });
+      setSelectedRow(null);
+      reloadData();
+    } catch {
+      setMessage({ open: true, severity: "error", text: "Error al eliminar almacén." });
     }
   };
 
+  // Handlers del modal de filtros
+  const handleFiltersChange = ({ name, value }) =>
+    setFilters((f) => ({ ...f, [name]: value }));
+
+  const handleFiltersClear = () =>
+    setFilters({ paisId: "", deptoId: "", municipioId: "", sedeId: "", bloqueId: "", espacioId: "" });
+
+  const handleFiltersApply = () => {
+    setOpenFilters(false);
+    reloadData();
+  };
+
+  // ===========================
+  // RENDER
+  // ===========================
   return (
-    <Box sx={{ padding: 2 }}>
-      <Typography variant="h5" gutterBottom>Gestión de Almacenes</Typography>
+    <Box sx={{ p: 2 }}>
+      {/* Header con título y filtros */}
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+        <Typography variant="h5">Gestión de Almacenes</Typography>
 
-      <FormControl fullWidth sx={{ mb: 2 }}>
-        <InputLabel>País</InputLabel>
-        <Select value={selectedPais} onChange={e => setSelectedPais(e.target.value)} label="País">
-          {paises.map(p => <MenuItem key={p.id} value={p.id}>{p.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
+        <Stack direction="row" spacing={1}>
+          <Button onClick={() => setOpenFilters(true)}>
+            Mostrar filtros
+          </Button>
+          {Boolean(filters.paisId || filters.deptoId || filters.municipioId || filters.sedeId || filters.bloqueId || filters.espacioId) && (
+            <Button onClick={handleFiltersClear}>
+              Limpiar filtros
+            </Button>
+          )}
+        </Stack>
+      </Stack>
 
-      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedPais}>
-        <InputLabel>Departamento</InputLabel>
-        <Select value={selectedDepto} onChange={e => setSelectedDepto(e.target.value)} label="Departamento">
-          {departamentos.map(d => <MenuItem key={d.id} value={d.id}>{d.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedDepto}>
-        <InputLabel>Municipio</InputLabel>
-        <Select value={selectedMunicipio} onChange={e => setSelectedMunicipio(e.target.value)} label="Municipio">
-          {municipios.map(m => <MenuItem key={m.id} value={m.id}>{m.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedMunicipio}>
-        <InputLabel>Sede</InputLabel>
-        <Select value={selectedSede} onChange={e => setSelectedSede(e.target.value)} label="Sede">
-          {sedes.map(s => <MenuItem key={s.id} value={s.id}>{s.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedSede}>
-        <InputLabel>Bloque</InputLabel>
-        <Select value={selectedBloque} onChange={e => setSelectedBloque(e.target.value)} label="Bloque">
-          {bloques.map(b => <MenuItem key={b.id} value={b.id}>{b.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedBloque}>
-        <InputLabel>Espacio</InputLabel>
-        <Select value={selectedEspacio} onChange={e => setSelectedEspacio(e.target.value)} label="Espacio">
-          {espacios.map(e => <MenuItem key={e.id} value={e.id}>{e.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
-
+      {/* Botones de acción CRUD */}
       <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
-        <Button variant="contained" onClick={() => { setFormMode("create"); setFormOpen(true); setSelectedRow(null); }} disabled={!selectedEspacio}>+ Agregar Almacén</Button>
-        <Button variant="outlined" onClick={() => { setFormMode("edit"); setFormOpen(true); }} disabled={!selectedRow}>Editar</Button>
-        <Button variant="outlined" color="error" onClick={handleDelete} disabled={!selectedRow}>Eliminar</Button>
+        <Tooltip title="Crear">
+          <Button
+            variant="contained"
+            onClick={() => { setFormMode("create"); setSelectedRow(null); setFormOpen(true); }}
+            startIcon={<AddIcon />}
+          >
+            Agregar
+          </Button>
+        </Tooltip>
+
+        <Tooltip title="Editar">
+          <Button
+            variant="outlined"
+            onClick={() => { setFormMode("edit"); setFormOpen(true); }}
+            disabled={!selectedRow}
+            startIcon={<EditIcon />}
+          >
+            Actualizar
+          </Button>
+        </Tooltip>
+
+        <Tooltip title="Eliminar">
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleDelete}
+            disabled={!selectedRow}
+            startIcon={<DeleteIcon />}
+          >
+            Eliminar
+          </Button>
+        </Tooltip>
       </Box>
 
+      {/* Grid de almacenes */}
       <GridAlmacen almacenes={almacenes} setSelectedRow={setSelectedRow} />
 
+      {/* Formulario modal */}
       <FormAlmacen
         open={formOpen}
         setOpen={setFormOpen}
@@ -179,10 +220,24 @@ export default function Almacen() {
         selectedRow={selectedRow}
         reloadData={reloadData}
         setMessage={setMessage}
-        espacioId={selectedEspacio}
+        espacioId={filters.espacioId || ""}     // si hay filtro se precarga; si no, el form muestra select de espacio
+        authHeaders={headers}
       />
 
+      {/* Componentes auxiliares */}
       <MessageSnackBar message={message} setMessage={setMessage} />
+
+      {/* Modal de filtros */}
+      <CrudFilterModal
+        open={openFilters}
+        onClose={() => setOpenFilters(false)}
+        title="Filtros de Almacén"
+        fields={fieldsAlmacen}
+        values={filters}
+        onChange={handleFiltersChange}
+        onClear={handleFiltersClear}
+        onApply={handleFiltersApply}
+      />
     </Box>
   );
 }

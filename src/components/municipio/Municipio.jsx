@@ -41,22 +41,23 @@ export default function Municipio() {
     severity: "success",
     text: "",
   });
+const unwrapPage = (data) => (Array.isArray(data) ? data : data?.content ?? []);
 
-  /**
-   * Cargar todos los países al iniciar.
-   */
-  React.useEffect(() => {
-    axios
-      .get("/v1/pais")
-      .then((res) => setPaises(res.data))
-      .catch(() =>
-        setMessage({
-          open: true,
-          severity: "error",
-          text: "Error al cargar países.",
-        })
-      );
-  }, []);
+// Cargar todos los países al iniciar.
+React.useEffect(() => {
+  axios
+    .get("/v1/pais")
+    .then((res) => {
+      setPaises(unwrapPage(res.data)); // Aquí guardas países, no departamentos
+    })
+    .catch(() =>
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "Error al cargar países.",
+      })
+    );
+}, []);
 
   /**
    * Cargar departamentos filtrados por país seleccionado.
@@ -68,14 +69,14 @@ export default function Municipio() {
       return;
     }
 
-    axios
-      .get("/v1/departamento")
-      .then((res) => {
-        const filtrados = res.data.filter(
-          (d) => d.paisId === parseInt(selectedPais)
-        );
-        setDepartamentos(filtrados);
-      })
+  axios
+    .get("/v1/departamento")
+    .then((res) => {
+      const filtrados = unwrapPage(res.data).filter(
+        (d) => d.paisId === Number(selectedPais)
+      );
+      setDepartamentos(filtrados);
+    })
       .catch(() =>
         setMessage({
           open: true,
@@ -96,7 +97,7 @@ export default function Municipio() {
 
     axios
       .get(`/v1/municipio?departamentoId=${selectedDepto}`)
-      .then((res) => setMunicipios(res.data))
+      .then((res) => setMunicipios(unwrapPage(res.data)))
       .catch(() =>
         setMessage({
           open: true,
