@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Box, TextField, Button, Typography, Alert,
   InputAdornment, IconButton
@@ -15,6 +15,17 @@ export default function ResetPassword({ token: propToken, setCurrentModule }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  // Reglas mínimas (ajústalas si quieres: mayúscula, número, símbolo, etc.)
+  const validatePassword = (pwd = '') => pwd.length >= 8;
+
+  const canSubmit = useMemo(() => {
+    return Boolean(token)
+      && validatePassword(password)
+      && password === confirmPassword
+      && !submitting;
+  }, [token, password, confirmPassword, submitting]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,36 +36,64 @@ export default function ResetPassword({ token: propToken, setCurrentModule }) {
       setError('Token no válido o ausente.');
       return;
     }
-
+    if (!validatePassword(password)) {
+      setError('La contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
     if (password !== confirmPassword) {
       setError('Las contraseñas no coinciden.');
       return;
     }
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URI}/auth/reset-password`, {
-        token,
-        newPassword: password,
-      });
+      setSubmitting(true);
 
-      if (response.data.success) {
-        setMessage('Contraseña restablecida exitosamente. Puedes iniciar sesión.');
+      // Importante: este endpoint es público; tu axiosConfig debería evitar adjuntar Authorization.
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URI}/auth/reset-password`,
+        { token, newPassword: password }
+      );
+
+      if (data?.success) {
+        // Limpia cualquier residuo de sesión local, por si el usuario tenía algo guardado
+        try {
+          localStorage.removeItem('token');
+          localStorage.removeItem('token_expiration');
+          localStorage.removeItem('tver');
+          localStorage.removeItem('empresaId');
+          localStorage.removeItem('rolId');
+          localStorage.removeItem('empresaNombre');
+          localStorage.removeItem('rolesByCompany');
+        } catch { /* no-op */ }
+
+        setMessage('Contraseña restablecida exitosamente. Redirigiendo al inicio de sesión…');
+        // Redirige al login (recomendado por el flujo de revocación por tver)
+        setTimeout(() => window.location.replace('/login'), 1000);
       } else {
-        setError(response.data.message || 'Error al restablecer contraseña.');
+        setError(data?.message || 'Error al restablecer contraseña.');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al restablecer contraseña.');
+      const msg = err?.response?.data?.message || 'Error al restablecer contraseña.';
+      setError(msg);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <Box sx={{ maxWidth: 400, mx: 'auto', mt: 10 }}>
+    <Box sx={{ maxWidth: 420, mx: 'auto', mt: 8, p: { xs: 2, md: 0 } }}>
       <Typography variant="h4" gutterBottom>Restablecer Contraseña</Typography>
+
+      {!token && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          Enlace inválido o expirado: falta el token.
+        </Alert>
+      )}
 
       {message && <Alert severity="success" sx={{ mb: 2 }}>{message}</Alert>}
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <TextField
           label="Nueva contraseña"
           type={showPassword ? 'text' : 'password'}
@@ -63,19 +102,19 @@ export default function ResetPassword({ token: propToken, setCurrentModule }) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           sx={{ mb: 2 }}
+          helperText="Mínimo 8 caracteres."
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton
-                  onClick={() => setShowPassword(!showPassword)}
-                  edge="end"
-                >
+                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
             )
           }}
+          error={Boolean(password) && !validatePassword(password)}
         />
+
         <TextField
           label="Confirmar contraseña"
           type={showConfirm ? 'text' : 'password'}
@@ -84,21 +123,26 @@ export default function ResetPassword({ token: propToken, setCurrentModule }) {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           sx={{ mb: 2 }}
+          error={Boolean(confirmPassword) && confirmPassword !== password}
+          helperText={confirmPassword && confirmPassword !== password ? 'Las contraseñas no coinciden.' : ' '}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton
-                  onClick={() => setShowConfirm(!showConfirm)}
-                  edge="end"
-                >
+                <IconButton onClick={() => setShowConfirm(!showConfirm)} edge="end">
                   {showConfirm ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
             )
           }}
         />
-        <Button type="submit" variant="contained" fullWidth>
-          Cambiar contraseña
+
+        <Button
+          type="submit"
+          variant="contained"
+          fullWidth
+          disabled={!canSubmit}
+        >
+          {submitting ? 'Procesando…' : 'Cambiar contraseña'}
         </Button>
       </form>
     </Box>

@@ -1,5 +1,4 @@
-// OrdenCompra.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
 import FormOrdenCompra from "./FormOrdenCompra";
@@ -7,7 +6,7 @@ import GridOrdenCompra from "./GridOrdenCompra";
 import FormArticuloOrdenCompra from "./FormArticuloOrdenCompra";
 import GridArticuloOrdenCompra from "./GridArticuloOrdenCompra";
 import ReOC from "../RE_oc/re_oc";
-import { Box, Typography, Divider, Button, Dialog, useTheme } from "@mui/material";
+import { Box, Typography, Button, Dialog, useTheme } from "@mui/material";
 
 export default function OrdenCompra() {
   const [ordenes, setOrdenes] = useState([]);
@@ -19,64 +18,123 @@ export default function OrdenCompra() {
   const [selectedArticulo, setSelectedArticulo] = useState({});
   const [reloadArticulos, setReloadArticulos] = useState(false);
 
+
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
   const [sortModel, setSortModel] = useState([]);
+  const [filterModel, setFilterModel] = useState({ items: [] });
   const [loading, setLoading] = useState(false);
   const [rowCount, setRowCount] = useState(0);
-  const [/* filterModel */ , setFilterModel] = useState({ items: [] });
+
+  // 🔹 NUEVO: proveedores para mapear id -> name
+  const [proveedores, setProveedores] = useState([]);
 
   const theme = useTheme();
 
-  // Contenedor principal de Órdenes de Compra
   const containerOrdenes = {
     backgroundColor: theme.palette.mode === "dark" ? "#1e2a2c" : "#c9e6fe",
     padding: 3,
     borderRadius: 2,
   };
 
-  // Contenedor para los Artículos de la Orden
   const containerArticulos = {
     backgroundColor: theme.palette.mode === "dark" ? "#2c383b" : "#caddf3",
     padding: 2,
     borderRadius: 2,
   };
 
+  // 🔹 params para backend
+  const queryParams = useMemo(() => {
+    const params = {
+      page: paginationModel.page ?? 0,
+      size: paginationModel.pageSize ?? 10,
+    };
+    if (Array.isArray(sortModel) && sortModel.length > 0) {
+      const { field, sort } = sortModel[0];
+      if (field && sort) params.sort = `${field},${sort}`;
+    }
+    const quickItem = filterModel?.items?.find(it => it.value && !it.operator);
+    if (quickItem?.value) params.q = String(quickItem.value);
+    return params;
+  }, [paginationModel, sortModel, filterModel]);
+
+  // 🔹 NUEVO: cargar proveedores una vez
+  useEffect(() => {
+    axios.get("/v1/items/proveedor/0")
+      .then(res => setProveedores(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setProveedores([]));
+  }, []);
+
+  // 🔹 NUEVO: mapa id -> name (asegurando número)
+  const proveedoresMap = useMemo(
+    () => Object.fromEntries((proveedores || []).map(p => [Number(p.id), p.name])),
+    [proveedores]
+  );
+const [presentaciones, setPresentaciones] = useState([]);
+
+useEffect(() => {
+  axios.get("/v1/items/producto_presentacion/0")
+    .then(res => setPresentaciones(Array.isArray(res.data) ? res.data : []))
+    .catch(() => setPresentaciones([]));
+}, []);
+
+const presentacionesMap = useMemo(
+  () => Object.fromEntries((presentaciones || []).map(pp => [Number(pp.id), pp.name])),
+  [presentaciones]
+);
+
+  // 🔹 Cargar órdenes
   const reloadData = () => {
     setLoading(true);
-    axios.get("/v1/orden_compra")
+    axios
+      .get("/v1/orden-compra", { params: queryParams })
       .then((res) => {
-        const data = Array.isArray(res.data) ? res.data : [];
+        let data = [];
+        let total = 0;
+        if (Array.isArray(res.data)) {
+          data = res.data;
+          const headerTotal = res.headers?.["x-total-count"];
+          total = headerTotal ? Number(headerTotal) : data.length;
+        } else if (res.data && typeof res.data === "object") {
+          data = Array.isArray(res.data.content) ? res.data.content : [];
+          total = typeof res.data.totalElements === "number" ? res.data.totalElements : data.length;
+        }
         setOrdenes(data);
-        setRowCount(data.length);
-        if (data.length > 0 && !selectedRow?.id) {
-          setSelectedRow(data[0]);
+        setRowCount(total);
+        if (data.length > 0) {
+          const stillSelected = data.find((r) => r.id === selectedRow?.id);
+          setSelectedRow(stillSelected || data[0]);
+        } else {
+          setSelectedRow({});
         }
       })
       .catch(() => {
         setMessage({ open: true, severity: "error", text: "Error al cargar órdenes de compra" });
+        setOrdenes([]);
+        setRowCount(0);
+        setSelectedRow({});
       })
       .finally(() => setLoading(false));
   };
 
+  // 🔹 Artículos por orden
   const loadArticulos = (ordenId) => {
     if (!ordenId) { setArticuloItems([]); return; }
-    axios.get(`/v1/orden_compra/${ordenId}/articulos`)
-      .then(res => setArticuloItems(Array.isArray(res.data) ? res.data : []))
+    axios
+      .get(`/v1/orden-compra/${ordenId}/articulos`)
+      .then((res) => setArticuloItems(Array.isArray(res.data) ? res.data : []))
       .catch(() => setArticuloItems([]));
   };
 
-  useEffect(() => {
-    reloadData();
-  }, []);
+  useEffect(() => { reloadData(); /* eslint-disable-next-line */ }, [queryParams]);
 
   useEffect(() => {
     if (selectedRow?.id) loadArticulos(selectedRow.id);
     else setArticuloItems([]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRow, reloadArticulos]);
 
   return (
     <Box sx={{ p: 2 }}>
-      {/* Contenedor principal de Órdenes de Compra */}
       <Box sx={{ ...containerOrdenes, mb: 4 }}>
         <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h5">Gestión de Órdenes de Compra</Typography>
@@ -91,7 +149,7 @@ export default function OrdenCompra() {
         />
 
         <Box sx={{ mt: 4 }}>
-          <Typography variant="h6" gutterBottom>Lista de Órdenes de Compra</Typography>
+          <Typography variant="h6" gutterBottom>Lista de Ordenes de Compra</Typography>
           <GridOrdenCompra
             ordenes={ordenes}
             rowCount={rowCount}
@@ -102,11 +160,11 @@ export default function OrdenCompra() {
             setSortModel={setSortModel}
             setFilterModel={setFilterModel}
             setSelectedRow={setSelectedRow}
+            proveedoresMap={proveedoresMap}
           />
         </Box>
       </Box>
 
-      {/* Contenedor de Artículos */}
       {selectedRow?.id && (
         <Box sx={{ ...containerArticulos, mt: 4 }}>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -122,12 +180,10 @@ export default function OrdenCompra() {
             </Box>
           </Box>
 
-          <Box>
-            <GridArticuloOrdenCompra
-              items={articuloItems}
-              setSelectedRow={setSelectedArticulo}
-            />
-          </Box>
+          <GridArticuloOrdenCompra 
+          items={articuloItems} 
+          setSelectedRow={setSelectedArticulo} 
+          presentacionesMap={presentacionesMap} />
         </Box>
       )}
 

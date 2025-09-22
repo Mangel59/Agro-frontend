@@ -1,33 +1,85 @@
-import { DataGrid } from '@mui/x-data-grid';
-import { Box } from '@mui/material';
+// GridArticuloOrdenCompra.jsx
+import React, { useMemo } from "react";
+import PropTypes from "prop-types";
+import { Box } from "@mui/material";
+import {
+  DataGrid,
+  GridToolbarContainer,
+  GridToolbarFilterButton,
+} from "@mui/x-data-grid";
 
-const columns = [
-  { field: 'id', headerName: 'ID', width: 90 },
-  { field: 'cantidad', headerName: 'Cantidad', width: 120 },
-  { field: 'precio', headerName: 'Precio', width: 120 },
-  { field: 'ordenCompraId', headerName: 'Orden ID', width: 120 },
-  { field: 'presentacionProductoId', headerName: 'Presentación', width: 200 },
-  {
-    field: 'estadoId',
-    headerName: 'Estado',
-    width: 120,
-    valueGetter: (params) => params.row.estadoId === 1 ? "Activo" : "Inactivo"
-  }
-];
-
-export default function GridArticuloOrdenCompra({ items, selectedRow, setSelectedRow }) {
+function Toolbar() {
   return (
-    <Box sx={{ height: 400, width: '100%' }}>
+    <GridToolbarContainer>
+      <GridToolbarFilterButton />
+    </GridToolbarContainer>
+  );
+}
+
+export default function GridArticuloOrdenCompra({
+  items = [],
+  setSelectedRow = () => {},
+  presentacionesMap = {},
+}) {
+  const columns = useMemo(() => {
+    const presentacionNameGetter = ({ row }) => {
+      // ID puede venir con distintos nombres
+      const presId =
+        row.presentacionProductoId ??
+        row.presentacion_id ??
+        row.presentacionId ??
+        row.presentacion?.id ??
+        null;
+
+      // nombre directo si vino expandido
+      const directName =
+        row.presentacionNombre ??
+        row.presentacion_name ??
+        row.presentacion?.name;
+
+      return directName ?? (presId != null ? presentacionesMap[Number(presId)] : "") ?? "";
+    };
+
+    return [
+      { field: "id", headerName: "ID", width: 90, type: "number" },
+      { field: "cantidad", headerName: "Cantidad", width: 120, type: "number" },
+      { field: "precio", headerName: "Precio", width: 120, type: "number" },
+      { field: "ordenCompraId", headerName: "Orden Compra", width: 140, type: "number" },
+      {
+        field: "presentacion",
+        headerName: "Presentación",
+        width: 220,
+        valueGetter: presentacionNameGetter, 
+      },
+      {
+        field: "estadoId",
+        headerName: "Estado",
+        width: 110,
+        valueGetter: ({ row }) => (Number(row.estadoId) === 1 ? "Activo" : "Inactivo"),
+      },
+    ];
+  }, [presentacionesMap]);
+
+  return (
+    <Box sx={{ width: "100%", overflowX: "auto" }}>
       <DataGrid
         rows={items}
         columns={columns}
-        pageSizeOptions={[5, 10, 15]}
-        initialState={{
-          pagination: { paginationModel: { pageSize: 5, page: 0 } }
+        components={{ Toolbar }}
+        onRowSelectionModelChange={(sel) => {
+          const ids = new Set(sel);
+          const found = (items || []).find(r => ids.has(r.id));
+          setSelectedRow(found || {});
         }}
-        getRowId={(row) => row.id}
-        onRowClick={(params) => setSelectedRow(params.row)}
+        autoHeight
+        sx={{ minWidth: 600 }}
       />
     </Box>
   );
 }
+
+GridArticuloOrdenCompra.propTypes = {
+  items: PropTypes.array.isRequired,
+  setSelectedRow: PropTypes.func.isRequired,
+  presentacionesMap: PropTypes.object,
+};

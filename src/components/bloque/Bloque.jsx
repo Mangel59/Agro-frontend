@@ -1,223 +1,222 @@
+// src/components/bloque/Bloque.jsx
 import React, { useEffect, useState } from "react";
 import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
 import FormBloque from "./FormBloque";
 import GridBloque from "./GridBloque";
-import {
-  Box, Typography, FormControl, InputLabel, Select, MenuItem, Button
-} from "@mui/material";
+import { Box, Typography, Button, Tooltip, Stack } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+
+// Modal genérico de filtros + loaders
+import CrudFilterModal from "../common/CrudFilterModal";
+import { makeLoaders, unwrap as unwrapPage } from "../common/filtersLoaders";
 
 export default function Bloque() {
-  const [paises, setPaises] = useState([]);
-  const [departamentos, setDepartamentos] = useState([]);
-  const [municipios, setMunicipios] = useState([]);
-  const [sedes, setSedes] = useState([]);
+  // -------------------- Filtros (vía modal) --------------------
+  // Para Bloque: País → Depto → Municipio → Sede
+  const [filters, setFilters] = useState({
+    paisId: "", deptoId: "", municipioId: "", sedeId: ""
+  });
+  const [openFilters, setOpenFilters] = useState(false);
+
+  // -------------------- Catálogos “items” (única fuente de nombres) --------------------
+  const [tiposBloqueItems, setTiposBloqueItems] = useState([]); // [{id, name}]
+  const [sedesItems, setSedesItems] = useState([]);             // [{id, name}]
+
+  // Normalizaciones para los formularios (esperan [{id, nombre}])
+  const tiposBloqueForm = tiposBloqueItems.map(t => ({ id: t.id, nombre: t.name }));
+  const sedesForm       = sedesItems.map(s => ({ id: s.id, nombre: s.name }));
+
+  // -------------------- Datos --------------------
   const [bloques, setBloques] = useState([]);
-  const [tiposBloque, setTiposBloque] = useState([]);
 
-  const [selectedPais, setSelectedPais] = useState("");
-  const [selectedDepto, setSelectedDepto] = useState("");
-  const [selectedMunicipio, setSelectedMunicipio] = useState("");
-  const [selectedSede, setSelectedSede] = useState("");
-
+  // -------------------- UI CRUD --------------------
   const [selectedRow, setSelectedRow] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState("create");
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
 
+  // -------------------- Auth / helpers --------------------
   const token = localStorage.getItem("token");
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
-  // Helpers
-  const asArray = (payload) => {
-    if (Array.isArray(payload)) return payload;
-    if (payload && Array.isArray(payload.content)) return payload.content;
-    return [];
-  };
-  const uniqById = (arr) => Array.from(new Map(arr.map(o => [o.id, o])).values());
+  // ---- Loaders del modal (usan /v1)
+  const { getPaises, getDepartamentos, getMunicipios, getSedes } = makeLoaders(headers);
 
-  // ---- Cargas base
-  useEffect(() => {
-    axios.get("/v1/pais", headers).then(res => setPaises(res.data || []));
-    axios.get("/v1/tipo_bloque", headers).then(res => setTiposBloque(res.data || []));
-  }, []);
+  // ---- Campos del modal SOLO para Bloque
+  const fieldsBloque = [
+    { name: "paisId", label: "País", getOptions: getPaises, clearChildren: ["deptoId", "municipioId", "sedeId"] },
+    { name: "deptoId", label: "Departamento", getOptions: getDepartamentos, dependsOn: ["paisId"], disabled: (v) => !v.paisId, clearChildren: ["municipioId", "sedeId"] },
+    { name: "municipioId", label: "Municipio", getOptions: getMunicipios, dependsOn: ["deptoId"], disabled: (v) => !v.deptoId, clearChildren: ["sedeId"] },
+    { name: "sedeId", label: "Sede", getOptions: getSedes, dependsOn: ["municipioId"], disabled: (v) => !v.municipioId },
+  ];
 
-  // ---- País → Departamentos
-  useEffect(() => {
-    if (!selectedPais) return;
-    axios.get("/v1/departamento", headers).then(res => {
-      const list = (res.data || []).filter(d => d.paisId === parseInt(selectedPais));
-      setDepartamentos(list);
-    });
-  }, [selectedPais]);
+  // -------------------- Cargar “items” --------------------
+// -------------------- Cargar “items” --------------------
+useEffect(() => {
+  // Tipos de bloque (sí existe /v1/items/tipo_bloque/0)
+  axios
+    .get("/v1/items/tipo_bloque/0")
+    .then((res) => setTiposBloqueItems(Array.isArray(res.data) ? res.data : []))
+    .catch(() => setTiposBloqueItems([]));
 
-  // Autoselect Dept si solo hay uno
-  useEffect(() => {
-    if (departamentos.length === 1) {
-      setSelectedDepto(String(departamentos[0].id));
-    }
-  }, [departamentos]);
-
-  // ---- Depto → Municipios
-  useEffect(() => {
-    if (!selectedDepto) return;
-    axios
-      .get(`/v1/municipio?departamentoId=${selectedDepto}`, headers)
-      .then(res => setMunicipios(asArray(res.data)))
-      .catch(err => console.error("ERROR MUNICIPIO", err.response?.status, err.response?.data));
-  }, [selectedDepto]);
-
-  // Autoselect Municipio si solo hay uno
-  useEffect(() => {
-    if (municipios.length === 1) {
-      setSelectedMunicipio(String(municipios[0].id));
-    }
-  }, [municipios]);
-
-  // ---- Municipio → Sedes
-  useEffect(() => {
-    setSedes([]);
-    setSelectedSede("");
-    setBloques([]);
-    setSelectedRow(null);
-
-    if (!selectedMunicipio) return;
-
-    axios
-      .get(`/v1/sede`, headers)
-      .then(res => {
-        const filtradas = asArray(res.data).filter(s => s.municipioId === parseInt(selectedMunicipio));
-        setSedes(filtradas);
-      })
-      .catch(err => console.error("ERROR SEDE", err.response?.status, err.response?.data));
-  }, [selectedMunicipio]);
-
-  // Autoselect Sede si solo hay una
-  useEffect(() => {
-    if (sedes.length === 1) {
-      setSelectedSede(String(sedes[0].id));
-    }
-  }, [sedes]);
-
-  // ---- Sede → Bloques
-  useEffect(() => {
-    reloadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSede]);
-
-  const reloadData = async () => {
-    // limpiar inmediato para evitar "fantasmas" al cambiar
-    setBloques([]);
-    setSelectedRow(null);
-
-    if (!selectedSede) return;
-
-    let cancelled = false;
+  // Sedes: intentar /v1/items/sede/0 y si falla, caer a /v1/sede
+  (async () => {
     try {
-      const res = await axios.get(`/v1/bloque?sedeId=${selectedSede}`, headers);
-      if (cancelled) return;
-      let lista = asArray(res.data);
-
-      // Si el backend aún no filtra por sedeId, descomenta:
-      // lista = lista.filter(b => b.sedeId === parseInt(selectedSede));
-
-      setBloques(uniqById(lista)); // sin duplicados por id
-    } catch (err) {
-      if (!cancelled) {
-        console.error("ERROR BLOQUE", err.response?.status, err.response?.data);
-        setBloques([]);
+      const r = await axios.get("/v1/items/sede/0");
+      const arr = Array.isArray(r.data) ? r.data : [];
+      if (arr.length) {
+        setSedesItems(arr); // [{id,name}]
+        return;
+      }
+      throw new Error("empty");
+    } catch {
+      try {
+        const { data } = await axios.get("/v1/sede", {
+          ...headers,
+          params: { page: 0, size: 2000 },
+        });
+        // normaliza a shape "items"
+        const list = (Array.isArray(data) ? data : data?.content ?? []).map((s) => ({
+          id: s.id,
+          name: s.nombre, // <-- importante
+        }));
+        setSedesItems(list);
+      } catch {
+        setSedesItems([]);
       }
     }
-    return () => { cancelled = true; };
+  })();
+}, []);
+
+
+  // -------------------- Cargar bloques (CRUD) --------------------
+  const reloadData = () => {
+    const { sedeId } = filters;
+
+    const req = sedeId
+      ? axios.get("/v1/bloque", { ...headers, params: { sedeId: Number(sedeId), page: 0, size: 2000 } })
+      : axios.get("/v1/bloque", { ...headers, params: { page: 0, size: 2000 } });
+
+    req
+      .then((res) => {
+        const lista = unwrapPage(res.data);
+
+        // Mapear IDs → nombres usando ÚNICAMENTE los catálogos “items”
+        const normalizadas = lista.map((b) => {
+          const tipoId = b.tipoBloqueId ?? b.tipo_bloque_id ?? b.tipoBloque?.id ?? "";
+          const sedeIdNum = b.sedeId ?? b.sede?.id ?? b.sede_id ?? "";
+
+          const tipo = tiposBloqueItems.find((t) => Number(t.id) === Number(tipoId));
+          const sede = sedesItems.find((s) => Number(s.id) === Number(sedeIdNum));
+
+          return {
+            ...b,
+            tipoBloqueId: Number(tipoId) || "",
+            tipoBloqueNombre: tipo?.name ?? "",
+            sedeId: Number(sedeIdNum) || "",
+            sedeNombre: sede?.name ?? "",
+          };
+        });
+
+        const final = sedeId
+          ? normalizadas.filter((b) => Number(b.sedeId) === Number(sedeId))
+          : normalizadas;
+
+        setBloques(final);
+      })
+      .catch(() =>
+        setMessage({ open: true, severity: "error", text: "Error al cargar bloques." })
+      );
   };
 
-  // ---- Handlers que limpian dependientes al vuelo
-  const handlePaisChange = (val) => {
-    setSelectedPais(val);
-    setDepartamentos([]);
-    setSelectedDepto("");
-    setMunicipios([]);
-    setSelectedMunicipio("");
-    setSedes([]);
-    setSelectedSede("");
-    setBloques([]);
-    setSelectedRow(null);
-  };
+  // cargar bloques al montar, cuando cambie sede en filtros o lleguen items
+  useEffect(() => { reloadData(); }, []); // mount
+  useEffect(() => { reloadData(); }, [filters.sedeId]); // al aplicar filtro de sede
+  useEffect(() => {
+    if (tiposBloqueItems.length || sedesItems.length) reloadData();
+  }, [tiposBloqueItems, sedesItems]);
 
-  const handleDeptoChange = (val) => {
-    setSelectedDepto(val);
-    setMunicipios([]);
-    setSelectedMunicipio("");
-    setSedes([]);
-    setSelectedSede("");
-    setBloques([]);
-    setSelectedRow(null);
-  };
-
-  const handleMunicipioChange = (val) => {
-    setSelectedMunicipio(val);
-    setSedes([]);
-    setSelectedSede("");
-    setBloques([]);
-    setSelectedRow(null);
-  };
-
-  const handleSedeChange = (val) => {
-    setSelectedSede(val);
-    setBloques([]);      // limpia inmediatamente
-    setSelectedRow(null);
-  };
-
+  // -------------------- Acciones --------------------
   const handleDelete = async () => {
     if (!selectedRow) return;
-    if (window.confirm(`¿Eliminar el bloque "${selectedRow.nombre}"?`)) {
-      try {
-        await axios.delete(`/v1/bloque/${selectedRow.id}`, headers);
-        setMessage({ open: true, severity: "success", text: "Bloque eliminado correctamente." });
-        setSelectedRow(null);
-        reloadData();
-      } catch {
-        setMessage({ open: true, severity: "error", text: "Error al eliminar bloque." });
-      }
+    if (!window.confirm(`¿Eliminar el bloque "${selectedRow.nombre}"?`)) return;
+    try {
+      await axios.delete(`/v1/bloque/${selectedRow.id}`, headers);
+      setMessage({ open: true, severity: "success", text: "Bloque eliminado correctamente." });
+      setSelectedRow(null);
+      reloadData();
+    } catch {
+      setMessage({ open: true, severity: "error", text: "Error al eliminar bloque." });
     }
+  };
+
+  // Handlers modal
+  const handleFiltersChange = ({ name, value }) =>
+    setFilters((f) => ({ ...f, [name]: value }));
+
+  const handleFiltersClear = () =>
+    setFilters({ paisId: "", deptoId: "", municipioId: "", sedeId: "" });
+
+  const handleFiltersApply = () => {
+    setOpenFilters(false);
+    reloadData();
   };
 
   return (
-    <Box sx={{ padding: 2 }}>
-      <Typography variant="h5" gutterBottom>Gestión de Bloque</Typography>
+    <Box sx={{ p: 2 }}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+        <Typography variant="h5">Gestión de Bloque</Typography>
 
-      <FormControl fullWidth sx={{ mb: 2 }}>
-        <InputLabel>País</InputLabel>
-        <Select value={selectedPais} onChange={e => handlePaisChange(e.target.value)} label="País">
-          {paises.map(p => <MenuItem key={p.id} value={String(p.id)}>{p.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
+        {/* Botón que abre el modal de filtros */}
+        <Stack direction="row" spacing={1}>
+          <Button onClick={() => setOpenFilters(true)}>
+            Mostrar filtros
+          </Button>
+          {Boolean(filters.paisId || filters.deptoId || filters.municipioId || filters.sedeId) && (
+            <Button onClick={handleFiltersClear}>
+              Limpiar filtros
+            </Button>
+          )}
+        </Stack>
+      </Stack>
 
-      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedPais}>
-        <InputLabel>Departamento</InputLabel>
-        <Select value={selectedDepto} onChange={e => handleDeptoChange(e.target.value)} label="Departamento">
-          {departamentos.map(d => <MenuItem key={d.id} value={String(d.id)}>{d.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedDepto}>
-        <InputLabel>Municipio</InputLabel>
-        <Select value={selectedMunicipio} onChange={e => handleMunicipioChange(e.target.value)} label="Municipio">
-          {municipios.map(m => <MenuItem key={m.id} value={String(m.id)}>{m.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedMunicipio}>
-        <InputLabel>Sede</InputLabel>
-        <Select value={selectedSede} onChange={e => handleSedeChange(e.target.value)} label="Sede">
-          {sedes.map(s => <MenuItem key={s.id} value={String(s.id)}>{s.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
-
+      {/* Botones acción CRUD (separados) */}
       <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
-        <Button variant="contained" onClick={() => { setFormMode("create"); setFormOpen(true); setSelectedRow(null); }} disabled={!selectedSede}>+ Agregar Bloque</Button>
-        <Button variant="outlined" onClick={() => { setFormMode("edit"); setFormOpen(true); }} disabled={!selectedRow}>Editar</Button>
-        <Button variant="outlined" color="error" onClick={handleDelete} disabled={!selectedRow}>Eliminar</Button>
+        <Tooltip title="Crear">
+          <Button
+            variant="contained"
+            onClick={() => { setFormMode("create"); setSelectedRow(null); setFormOpen(true); }}
+            startIcon={<AddIcon />}
+          >
+            Agregar
+          </Button>
+        </Tooltip>
+
+        <Tooltip title="Editar">
+          <Button
+            variant="outlined"
+            onClick={() => { setFormMode("edit"); setFormOpen(true); }}
+            disabled={!selectedRow}
+            startIcon={<EditIcon />}
+          >
+            Actualizar
+          </Button>
+        </Tooltip>
+
+        <Tooltip title="Eliminar">
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleDelete}
+            disabled={!selectedRow}
+            startIcon={<DeleteIcon />}
+          >
+            Eliminar
+          </Button>
+        </Tooltip>
       </Box>
 
       <GridBloque bloques={bloques} setSelectedRow={setSelectedRow} />
@@ -229,11 +228,25 @@ export default function Bloque() {
         selectedRow={selectedRow}
         reloadData={reloadData}
         setMessage={setMessage}
-        sedeId={selectedSede}
-        tiposBloque={tiposBloque}
+        sedeId={filters.sedeId || ""}   // si hay filtro se precarga; si no, el form muestra select de sede
+        tiposBloque={tiposBloqueForm}   // items → [{id,nombre}]
+        sedes={sedesForm}               // items → [{id,nombre}] para el select en el form
+        authHeaders={headers}
       />
 
       <MessageSnackBar message={message} setMessage={setMessage} />
+
+      {/* MODAL genérico de filtros */}
+      <CrudFilterModal
+        open={openFilters}
+        onClose={() => setOpenFilters(false)}
+        title="Filtros de Bloque"
+        fields={fieldsBloque}
+        values={filters}
+        onChange={handleFiltersChange}
+        onClear={handleFiltersClear}
+        onApply={handleFiltersApply}
+      />
     </Box>
   );
 }

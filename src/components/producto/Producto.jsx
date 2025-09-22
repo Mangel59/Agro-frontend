@@ -4,75 +4,121 @@ import MessageSnackBar from "../MessageSnackBar";
 import FormProducto from "./FormProducto";
 import GridProducto from "./GridProducto";
 
+// Helpers robustos
+const toList = (payload) => {
+  if (payload == null) return [];
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.content)) return payload.content; // Spring Page<>
+  if (Array.isArray(payload?.data)) return payload.data;       // { data: [...] }
+  if (typeof payload === "string") {
+    try { return toList(JSON.parse(payload)); } catch { return []; }
+  }
+  return [];
+};
+
+const toMap = (payload, key = "id", label = "nombre") => {
+  const arr = toList(payload);
+  return Object.fromEntries(arr.map((e) => [e?.[key], e?.[label]]));
+};
+
 export default function Producto() {
   const [selectedRow, setSelectedRow] = useState(null);
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
   const [productos, setProductos] = useState([]);
 
-  // --- estados de paginación que devuelve el backend ---
-  const [page, setPage] = useState(0);          // number (0-based)
-  const [size, setSize] = useState(10);         // page size
+  // --- paginación (0-based como MUI DataGrid) ---
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const reloadData = useCallback(async (pageArg = page, sizeArg = size) => {
-    try {
-      setLoading(true);
+  const reloadData = useCallback(
+    async (pageArg = page, sizeArg = size) => {
+      try {
+        setLoading(true);
 
-      const [resProductos, resCategorias, resUnidades, resIngredientes] = await Promise.all([
-        axios.get("/v1/producto", { params: { page: pageArg, size: sizeArg } }),
-        axios.get("/v1/producto_categoria"),
-        axios.get("/v1/unidad"),
-        axios.get("/v1/ingrediente-presentacion-producto"), // << corregido: faltaba la barra
-      ]);
+        // Sanea argumentos (0-based, enteros, límites)
+        const pageQ = Math.max(0, Number.isFinite(+pageArg) ? +pageArg : 0);
+        const sizeQ = Math.max(1, Number.isFinite(+sizeArg) ? +sizeArg : 10);
 
-      const dataProd = resProductos?.data ?? {};
-      const lista = Array.isArray(dataProd.content) ? dataProd.content : [];
+        const [resProductos, resCategorias, resUnidades, resIngredientes] = await Promise.all([
+          // ✅ Productos paginados (Spring Page)
+          axios.get("/v1/producto", { params: { page: pageQ, size: sizeQ } }),
+          // ✅ Catálogos completos (no paginados)
+          axios.get("/v1/items/producto_categoria/0"),
+          axios.get("/v1/items/unidad/0"),
+          axios.get("/v1/items/producto_presentacion_ingrediente/0"),
+        ]);
 
-      const mapCategorias = Object.fromEntries((resCategorias.data ?? []).map(cat => [cat.id, cat.nombre]));
-      const mapUnidades  = Object.fromEntries((resUnidades.data ?? []).map(u => [u.id, u.nombre]));
-      const mapIngredientes = Object.fromEntries((resIngredientes.data ?? []).map(i => [i.id, i.nombre]));
-      const mapEstados = { 1: "Activo", 2: "Inactivo" };
+        // productos (Spring Page<>)
+        const dataProd = resProductos?.data ?? {};
+        const lista = Array.isArray(dataProd?.content) ? dataProd.content : [];
 
-      const productosConNombres = lista.map(p => ({
-        ...p,
-        productoCategoriaNombre: mapCategorias[p.productoCategoriaId] || "(sin categoría)",
-        unidadMinimaNombre: mapUnidades[p.unidadMinimaId] || "(sin unidad)",
-        estadoNombre: mapEstados[p.estadoId] || "(desconocido)",
-        ingredientePresentacionNombre:
-          mapIngredientes[p.ingredientePresentacionProductoId] || "(sin ingrediente)",
-      }));
+        // catálogos
+        const mapCategorias   = toMap(resCategorias?.data);
+        const mapUnidades     = toMap(resUnidades?.data);
+        const mapIngredientes = toMap(resIngredientes?.data);
+        const mapEstados = { 1: "Activo", 2: "Inactivo" };
 
-      setProductos(productosConNombres);
+        const productosConNombres = lista.map((p) => ({
+          ...p,
+          productoCategoriaNombre: mapCategorias[p.productoCategoriaId] || "(sin categoría)",
+          unidadMinimaNombre: mapUnidades[p.unidadMinimaId] || "(sin unidad)",
+          estadoNombre: mapEstados[p.estadoId] || "(desconocido)",
+          ingredientePresentacionNombre:
+            mapIngredientes[p.ingredientePresentacionProductoId] || "(sin ingrediente)",
+        }));
 
-      // actualizar metadatos de paginación
-      if (dataProd.page) {
-        setPage(dataProd.page.number ?? 0);
-        setSize(dataProd.page.size ?? sizeArg);
-        setTotalElements(dataProd.page.totalElements ?? 0);
-        setTotalPages(dataProd.page.totalPages ?? 0);
+        setProductos(productosConNombres);
+
+        // metadatos de Page<> (con fallback si no vienen)
+        const pageServer  = Number.isFinite(dataProd?.number) ? dataProd.number : pageQ;
+        const sizeServer  = Number.isFinite(dataProd?.size) ? dataProd.size : sizeQ;
+        const totalElems  = Number.isFinite(dataProd?.totalElements) ? dataProd.totalElements : lista.length;
+        const totalPgs    = Number.isFinite(dataProd?.totalPages)
+          ? dataProd.totalPages
+          : Math.ceil(totalElems / sizeServer);
+
+        setPage(pageServer);
+        setSize(sizeServer);
+        setTotalElements(totalElems);
+        setTotalPages(totalPgs);
+      } catch (err) {
+        const status = err?.response?.status;
+        const body   = err?.response?.data;
+        try {
+          console.error("Error /v1/producto", status, JSON.stringify(body));
+        } catch {
+          console.error("Error /v1/producto", status, body);
+        }
+        setMessage({
+          open: true,
+          severity: "error",
+          text: `Error al cargar productos${status ? ` (HTTP ${status})` : ""}`,
+        });
+        setProductos([]);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Error al cargar productos:", err);
-      setMessage({ open: true, severity: "error", text: "Error al cargar productos" });
-    } finally {
-      setLoading(false);
-    }
-  }, [page, size]);
+    },
+    [page, size]
+  );
 
   useEffect(() => {
-    reloadData(0, size); // carga inicial en página 0
-  }, [reloadData, size]);
+    // carga inicial (página 0)
+    reloadData(0, size);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [size]);
 
-  // Handlers de paginación (si tu GridProducto los usa)
-  const handleChangePage = (nextPage) => {
-    // nextPage debe ser 0-based
+  // Handlers (DataGrid server-side)
+  const handleChangePage = (_evt, nextPage) => {
     setPage(nextPage);
     reloadData(nextPage, size);
   };
 
-  const handleChangeRowsPerPage = (nextSize) => {
+  const handleChangeRowsPerPage = (evt) => {
+    const nextSize = parseInt(evt?.target?.value ?? evt, 10) || 10;
     setSize(nextSize);
     setPage(0);
     reloadData(0, nextSize);
@@ -81,10 +127,11 @@ export default function Producto() {
   return (
     <div>
       <h1>Productos</h1>
+
       <MessageSnackBar message={message} setMessage={setMessage} />
 
       <FormProducto
-        selectedRow={selectedRow}
+        selectedRow={selectedRow}               // opcional
         setSelectedRow={setSelectedRow}
         setMessage={setMessage}
         reloadData={() => reloadData(page, size)}
@@ -95,13 +142,13 @@ export default function Producto() {
         productos={productos}
         selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
-        // props opcionales de paginación para tu tabla
+        // Paginación (server-side)
         page={page}
         rowsPerPage={size}
         totalElements={totalElements}
         totalPages={totalPages}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
+        onPageChange={handleChangePage}               // (event, newPage)
+        onRowsPerPageChange={handleChangeRowsPerPage} // (event | number)
       />
     </div>
   );

@@ -16,7 +16,12 @@ const toList = (data) =>
 
 const MENU_PROPS = { PaperProps: { style: { maxHeight: 48 * 6.5 + 8 } } };
 
-export default function FormProducto({ selectedRow, setSelectedRow, setMessage, reloadData }) {
+export default function FormProducto({
+  selectedRow = null,          // ← default param (sin defaultProps)
+  setSelectedRow,
+  setMessage,
+  reloadData,
+}) {
   const [open, setOpen] = useState(false);
   const [methodName, setMethodName] = useState("");
 
@@ -26,7 +31,7 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
     descripcion: "",
     estadoId: "",
     unidadMinimaId: "",
-    ingredientePresentacionProductoId: ""
+    ingredientePresentacionProductoId: "",
   }), []);
 
   const [formData, setFormData] = useState(initialForm);
@@ -43,19 +48,19 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
   // Carga de catálogos (tolerante a {content} o array)
   useEffect(() => {
     setLoadingCats(true);
-    axios.get("/v1/producto_categoria")
+    axios.get("/v1/items/producto_categoria/0")
       .then(res => setCategorias(toList(res.data)))
       .catch(() => setCategorias([]))
       .finally(() => setLoadingCats(false));
 
     setLoadingUnidades(true);
-    axios.get("/v1/unidad")
+    axios.get("/v1/items/unidad/0")
       .then(res => setUnidades(toList(res.data)))
       .catch(() => setUnidades([]))
       .finally(() => setLoadingUnidades(false));
 
     setLoadingIngr(true);
-    axios.get("/v1/ingrediente-presentacion-producto")
+    axios.get("/v1/items/ingrediente-presentacion-producto/0")
       .then(res => setIngredientes(toList(res.data)))
       .catch(() => setIngredientes([]))
       .finally(() => setLoadingIngr(false));
@@ -80,7 +85,7 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
       descripcion: selectedRow.descripcion || "",
       estadoId: selectedRow.estadoId?.toString() || "",
       unidadMinimaId: selectedRow.unidadMinimaId || "",
-      ingredientePresentacionProductoId: selectedRow.ingredientePresentacionProductoId || ""
+      ingredientePresentacionProductoId: selectedRow.ingredientePresentacionProductoId || "",
     });
     setErrors({});
     setMethodName("Actualizar");
@@ -95,7 +100,7 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
     axios.delete(`/v1/producto/${selectedRow.id}`)
       .then(() => {
         setMessage({ open: true, severity: "success", text: "Eliminado correctamente." });
-        setSelectedRow({});
+        setSelectedRow(null);
         reloadData();
       })
       .catch(err => {
@@ -131,7 +136,7 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
       estadoId: parseInt(formData.estadoId, 10),
       productoCategoriaId: parseInt(formData.productoCategoriaId, 10),
       unidadMinimaId: parseInt(formData.unidadMinimaId, 10),
-      ingredientePresentacionProductoId: parseInt(formData.ingredientePresentacionProductoId, 10)
+      ingredientePresentacionProductoId: parseInt(formData.ingredientePresentacionProductoId, 10),
     };
 
     const isCreate = methodName === "Crear";
@@ -143,10 +148,10 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
         setMessage({
           open: true,
           severity: "success",
-          text: isCreate ? "¡Creado con éxito!" : "¡Actualizado con éxito!"
+          text: isCreate ? "¡Creado con éxito!" : "¡Actualizado con éxito!",
         });
         setOpen(false);
-        setSelectedRow({});
+        setSelectedRow(null);
         reloadData();
       })
       .catch(err => {
@@ -167,117 +172,117 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
             </Typography>
           </DialogTitle>
 
-          <DialogContent dividers sx={{ pt: 2 }}>
-            {/* Sección: Información general */}
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="overline" color="text.secondary">Información general</Typography>
-              <Divider sx={{ mb: 2 }} />
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={8}>
-                  <TextField
-                    fullWidth size="small"
-                    name="nombre" label="Nombre"
-                    value={formData.nombre} onChange={handleChange}
-                    error={!!errors.nombre} helperText={errors.nombre}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={4}>
-                  <FormControl fullWidth size="small" error={!!errors.productoCategoriaId}>
-                    <InputLabel>Categoría</InputLabel>
-                    <Select
-                      name="productoCategoriaId"
-                      value={formData.productoCategoriaId}
-                      onChange={handleChange}
-                      label="Categoría"
-                      MenuProps={MENU_PROPS}
-                      disabled={loadingCats}
-                    >
-                      <MenuItem value="">Seleccione...</MenuItem>
-                      {categorias.map(cat => (
-                        <MenuItem key={cat.id} value={cat.id}>{cat.nombre}</MenuItem>
-                      ))}
-                    </Select>
-                    <FormHelperText>{errors.productoCategoriaId}</FormHelperText>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth size="small" multiline minRows={3}
-                    name="descripcion" label="Descripción"
-                    value={formData.descripcion} onChange={handleChange}
-                    error={!!errors.descripcion} helperText={errors.descripcion}
-                  />
-                </Grid>
+        <DialogContent dividers sx={{ pt: 2 }}>
+          {/* Sección: Información general */}
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="overline" color="text.secondary">Información general</Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={8}>
+                <TextField
+                  fullWidth size="small"
+                  name="nombre" label="Nombre"
+                  value={formData.nombre} onChange={handleChange}
+                  error={!!errors.nombre} helperText={errors.nombre}
+                />
               </Grid>
-            </Box>
 
-            {/* Sección: Configuración */}
-            <Box sx={{ mt: 1 }}>
-              <Typography variant="overline" color="text.secondary">Configuración</Typography>
-              <Divider sx={{ mb: 2 }} />
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={4}>
-                  <FormControl fullWidth size="small" error={!!errors.unidadMinimaId}>
-                    <InputLabel>Unidad mínima</InputLabel>
-                    <Select
-                      name="unidadMinimaId"
-                      value={formData.unidadMinimaId}
-                      onChange={handleChange}
-                      label="Unidad mínima"
-                      MenuProps={MENU_PROPS}
-                      disabled={loadingUnidades}
-                    >
-                      <MenuItem value="">Seleccione...</MenuItem>
-                      {unidades.map(u => (
-                        <MenuItem key={u.id} value={u.id}>{u.nombre}</MenuItem>
-                      ))}
-                    </Select>
-                    <FormHelperText>{errors.unidadMinimaId}</FormHelperText>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12} sm={4}>
-                  <FormControl fullWidth size="small" error={!!errors.ingredientePresentacionProductoId}>
-                    <InputLabel>Ingrediente presentación</InputLabel>
-                    <Select
-                      name="ingredientePresentacionProductoId"
-                      value={formData.ingredientePresentacionProductoId}
-                      onChange={handleChange}
-                      label="Ingrediente presentación"
-                      MenuProps={MENU_PROPS}
-                      disabled={loadingIngr}
-                    >
-                      <MenuItem value="">Seleccione...</MenuItem>
-                      {ingredientes.map(i => (
-                        <MenuItem key={i.id} value={i.id}>{i.nombre}</MenuItem>
-                      ))}
-                    </Select>
-                    <FormHelperText>{errors.ingredientePresentacionProductoId}</FormHelperText>
-                  </FormControl>
-                </Grid>
-
-                <Grid item xs={12} sm={4}>
-                  <FormControl fullWidth size="small" error={!!errors.estadoId}>
-                    <InputLabel>Estado</InputLabel>
-                    <Select
-                      name="estadoId"
-                      value={formData.estadoId}
-                      onChange={handleChange}
-                      label="Estado"
-                      MenuProps={MENU_PROPS}
-                    >
-                      <MenuItem value="">Seleccione...</MenuItem>
-                      <MenuItem value="1">Activo</MenuItem>
-                      <MenuItem value="2">Inactivo</MenuItem>
-                    </Select>
-                    <FormHelperText>{errors.estadoId}</FormHelperText>
-                  </FormControl>
-                </Grid>
+              <Grid item xs={12} sm={4}>
+                <FormControl fullWidth size="small" error={!!errors.productoCategoriaId}>
+                  <InputLabel>Categoría</InputLabel>
+                  <Select
+                    name="productoCategoriaId"
+                    value={formData.productoCategoriaId}
+                    onChange={handleChange}
+                    label="Categoría"
+                    MenuProps={MENU_PROPS}
+                    disabled={loadingCats}
+                  >
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {categorias.map(cat => (
+                      <MenuItem key={cat.id} value={cat.id}>{cat.nombre}</MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText>{errors.productoCategoriaId}</FormHelperText>
+                </FormControl>
               </Grid>
-            </Box>
-          </DialogContent>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth size="small" multiline minRows={3}
+                  name="descripcion" label="Descripción"
+                  value={formData.descripcion} onChange={handleChange}
+                  error={!!errors.descripcion} helperText={errors.descripcion}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Sección: Configuración */}
+          <Box sx={{ mt: 1 }}>
+            <Typography variant="overline" color="text.secondary">Configuración</Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={4}>
+                <FormControl fullWidth size="small" error={!!errors.unidadMinimaId}>
+                  <InputLabel>Unidad mínima</InputLabel>
+                  <Select
+                    name="unidadMinimaId"
+                    value={formData.unidadMinimaId}
+                    onChange={handleChange}
+                    label="Unidad mínima"
+                    MenuProps={MENU_PROPS}
+                    disabled={loadingUnidades}
+                  >
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {unidades.map(u => (
+                      <MenuItem key={u.id} value={u.id}>{u.nombre}</MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText>{errors.unidadMinimaId}</FormHelperText>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <FormControl fullWidth size="small" error={!!errors.ingredientePresentacionProductoId}>
+                  <InputLabel>Ingrediente presentación</InputLabel>
+                  <Select
+                    name="ingredientePresentacionProductoId"
+                    value={formData.ingredientePresentacionProductoId}
+                    onChange={handleChange}
+                    label="Ingrediente presentación"
+                    MenuProps={MENU_PROPS}
+                    disabled={loadingIngr}
+                  >
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    {ingredientes.map(i => (
+                      <MenuItem key={i.id} value={i.id}>{i.nombre}</MenuItem>
+                    ))}
+                  </Select>
+                  <FormHelperText>{errors.ingredientePresentacionProductoId}</FormHelperText>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <FormControl fullWidth size="small" error={!!errors.estadoId}>
+                  <InputLabel>Estado</InputLabel>
+                  <Select
+                    name="estadoId"
+                    value={formData.estadoId}
+                    onChange={handleChange}
+                    label="Estado"
+                    MenuProps={MENU_PROPS}
+                  >
+                    <MenuItem value="">Seleccione...</MenuItem>
+                    <MenuItem value="1">Activo</MenuItem>
+                    <MenuItem value="2">Inactivo</MenuItem>
+                  </Select>
+                  <FormHelperText>{errors.estadoId}</FormHelperText>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
 
           <DialogActions sx={{ p: 2 }}>
             <Button onClick={() => setOpen(false)}>Cancelar</Button>
@@ -290,8 +295,8 @@ export default function FormProducto({ selectedRow, setSelectedRow, setMessage, 
 }
 
 FormProducto.propTypes = {
-  selectedRow: PropTypes.object.isRequired,
+  selectedRow: PropTypes.object, // opcional
   setSelectedRow: PropTypes.func.isRequired,
   setMessage: PropTypes.func.isRequired,
-  reloadData: PropTypes.func.isRequired
+  reloadData: PropTypes.func.isRequired,
 };

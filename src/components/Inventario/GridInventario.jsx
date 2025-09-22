@@ -1,46 +1,35 @@
-import React from "react";
-import { DataGrid } from "@mui/x-data-grid";
-import PropTypes from "prop-types";
+import { DataGrid } from '@mui/x-data-grid';
+import { Box } from '@mui/material';
 
-export default function GridInventario({ inventarios, setSelectedRow }) {
-  const handleRowSelection = (selection) => {
-    if (selection.length > 0) {
-      const selected = inventarios.find((i) => i.id === selection[0]);
-      setSelectedRow(selected);
-    } else {
-      setSelectedRow(null);
+const columns = [
+  { field: 'id', headerName: 'ID', width: 90 },
+  { field: 'nombre', headerName: 'Nombre', width: 200 },
+  { field: 'descripcion', headerName: 'Descripción', width: 250 },
+  { field: 'fechaHora', headerName: 'Fecha y Hora', width: 180 },
+  {
+    field: 'estadoId',
+    headerName: 'Estado',
+    width: 120,
+    valueGetter: (params) => {
+      switch (params.row.estadoId) {
+        case 1: return "Activo";
+        case 2: return "Inactivo";
+        default: return "Desconocido";
+      }
     }
-  };
+  }
+];
 
-  const columns = [
-    { field: "id", headerName: "ID", width: 70 },
-    { field: "nombre", headerName: "Nombre", width: 200 },
-    { field: "descripcion", headerName: "Descripción", width: 250 },
-    { field: "fechaHora", headerName: "Fecha y hora", width: 200 },
-    {
-      field: "estadoId",
-      headerName: "Estado",
-      width: 100,
-      valueGetter: (params) =>
-        params.row.estadoId === 1 ? "Activo" : "Inactivo",
-    },
-  ];
-
+export default function GridInventario({ inventarios, selectedRow, setSelectedRow }) {
   return (
-    <div style={{ height: 420, width: "100%" }}>
+    <Box sx={{ height: 400, width: '100%' }}>
       <DataGrid
         rows={inventarios}
         columns={columns}
+        pageSize={5}
         getRowId={(row) => row.id}
-        onRowSelectionModelChange={handleRowSelection}
-        initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-        pageSizeOptions={[5, 10, 20]}
+        onRowClick={(params) => setSelectedRow(params.row)}
       />
-    </div>
+    </Box>
   );
 }
-
-GridInventario.propTypes = {
-  inventarios: PropTypes.array.isRequired,
-  setSelectedRow: PropTypes.func.isRequired,
-};

@@ -4,406 +4,237 @@ import MessageSnackBar from "../MessageSnackBar.jsx";
 import FormSubseccion from "./FormSubseccion.jsx";
 import GridSubseccion from "./GridSubseccion.jsx";
 import {
-  Box, Typography, FormControl, InputLabel, Select, MenuItem, Button
+  Box, Typography, Button, Tooltip, Stack
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+
+// Modal genérico de filtros + loaders
+import CrudFilterModal from "../common/CrudFilterModal";
+import { makeLoaders, unwrap as unwrapPage } from "../common/filtersLoaders";
 
 export default function Subseccion() {
-  const [paises, setPaises] = useState([]);
-  const [departamentos, setDepartamentos] = useState([]);
-  const [municipios, setMunicipios] = useState([]);
-  const [sedes, setSedes] = useState([]);
-  const [bloques, setBloques] = useState([]);
-  const [espacios, setEspacios] = useState([]);
-  const [secciones, setSecciones] = useState([]);
+  // ===========================
+  // ESTADO Y CONFIGURACIÓN
+  // ===========================
+  
+  // Filtros (vía modal) - Para Subsección: País → Depto → Municipio → Sede → Bloque → Espacio → Sección
+  const [filters, setFilters] = useState({
+    paisId: "", deptoId: "", municipioId: "", sedeId: "", bloqueId: "", espacioId: "", seccionId: ""
+  });
+  const [openFilters, setOpenFilters] = useState(false);
+
+  // Catálogos "items" (única fuente de nombres)
+  const [seccionesItems, setSeccionesItems] = useState([]); // [{id, name}]
+
+  // Datos principales
   const [subsecciones, setSubsecciones] = useState([]);
 
-  const [selectedPais, setSelectedPais] = useState("");
-  const [selectedDepto, setSelectedDepto] = useState("");
-  const [selectedMunicipio, setSelectedMunicipio] = useState("");
-  const [selectedSede, setSelectedSede] = useState("");
-  const [selectedBloque, setSelectedBloque] = useState("");
-  const [selectedEspacio, setSelectedEspacio] = useState("");
-  const [selectedSeccion, setSelectedSeccion] = useState("");
-
+  // UI CRUD
   const [selectedRow, setSelectedRow] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState("create");
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
 
+  // ===========================
+  // CONFIGURACIÓN Y HELPERS
+  // ===========================
+  
+  // Auth / headers
   const token = localStorage.getItem("token");
-  const empresaId = localStorage.getItem("empresaId"); // opcional
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
-  // Helpers
-  const asArray = (payload) => {
-    if (Array.isArray(payload)) return payload;
-    if (payload && Array.isArray(payload.content)) return payload.content;
-    return [];
-  };
-  const uniqById = (arr) => Array.from(new Map(arr.map(o => [o.id, o])).values());
+  // Loaders del modal (usan /v1)
+  const { getPaises, getDepartamentos, getMunicipios, getSedes, getBloques, getEspacios, getSecciones } = makeLoaders(headers);
 
-  // ===== Carga base
+  // Normalizaciones para los formularios (esperan [{id, nombre}])
+  const seccionesForm = seccionesItems.map(s => ({ id: s.id, nombre: s.name }));
+
+  // Campos del modal para Subsección
+  const fieldsSubseccion = [
+    { name: "paisId", label: "País", getOptions: getPaises, clearChildren: ["deptoId", "municipioId", "sedeId", "bloqueId", "espacioId", "seccionId"] },
+    { name: "deptoId", label: "Departamento", getOptions: getDepartamentos, dependsOn: ["paisId"], disabled: (v) => !v.paisId, clearChildren: ["municipioId", "sedeId", "bloqueId", "espacioId", "seccionId"] },
+    { name: "municipioId", label: "Municipio", getOptions: getMunicipios, dependsOn: ["deptoId"], disabled: (v) => !v.deptoId, clearChildren: ["sedeId", "bloqueId", "espacioId", "seccionId"] },
+    { name: "sedeId", label: "Sede", getOptions: getSedes, dependsOn: ["municipioId"], disabled: (v) => !v.municipioId, clearChildren: ["bloqueId", "espacioId", "seccionId"] },
+    { name: "bloqueId", label: "Bloque", getOptions: getBloques, dependsOn: ["sedeId"], disabled: (v) => !v.sedeId, clearChildren: ["espacioId", "seccionId"] },
+    { name: "espacioId", label: "Espacio", getOptions: getEspacios, dependsOn: ["bloqueId"], disabled: (v) => !v.bloqueId, clearChildren: ["seccionId"] },
+    { name: "seccionId", label: "Sección", getOptions: getSecciones, dependsOn: ["espacioId"], disabled: (v) => !v.espacioId },
+  ];
+
+  // ===========================
+  // EFECTOS - CARGA DE DATOS
+  // ===========================
+  
+  // Cargar catálogos (items)
   useEffect(() => {
-    axios.get("/v1/pais", headers).then(res => setPaises(res.data || []));
+    // Secciones: intentar /v1/items/seccion/0 y si falla, caer a /v1/seccion
+    (async () => {
+      try {
+        const r = await axios.get("/v1/items/seccion/0", headers);
+        const arr = Array.isArray(r.data) ? r.data : [];
+        if (arr.length) {
+          setSeccionesItems(arr); // [{id,name}]
+          return;
+        }
+        throw new Error("empty");
+      } catch {
+        try {
+          const { data } = await axios.get("/v1/seccion", {
+            ...headers,
+            params: { page: 0, size: 2000 },
+          });
+          // normaliza a shape "items"
+          const list = (Array.isArray(data) ? data : data?.content ?? []).map((s) => ({
+            id: s.id,
+            name: s.nombre, // <-- importante
+          }));
+          setSeccionesItems(list);
+        } catch {
+          setSeccionesItems([]);
+        }
+      }
+    })();
   }, []);
 
-  // ===== País -> Departamentos
+  // Efectos para recargar subsecciones
+  useEffect(() => { reloadData(); }, []); // mount
+  useEffect(() => { reloadData(); }, [filters.seccionId]); // al aplicar filtro de sección
   useEffect(() => {
-    setDepartamentos([]); setSelectedDepto("");
-    setMunicipios([]);    setSelectedMunicipio("");
-    setSedes([]);         setSelectedSede("");
-    setBloques([]);       setSelectedBloque("");
-    setEspacios([]);      setSelectedEspacio("");
-    setSecciones([]);     setSelectedSeccion("");
-    setSubsecciones([]);  setSelectedRow(null);
+    if (seccionesItems.length) reloadData();
+  }, [seccionesItems]);
 
-    if (!selectedPais) return;
+  // ===========================
+  // FUNCIONES DE DATOS
+  // ===========================
+  
+  // Cargar subsecciones (CRUD)
+  const reloadData = () => {
+    const { seccionId } = filters;
 
-    axios.get("/v1/departamento", headers).then(res => {
-      const list = (res.data || []).filter(d => d.paisId === parseInt(selectedPais));
-      setDepartamentos(list);
-    });
-  }, [selectedPais]);
+    const req = seccionId
+      ? axios.get("/v1/subseccion", { ...headers, params: { seccionId: Number(seccionId), page: 0, size: 2000 } })
+      : axios.get("/v1/subseccion", { ...headers, params: { page: 0, size: 2000 } });
 
-  // Autoselect Depto
-  useEffect(() => {
-    if (departamentos.length === 1) setSelectedDepto(String(departamentos[0].id));
-  }, [departamentos]);
+    req
+      .then((res) => {
+        const lista = unwrapPage(res.data);
 
-  // ===== Depto -> Municipios
-  useEffect(() => {
-    setMunicipios([]);    setSelectedMunicipio("");
-    setSedes([]);         setSelectedSede("");
-    setBloques([]);       setSelectedBloque("");
-    setEspacios([]);      setSelectedEspacio("");
-    setSecciones([]);     setSelectedSeccion("");
-    setSubsecciones([]);  setSelectedRow(null);
+        // Mapear IDs → nombres usando ÚNICAMENTE los catálogos "items"
+        const normalizadas = lista.map((s) => {
+          const seccionIdNum = s.seccionId ?? s.seccion?.id ?? s.seccion_id ?? "";
 
-    if (!selectedDepto) return;
+          const seccion = seccionesItems.find((sec) => Number(sec.id) === Number(seccionIdNum));
 
-    axios
-      .get(`/v1/municipio?departamentoId=${selectedDepto}`, headers)
-      .then(res => setMunicipios(asArray(res.data)))
-      .catch(() => setMunicipios([]));
-  }, [selectedDepto]);
-
-  // Autoselect Municipio
-  useEffect(() => {
-    if (municipios.length === 1) setSelectedMunicipio(String(municipios[0].id));
-  }, [municipios]);
-
-  // ===== Municipio -> Sedes (robusto, con empresa opcional)
-  useEffect(() => {
-    setSedes([]);         setSelectedSede("");
-    setBloques([]);       setSelectedBloque("");
-    setEspacios([]);      setSelectedEspacio("");
-    setSecciones([]);     setSelectedSeccion("");
-    setSubsecciones([]);  setSelectedRow(null);
-
-    if (!selectedMunicipio) return;
-
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await axios.get(`/v1/sede`, headers);
-        if (cancelled) return;
-
-        const raw = asArray(res.data);
-        const municipioIdNum = Number(selectedMunicipio);
-        const empresaIdNum   = empresaId != null && empresaId !== "" ? Number(empresaId) : null;
-        const itemsTienenEmpresa = raw.some(s => s.empresaId != null && !Number.isNaN(Number(s.empresaId)));
-
-        const list = raw.filter(s => {
-          const sameMunicipio = Number(s.municipioId) === municipioIdNum;
-          if (!sameMunicipio) return false;
-          if (itemsTienenEmpresa && empresaIdNum != null) {
-            return Number(s.empresaId) === empresaIdNum;
-          }
-          return true;
+          return {
+            ...s,
+            seccionId: Number(seccionIdNum) || "",
+            seccionNombre: seccion?.name ?? "",
+          };
         });
 
-        setSedes(uniqById(list));
-      } catch {
-        if (!cancelled) setSedes([]);
-      }
-    })();
+        const final = seccionId
+          ? normalizadas.filter((s) => Number(s.seccionId) === Number(seccionId))
+          : normalizadas;
 
-    return () => { cancelled = true; };
-  }, [selectedMunicipio, empresaId, token]);
-
-  // Autoselect Sede
-  useEffect(() => {
-    if (sedes.length === 1) setSelectedSede(String(sedes[0].id));
-  }, [sedes]);
-
-  // ===== Sede -> Bloques
-  useEffect(() => {
-    setBloques([]);       setSelectedBloque("");
-    setEspacios([]);      setSelectedEspacio("");
-    setSecciones([]);     setSelectedSeccion("");
-    setSubsecciones([]);  setSelectedRow(null);
-
-    if (!selectedSede) return;
-
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await axios.get(`/v1/bloque?sedeId=${selectedSede}`, headers);
-        if (cancelled) return;
-        let list = asArray(res.data);
-        // Si el backend NO filtra por sedeId:
-        // list = list.filter(b => String(b.sedeId) === String(selectedSede));
-        setBloques(uniqById(list));
-      } catch {
-        if (!cancelled) setBloques([]);
-      }
-    })();
-
-    return () => { cancelled = true; };
-  }, [selectedSede]);
-
-  // Autoselect Bloque
-  useEffect(() => {
-    if (bloques.length === 1) setSelectedBloque(String(bloques[0].id));
-  }, [bloques]);
-
-  // ===== Bloque -> Espacios
-  useEffect(() => {
-    setEspacios([]);      setSelectedEspacio("");
-    setSecciones([]);     setSelectedSeccion("");
-    setSubsecciones([]);  setSelectedRow(null);
-
-    if (!selectedBloque) return;
-
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await axios.get(`/v1/espacio?bloqueId=${selectedBloque}`, headers);
-        if (cancelled) return;
-        let list = asArray(res.data);
-        // Si el backend NO filtra por bloqueId:
-        // list = list.filter(e => String(e.bloqueId) === String(selectedBloque));
-        setEspacios(uniqById(list));
-      } catch {
-        if (!cancelled) setEspacios([]);
-      }
-    })();
-
-    return () => { cancelled = true; };
-  }, [selectedBloque]);
-
-  // Autoselect Espacio
-  useEffect(() => {
-    if (espacios.length === 1) setSelectedEspacio(String(espacios[0].id));
-  }, [espacios]);
-
-  // ===== Espacio -> Secciones
-  useEffect(() => {
-    setSecciones([]);     setSelectedSeccion("");
-    setSubsecciones([]);  setSelectedRow(null);
-
-    if (!selectedEspacio) return;
-
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await axios.get(`/v1/seccion?espacioId=${selectedEspacio}`, headers);
-        if (cancelled) return;
-        let list = asArray(res.data);
-        // Si el backend NO filtra por espacioId:
-        // list = list.filter(s => String(s.espacioId) === String(selectedEspacio));
-        setSecciones(uniqById(list));
-      } catch {
-        if (!cancelled) setSecciones([]);
-      }
-    })();
-
-    return () => { cancelled = true; };
-  }, [selectedEspacio]);
-
-  // Autoselect Seccion
-  useEffect(() => {
-    if (secciones.length === 1) setSelectedSeccion(String(secciones[0].id));
-  }, [secciones]);
-
-  // ===== Sección -> Subsecciones (filtro forzado por seccionId en cliente)
-  const reloadData = async () => {
-    setSubsecciones([]);  setSelectedRow(null);
-    if (!selectedSeccion) return;
-
-    const seccionActual = String(selectedSeccion);
-    let cancelled = false;
-
-    try {
-      const res = await axios.get(`/v1/subseccion?seccionId=${seccionActual}`, headers);
-      if (cancelled) return;
-
-      let list = asArray(res.data);
-      // Fuerza filtro por seccionId por si el backend no filtra
-      list = list.filter(s => String(s.seccionId) === seccionActual);
-      list = uniqById(list);
-
-      if (String(selectedSeccion) === seccionActual) {
-        setSubsecciones(list);
-      }
-    } catch {
-      if (!cancelled) setSubsecciones([]);
-    }
-
-    return () => { cancelled = true; };
+        setSubsecciones(final);
+      })
+      .catch(() =>
+        setMessage({ open: true, severity: "error", text: "Error al cargar subsecciones." })
+      );
   };
 
-  useEffect(() => {
-    reloadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSeccion]);
+  // ===========================
+  // HANDLERS DE EVENTOS
+  // ===========================
 
-  // ===== Handlers (limpian dependientes al vuelo)
-  const handlePaisChange = (val) => {
-    setSelectedPais(val);
-    setDepartamentos([]); setSelectedDepto("");
-    setMunicipios([]);    setSelectedMunicipio("");
-    setSedes([]);         setSelectedSede("");
-    setBloques([]);       setSelectedBloque("");
-    setEspacios([]);      setSelectedEspacio("");
-    setSecciones([]);     setSelectedSeccion("");
-    setSubsecciones([]);  setSelectedRow(null);
-  };
-
-  const handleDeptoChange = (val) => {
-    setSelectedDepto(val);
-    setMunicipios([]);    setSelectedMunicipio("");
-    setSedes([]);         setSelectedSede("");
-    setBloques([]);       setSelectedBloque("");
-    setEspacios([]);      setSelectedEspacio("");
-    setSecciones([]);     setSelectedSeccion("");
-    setSubsecciones([]);  setSelectedRow(null);
-  };
-
-  const handleMunicipioChange = (val) => {
-    setSelectedMunicipio(val);
-    setSedes([]);         setSelectedSede("");
-    setBloques([]);       setSelectedBloque("");
-    setEspacios([]);      setSelectedEspacio("");
-    setSecciones([]);     setSelectedSeccion("");
-    setSubsecciones([]);  setSelectedRow(null);
-  };
-
-  const handleSedeChange = (val) => {
-    setSelectedSede(val);
-    setBloques([]);       setSelectedBloque("");
-    setEspacios([]);      setSelectedEspacio("");
-    setSecciones([]);     setSelectedSeccion("");
-    setSubsecciones([]);  setSelectedRow(null);
-  };
-
-  const handleBloqueChange = (val) => {
-    setSelectedBloque(val);
-    setEspacios([]);      setSelectedEspacio("");
-    setSecciones([]);     setSelectedSeccion("");
-    setSubsecciones([]);  setSelectedRow(null);
-  };
-
-  const handleEspacioChange = (val) => {
-    setSelectedEspacio(val);
-    setSecciones([]);     setSelectedSeccion("");
-    setSubsecciones([]);  setSelectedRow(null);
-  };
-
-  const handleSeccionChange = (val) => {
-    setSelectedSeccion(val);
-    setSubsecciones([]);  setSelectedRow(null);
-  };
-
+  // Acciones CRUD
   const handleDelete = async () => {
     if (!selectedRow) return;
-    if (window.confirm(`¿Eliminar la subsección "${selectedRow.nombre}"?`)) {
-      try {
-        await axios.delete(`/v1/subseccion/${selectedRow.id}`, headers);
-        setMessage({ open: true, severity: "success", text: "Subsección eliminada correctamente." });
-        setSelectedRow(null);
-        reloadData();
-      } catch {
-        setMessage({ open: true, severity: "error", text: "Error al eliminar subsección." });
-      }
+    if (!window.confirm(`¿Eliminar la subsección "${selectedRow.nombre}"?`)) return;
+    try {
+      await axios.delete(`/v1/subseccion/${selectedRow.id}`, headers);
+      setMessage({ open: true, severity: "success", text: "Subsección eliminada correctamente." });
+      setSelectedRow(null);
+      reloadData();
+    } catch {
+      setMessage({ open: true, severity: "error", text: "Error al eliminar subsección." });
     }
   };
 
+  // Handlers del modal de filtros
+  const handleFiltersChange = ({ name, value }) =>
+    setFilters((f) => ({ ...f, [name]: value }));
+
+  const handleFiltersClear = () =>
+    setFilters({ paisId: "", deptoId: "", municipioId: "", sedeId: "", bloqueId: "", espacioId: "", seccionId: "" });
+
+  const handleFiltersApply = () => {
+    setOpenFilters(false);
+    reloadData();
+  };
+
+  // ===========================
+  // RENDER
+  // ===========================
   return (
-    <Box sx={{ padding: 2 }}>
-      <Typography variant="h5" gutterBottom>Gestión de Subsecciones</Typography>
+    <Box sx={{ p: 2 }}>
+      {/* Header con título y filtros */}
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+        <Typography variant="h5">Gestión de Subsecciones</Typography>
 
-      <FormControl fullWidth sx={{ mb: 2 }}>
-        <InputLabel>País</InputLabel>
-        <Select value={selectedPais} onChange={e => handlePaisChange(e.target.value)} label="País">
-          {paises.map(p => <MenuItem key={p.id} value={String(p.id)}>{p.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
+        <Stack direction="row" spacing={1}>
+          <Button onClick={() => setOpenFilters(true)}>
+            Mostrar filtros
+          </Button>
+          {Boolean(filters.paisId || filters.deptoId || filters.municipioId || filters.sedeId || filters.bloqueId || filters.espacioId || filters.seccionId) && (
+            <Button onClick={handleFiltersClear}>
+              Limpiar filtros
+            </Button>
+          )}
+        </Stack>
+      </Stack>
 
-      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedPais}>
-        <InputLabel>Departamento</InputLabel>
-        <Select value={selectedDepto} onChange={e => handleDeptoChange(e.target.value)} label="Departamento">
-          {departamentos.map(d => <MenuItem key={d.id} value={String(d.id)}>{d.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedDepto}>
-        <InputLabel>Municipio</InputLabel>
-        <Select value={selectedMunicipio} onChange={e => handleMunicipioChange(e.target.value)} label="Municipio">
-          {municipios.map(m => <MenuItem key={m.id} value={String(m.id)}>{m.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedMunicipio}>
-        <InputLabel>Sede</InputLabel>
-        <Select value={selectedSede} onChange={e => handleSedeChange(e.target.value)} label="Sede">
-          {sedes.map(s => <MenuItem key={s.id} value={String(s.id)}>{s.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedSede}>
-        <InputLabel>Bloque</InputLabel>
-        <Select value={selectedBloque} onChange={e => handleBloqueChange(e.target.value)} label="Bloque">
-          {bloques.map(b => <MenuItem key={b.id} value={String(b.id)}>{b.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedBloque}>
-        <InputLabel>Espacio</InputLabel>
-        <Select value={selectedEspacio} onChange={e => handleEspacioChange(e.target.value)} label="Espacio">
-          {espacios.map(e => <MenuItem key={e.id} value={String(e.id)}>{e.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth sx={{ mb: 2 }} disabled={!selectedEspacio}>
-        <InputLabel>Sección</InputLabel>
-        <Select value={selectedSeccion} onChange={e => handleSeccionChange(e.target.value)} label="Sección">
-          {secciones.map(s => <MenuItem key={s.id} value={String(s.id)}>{s.nombre}</MenuItem>)}
-        </Select>
-      </FormControl>
-
+      {/* Botones de acción CRUD */}
       <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
-        <Button
-          variant="contained"
-          onClick={() => { setFormMode("create"); setFormOpen(true); setSelectedRow(null); }}
-          disabled={!selectedSeccion}
-        >
-          + Agregar Subsección
-        </Button>
-        <Button
-          variant="outlined"
-          onClick={() => { setFormMode("edit"); setFormOpen(true); }}
-          disabled={!selectedRow}
-        >
-          Editar
-        </Button>
-        <Button variant="outlined" color="error" onClick={handleDelete} disabled={!selectedRow}>
-          Eliminar
-        </Button>
+        <Tooltip title="Crear">
+          <Button
+            variant="contained"
+            onClick={() => { setFormMode("create"); setSelectedRow(null); setFormOpen(true); }}
+            startIcon={<AddIcon />}
+          >
+            Agregar
+          </Button>
+        </Tooltip>
+
+        <Tooltip title="Editar">
+          <Button
+            variant="outlined"
+            onClick={() => { setFormMode("edit"); setFormOpen(true); }}
+            disabled={!selectedRow}
+            startIcon={<EditIcon />}
+          >
+            Actualizar
+          </Button>
+        </Tooltip>
+
+        <Tooltip title="Eliminar">
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleDelete}
+            disabled={!selectedRow}
+            startIcon={<DeleteIcon />}
+          >
+            Eliminar
+          </Button>
+        </Tooltip>
       </Box>
 
+      {/* Grid de subsecciones */}
       <GridSubseccion subsecciones={subsecciones} setSelectedRow={setSelectedRow} />
 
+      {/* Formulario modal */}
       <FormSubseccion
         open={formOpen}
         setOpen={setFormOpen}
@@ -411,10 +242,25 @@ export default function Subseccion() {
         selectedRow={selectedRow}
         reloadData={reloadData}
         setMessage={setMessage}
-        seccionId={selectedSeccion}
+        seccionId={filters.seccionId || ""}   // si hay filtro se precarga; si no, el form muestra select de sección
+        secciones={seccionesForm}             // items → [{id,nombre}] para el select en el form
+        authHeaders={headers}
       />
 
+      {/* Componentes auxiliares */}
       <MessageSnackBar message={message} setMessage={setMessage} />
+
+      {/* Modal de filtros */}
+      <CrudFilterModal
+        open={openFilters}
+        onClose={() => setOpenFilters(false)}
+        title="Filtros de Subsección"
+        fields={fieldsSubseccion}
+        values={filters}
+        onChange={handleFiltersChange}
+        onClear={handleFiltersClear}
+        onApply={handleFiltersApply}
+      />
     </Box>
   );
 }

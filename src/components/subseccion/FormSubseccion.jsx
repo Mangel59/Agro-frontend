@@ -12,6 +12,8 @@ export default function FormSubseccion({
   formMode = "create",
   selectedRow = null,
   seccionId = "",
+  secciones = [],
+  authHeaders = {},
   reloadData = () => {},
   setMessage = () => {},
 }) {
@@ -137,6 +139,26 @@ export default function FormSubseccion({
           value={formData.descripcion}
           onChange={handleChange}
         />
+
+        {/* Select de sección - se muestra solo si no hay seccionId precargado */}
+        {!seccionId && (
+          <FormControl fullWidth margin="normal" error={!!errors.seccionId}>
+            <InputLabel>Sección</InputLabel>
+            <Select
+              name="seccionId"
+              value={formData.seccionId}
+              onChange={handleChange}
+              label="Sección"
+            >
+              {secciones.map(seccion => (
+                <MenuItem key={seccion.id} value={seccion.id}>
+                  {seccion.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+            {errors.seccionId && <FormHelperText>{errors.seccionId}</FormHelperText>}
+          </FormControl>
+        )}
 
         <FormControl fullWidth margin="normal" error={!!errors.estadoId}>
           <InputLabel>Estado</InputLabel>

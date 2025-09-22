@@ -36,14 +36,14 @@ export default function VistaPreviaPDFPedido({ pedido }) {
             </Grid>
 
             <Grid item xs={6}>
-              <Typography sx={{ color: "#bbb" }}><strong>Producción ID:</strong></Typography>
+              <Typography sx={{ color: "#bbb" }}><strong>Producción:</strong></Typography>
             </Grid>
             <Grid item xs={6}>
               <Typography sx={{ color: "#fff" }}>{pedido.produccionId}</Typography>
             </Grid>
 
             <Grid item xs={6}>
-              <Typography sx={{ color: "#bbb" }}><strong>Almacén ID:</strong></Typography>
+              <Typography sx={{ color: "#bbb" }}><strong>Almacén:</strong></Typography>
             </Grid>
             <Grid item xs={6}>
               <Typography sx={{ color: "#fff" }}>{pedido.almacenId}</Typography>
