@@ -4,7 +4,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
 
 export default function GridCategoriaEstado({ rows = [], setSelectedRow = () => {} }) {
-  const [paginationModel, setPaginationModel] = useState({ pageSize: 10, page: 0 });
+  const [paginationModel, setPaginationModel] = useState({ pageSize: 5, page: 0 });
 
   const columns = [
     { field: "id", headerName: "ID", width: 90 },

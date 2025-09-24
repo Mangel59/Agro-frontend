@@ -1,95 +1,120 @@
-import React from "react";
-import { DataGrid } from "@mui/x-data-grid";
+// src/components/Espacio/GridEspacio.jsx
+import React, { useMemo } from "react";
 import PropTypes from "prop-types";
+import { DataGrid } from "@mui/x-data-grid";
 
-/**
- * GridEspacio componente principal.
- *
- * Este componente renderiza una tabla con los espacios usando el componente `DataGrid` de MUI.
- * Permite seleccionar una fila para su posterior edición o manejo externo.
- *
- * @module GridEspacio
- * @component
- * @returns {JSX.Element} Tabla de espacios con funcionalidad de selección.
- */
-export default function GridEspacio({ espacios, setSelectedRow }) {
-  // ===========================
-  // CONFIGURACIÓN DE COLUMNAS
-  // ===========================
-  const columns = [
-    { 
-      field: "id", 
-      headerName: "ID", 
-      width: 70 
+export default function GridEspacio({
+  // Datos
+  espacios = [],
+
+  // Selección
+  selectedRow = null,
+  setSelectedRow,
+
+  // Paginación (opcional: server-side)
+  paginationModel,        // { page, pageSize } o { page, size }
+  setPaginationModel,     // (model) => void
+  rowCount,               // total en servidor
+  loading = false,
+}) {
+  /* ---------- Columnas ---------- */
+  const columns = useMemo(() => ([
+    { field: "id", headerName: "ID", width: 80, type: "number" },
+    { field: "nombre", headerName: "Nombre", width: 200 },
+
+    {
+      field: "tipoEspacioNombre",
+      headerName: "Tipo Espacio",
+      width: 200,
+      valueGetter: (p) =>
+        p?.row?.tipoEspacioNombre ??
+        p?.row?.tipoEspacio?.nombre ??
+        p?.row?.tipoEspacio?.name ??
+        String(p?.row?.tipoEspacioId ?? ""),
     },
-    { 
-      field: "nombre", 
-      headerName: "Nombre", 
-      width: 180 
+    {
+      field: "bloqueNombre",
+      headerName: "Bloque",
+      width: 200,
+      valueGetter: (p) =>
+        p?.row?.bloqueNombre ??
+        p?.row?.bloque?.nombre ??
+        p?.row?.bloque?.name ??
+        String(p?.row?.bloqueId ?? ""),
     },
-    { 
-      field: "tipoEspacioNombre", 
-      headerName: "Tipo Espacio", 
-      width: 140 
-    },
-    { 
-      field: "bloqueNombre", 
-      headerName: "Bloque", 
-      width: 150 
-    },
-    { 
-      field: "descripcion", 
-      headerName: "Descripción", 
-      width: 200 
-    },
+
+    { field: "descripcion", headerName: "Descripción", flex: 1, minWidth: 260 },
+
     {
       field: "estadoId",
       headerName: "Estado",
-      width: 100,
-      valueGetter: (params) =>
-        params.row.estadoId === 1 ? "Activo" : "Inactivo",
+      width: 140,
+      valueGetter: (p) =>
+        p?.row?.estado?.nombre ??
+        p?.row?.estado?.name ??
+        (String(p?.row?.estadoId) === "1" ? "Activo" : "Inactivo"),
     },
-  ];
+  ]), []);
 
-  // ===========================
-  // HANDLERS DE EVENTOS
-  // ===========================
-  /**
-   * Maneja la selección de filas del `DataGrid`.
-   * @param {Array} selection - Lista de IDs seleccionados.
-   */
-  const handleRowSelection = (selection) => {
-    const selected = espacios.find(e => e.id === selection[0]);
-    setSelectedRow(selected || null);
-  };
+  /* ---------- ¿Server o Cliente? ---------- */
+  const serverPagination = Boolean(
+    paginationModel && setPaginationModel && typeof rowCount === "number"
+  );
 
-  // ===========================
-  // CONFIGURACIÓN DEL GRID
-  // ===========================
-  const gridConfig = {
-    rows: espacios,
-    columns: columns,
-    getRowId: (row) => row.id,
-    onRowSelectionModelChange: handleRowSelection,
-    initialState: {
-      pagination: {
-        paginationModel: { pageSize: 5 },
-      },
-    },
-    pageSizeOptions: [5, 10, 20],
-  };
-
-  // ===========================
-  // RENDER
-  // ===========================
   return (
-    <div style={{ height: 420, width: "100%" }}>
-      <DataGrid {...gridConfig} />
+    <div style={{ width: "100%" }}>
+      <DataGrid
+        rows={Array.isArray(espacios) ? espacios : []}
+        columns={columns}
+        getRowId={(row) => row.id}
+
+        // Selección controlada
+        onRowClick={(params) => setSelectedRow?.(params.row)}
+        rowSelectionModel={selectedRow?.id ? [selectedRow.id] : []}
+        disableRowSelectionOnClick
+
+        // Paginación
+        paginationMode={serverPagination ? "server" : "client"}
+        loading={loading}
+        {...(serverPagination
+          ? {
+              // ----- Server controlled -----
+              paginationModel: {
+                page: paginationModel.page ?? 0,
+                pageSize: paginationModel.pageSize ?? paginationModel.size ?? 10,
+              },
+              onPaginationModelChange: (model) => {
+                const next = {
+                  page: model.page ?? 0,
+                  size: model.pageSize ?? model.size ?? 10,
+                };
+                setPaginationModel?.(next); // el padre hace el fetch con estos valores
+              },
+              rowCount,
+            }
+          : {
+              // ----- Client fallback -----
+              pageSizeOptions: [5, 10, 15, 20, 50],
+              initialState: {
+                pagination: { paginationModel: { page: 0, pageSize: 5 } },
+              },
+            })}
+        autoHeight
+      />
     </div>
   );
 }
 
 GridEspacio.propTypes = {
-  espacios: PropTypes.array.isRequired,
+  espacios: PropTypes.array,
+  selectedRow: PropTypes.object,
   setSelectedRow: PropTypes.func.isRequired,
+  paginationModel: PropTypes.shape({
+    page: PropTypes.number,
+    pageSize: PropTypes.number,
+    size: PropTypes.number,
+  }),
+  setPaginationModel: PropTypes.func,
+  rowCount: PropTypes.number,
+  loading: PropTypes.bool,
 };

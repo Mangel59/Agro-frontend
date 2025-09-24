@@ -15,7 +15,7 @@ export default function Presentacionproducto() {
   const [message, setMessage] = useState({ open: false, severity: "success", text: "" });
   const [rows, setRows] = useState([]);
 
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 });
   const [sortModel, setSortModel] = useState([]);
   const [filterModel, setFilterModel] = useState({ items: [] });
   const [rowCount, setRowCount] = useState(0);

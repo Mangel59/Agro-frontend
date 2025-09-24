@@ -138,7 +138,7 @@ export default function GridArticuloKardex({
               // ----- Client fallback -----
               pageSizeOptions: [5, 10, 15, 20],
               initialState: {
-                pagination: { paginationModel: { page: 0, pageSize: 10 } },
+                pagination: { paginationModel: { page: 0, pageSize: 5 } },
               },
             })}
         autoHeight

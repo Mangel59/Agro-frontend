@@ -1,43 +1,98 @@
-import React, { useState } from "react";
+// src/components/TipoMovimiento/GridTipoMovimiento.jsx
+import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import { DataGrid } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
 
 export default function GridTipoMovimiento({
+  // Datos
   rows = [],
-  selectedRow = {},
-  setSelectedRow = () => {},
-}) {
-  const [paginationModel, setPaginationModel] = useState({
-    pageSize: 5,
-    page: 0,
-  });
 
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "nombre", headerName: "Nombre", width: 150 },
-    { field: "descripcion", headerName: "Descripción", width: 250 },
-    { field: "empresaId", headerName: "Empresa", width: 130 },
-    { field: "movimientoNombre", headerName: "Movimiento", width: 180 },
+  // Selección
+  selectedRow = null,
+  setSelectedRow,
+
+  // Paginación (server-side opcional)
+  paginationModel,        // { page, pageSize } o { page, size }
+  setPaginationModel,     // (model) => void
+  rowCount,               // total en servidor
+  loading = false,
+}) {
+  const columns = useMemo(() => ([
+    { field: "id", headerName: "ID", width: 90, type: "number" },
+    { field: "nombre", headerName: "Nombre", width: 200 },
+    { field: "descripcion", headerName: "Descripción", flex: 1, minWidth: 260 },
+
+    {
+      field: "empresaId",
+      headerName: "Empresa",
+      width: 160,
+      valueGetter: (p) =>
+        p?.row?.empresa?.nombre ??
+        p?.row?.empresa?.name ??
+        String(p?.row?.empresaId ?? ""),
+    },
+    {
+      field: "movimientoNombre",
+      headerName: "Movimiento",
+      width: 200,
+      valueGetter: (p) =>
+        p?.row?.movimientoNombre ??
+        p?.row?.movimiento?.nombre ??
+        p?.row?.movimiento?.name ??
+        String(p?.row?.movimientoId ?? ""),
+    },
     {
       field: "estado",
       headerName: "Estado",
-      width: 120,
-      valueGetter: (params) => (params.row.estado === 1 ? "Activo" : "Inactivo"),
-    }
-  ];
+      width: 140,
+      valueGetter: (p) =>
+        p?.row?.estado?.nombre ??
+        p?.row?.estado?.name ??
+        (String(p?.row?.estado ?? p?.row?.estadoId) === "1" ? "Activo" : "Inactivo"),
+    },
+  ]), []);
+
+  const serverPagination = Boolean(
+    paginationModel && setPaginationModel && typeof rowCount === "number"
+  );
 
   return (
     <Box sx={{ width: "100%", mt: 2 }}>
       <DataGrid
-        rows={rows}
+        rows={Array.isArray(rows) ? rows : []}
         columns={columns}
-        paginationModel={paginationModel}
-        onPaginationModelChange={setPaginationModel}
-        pageSizeOptions={[5, 10, 15]}
         getRowId={(row) => row.id}
-        onRowClick={(params) => setSelectedRow(params.row)}
-        disableSelectionOnClick
+        loading={loading}
+
+        // Selección controlada
+        onRowClick={(params) => setSelectedRow?.(params.row)}
+        rowSelectionModel={selectedRow?.id ? [selectedRow.id] : []}
+        disableRowSelectionOnClick
+
+        // Paginación
+        paginationMode={serverPagination ? "server" : "client"}
+        {...(serverPagination
+          ? {
+              rowCount,
+              paginationModel: {
+                page: paginationModel.page ?? 0,
+                pageSize: paginationModel.pageSize ?? paginationModel.size ?? 10,
+              },
+              onPaginationModelChange: (model) => {
+                const next = {
+                  page: model.page ?? 0,
+                  size: model.pageSize ?? model.size ?? 10,
+                };
+                setPaginationModel?.(next);
+              },
+            }
+          : {
+              pageSizeOptions: [5, 10, 15, 20, 50],
+              initialState: {
+                pagination: { paginationModel: { page: 0, pageSize: 5 } },
+              },
+            })}
         autoHeight
       />
     </Box>
@@ -45,7 +100,15 @@ export default function GridTipoMovimiento({
 }
 
 GridTipoMovimiento.propTypes = {
-  rows: PropTypes.array.isRequired,
-  selectedRow: PropTypes.object.isRequired,
-  setSelectedRow: PropTypes.func.isRequired,
+  rows: PropTypes.array,
+  selectedRow: PropTypes.object,
+  setSelectedRow: PropTypes.func,
+  paginationModel: PropTypes.shape({
+    page: PropTypes.number,
+    pageSize: PropTypes.number,
+    size: PropTypes.number,
+  }),
+  setPaginationModel: PropTypes.func,
+  rowCount: PropTypes.number,
+  loading: PropTypes.bool,
 };

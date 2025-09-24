@@ -1,109 +1,115 @@
-import React from "react";
-import { DataGrid } from "@mui/x-data-grid";
+// src/components/Almacen/GridAlmacen.jsx
+import React, { useMemo } from "react";
 import PropTypes from "prop-types";
+import { DataGrid } from "@mui/x-data-grid";
 
 /**
- * GridAlmacen componente principal.
- *
- * Este componente renderiza una tabla con los almacenes usando el componente `DataGrid` de MUI.
- * Permite seleccionar una fila para su posterior edición o manejo externo.
- *
- * @module GridAlmacen
- * @component
- * @returns {JSX.Element} Tabla de almacenes con funcionalidad de selección.
+ * GridAlmacen
+ * - Si pasas { paginationModel, setPaginationModel, rowCount } => usa paginación "server"
+ * - Si no, usa paginación en cliente (fallback) con pageSize=10
  */
-export default function GridAlmacen({ almacenes, setSelectedRow }) {
-  // ===========================
-  // CONFIGURACIÓN DE COLUMNAS
-  // ===========================
-  const columns = [
-    { 
-      field: "id", 
-      headerName: "ID", 
-      width: 70 
+export default function GridAlmacen({
+  // Datos
+  almacenes = [],
+
+  // Selección
+  selectedRow = null,
+  setSelectedRow,
+
+  // Paginación (opcional: server-side)
+  paginationModel,        // { page, pageSize } o { page, size }
+  setPaginationModel,     // (model) => void
+  rowCount,               // total en servidor
+  loading = false,        // spinner
+}) {
+  /* ---------- Columnas ---------- */
+  const columns = useMemo(() => ([
+    { field: "id", headerName: "ID", width: 80, type: "number" },
+    { field: "nombre", headerName: "Nombre", width: 200 },
+    {
+      field: "espacioNombre",
+      headerName: "Espacio",
+      width: 180,
+      valueGetter: (p) =>
+        p?.row?.espacioNombre ??
+        p?.row?.espacio?.nombre ??
+        p?.row?.espacio?.name ??
+        "",
     },
-    { 
-      field: "nombre", 
-      headerName: "Nombre", 
-      width: 180 
-    },
-    { 
-      field: "espacioNombre", 
-      headerName: "Espacio", 
-      width: 150 
-    },
-    { 
-      field: "descripcion", 
-      headerName: "Descripción", 
-      width: 200 
-    },
-    { 
-      field: "direccion", 
-      headerName: "Dirección", 
-      width: 200 
-    },
-    { 
-      field: "geolocalizacion", 
-      headerName: "Geolocalización", 
-      width: 160 
-    },
-    { 
-      field: "coordenadas", 
-      headerName: "Coordenadas", 
-      width: 160 
-    },
+    { field: "descripcion", headerName: "Descripción", flex: 1, minWidth: 240 },
+    { field: "direccion", headerName: "Dirección", width: 220 },
+    { field: "geolocalizacion", headerName: "Geolocalización", width: 170 },
+    { field: "coordenadas", headerName: "Coordenadas", width: 170 },
     {
       field: "estadoId",
       headerName: "Estado",
-      width: 100,
-      valueGetter: (params) =>
-        params.row.estadoId === 1 ? "Activo" : "Inactivo",
+      width: 120,
+      valueGetter: (p) =>
+        p?.row?.estado?.name ??
+        p?.row?.estado?.nombre ??
+        (String(p?.row?.estadoId) === "1" ? "Activo" : "Inactivo"),
     },
-  ];
+  ]), []);
 
-  // ===========================
-  // HANDLERS DE EVENTOS
-  // ===========================
-  /**
-   * Maneja la selección de filas del `DataGrid`.
-   * @param {Array} selection - Lista de IDs seleccionados.
-   */
-  const handleRowSelection = (selection) => {
-    if (selection.length > 0) {
-      const selected = almacenes.find((a) => a.id === selection[0]);
-      setSelectedRow(selected);
-    } else {
-      setSelectedRow(null);
-    }
-  };
+  /* ---------- ¿Server o Cliente? ---------- */
+  const serverPagination = Boolean(
+    paginationModel && setPaginationModel && typeof rowCount === "number"
+  );
 
-  // ===========================
-  // CONFIGURACIÓN DEL GRID
-  // ===========================
-  const gridConfig = {
-    rows: almacenes,
-    columns: columns,
-    getRowId: (row) => row.id,
-    onRowSelectionModelChange: handleRowSelection,
-    initialState: {
-      pagination: {
-        paginationModel: { pageSize: 5 },
-      },
-    },
-    pageSizeOptions: [5, 10, 20],
-  };
-
-  // ===========================
-  // RENDER
-  // ===========================
   return (
-    <div style={{ height: 420, width: "100%" }}>
-      <DataGrid {...gridConfig} />
+    <div style={{ width: "100%" }}>
+      <DataGrid
+        rows={Array.isArray(almacenes) ? almacenes : []}
+        columns={columns}
+        getRowId={(row) => row.id}
+
+        // Selección
+        onRowClick={(params) => setSelectedRow?.(params.row)}
+        rowSelectionModel={selectedRow?.id ? [selectedRow.id] : []}
+        disableRowSelectionOnClick
+
+        // Paginación
+        paginationMode={serverPagination ? "server" : "client"}
+        loading={loading}
+        {...(serverPagination
+          ? {
+              // ----- Server controlled -----
+              paginationModel: {
+                page: paginationModel.page ?? 0,
+                pageSize: paginationModel.pageSize ?? paginationModel.size ?? 10,
+              },
+              onPaginationModelChange: (model) => {
+                const next = {
+                  page: model.page ?? 0,
+                  size: model.pageSize ?? model.size ?? 10,
+                };
+                setPaginationModel?.(next); // el padre hace el fetch con estos valores
+              },
+              rowCount,
+            }
+          : {
+              // ----- Client fallback -----
+              pageSizeOptions: [5, 10, 15, 20, 50],
+              initialState: {
+                pagination: { paginationModel: { page: 0, pageSize: 5 } },
+              },
+            })}
+        autoHeight
+      />
     </div>
   );
 }
 
 GridAlmacen.propTypes = {
-  almacenes: PropTypes.array.isRequired,
+  almacenes: PropTypes.array,
+  selectedRow: PropTypes.object,
   setSelectedRow: PropTypes.func.isRequired,
+  paginationModel: PropTypes.shape({
+    page: PropTypes.number,
+    pageSize: PropTypes.number,
+    size: PropTypes.number,
+  }),
+  setPaginationModel: PropTypes.func,
+  rowCount: PropTypes.number,
+  loading: PropTypes.bool,
 };
