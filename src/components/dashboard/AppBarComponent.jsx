@@ -34,7 +34,7 @@ export default function AppBarComponent({
     (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.BASE_URL) ||
     process.env.PUBLIC_URL ||
     "/";
-  const LOGO_SRC = `${BASE_PATH.replace(/\/+$/, "")}/images/Icono.png`;
+  const LOGO_SRC = `${BASE_PATH.replace(/\/+$/, "")}/images/Icono.webp`;
 
   const handleGoHome = () => {
     if (typeof setCurrentModule === "function") {

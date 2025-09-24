@@ -19,7 +19,7 @@ export default function OrdenCompra() {
   const [reloadArticulos, setReloadArticulos] = useState(false);
 
 
-  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 5 });
   const [sortModel, setSortModel] = useState([]);
   const [filterModel, setFilterModel] = useState({ items: [] });
   const [loading, setLoading] = useState(false);
