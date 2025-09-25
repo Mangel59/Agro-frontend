@@ -4,29 +4,54 @@ import axios from "../axiosConfig";
 import {
   Button, Dialog, DialogActions, DialogContent,
   DialogContentText, DialogTitle, TextField, FormControl,
-  InputLabel, Select, MenuItem
+  InputLabel, Select, MenuItem, CircularProgress, Box
 } from "@mui/material";
 import StackButtons from "../StackButtons";
+
+/* Helpers para normalizar respuestas */
+const toList = (payload) => {
+  if (!payload) return [];
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.content)) return payload.content; // Page<>
+  if (Array.isArray(payload?.data)) return payload.data;       // { data: [...] }
+  try { return Array.isArray(JSON.parse(payload)) ? JSON.parse(payload) : []; } catch { return []; }
+};
 
 export default function FormProceso({ selectedRow, setSelectedRow, setMessage, reloadData }) {
   const [open, setOpen] = React.useState(false);
   const [methodName, setMethodName] = React.useState("");
   const [tiposProduccion, setTiposProduccion] = React.useState([]);
+  const [loadingTipos, setLoadingTipos] = React.useState(false);
   const [errors, setErrors] = React.useState({});
 
   const initialData = {
     nombre: "",
     descripcion: "",
     tipoProduccionId: "",
-    estado: ""
+    estado: "",
   };
 
   const [formData, setFormData] = React.useState(initialData);
 
-  const loadTiposProduccion = () => {
-    axios.get("/v1/tipo_produccion")
-      .then(res => setTiposProduccion(res.data))
-      .catch(err => console.error("Error al cargar tipo de producción:", err));
+  const loadTiposProduccion = async () => {
+    setLoadingTipos(true);
+    try {
+      // FIX 1: endpoint correcto
+      const res = await axios.get("/v1/items/tipo_produccion/0");
+      // FIX 3: normalizar respuesta
+      const lista = toList(res.data);
+      setTiposProduccion(lista);
+    } catch (err) {
+      console.error("Error al cargar tipo de producción:", err);
+      setTiposProduccion([]);
+      setMessage({
+        open: true,
+        severity: "error",
+        text: "No se pudo cargar el catálogo de Tipo de Producción.",
+      });
+    } finally {
+      setLoadingTipos(false);
+    }
   };
 
   const create = () => {
@@ -46,8 +71,10 @@ export default function FormProceso({ selectedRow, setSelectedRow, setMessage, r
     setFormData({
       nombre: selectedRow.nombre || "",
       descripcion: selectedRow.descripcion || "",
-      tipoProduccionId: selectedRow.tipoProduccionId?.toString() || "",
-      estado: selectedRow.estadoId?.toString() || ""
+      // mantener como string para el <Select/>
+      tipoProduccionId: selectedRow.tipoProduccionId != null ? String(selectedRow.tipoProduccionId) : "",
+      // si tu backend usa estadoId 1/2, manténlo como string
+      estado: selectedRow.estadoId != null ? String(selectedRow.estadoId) : "",
     });
 
     setMethodName("Actualizar");
@@ -56,25 +83,24 @@ export default function FormProceso({ selectedRow, setSelectedRow, setMessage, r
     setOpen(true);
   };
 
-  const deleteRow = () => {
+  const deleteRow = async () => {
     if (!selectedRow?.id) {
       setMessage({ open: true, severity: "error", text: "Selecciona un proceso para eliminar." });
       return;
     }
 
-    axios.delete(`/v1/proceso/${selectedRow.id}`)
-      .then(() => {
-        setMessage({ open: true, severity: "success", text: "Proceso eliminado correctamente." });
-        setSelectedRow({});
-        reloadData();
-      })
-      .catch((err) => {
-        setMessage({
-          open: true,
-          severity: "error",
-          text: `Error al eliminar: ${err.message}`
-        });
+    try {
+      await axios.delete(`/v1/proceso/${selectedRow.id}`);
+      setMessage({ open: true, severity: "success", text: "Proceso eliminado correctamente." });
+      setSelectedRow({});
+      reloadData();
+    } catch (err) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: `Error al eliminar: ${err?.response?.data?.message || err.message}`,
       });
+    }
   };
 
   const handleClose = () => {
@@ -83,9 +109,9 @@ export default function FormProceso({ selectedRow, setSelectedRow, setMessage, r
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setErrors(prev => ({ ...prev, [name]: "" }));
+    const { name, value } = e.target; // value siempre string en Select/TextField
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validate = () => {
@@ -98,49 +124,52 @@ export default function FormProceso({ selectedRow, setSelectedRow, setMessage, r
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!validate()) return;
 
     const payload = {
       nombre: formData.nombre,
       descripcion: formData.descripcion,
-      tipoProduccionId: parseInt(formData.tipoProduccionId),
-      estadoId: parseInt(formData.estado)
+      // enviar como número
+      tipoProduccionId: Number(formData.tipoProduccionId),
+      estadoId: Number(formData.estado),
     };
 
-    const method = methodName === "Crear" ? axios.post : axios.put;
-    const url = methodName === "Crear" ? "/v1/proceso" : `/v1/proceso/${selectedRow.id}`;
-
-    method(url, payload)
-      .then(() => {
-        setMessage({
-          open: true,
-          severity: "success",
-          text: methodName === "Crear" ? "Proceso creado con éxito!" : "Proceso actualizado con éxito!"
-        });
-        setOpen(false);
-        setSelectedRow({});
-        reloadData();
-      })
-      .catch(err => {
-        setMessage({
-          open: true,
-          severity: "error",
-          text: `Error: ${err.message || "Network Error"}`
-        });
+    try {
+      if (methodName === "Crear") {
+        await axios.post("/v1/proceso", payload);
+      } else {
+        await axios.put(`/v1/proceso/${selectedRow.id}`, payload);
+      }
+      setMessage({
+        open: true,
+        severity: "success",
+        text: methodName === "Crear" ? "Proceso creado con éxito!" : "Proceso actualizado con éxito!",
       });
+      setOpen(false);
+      setSelectedRow({});
+      reloadData();
+    } catch (err) {
+      setMessage({
+        open: true,
+        severity: "error",
+        text: `Error: ${err?.response?.data?.message || err.message || "Network Error"}`,
+      });
+    }
   };
 
   return (
     <>
       <StackButtons methods={{ create, update, deleteRow }} />
-      <Dialog open={open} onClose={handleClose}>
+
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <form onSubmit={handleSubmit}>
           <DialogTitle>{methodName} Proceso</DialogTitle>
           <DialogContent>
             <DialogContentText>Formulario para gestionar procesos</DialogContentText>
-            
+
+            {/* Tipo de Producción */}
             <FormControl fullWidth margin="normal" error={!!errors.tipoProduccionId}>
               <InputLabel>Tipo de Producción</InputLabel>
               <Select
@@ -148,11 +177,23 @@ export default function FormProceso({ selectedRow, setSelectedRow, setMessage, r
                 value={formData.tipoProduccionId}
                 onChange={handleChange}
                 label="Tipo de Producción"
+                disabled={loadingTipos}
               >
                 <MenuItem value="">Seleccione...</MenuItem>
-                {tiposProduccion.map(tp => (
-                  <MenuItem key={tp.id} value={tp.id}>{tp.nombre}</MenuItem>
-                ))}
+                {loadingTipos ? (
+                  <MenuItem disabled>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <CircularProgress size={18} /> Cargando…
+                    </Box>
+                  </MenuItem>
+                ) : (
+                  tiposProduccion.map((tp) => (
+                    // FIX 2: mostrar tp.name y usar value string
+                    <MenuItem key={tp.id} value={String(tp.id)}>
+                      {tp.name ?? `Tipo ${tp.id}`}
+                    </MenuItem>
+                  ))
+                )}
               </Select>
               {errors.tipoProduccionId && (
                 <p style={{ color: "#d32f2f", margin: "3px 14px 0", fontSize: "0.75rem" }}>
@@ -161,6 +202,7 @@ export default function FormProceso({ selectedRow, setSelectedRow, setMessage, r
               )}
             </FormControl>
 
+            {/* Nombre */}
             <TextField
               fullWidth
               margin="dense"
@@ -172,6 +214,7 @@ export default function FormProceso({ selectedRow, setSelectedRow, setMessage, r
               helperText={errors.nombre}
             />
 
+            {/* Descripción */}
             <TextField
               fullWidth
               margin="dense"
@@ -185,6 +228,7 @@ export default function FormProceso({ selectedRow, setSelectedRow, setMessage, r
               helperText={errors.descripcion}
             />
 
+            {/* Estado (nota: si ya migraste a estados dinámicos, cambia este bloque a un catálogo) */}
             <FormControl fullWidth margin="normal" error={!!errors.estado}>
               <InputLabel>Estado</InputLabel>
               <Select
@@ -204,6 +248,7 @@ export default function FormProceso({ selectedRow, setSelectedRow, setMessage, r
               )}
             </FormControl>
           </DialogContent>
+
           <DialogActions>
             <Button onClick={handleClose}>Cancelar</Button>
             <Button type="submit">{methodName}</Button>
