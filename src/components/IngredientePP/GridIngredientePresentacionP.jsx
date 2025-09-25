@@ -12,39 +12,48 @@ export default function GridIngredientePresentacionP({
   selectedRow = null,
   setSelectedRow,
 
+  // Catálogos opcionales (id -> name)
+  ingredientesMap = {},
+  presentacionesMap = {},
+
   // Paginación (server-side opcional)
   paginationModel,        // { page, pageSize } o { page, size }
   setPaginationModel,     // (model) => void
   rowCount,               // total en servidor
   loading = false,
 }) {
+  const nombreIngrediente = (row) =>
+    row?.ingredienteNombre ??
+    row?.ingrediente?.name ??
+    row?.ingrediente?.nombre ??
+    ingredientesMap?.[String(row?.ingredienteId)] ??
+    String(row?.ingredienteId ?? "");
+
+  const nombrePresentacion = (row) =>
+    row?.presentacionNombre ??
+    row?.presentacionProducto?.name ??
+    row?.presentacionProducto?.nombre ??
+    presentacionesMap?.[String(row?.presentacionProductoId)] ??
+    String(row?.presentacionProductoId ?? "");
+
   const columns = useMemo(() => ([
     { field: "id", headerName: "ID", width: 90 },
-    { field: "nombre", headerName: "Nombre", width: 180 },
-    { field: "descripcion", headerName: "Descripción", flex: 1, minWidth: 220 },
-
-    // Ingrediente (nombre si viene anidado; fallback al ID)
     {
       field: "ingredienteId",
       headerName: "Ingrediente",
-      width: 220,
-      valueGetter: (p) =>
-        p?.row?.ingrediente?.nombre ??
-        p?.row?.ingrediente?.name ??
-        String(p?.row?.ingredienteId ?? ""),
+      width: 240,
+      valueGetter: (p) => nombreIngrediente(p?.row),
+      sortable: false,
     },
-
-    // Presentación de producto (nombre si viene anidado; fallback al ID)
     {
       field: "presentacionProductoId",
       headerName: "Presentación de producto",
-      width: 260,
-      valueGetter: (p) =>
-        p?.row?.presentacionProducto?.nombre ??
-        p?.row?.presentacionProducto?.name ??
-        String(p?.row?.presentacionProductoId ?? ""),
+      width: 280,
+      valueGetter: (p) => nombrePresentacion(p?.row),
+      sortable: false,
     },
-
+    { field: "nombre", headerName: "Nombre", width: 200 },
+    { field: "descripcion", headerName: "Descripción", flex: 1, minWidth: 240 },
     {
       field: "estadoId",
       headerName: "Estado",
@@ -54,7 +63,7 @@ export default function GridIngredientePresentacionP({
         p?.row?.estado?.name ??
         (String(p?.row?.estadoId) === "1" ? "Activo" : "Inactivo"),
     },
-  ]), []);
+  ]), [ingredientesMap, presentacionesMap]);
 
   // ¿Server o Cliente?
   const serverPagination = Boolean(
@@ -64,6 +73,7 @@ export default function GridIngredientePresentacionP({
   return (
     <Box sx={{ width: "100%", mt: 2 }}>
       <DataGrid
+        autoHeight
         rows={Array.isArray(rows) ? rows : []}
         columns={columns}
         getRowId={(row) => row.id}
@@ -80,13 +90,13 @@ export default function GridIngredientePresentacionP({
           ? {
               // ----- Server controlled -----
               paginationModel: {
-                page: paginationModel.page ?? 0,
-                pageSize: paginationModel.pageSize ?? paginationModel.size ?? 10,
+                page: paginationModel?.page ?? 0,
+                pageSize: paginationModel?.pageSize ?? paginationModel?.size ?? 10,
               },
               onPaginationModelChange: (model) => {
                 const next = {
-                  page: model.page ?? 0,
-                  size: model.pageSize ?? model.size ?? 10,
+                  page: model?.page ?? 0,
+                  size: model?.pageSize ?? model?.size ?? 10,
                 };
                 setPaginationModel?.(next); // el padre hace el fetch con estos valores
               },
@@ -99,7 +109,6 @@ export default function GridIngredientePresentacionP({
                 pagination: { paginationModel: { page: 0, pageSize: 5 } },
               },
             })}
-        autoHeight
       />
     </Box>
   );
@@ -109,6 +118,8 @@ GridIngredientePresentacionP.propTypes = {
   rows: PropTypes.array,
   selectedRow: PropTypes.object,
   setSelectedRow: PropTypes.func,
+  ingredientesMap: PropTypes.object,       // opcional
+  presentacionesMap: PropTypes.object,     // opcional
   paginationModel: PropTypes.shape({
     page: PropTypes.number,
     pageSize: PropTypes.number,

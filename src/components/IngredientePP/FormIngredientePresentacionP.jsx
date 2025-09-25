@@ -24,43 +24,40 @@ export default function FormIngredientePresentacionP({
   const isEdit = Boolean(selectedRow?.id);
   const title = isEdit ? "Actualizar" : "Crear";
 
+  const labelOf = (it) => it?.name ?? it?.nombre ?? it?.label ?? `ID ${it?.id}`;
+
   React.useEffect(() => {
     if (!open) return;
 
-    // Prefill si edita
+    // Prefill edición
     if (isEdit) {
       setFormData({
-        nombre: selectedRow.nombre || "",
-        descripcion: selectedRow.descripcion || "",
-        ingredienteId: selectedRow.ingredienteId?.toString() || "",
-        presentacionProductoId: selectedRow.presentacionProductoId?.toString() || "",
-        estadoId: selectedRow.estadoId?.toString() || ""
+        nombre: selectedRow.nombre ?? "",
+        descripcion: selectedRow.descripcion ?? "",
+        ingredienteId: selectedRow.ingredienteId != null ? String(selectedRow.ingredienteId) : "",
+        presentacionProductoId: selectedRow.presentacionProductoId != null ? String(selectedRow.presentacionProductoId) : "",
+        estadoId: selectedRow.estadoId != null ? String(selectedRow.estadoId) : ""
       });
     } else {
       setFormData(initialData);
     }
     setErrors({});
 
-    // Ingredientes (paginado o array)
-    axios.get("/v1/ingrediente", { params: { page: 0, size: 50 } })
-      .then(res => {
-        const data = res.data ?? {};
-        const list = Array.isArray(data) ? data : (Array.isArray(data.content) ? data.content : []);
-        setIngredientes(list);
+    // Cargar listas (sin paginación)
+    Promise.all([
+      axios.get("/v1/items/ingrediente/0").then(res => Array.isArray(res.data) ? res.data : []),
+      axios.get("/v1/items/producto_presentacion/0").then(res => Array.isArray(res.data) ? res.data : []),
+    ])
+      .then(([ings, pres]) => {
+        setIngredientes(ings);
+        setPresentaciones(pres);
       })
-      .catch(() => setIngredientes([]));
+      .catch(() => {
+        setIngredientes([]);
+        setPresentaciones([]);
+      });
 
-    // Presentaciones (paginado o array)
-    axios.get("/v1/producto_presentacion", { params: { page: 0, size: 50 } })
-      .then(res => {
-        const data = res.data ?? {};
-        const list = Array.isArray(data) ? data
-          : (Array.isArray(data.content) ? data.content
-          : (Array.isArray(data.data) ? data.data : []));
-        setPresentaciones(list);
-      })
-      .catch(() => setPresentaciones([]));
-  }, [open, isEdit, selectedRow]);
+  }, [open, isEdit, selectedRow]); // <<< CIERRE del useEffect
 
   const handleClose = () => {
     setOpen(false);
@@ -69,7 +66,7 @@ export default function FormIngredientePresentacionP({
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target; // value como string
     setFormData(prev => ({ ...prev, [name]: value }));
     setErrors(prev => ({ ...prev, [name]: "" }));
   };
@@ -157,10 +154,17 @@ export default function FormIngredientePresentacionP({
 
             <FormControl fullWidth margin="normal" error={!!errors.ingredienteId}>
               <InputLabel>Ingrediente</InputLabel>
-              <Select name="ingredienteId" value={formData.ingredienteId} onChange={handleChange} label="Ingrediente">
+              <Select
+                name="ingredienteId"
+                value={formData.ingredienteId}
+                onChange={handleChange}
+                label="Ingrediente"
+              >
                 <MenuItem value="">Seleccione...</MenuItem>
                 {ingredientes.map((ing) => (
-                  <MenuItem key={ing.id} value={ing.id}>{ing.nombre}</MenuItem>
+                  <MenuItem key={ing.id} value={String(ing.id)}>
+                    {labelOf(ing)}
+                  </MenuItem>
                 ))}
               </Select>
               {errors.ingredienteId && <p style={{ color:"#d32f2f", fontSize:"0.75rem", margin:"3px 14px 0" }}>{errors.ingredienteId}</p>}
@@ -168,10 +172,17 @@ export default function FormIngredientePresentacionP({
 
             <FormControl fullWidth margin="normal" error={!!errors.presentacionProductoId}>
               <InputLabel>Presentación</InputLabel>
-              <Select name="presentacionProductoId" value={formData.presentacionProductoId} onChange={handleChange} label="Presentación">
+              <Select
+                name="presentacionProductoId"
+                value={formData.presentacionProductoId}
+                onChange={handleChange}
+                label="Presentación"
+              >
                 <MenuItem value="">Seleccione...</MenuItem>
                 {presentaciones.map((pres) => (
-                  <MenuItem key={pres.id} value={pres.id}>{pres.nombre}</MenuItem>
+                  <MenuItem key={pres.id} value={String(pres.id)}>
+                    {labelOf(pres)}
+                  </MenuItem>
                 ))}
               </Select>
               {errors.presentacionProductoId && <p style={{ color:"#d32f2f", fontSize:"0.75rem", margin:"3px 14px 0" }}>{errors.presentacionProductoId}</p>}
