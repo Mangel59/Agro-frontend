@@ -114,7 +114,7 @@ export default function GridArticuloPedido({
             }
           : {
               pageSizeOptions: [5, 10, 15, 20, 50],
-              initialState: { pagination: { paginationModel: { page: 0, pageSize: 10 } } },
+              initialState: { pagination: { paginationModel: { page: 0, pageSize: 5 } } },
             })}
       />
     </Box>
