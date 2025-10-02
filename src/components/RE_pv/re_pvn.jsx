@@ -10,40 +10,37 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
-
-// Hook de ubicación (mismo patrón que re_pv)
 import useUbicacionFilters from "../useUbicacionFilters";
 
 export default function RE_productoVencimiento() {
-  // ===== Auth / empresa =====
+  // === Auth / empresa
   const empresaId = localStorage.getItem("empresaId");
   const token = localStorage.getItem("token");
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
-  // ===== Helpers =====
-  const asArray = (x) => (Array.isArray(x) ? x : x?.content ?? []);
+  // === Helpers
+  const asArray = (x) => (Array.isArray(x) ? x : x?.content ?? x?.data ?? []);
 
-  // normaliza a "YYYY-MM-DD HH:mm" (como en tu Postman)
-  const toReportDTmm = (val) => {
-    if (!val) return "";
+  // "YYYY-MM-DDTHH:mm" -> "YYYY-MM-DD HH:mm:ss"
+  const toSec = (val, end = false) => {
+    if (!val) return null;
     const [d, t] = String(val).split("T");
-    const hhmm = (t || "00:00").slice(0, 5);
-    return `${d} ${hhmm}`;
+    const hhmm = (t || (end ? "23:59" : "00:00")).slice(0, 5);
+    return `${d} ${hhmm}:00`;
   };
 
-  // ===== Hook: ubicación =====
+  // 🔧 Cambia este alias si tu SQL usa otro nombre de columna/alias para la fecha de vencimiento
+  const ALIAS_VENC = "v.venc_fecha"; // p.ej. "l.lot_fecha_vencimiento"
+
+  // === Ubicación (por si luego la usas)
   const {
     form: ubi,
     handleChange: handleUbiChange,
     data: ubiData,
     resetTodo,
-  } = useUbicacionFilters({
-    empresaId,
-    headers,
-    autoselectSingle: true,
-  });
+  } = useUbicacionFilters({ empresaId, headers, autoselectSingle: true });
 
-  // ===== Filtros =====
+  // === Filtros
   const [filtro, setFiltro] = useState({
     producto_id: "",
     producto_categoria_id: "",
@@ -51,7 +48,7 @@ export default function RE_productoVencimiento() {
     fecha_fin: "",
   });
 
-  // ===== UI State =====
+  // === UI
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [resultados, setResultados] = useState([]);
@@ -61,23 +58,20 @@ export default function RE_productoVencimiento() {
   const [errors, setErrors] = useState({ fechas_rango: false });
   const [openUbi, setOpenUbi] = useState(false);
 
-  // ===== Cargar combos =====
+  // === Cargar catálogos (todo vía /v1/items)
   useEffect(() => {
     Promise.all([
-      axios.get("/v1/producto", headers),
-      axios.get("/v1/producto_categoria", headers),
+      axios.get("/v1/items/producto/0", headers).catch(() => ({ data: [] })),
+      axios.get("/v1/items/producto_categoria/0", headers).catch(() => ({ data: [] })),
     ])
-      .then(([resProductos, resCategorias]) => {
-        setProductos(asArray(resProductos.data));
-        setCategorias(asArray(resCategorias.data));
+      .then(([pr, cat]) => {
+        setProductos(asArray(pr.data));
+        setCategorias(asArray(cat.data));
       })
-      .catch(() => {
-        setMessage({ open: true, severity: "error", text: "No se pudieron cargar combos." });
-      });
+      .catch(() => setMessage({ open: true, severity: "error", text: "No se pudieron cargar los catálogos." }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ===== Handlers =====
   const handleFiltroChange = (field) => (e) => {
     const value = e?.target ? e.target.value : e;
     setFiltro((prev) => ({ ...prev, [field]: value }));
@@ -90,29 +84,26 @@ export default function RE_productoVencimiento() {
       const fin = new Date(filtro.fecha_fin);
       if (ini > fin) {
         setErrors({ fechas_rango: true });
-        setMessage({
-          open: true,
-          severity: "warning",
-          text: "La fecha de inicio no puede ser mayor que la fecha fin.",
-        });
+        setMessage({ open: true, severity: "warning", text: "La fecha de inicio no puede ser mayor que la fecha fin." });
         return false;
       }
     }
     return true;
   };
 
-  // ===== Buscar (UI) =====
+  // === Buscar (lista/filtra en front)
   const buscar = useCallback(async () => {
     setResultados([]);
     if (!validarRango()) return;
 
     try {
-      const r = await axios.get("/v1/producto", headers);
+      const r = await axios.get("/v1/items/producto/0", headers);
       let lista = asArray(r.data);
 
       if (filtro.producto_categoria_id) {
         lista = lista.filter((p) =>
-          String(p.productoCategoriaId ?? p.producto_categoria_id ?? "") === String(filtro.producto_categoria_id)
+          String(p.productoCategoriaId ?? p.producto_categoria_id ?? p.categoriaId ?? "") ===
+          String(filtro.producto_categoria_id)
         );
       }
       if (filtro.producto_id) {
@@ -120,11 +111,7 @@ export default function RE_productoVencimiento() {
       }
 
       setResultados(lista);
-      setMessage({
-        open: true,
-        severity: "info",
-        text: `Mostrando ${lista.length} producto(s).`,
-      });
+      setMessage({ open: true, severity: "info", text: `Mostrando ${lista.length} producto(s).` });
     } catch (err) {
       console.error(err);
       setResultados([]);
@@ -132,64 +119,69 @@ export default function RE_productoVencimiento() {
     }
   }, [filtro, headers]);
 
-  // ===== Generar Reporte (PDF) =====
+  // === condicion compacta (sin huecos) 0..N (igual que pedido)
+  const buildCondicion = () => {
+    const parts = [];
+
+    // 0) empresa (obligatorio)
+    parts.push(`e.emp_id = $EMPRESA_ID$`);
+
+    // Ubicación (opcional). Descomenta si el reporte las soporta:
+    // if (ubi.municipio_id) parts.push(`AND m.mun_id = ${Number(ubi.municipio_id)}`);
+    // if (ubi.sede_id)      parts.push(`AND s.sed_id = ${Number(ubi.sede_id)}`);
+    // if (ubi.bloque_id)    parts.push(`AND blo.blo_id = ${Number(ubi.bloque_id)}`);
+    // if (ubi.espacio_id)   parts.push(`AND esp.esp_id = ${Number(ubi.espacio_id)}`);
+    // if (ubi.almacen_id)   parts.push(`AND al.alm_id = ${Number(ubi.almacen_id)}`);
+
+    // Producto / Categoría (opcionales)
+    if (filtro.producto_id) {
+      parts.push(`AND p.pro_id = ${Number(filtro.producto_id)}`);
+    }
+    if (filtro.producto_categoria_id) {
+      parts.push(`AND p.pro_producto_categoria_id = ${Number(filtro.producto_categoria_id)}`);
+    }
+
+    // Rango SIEMPRE, con segundos y comillas dobles (default si no eliges fechas)
+    const ini = toSec(filtro.fecha_inicio, false) ?? "1900-01-01 00:00:00";
+    const fin  = toSec(filtro.fecha_fin,   true)  ?? "2099-12-31 23:59:59";
+    parts.push(`AND ${ALIAS_VENC} BETWEEN "${ini}" AND "${fin}"`);
+
+    // Compacta índices 0..N (exacto como en RE_pedido)
+    return Object.fromEntries(parts.map((v, i) => [String(i), v]));
+  };
+
+  // === POST PDF (nuevo) + lectura de error
+  const postPdfNuevo = async (data) => {
+    const res = await axios.post("/v2/report/nuevo/producto_vencimiento", data, {
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      responseType: "blob",
+    });
+    const ct = res.headers?.["content-type"] || "";
+    if (!ct.includes("pdf")) {
+      const txt = await res.data.text?.();
+      throw new Error(txt || "El servidor no devolvió un PDF.");
+    }
+    return res.data;
+  };
+
   const generarPDF = async () => {
-    if (!filtro.producto_id || !filtro.producto_categoria_id || !filtro.fecha_inicio || !filtro.fecha_fin) {
-      setMessage({ open: true, severity: "warning", text: "Completa producto, categoría y el rango de fechas." });
-      return;
-    }
-    const ini = new Date(filtro.fecha_inicio);
-    const fin = new Date(filtro.fecha_fin);
-    if (ini > fin) {
-      setMessage({ open: true, severity: "warning", text: "La fecha de inicio no puede ser mayor que la fecha fin." });
-      return;
-    }
-
-    // Payload idéntico a tu Postman (sin empresa_id)
-    const payload = {
-      producto_id: Number(filtro.producto_id),
-      producto_categoria_id: Number(filtro.producto_categoria_id),
-      fecha_inicio: toReportDTmm(filtro.fecha_inicio),
-      fecha_fin: toReportDTmm(filtro.fecha_fin),
-    };
-    console.log("[producto_vencimiento] payload:", payload);
-
-    const tryEndpoint = async (url) => {
-      const res = await axios.post(url, payload, {
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        responseType: "blob",
-      });
-      const ct = res.headers?.["content-type"] || "";
-      if (!ct.includes("pdf")) {
-        const text = await res.data.text?.();
-        throw new Error(text || `El servidor no devolvió un PDF en ${url}.`);
-      }
-      return res.data;
-    };
-
+    if (!validarRango()) return;
     try {
-      let dataBlob;
-      // 1) Primero el legacy (el que te funciona en Postman)
-      try {
-        dataBlob = await tryEndpoint("/v2/report/producto_vencimiento");
-      } catch (eLegacy) {
-        // 2) Si falla por cualquier motivo, intenta el "nuevo"
-        console.warn("Legacy falló, probando /nuevo:", eLegacy?.response?.status);
-        dataBlob = await tryEndpoint("/v2/report/nuevo/producto_vencimiento");
-      }
+      const condicion = buildCondicion();
+      const blobData = await postPdfNuevo({ condicion, EMPRESA_ID: empresaId });
 
-      const blob = new Blob([dataBlob], { type: "application/pdf" });
+      const blob = new Blob([blobData], { type: "application/pdf" });
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       const url = URL.createObjectURL(blob);
       setPreviewUrl(url);
       setPreviewOpen(true);
-      setMessage({ open: true, severity: "success", text: "PDF generado correctamente." });
+      setMessage({ open: true, severity: "success", text: "PDF generado." });
     } catch (err) {
       console.error("❌ Error al generar PDF:", err);
       if (err?.response?.data instanceof Blob) {
         try {
-          const text = await err.response.data.text();
-          setMessage({ open: true, severity: "error", text: text?.slice(0, 500) || "Error al generar el PDF." });
+          const txt = await err.response.data.text();
+          setMessage({ open: true, severity: "error", text: (txt || "").slice(0, 500) });
           return;
         } catch {}
       }
@@ -197,11 +189,11 @@ export default function RE_productoVencimiento() {
     }
   };
 
-  // ===== Render =====
   return (
     <Box sx={{ p: 4 }}>
       <Typography variant="h4" gutterBottom>Reporte de Vencimiento de Producto</Typography>
 
+      {/* Filtros (todos son ítems) */}
       <Grid container spacing={2} mb={2}>
         <Grid item xs={12} md={6}>
           <FormControl fullWidth>
@@ -212,9 +204,10 @@ export default function RE_productoVencimiento() {
               label="Producto"
               onChange={handleFiltroChange("producto_id")}
             >
+              <MenuItem value=""><em>Todos</em></MenuItem>
               {asArray(productos).map((p) => (
                 <MenuItem key={p.id} value={String(p.id)}>
-                  {p.nombre ?? `Producto ${p.id}`}
+                  {p.nombre ?? p.name ?? `Producto ${p.id}`}
                 </MenuItem>
               ))}
             </Select>
@@ -230,10 +223,11 @@ export default function RE_productoVencimiento() {
               label="Categoría Producto"
               onChange={handleFiltroChange("producto_categoria_id")}
             >
+              <MenuItem value=""><em>Todas</em></MenuItem>
               {asArray(categorias).length ? (
                 asArray(categorias).map((c) => (
                   <MenuItem key={c.id} value={String(c.id)}>
-                    {c.nombre ?? `Categoría ${c.id}`}
+                    {c.nombre ?? c.name ?? `Categoría ${c.id}`}
                   </MenuItem>
                 ))
               ) : (
@@ -245,6 +239,7 @@ export default function RE_productoVencimiento() {
           </FormControl>
         </Grid>
 
+        {/* Fechas (opcionales) */}
         <Grid item xs={12} md={6}>
           <TextField
             label="Fecha Inicio"
@@ -258,7 +253,6 @@ export default function RE_productoVencimiento() {
             helperText={errors.fechas_rango ? "Inicio no puede ser mayor que fin." : ""}
           />
         </Grid>
-
         <Grid item xs={12} md={6}>
           <TextField
             label="Fecha Fin"
@@ -274,13 +268,14 @@ export default function RE_productoVencimiento() {
         </Grid>
       </Grid>
 
+      {/* Acciones */}
       <Stack direction="row" spacing={2} mb={3}>
         <Button variant="contained" onClick={buscar}>Buscar</Button>
         <Button variant="outlined" onClick={generarPDF}>Generar Reporte</Button>
         <Button variant="text" onClick={() => setOpenUbi(true)}>Filtros (ubicación)</Button>
       </Stack>
 
-      {/* Diálogo (ubicación) */}
+      {/* Diálogo Ubicación (opcional) */}
       <Dialog open={openUbi} onClose={() => setOpenUbi(false)} fullWidth maxWidth="md">
         <DialogTitle>
           Filtros de Ubicación
@@ -290,110 +285,32 @@ export default function RE_productoVencimiento() {
         </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth size="small">
-                <InputLabel>País</InputLabel>
-                <Select
-                  label="País"
-                  value={ubi.pais_id || ""}
-                  onChange={(e) => handleUbiChange("pais_id")(e.target.value)}
-                >
-                  {asArray(ubiData.paises).map((it) => (
-                    <MenuItem key={it.id} value={String(it.id)}>{it.nombre ?? `País ${it.id}`}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Departamento</InputLabel>
-                <Select
-                  label="Departamento"
-                  value={ubi.departamento_id || ""}
-                  onChange={(e) => handleUbiChange("departamento_id")(e.target.value)}
-                >
-                  {asArray(ubiData.departamentos).map((it) => (
-                    <MenuItem key={it.id} value={String(it.id)}>{it.nombre ?? `Depto ${it.id}`}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Municipio</InputLabel>
-                <Select
-                  label="Municipio"
-                  value={ubi.municipio_id || ""}
-                  onChange={(e) => handleUbiChange("municipio_id")(e.target.value)}
-                >
-                  {asArray(ubiData.municipios).map((it) => (
-                    <MenuItem key={it.id} value={String(it.id)}>{it.nombre ?? `Municipio ${it.id}`}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Sede</InputLabel>
-                <Select
-                  label="Sede"
-                  value={ubi.sede_id || ""}
-                  onChange={(e) => handleUbiChange("sede_id")(e.target.value)}
-                >
-                  {asArray(ubiData.sedes).map((it) => (
-                    <MenuItem key={it.id} value={String(it.id)}>{it.nombre ?? `Sede ${it.id}`}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Bloque</InputLabel>
-                <Select
-                  label="Bloque"
-                  value={ubi.bloque_id || ""}
-                  onChange={(e) => handleUbiChange("bloque_id")(e.target.value)}
-                >
-                  {asArray(ubiData.bloques).map((it) => (
-                    <MenuItem key={it.id} value={String(it.id)}>{it.nombre ?? `Bloque ${it.id}`}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Espacio</InputLabel>
-                <Select
-                  label="Espacio"
-                  value={ubi.espacio_id || ""}
-                  onChange={(e) => handleUbiChange("espacio_id")(e.target.value)}
-                >
-                  {asArray(ubiData.espacios).map((it) => (
-                    <MenuItem key={it.id} value={String(it.id)}>{it.nombre ?? `Espacio ${it.id}`}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Almacén</InputLabel>
-                <Select
-                  label="Almacén"
-                  value={ubi.almacen_id || ""}
-                  onChange={(e) => handleUbiChange("almacen_id")(e.target.value)}
-                >
-                  {asArray(ubiData.almacenes).map((it) => (
-                    <MenuItem key={it.id} value={String(it.id)}>{it.nombre ?? `Almacén ${it.id}`}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+            {[
+              ["pais_id", "País", ubiData.paises],
+              ["departamento_id", "Departamento", ubiData.departamentos],
+              ["municipio_id", "Municipio", ubiData.municipios],
+              ["sede_id", "Sede", ubiData.sedes],
+              ["bloque_id", "Bloque", ubiData.bloques],
+              ["espacio_id", "Espacio", ubiData.espacios],
+              ["almacen_id", "Almacén", ubiData.almacenes],
+            ].map(([name, label, list]) => (
+              <Grid item xs={12} md={6} key={name}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>{label}</InputLabel>
+                  <Select
+                    label={label}
+                    value={ubi[name] || ""}
+                    onChange={(e) => handleUbiChange(name)(e.target.value)}
+                  >
+                    {asArray(list).map((it) => (
+                      <MenuItem key={it.id} value={String(it.id)}>
+                        {it.nombre ?? it.name ?? `${label} ${it.id}`}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            ))}
           </Grid>
 
           <Stack direction="row" spacing={2} mt={2} justifyContent="flex-end">
@@ -420,7 +337,7 @@ export default function RE_productoVencimiento() {
         </DialogContent>
       </Dialog>
 
-      {/* Resultados UI simples */}
+      {/* Resultados UI */}
       {resultados.length > 0 && (
         <Box mt={4}>
           <Typography variant="h6" gutterBottom>Productos encontrados</Typography>
@@ -430,20 +347,18 @@ export default function RE_productoVencimiento() {
                 <TableRow>
                   <TableCell>ID</TableCell>
                   <TableCell>Nombre</TableCell>
-                  <TableCell>Categoría</TableCell>
-                  <TableCell>Descripción</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-  {resultados.map((p) => (
-    <TableRow key={p.id}>
-      <TableCell>{p.id}</TableCell>
-      <TableCell>{p.nombre ?? ""}</TableCell>
-      <TableCell>{p.productoCategoriaId ?? p.categoriaId ?? ""}</TableCell>
-      <TableCell>{p.descripcion ?? ""}</TableCell>
-    </TableRow>  
-  ))}
-</TableBody>
+                {resultados.map((p) => (
+                  <TableRow key={p.id}>
+                    <TableCell>{p.id}</TableCell>
+                    <TableCell>{p.nombre ?? p.name ?? ""}</TableCell>
+                    <TableCell>{p.productoCategoriaId ?? p.categoriaId ?? p.producto_categoria_id ?? ""}</TableCell>
+                    <TableCell>{p.descripcion ?? ""}</TableCell>
+                  </TableRow>  
+                ))}
+              </TableBody>
             </Table>
           </TableContainer>
         </Box>

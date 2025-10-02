@@ -60,6 +60,9 @@ import RE_productoVencimiento from './components/RE_pv/re_pvn.jsx';
 import RE_ordenCompra from './components/RE_oc/re_oc.jsx';
 import RE_fc from './components/RE_fc/re_fc.jsx';
 import Verify from './components/Verify.jsx';
+import FormRegistroPersona from "./components/seguridad/formRegistroPersona";
+import FormRegistroEmpresa from "./components/seguridad/formRegistroEmpresa";
+
 const moduleMap = {
   persona: Persona,
   pais: Pais,
@@ -110,8 +113,6 @@ const moduleMap = {
 
 const APPBAR_GREEN = '#0F2327';
 
-
-
 const App = () => {
   useTranslation();
   useThemeToggle();
@@ -124,50 +125,86 @@ const App = () => {
   });
 
   useEffect(() => {
-  // 1) Forzar pantalla de verificación por URL
-  if (location.pathname.startsWith('/auth/verify')) {
-    setIsAuthenticated(false);
-    setCurrentModule(<Verify />);         // <-- ahora sí monta Verify
-    return;
-  }
+    const hasValidToken = () => {
+      const token = localStorage.getItem('token');
+      const exp = Number(localStorage.getItem('token_expiration'));
+      return Boolean(token && exp && Date.now() < exp);
+    };
 
-  // 2) Si ya estás en /dashboard, exige token válido
-  if (location.pathname === '/dashboard') {
-    const token = localStorage.getItem('token');
-    const expiresAt = localStorage.getItem('token_expiration');
-    const ok = token && expiresAt && Date.now() < Number(expiresAt);
-    if (ok) {
-      setIsAuthenticated(true);
-      setCurrentModule(<Contenido setCurrentModule={setCurrentModule} />);
+    // 1) Verify por URL
+    if (location.pathname.startsWith('/coagronet/auth/verify')) {
+      setIsAuthenticated(false);
+      setCurrentModule(<Verify />);
       return;
     }
-    setIsAuthenticated(false);
-    setCurrentModule(<Inicio setCurrentModule={setCurrentModule} />);
-    return;
-  }
 
-  // 3) Flujo normal (Home/Contenido según token)
-  const token = localStorage.getItem('token');
-  const expiresAt = localStorage.getItem('token_expiration');
-  const isTokenValid = token && expiresAt && Date.now() < Number(expiresAt);
-
-  if (isTokenValid) {
-    setIsAuthenticated(true);
-    const savedModule = localStorage.getItem('activeModule');
-    if (savedModule && moduleMap[savedModule]) {
-      const Component = moduleMap[savedModule];
-      setCurrentModule(<Component />);
-    } else {
-      setCurrentModule(<Contenido setCurrentModule={setCurrentModule} />);
+    // 1.1) Onboarding por ruta — SIN MENÚ
+    if (location.pathname.startsWith('/coagronet/onboarding/persona')) {
+      if (hasValidToken()) {
+        setIsAuthenticated(false); // 👈 clave: modo público
+        setCurrentModule(<FormRegistroPersona setCurrentModule={setCurrentModule} />);
+      } else {
+        setIsAuthenticated(false);
+        setCurrentModule(<Inicio setCurrentModule={setCurrentModule} />);
+      }
+      return;
     }
-  } else {
-    localStorage.removeItem('token');
-    localStorage.removeItem('token_expiration');
-    localStorage.removeItem('activeModule');
-    setIsAuthenticated(false);
-    setCurrentModule(<Inicio setCurrentModule={setCurrentModule} />);
-  }
-}, [location.pathname]); // <— clave: reacciona al path
+
+    if (location.pathname.startsWith('/coagronet/onboarding/empresa')) {
+      if (hasValidToken()) {
+        setIsAuthenticated(false); // 👈 clave: modo público
+        setCurrentModule(<FormRegistroEmpresa setCurrentModule={setCurrentModule} />);
+      } else {
+        setIsAuthenticated(false);
+        setCurrentModule(<Inicio setCurrentModule={setCurrentModule} />);
+      }
+      return;
+    }
+
+    // 2) /dashboard
+    if (location.pathname === '/dashboard') {
+      if (hasValidToken()) {
+        setIsAuthenticated(true);
+        setCurrentModule(<Contenido setCurrentModule={setCurrentModule} />);
+        return;
+      }
+      setIsAuthenticated(false);
+      setCurrentModule(<Inicio setCurrentModule={setCurrentModule} />);
+      return;
+    }
+
+    // 3) Flujo normal
+    if (hasValidToken()) {
+      const savedModule = localStorage.getItem('activeModule');
+
+      // 🔒 Onboarding sin menú si quedó activo por localStorage
+      if (savedModule === 'form_registro_persona') {
+        setIsAuthenticated(false);
+        setCurrentModule(<FormRegistroPersona setCurrentModule={setCurrentModule} />);
+        return;
+      }
+      if (savedModule === 'form_registro_empresa') {
+        setIsAuthenticated(false);
+        setCurrentModule(<FormRegistroEmpresa setCurrentModule={setCurrentModule} />);
+        return;
+      }
+
+      // ✅ Autenticado normal con menú
+      setIsAuthenticated(true);
+      if (savedModule && moduleMap[savedModule]) {
+        const Component = moduleMap[savedModule];
+        setCurrentModule(<Component setCurrentModule={setCurrentModule} />);
+      } else {
+        setCurrentModule(<Contenido setCurrentModule={setCurrentModule} />);
+      }
+    } else {
+      localStorage.removeItem('token');
+      localStorage.removeItem('token_expiration');
+      localStorage.removeItem('activeModule');
+      setIsAuthenticated(false);
+      setCurrentModule(<Inicio setCurrentModule={setCurrentModule} />);
+    }
+  }, [location.pathname]);
 
   const isPublic = !isAuthenticated;
 
@@ -175,6 +212,7 @@ const App = () => {
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <CssBaseline />
 
+      {/* Menú solo si está autenticado */}
       {isAuthenticated && (
         <Navigator2
           setCurrentModuleItem={setCurrentModule}
@@ -208,7 +246,6 @@ const App = () => {
           isAuthenticated={isAuthenticated}
         />
 
-        {/* Offset del AppBar con el MISMO verde */}
         <Toolbar
           disableGutters
           sx={{
@@ -218,7 +255,6 @@ const App = () => {
           }}
         />
 
-        {/* Público: sin container extra */}
         {isPublic ? (
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             {currentModule}
@@ -227,7 +263,6 @@ const App = () => {
             </Box>
           </Box>
         ) : (
-          // Autenticado: Container sin Paper para evitar fondos negros/blancos
           <Container
             maxWidth="lg"
             disableGutters
@@ -260,6 +295,5 @@ const App = () => {
     </Box>
   );
 };
-
 
 export default App;
