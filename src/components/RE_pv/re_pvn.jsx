@@ -10,40 +10,40 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "../axiosConfig";
 import MessageSnackBar from "../MessageSnackBar";
+
+// Hook de ubicación (mismo patrón que re_pv)
 import useUbicacionFilters from "../useUbicacionFilters";
 
 export default function RE_productoVencimiento() {
-  // === Auth / empresa
+  // ===== Auth / empresa =====
   const empresaId = localStorage.getItem("empresaId");
   const token = localStorage.getItem("token");
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
-  // === Helpers
-  const asArray = (x) => (Array.isArray(x) ? x : x?.content ?? x?.data ?? []);
+  // ===== Helpers =====
+  const asArray = (x) => (Array.isArray(x) ? x : x?.content ?? []);
 
-  // "YYYY-MM-DDTHH:mm" -> "YYYY-MM-DD HH:mm" (SIN segundos)
-  const toMin = (val, end = false) => {
-    if (!val) return null;
+  // normaliza a "YYYY-MM-DD HH:mm" (como en tu Postman)
+  const toReportDTmm = (val) => {
+    if (!val) return "";
     const [d, t] = String(val).split("T");
-    const hhmm = (t || (end ? "23:59" : "00:00")).slice(0, 5);
+    const hhmm = (t || "00:00").slice(0, 5);
     return `${d} ${hhmm}`;
   };
 
-  // === ALIAS EXACTOS según tu JRXML:
-  // empresa   -> em.emp_id
-  // vencimiento -> k.kai_fecha_vencimiento
-  const ALIAS_EMP = "em.emp_id";
-  const ALIAS_VENC = "k.kai_fecha_vencimiento";
-
-  // === Ubicación (si luego la usas en el back)
+  // ===== Hook: ubicación =====
   const {
     form: ubi,
     handleChange: handleUbiChange,
     data: ubiData,
     resetTodo,
-  } = useUbicacionFilters({ empresaId, headers, autoselectSingle: true });
+  } = useUbicacionFilters({
+    empresaId,
+    headers,
+    autoselectSingle: true,
+  });
 
-  // === Filtros
+  // ===== Filtros =====
   const [filtro, setFiltro] = useState({
     producto_id: "",
     producto_categoria_id: "",
@@ -51,7 +51,7 @@ export default function RE_productoVencimiento() {
     fecha_fin: "",
   });
 
-  // === UI
+  // ===== UI State =====
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [resultados, setResultados] = useState([]);
@@ -61,20 +61,23 @@ export default function RE_productoVencimiento() {
   const [errors, setErrors] = useState({ fechas_rango: false });
   const [openUbi, setOpenUbi] = useState(false);
 
-  // === Cargar catálogos
+  // ===== Cargar combos =====
   useEffect(() => {
     Promise.all([
-      axios.get("/v1/items/producto/0", headers).catch(() => ({ data: [] })),
-      axios.get("/v1/items/producto_categoria/0", headers).catch(() => ({ data: [] })),
+      axios.get("/v1/producto", headers),
+      axios.get("/v1/producto_categoria", headers),
     ])
-      .then(([pr, cat]) => {
-        setProductos(asArray(pr.data));
-        setCategorias(asArray(cat.data));
+      .then(([resProductos, resCategorias]) => {
+        setProductos(asArray(resProductos.data));
+        setCategorias(asArray(resCategorias.data));
       })
-      .catch(() => setMessage({ open: true, severity: "error", text: "No se pudieron cargar los catálogos." }));
+      .catch(() => {
+        setMessage({ open: true, severity: "error", text: "No se pudieron cargar combos." });
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ===== Handlers =====
   const handleFiltroChange = (field) => (e) => {
     const value = e?.target ? e.target.value : e;
     setFiltro((prev) => ({ ...prev, [field]: value }));
@@ -87,26 +90,29 @@ export default function RE_productoVencimiento() {
       const fin = new Date(filtro.fecha_fin);
       if (ini > fin) {
         setErrors({ fechas_rango: true });
-        setMessage({ open: true, severity: "warning", text: "La fecha de inicio no puede ser mayor que la fecha fin." });
+        setMessage({
+          open: true,
+          severity: "warning",
+          text: "La fecha de inicio no puede ser mayor que la fecha fin.",
+        });
         return false;
       }
     }
     return true;
   };
 
-  // === Buscar (demo sencilla en front, opcional)
+  // ===== Buscar (UI) =====
   const buscar = useCallback(async () => {
     setResultados([]);
     if (!validarRango()) return;
 
     try {
-      const r = await axios.get("/v1/items/producto/0", headers);
+      const r = await axios.get("/v1/producto", headers);
       let lista = asArray(r.data);
 
       if (filtro.producto_categoria_id) {
         lista = lista.filter((p) =>
-          String(p.productoCategoriaId ?? p.producto_categoria_id ?? p.categoriaId ?? "") ===
-          String(filtro.producto_categoria_id)
+          String(p.productoCategoriaId ?? p.producto_categoria_id ?? "") === String(filtro.producto_categoria_id)
         );
       }
       if (filtro.producto_id) {
@@ -114,7 +120,11 @@ export default function RE_productoVencimiento() {
       }
 
       setResultados(lista);
-      setMessage({ open: true, severity: "info", text: `Mostrando ${lista.length} producto(s).` });
+      setMessage({
+        open: true,
+        severity: "info",
+        text: `Mostrando ${lista.length} producto(s).`,
+      });
     } catch (err) {
       console.error(err);
       setResultados([]);
@@ -122,97 +132,76 @@ export default function RE_productoVencimiento() {
     }
   }, [filtro, headers]);
 
-  /**
-   * Construye la condición EXACTA para el JRXML:
-   *  - Siempre incluye empresa (ALIAS_EMP).
-   *  - Usa ALIAS_VENC para fechas; si no hay fechas, aplica BETWEEN amplio por defecto
-   *    para que el WHERE nunca quede vacío ni inválido.
-   *  - Producto / Categoría se agregan solo si vienen.
-   * 
-   * Si tu back requiere índices "0","1","2",..."n", mantenemos ese formato.
-   */
-  const buildCondicion = () => {
-    const DEF_INI = "1900-01-01 00:00";
-    const DEF_FIN = "2099-12-31 23:59";
-
-    const ini = toMin(filtro.fecha_inicio, false);
-    const fin = toMin(filtro.fecha_fin, true);
-
-    const out = {};
-    let idx = 0;
-
-    // 0) Empresa (obligatoria):
-    out[String(idx++)] = `${ALIAS_EMP} = $EMPRESA_ID$`;
-
-    // 1) Producto (opcional):
-    if (filtro.producto_id) {
-      out[String(idx++)] = `AND p.pro_id = ${Number(filtro.producto_id)}`;
-    }
-
-    // 2) Categoría de producto (opcional):
-    if (filtro.producto_categoria_id) {
-      out[String(idx++)] = `AND p.pro_producto_categoria_id = ${Number(filtro.producto_categoria_id)}`;
-    }
-
-    // 3) Fechas: si no hay ambas, aplica BETWEEN por defecto
-    if (ini && fin) {
-      out[String(idx++)] = `AND ${ALIAS_VENC} BETWEEN "${ini}" AND "${fin}"`;
-    } else {
-      out[String(idx++)] = `AND ${ALIAS_VENC} BETWEEN "${DEF_INI}" AND "${DEF_FIN}"`;
-    }
-
-    return out;
-  };
-
-  // === POST PDF (siempre devuelve WHERE válido)
+  // ===== Generar Reporte (PDF) =====
   const generarPDF = async () => {
-    if (!validarRango()) return;
+    if (!filtro.producto_id || !filtro.producto_categoria_id || !filtro.fecha_inicio || !filtro.fecha_fin) {
+      setMessage({ open: true, severity: "warning", text: "Completa producto, categoría y el rango de fechas." });
+      return;
+    }
+    const ini = new Date(filtro.fecha_inicio);
+    const fin = new Date(filtro.fecha_fin);
+    if (ini > fin) {
+      setMessage({ open: true, severity: "warning", text: "La fecha de inicio no puede ser mayor que la fecha fin." });
+      return;
+    }
 
-    const condicion = buildCondicion();
-    const payload = { condicion, EMPRESA_ID: empresaId };
+    // Payload idéntico a tu Postman (sin empresa_id)
+    const payload = {
+      producto_id: Number(filtro.producto_id),
+      producto_categoria_id: Number(filtro.producto_categoria_id),
+      fecha_inicio: toReportDTmm(filtro.fecha_inicio),
+      fecha_fin: toReportDTmm(filtro.fecha_fin),
+    };
+    console.log("[producto_vencimiento] payload:", payload);
+
+    const tryEndpoint = async (url) => {
+      const res = await axios.post(url, payload, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        responseType: "blob",
+      });
+      const ct = res.headers?.["content-type"] || "";
+      if (!ct.includes("pdf")) {
+        const text = await res.data.text?.();
+        throw new Error(text || `El servidor no devolvió un PDF en ${url}.`);
+      }
+      return res.data;
+    };
 
     try {
-      const res = await axios({
-        url: "/v2/report/nuevo/producto_vencimiento",
-        method: "POST",
-        data: payload,
-        responseType: "blob",
-        ...headers,
-      });
-
-      const contentType = res.headers?.["content-type"] || "";
-      if (!contentType.includes("pdf")) {
-        // intento leer mensaje del back si vino texto
-        try {
-          const txt = await res.data.text?.();
-          throw new Error(txt || "El servidor no devolvió un PDF.");
-        } catch {
-          throw new Error("El servidor no devolvió un PDF.");
-        }
+      let dataBlob;
+      // 1) Primero el legacy (el que te funciona en Postman)
+      try {
+        dataBlob = await tryEndpoint("/v2/report/producto_vencimiento");
+      } catch (eLegacy) {
+        // 2) Si falla por cualquier motivo, intenta el "nuevo"
+        console.warn("Legacy falló, probando /nuevo:", eLegacy?.response?.status);
+        dataBlob = await tryEndpoint("/v2/report/nuevo/producto_vencimiento");
       }
 
-      const blob = new Blob([res.data], { type: "application/pdf" });
+      const blob = new Blob([dataBlob], { type: "application/pdf" });
       if (previewUrl) URL.revokeObjectURL(previewUrl);
-      const url = window.URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob);
       setPreviewUrl(url);
       setPreviewOpen(true);
-      setMessage({ open: true, severity: "success", text: "PDF generado." });
+      setMessage({ open: true, severity: "success", text: "PDF generado correctamente." });
     } catch (err) {
       console.error("❌ Error al generar PDF:", err);
-      setMessage({
-        open: true,
-        severity: "error",
-        text:
-          "No fue posible generar el PDF. Verifica que la plantilla use em.emp_id y k.kai_fecha_vencimiento, y que la API /v2/report/nuevo/producto_vencimiento esté disponible.",
-      });
+      if (err?.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          setMessage({ open: true, severity: "error", text: text?.slice(0, 500) || "Error al generar el PDF." });
+          return;
+        } catch {}
+      }
+      setMessage({ open: true, severity: "error", text: err?.message || "Error al generar el PDF." });
     }
   };
 
+  // ===== Render =====
   return (
     <Box sx={{ p: 4 }}>
       <Typography variant="h4" gutterBottom>Reporte de Vencimiento de Producto</Typography>
 
-      {/* Filtros */}
       <Grid container spacing={2} mb={2}>
         <Grid item xs={12} md={6}>
           <FormControl fullWidth>
@@ -223,10 +212,9 @@ export default function RE_productoVencimiento() {
               label="Producto"
               onChange={handleFiltroChange("producto_id")}
             >
-              <MenuItem value=""><em>Todos</em></MenuItem>
               {asArray(productos).map((p) => (
                 <MenuItem key={p.id} value={String(p.id)}>
-                  {p.nombre ?? p.name ?? `Producto ${p.id}`}
+                  {p.nombre ?? `Producto ${p.id}`}
                 </MenuItem>
               ))}
             </Select>
@@ -242,11 +230,10 @@ export default function RE_productoVencimiento() {
               label="Categoría Producto"
               onChange={handleFiltroChange("producto_categoria_id")}
             >
-              <MenuItem value=""><em>Todas</em></MenuItem>
               {asArray(categorias).length ? (
                 asArray(categorias).map((c) => (
                   <MenuItem key={c.id} value={String(c.id)}>
-                    {c.nombre ?? c.name ?? `Categoría ${c.id}`}
+                    {c.nombre ?? `Categoría ${c.id}`}
                   </MenuItem>
                 ))
               ) : (
@@ -258,7 +245,6 @@ export default function RE_productoVencimiento() {
           </FormControl>
         </Grid>
 
-        {/* Fechas (opcionales) */}
         <Grid item xs={12} md={6}>
           <TextField
             label="Fecha Inicio"
@@ -272,6 +258,7 @@ export default function RE_productoVencimiento() {
             helperText={errors.fechas_rango ? "Inicio no puede ser mayor que fin." : ""}
           />
         </Grid>
+
         <Grid item xs={12} md={6}>
           <TextField
             label="Fecha Fin"
@@ -287,14 +274,13 @@ export default function RE_productoVencimiento() {
         </Grid>
       </Grid>
 
-      {/* Acciones */}
       <Stack direction="row" spacing={2} mb={3}>
         <Button variant="contained" onClick={buscar}>Buscar</Button>
         <Button variant="outlined" onClick={generarPDF}>Generar Reporte</Button>
         <Button variant="text" onClick={() => setOpenUbi(true)}>Filtros (ubicación)</Button>
       </Stack>
 
-      {/* Diálogo Ubicación (opcional) */}
+      {/* Diálogo (ubicación) */}
       <Dialog open={openUbi} onClose={() => setOpenUbi(false)} fullWidth maxWidth="md">
         <DialogTitle>
           Filtros de Ubicación
@@ -304,32 +290,110 @@ export default function RE_productoVencimiento() {
         </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
-            {[
-              ["pais_id", "País", ubiData.paises],
-              ["departamento_id", "Departamento", ubiData.departamentos],
-              ["municipio_id", "Municipio", ubiData.municipios],
-              ["sede_id", "Sede", ubiData.sedes],
-              ["bloque_id", "Bloque", ubiData.bloques],
-              ["espacio_id", "Espacio", ubiData.espacios],
-              ["almacen_id", "Almacén", ubiData.almacenes],
-            ].map(([name, label, list]) => (
-              <Grid item xs={12} md={6} key={name}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>{label}</InputLabel>
-                  <Select
-                    label={label}
-                    value={ubi[name] || ""}
-                    onChange={(e) => handleUbiChange(name)(e.target.value)}
-                  >
-                    {asArray(list).map((it) => (
-                      <MenuItem key={it.id} value={String(it.id)}>
-                        {it.nombre ?? it.name ?? `${label} ${it.id}`}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-            ))}
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>País</InputLabel>
+                <Select
+                  label="País"
+                  value={ubi.pais_id || ""}
+                  onChange={(e) => handleUbiChange("pais_id")(e.target.value)}
+                >
+                  {asArray(ubiData.paises).map((it) => (
+                    <MenuItem key={it.id} value={String(it.id)}>{it.nombre ?? `País ${it.id}`}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Departamento</InputLabel>
+                <Select
+                  label="Departamento"
+                  value={ubi.departamento_id || ""}
+                  onChange={(e) => handleUbiChange("departamento_id")(e.target.value)}
+                >
+                  {asArray(ubiData.departamentos).map((it) => (
+                    <MenuItem key={it.id} value={String(it.id)}>{it.nombre ?? `Depto ${it.id}`}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Municipio</InputLabel>
+                <Select
+                  label="Municipio"
+                  value={ubi.municipio_id || ""}
+                  onChange={(e) => handleUbiChange("municipio_id")(e.target.value)}
+                >
+                  {asArray(ubiData.municipios).map((it) => (
+                    <MenuItem key={it.id} value={String(it.id)}>{it.nombre ?? `Municipio ${it.id}`}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Sede</InputLabel>
+                <Select
+                  label="Sede"
+                  value={ubi.sede_id || ""}
+                  onChange={(e) => handleUbiChange("sede_id")(e.target.value)}
+                >
+                  {asArray(ubiData.sedes).map((it) => (
+                    <MenuItem key={it.id} value={String(it.id)}>{it.nombre ?? `Sede ${it.id}`}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Bloque</InputLabel>
+                <Select
+                  label="Bloque"
+                  value={ubi.bloque_id || ""}
+                  onChange={(e) => handleUbiChange("bloque_id")(e.target.value)}
+                >
+                  {asArray(ubiData.bloques).map((it) => (
+                    <MenuItem key={it.id} value={String(it.id)}>{it.nombre ?? `Bloque ${it.id}`}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Espacio</InputLabel>
+                <Select
+                  label="Espacio"
+                  value={ubi.espacio_id || ""}
+                  onChange={(e) => handleUbiChange("espacio_id")(e.target.value)}
+                >
+                  {asArray(ubiData.espacios).map((it) => (
+                    <MenuItem key={it.id} value={String(it.id)}>{it.nombre ?? `Espacio ${it.id}`}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Almacén</InputLabel>
+                <Select
+                  label="Almacén"
+                  value={ubi.almacen_id || ""}
+                  onChange={(e) => handleUbiChange("almacen_id")(e.target.value)}
+                >
+                  {asArray(ubiData.almacenes).map((it) => (
+                    <MenuItem key={it.id} value={String(it.id)}>{it.nombre ?? `Almacén ${it.id}`}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
           </Grid>
 
           <Stack direction="row" spacing={2} mt={2} justifyContent="flex-end">
@@ -356,7 +420,7 @@ export default function RE_productoVencimiento() {
         </DialogContent>
       </Dialog>
 
-      {/* Resultados (demo) */}
+      {/* Resultados UI simples */}
       {resultados.length > 0 && (
         <Box mt={4}>
           <Typography variant="h6" gutterBottom>Productos encontrados</Typography>
@@ -371,15 +435,15 @@ export default function RE_productoVencimiento() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {resultados.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell>{p.id}</TableCell>
-                    <TableCell>{p.nombre ?? p.name ?? ""}</TableCell>
-                    <TableCell>{p.productoCategoriaId ?? p.categoriaId ?? p.producto_categoria_id ?? ""}</TableCell>
-                    <TableCell>{p.descripcion ?? ""}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
+  {resultados.map((p) => (
+    <TableRow key={p.id}>
+      <TableCell>{p.id}</TableCell>
+      <TableCell>{p.nombre ?? ""}</TableCell>
+      <TableCell>{p.productoCategoriaId ?? p.categoriaId ?? ""}</TableCell>
+      <TableCell>{p.descripcion ?? ""}</TableCell>
+    </TableRow>  
+  ))}
+</TableBody>
             </Table>
           </TableContainer>
         </Box>

@@ -80,7 +80,7 @@ export default function AppBarComponent({
               <Box
                 component="img"
                 src={LOGO_SRC}
-                alt="Inventario Usco"
+                alt="InmeroStock"
                 sx={{ width: 28, height: 28, objectFit: "contain" }}
               />
             }
@@ -93,18 +93,18 @@ export default function AppBarComponent({
               gap: 1,
             }}
           >
-            Inventario Usco
+            InmeroStock
           </Button>
         ) : (
           <Box sx={{ mr: "auto", display: "flex", alignItems: "center", gap: 1.25 }}>
             <Box
               component="img"
               src={LOGO_SRC}
-              alt="Inventario Usco"
+              alt="InmeroStock"
               sx={{ width: 28, height: 28, objectFit: "contain" }}
             />
             <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1 }}>
-              Inventario Usco
+              InmeroStock
             </Typography>
           </Box>
         )}
