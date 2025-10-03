@@ -1,115 +1,114 @@
-// src/components/Departamento/GridDepartamento.jsx
-import React, { useMemo } from "react";
-import PropTypes from "prop-types";
+import * as React from "react";
 import { DataGrid } from "@mui/x-data-grid";
+import PropTypes from "prop-types";
 
-export default function GridDepartamento({
-  // Datos
-  departamentos = [],
-
-  // Selección
-  selectedRow = null,
-  setSelectedRow,
-
-  // Paginación (server-side opcional)
-  paginationModel,        // { page, pageSize } o { page, size }
-  setPaginationModel,     // (model) => void
-  rowCount,               // total en servidor
-  loading = false,
-}) {
-  /* ---------- Columnas ---------- */
-  const columns = useMemo(() => ([
-    { field: "id", headerName: "ID", width: 90, type: "number" },
-    { field: "name", headerName: "Departamento", width: 220, type: "string" },
-    {
-      field: "paisNombre",
-      headerName: "País",
-      width: 200,
-      type: "string",
-      valueGetter: (p) =>
-        p?.row?.paisNombre ??
-        p?.row?.pais?.nombre ??
-        p?.row?.pais?.name ??
-        String(p?.row?.paisId ?? ""),
+/**
+ * GridDepartamento componente principal.
+ *
+ * Este componente renderiza una tabla con los departamentos usando el componente `DataGrid` de MUI.
+ * Permite seleccionar una fila para su posterior edición o manejo externo.
+ *
+ * @module GridDepartamento
+ * @component
+ * @returns {JSX.Element} Tabla de departamentos con funcionalidad de selección.
+ */
+export default function GridDepartamento(props) {
+  // ===========================
+  // CONFIGURACIÓN DE COLUMNAS
+  // ===========================
+  const columns = [
+    { 
+      field: "id", 
+      headerName: "ID", 
+      width: 90, 
+      type: "number" 
     },
-    { field: "codigo", headerName: "Código", width: 120 },
-    { field: "acronimo", headerName: "Acrónimo", width: 120 },
+    { 
+      field: "name", 
+      headerName: "Departamento", 
+      width: 200, 
+      type: "string" 
+    },          
+    { 
+      field: "paisNombre", 
+      headerName: "País", 
+      width: 180, 
+      type: "string" 
+    },      
+    { 
+      field: "codigo", 
+      headerName: "Código", 
+      width: 120 
+    },
+    { 
+      field: "acronimo", 
+      headerName: "Acrónimo", 
+      width: 120 
+    },
     {
       field: "estadoId",
       headerName: "Estado",
-      width: 140,
-      valueGetter: (p) =>
-        p?.row?.estado?.name ??
-        p?.row?.estado?.nombre ??
-        (String(p?.row?.estadoId) === "1" ? "Activo" : "Inactivo"),
+      width: 100,
+      valueGetter: (params) =>
+        params.row.estadoId === 1 ? "Activo" : "Inactivo",
     },
-  ]), []);
+  ];
 
-  /* ---------- ¿Server o Cliente? ---------- */
-  const serverPagination = Boolean(
-    paginationModel && setPaginationModel && typeof rowCount === "number"
-  );
+  // ===========================
+  // HANDLERS DE EVENTOS
+  // ===========================
+  /**
+   * Maneja la selección de filas del `DataGrid`.
+   * @param {Array} selection - Lista de IDs seleccionados.
+   */
+  const handleRowSelection = (selection) => {
+    if (selection.length > 0) {
+      const selectedRowData = props.departamentos.find(
+        (row) => row.id === selection[0]
+      );
+      props.setSelectedRow(selectedRowData);
+      console.log("Fila seleccionada:", selectedRowData);
+    } else {
+      props.setSelectedRow(null);
+    }
+  };
 
+  // ===========================
+  // CONFIGURACIÓN DEL GRID
+  // ===========================
+  const gridConfig = {
+    rows: props.departamentos,
+    columns: columns,
+    getRowId: (row) => row.id || row.uniqueID,
+    onRowSelectionModelChange: handleRowSelection,
+    initialState: {
+      pagination: {
+        paginationModel: {
+          pageSize: 5,
+        },
+      },
+    },
+    pageSizeOptions: [5, 10, 20, 50],
+  };
+
+  // ===========================
+  // RENDER
+  // ===========================
   return (
-    <div style={{ width: "100%" }}>
-      <DataGrid
-        rows={Array.isArray(departamentos) ? departamentos : []}
-        columns={columns}
-        getRowId={(row) => row?.id ?? row?.uniqueID}
-
-        // Selección controlada
-        onRowClick={(params) => setSelectedRow?.(params.row)}
-        rowSelectionModel={selectedRow?.id ? [selectedRow.id] : []}
-        disableRowSelectionOnClick
-
-        // Paginación
-        paginationMode={serverPagination ? "server" : "client"}
-        loading={loading}
-        {...(serverPagination
-          ? {
-              // ----- Server controlled -----
-              paginationModel: {
-                page: paginationModel.page ?? 0,
-                pageSize: paginationModel.pageSize ?? paginationModel.size ?? 10,
-              },
-              onPaginationModelChange: (model) => {
-                const next = {
-                  page: model.page ?? 0,
-                  size: model.pageSize ?? model.size ?? 10,
-                };
-                setPaginationModel?.(next); // el padre hace el fetch con estos valores
-              },
-              rowCount,
-            }
-          : {
-              // ----- Client fallback -----
-              pageSizeOptions: [5, 10, 15, 20, 50],
-              initialState: {
-                pagination: { paginationModel: { page: 0, pageSize: 5 } },
-              },
-            })}
-        autoHeight
-      />
+    <div style={{ height: 400, width: "100%" }}>
+      <DataGrid {...gridConfig} />
     </div>
   );
 }
 
 GridDepartamento.propTypes = {
+  /** Lista de departamentos a mostrar */
   departamentos: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-      uniqueID: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-      name: PropTypes.string,
+      id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+      name: PropTypes.string.isRequired,
     })
-  ),
-  selectedRow: PropTypes.object,
+  ).isRequired,
+  /** Función para actualizar la fila seleccionada */
   setSelectedRow: PropTypes.func.isRequired,
-  paginationModel: PropTypes.shape({
-    page: PropTypes.number,
-    pageSize: PropTypes.number,
-    size: PropTypes.number,
-  }),
-  setPaginationModel: PropTypes.func,
-  rowCount: PropTypes.number,
-  loading: PropTypes.bool,
 };

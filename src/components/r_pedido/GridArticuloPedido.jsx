@@ -1,121 +1,88 @@
-// src/components/Pedido/GridArticuloPedido.jsx
-import React, { useMemo } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { DataGrid } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
 
 export default function GridArticuloPedido({
-  // Datos
   items = [],
+  setSelectedRow = () => {},     // selección simple (para editar)
+  setSelectedRows = () => {},    // selección múltiple (para imprimir)
   presentaciones = [],
 
-  // Selección (simple + múltiple)
-  selectedRow = null,
-  setSelectedRow = () => {},
-  rowSelectionModel,                 // controlado (ids)
-  onRowSelectionModelChange,         // controlado
-  setSelectedRows = () => {},        // no controlado
-
-  // Paginación server-side (opcional)
+  // NUEVOS props para paginación en servidor
   loading = false,
-  rowCount,
-  paginationModel,                   // { page, pageSize } o { page, size }
-  onPaginationModelChange,
-}) {
-  /* -------- Lookup presentaciones por id (O(1)) -------- */
-  const presById = useMemo(() => {
-    const m = {};
-    for (const p of presentaciones ?? []) {
-      m[String(p?.id)] = p?.nombre ?? p?.name ?? `Presentación ${p?.id ?? ""}`;
-    }
-    return m;
-  }, [presentaciones]);
+  rowCount,                      // total de registros en el servidor
+  paginationModel,               // { page, pageSize }
+  onPaginationModelChange,       // setter del padre
 
-  /* -------- Columnas -------- */
-  const columns = useMemo(() => ([
-    { field: "id", headerName: "ID", width: 90, type: "number" },
-    { field: "cantidad", headerName: "Cantidad", width: 120, type: "number" },
-    { field: "pedidoId", headerName: "Pedido", width: 140, type: "number" },
+  // (opcional) selección controlada desde el padre
+  rowSelectionModel,             // array de ids seleccionados
+  onRowSelectionModelChange,     // callback controlado del padre
+}) {
+  const columns = [
+    { field: "id", headerName: "ID", width: 90 },
+    { field: "cantidad", headerName: "Cantidad", width: 120 },
+    { field: "pedidoId", headerName: "Pedido", width: 150 },
     {
       field: "presentacionProductoId",
       headerName: "Presentación de producto",
-      width: 240,
-      valueGetter: (p) =>
-        p?.row?.presentacionProducto?.nombre ??
-        p?.row?.presentacionProducto?.name ??
-        presById[String(p?.row?.presentacionProductoId)] ??
-        String(p?.row?.presentacionProductoId ?? ""),
+      width: 220,
+      valueGetter: (params) => {
+        const match = presentaciones.find((p) => p.id === params.row.presentacionProductoId);
+        return match ? match.nombre : params.row.presentacionProductoId;
+      },
     },
     {
       field: "estadoId",
       headerName: "Estado",
-      width: 130,
-      valueGetter: (p) =>
-        p?.row?.estado?.nombre ??
-        p?.row?.estado?.name ??
-        (String(p?.row?.estadoId) === "1" ? "Activo" : "Inactivo"),
+      width: 120,
+      valueGetter: (params) => (params.row.estadoId === 1 ? "Activo" : "Inactivo"),
     },
-  ]), [presById]);
+  ];
 
-  /* -------- ¿Server o cliente? -------- */
-  const serverPaging = Boolean(
+  // ¿Se activó paginación en servidor?
+  const isServerPaging =
     typeof rowCount === "number" &&
     paginationModel &&
-    (typeof paginationModel.page === "number") &&
-    (typeof (paginationModel.pageSize ?? paginationModel.size) === "number") &&
-    typeof onPaginationModelChange === "function"
-  );
+    typeof paginationModel.page === "number" &&
+    typeof paginationModel.pageSize === "number" &&
+    typeof onPaginationModelChange === "function";
 
-  /* -------- Selección no controlada (fallback) -------- */
-  const handleLocalSelection = (ids) => {
-    const idSet = new Set(ids);
-    const selectedMany = (items ?? []).filter(r => idSet.has(r.id));
-    setSelectedRows(selectedMany);
-    setSelectedRow(selectedMany[0] ?? null);
+  // Handler de selección (si no está controlada por el padre)
+  const handleSelection = (ids) => {
+    // items contiene SOLO la página actual
+    const selectedMultiple = items.filter((row) => ids.includes(row.id));
+    const selectedOne = selectedMultiple[0] || null;
+    setSelectedRows(selectedMultiple);
+    setSelectedRow(selectedOne);
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <Box sx={{ height: 400, width: "100%" }}>
       <DataGrid
-        rows={Array.isArray(items) ? items : []}
+        rows={items}
         columns={columns}
         getRowId={(row) => row.id}
-        loading={loading}
         checkboxSelection
-        disableRowSelectionOnClick
-        autoHeight
+        loading={loading}
 
-        // Selección controlada / no controlada
-        rowSelectionModel={rowSelectionModel ?? undefined}
-        onRowSelectionModelChange={onRowSelectionModelChange ?? handleLocalSelection}
-        onRowClick={(params) => setSelectedRow?.(params.row)}
+        // Selección múltiple / simple
+        rowSelectionModel={rowSelectionModel}
+        onRowSelectionModelChange={
+          onRowSelectionModelChange
+            ? onRowSelectionModelChange
+            : handleSelection
+        }
 
-        // Paginación
-        paginationMode={serverPaging ? "server" : "client"}
-        {...(serverPaging
-          ? {
-              rowCount,
-              paginationModel: {
-                page: paginationModel.page ?? 0,
-                pageSize: paginationModel.pageSize ?? paginationModel.size ?? 10,
-              },
-              onPaginationModelChange: (model) => {
-                const next = {
-                  page: model.page ?? 0,
-                  pageSize: model.pageSize ?? model.size ?? 10,
-                };
-                // normaliza a {page, size} si tu padre lo usa así
-                onPaginationModelChange?.({
-                  page: next.page,
-                  size: next.pageSize,
-                  pageSize: next.pageSize,
-                });
-              },
-            }
-          : {
-              pageSizeOptions: [5, 10, 15, 20, 50],
-              initialState: { pagination: { paginationModel: { page: 0, pageSize: 5 } } },
-            })}
+        // Paginación en servidor si hay props, sino cliente
+        pagination
+        paginationMode={isServerPaging ? "server" : "client"}
+        rowCount={isServerPaging ? rowCount : undefined}
+        paginationModel={isServerPaging ? paginationModel : undefined}
+        onPaginationModelChange={isServerPaging ? onPaginationModelChange : undefined}
+
+        // Tamaños de página
+        pageSizeOptions={[5, 10, 15, 20, 50]}
       />
     </Box>
   );
@@ -123,20 +90,18 @@ export default function GridArticuloPedido({
 
 GridArticuloPedido.propTypes = {
   items: PropTypes.array,
-  presentaciones: PropTypes.array,
-
-  selectedRow: PropTypes.object,
   setSelectedRow: PropTypes.func,
-  rowSelectionModel: PropTypes.array,
-  onRowSelectionModelChange: PropTypes.func,
   setSelectedRows: PropTypes.func,
+  presentaciones: PropTypes.array,
 
   loading: PropTypes.bool,
   rowCount: PropTypes.number,
   paginationModel: PropTypes.shape({
     page: PropTypes.number,
     pageSize: PropTypes.number,
-    size: PropTypes.number,
   }),
   onPaginationModelChange: PropTypes.func,
+
+  rowSelectionModel: PropTypes.array,
+  onRowSelectionModelChange: PropTypes.func,
 };

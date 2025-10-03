@@ -1,134 +1,75 @@
-// src/components/Sede/GridSede.jsx
-import React, { useMemo } from "react";
-import PropTypes from "prop-types";
+import React from "react";
 import { DataGrid } from "@mui/x-data-grid";
+import PropTypes from "prop-types";
 
-export default function GridSede({
-  // Datos
-  sedes = [],
+export default function GridSede({ sedes, setSelectedRow }) {
+  const handleRowSelection = (selection) => {
+    if (selection.length > 0) {
+      const selected = sedes.find((s) => s.id === selection[0]);
+      setSelectedRow(selected || null);
+    } else {
+      setSelectedRow(null);
+    }
+  };
 
-  // Selección
-  selectedRow = null,
-  setSelectedRow,
-
-  // Paginación (server-side opcional)
-  paginationModel,        // { page, pageSize } o { page, size }
-  setPaginationModel,     // (model) => void
-  rowCount,               // total en servidor
-  loading = false,        // spinner
-}) {
-  const columns = useMemo(() => ([
-    { field: "id", headerName: "ID", width: 80 },
+  const columns = [
+    { field: "id", headerName: "ID", width: 70 },
     { field: "nombre", headerName: "Nombre", width: 220 },
 
-    // Nombres con fallback a ID
+    // 👇 Mostrar NOMBRES (con fallback al id por si faltan)
     {
       field: "municipioNombre",
       headerName: "Municipio",
-      width: 200,
-      valueGetter: (p) =>
-        p?.row?.municipioNombre ??
-        p?.row?.municipio?.name ??
-        p?.row?.municipio?.nombre ??
-        String(p?.row?.municipioId ?? ""),
+      width: 180,
+      valueGetter: (params) =>
+        params.row.municipioNombre ?? params.row.municipio?.name ?? params.row.municipioId ?? "",
     },
     {
       field: "grupoNombre",
       headerName: "Grupo",
-      width: 200,
-      valueGetter: (p) =>
-        p?.row?.grupoNombre ??
-        p?.row?.grupo?.name ??
-        p?.row?.grupo?.nombre ??
-        String(p?.row?.grupoId ?? ""),
+      width: 180,
+      valueGetter: (params) =>
+        params.row.grupoNombre ?? params.row.grupo?.name ?? params.row.grupoId ?? "",
     },
     {
       field: "tipoSedeNombre",
       headerName: "Tipo Sede",
-      width: 220,
-      valueGetter: (p) =>
-        p?.row?.tipoSedeNombre ??
-        p?.row?.tipoSede?.name ??
-        p?.row?.tipoSede?.nombre ??
-        String(p?.row?.tipoSedeId ?? ""),
+      width: 200,
+      valueGetter: (params) =>
+        params.row.tipoSedeNombre ?? params.row.tipoSede?.name ?? params.row.tipoSedeId ?? "",
     },
 
     { field: "geolocalizacion", headerName: "Geolocalización", width: 200 },
     { field: "coordenadas", headerName: "Coordenadas", width: 200 },
-    { field: "area", headerName: "Área", width: 120 },
+    { field: "area", headerName: "Área", width: 110 },
     { field: "comuna", headerName: "Comuna", width: 140 },
-    { field: "descripcion", headerName: "Descripción", flex: 1, minWidth: 280 },
-
+    { field: "descripcion", headerName: "Descripción", width: 280 },
     {
       field: "estadoId",
       headerName: "Estado",
-      width: 140,
-      valueGetter: (p) =>
-        p?.row?.estado?.name ??
-        p?.row?.estado?.nombre ??
-        (String(p?.row?.estadoId) === "1" ? "Activo" : "Inactivo"),
+      width: 120,
+      valueGetter: (params) =>
+        Number(params.row.estadoId) === 1 ? "Activo" : "Inactivo",
     },
-  ]), []);
-
-  // ¿Server o Cliente?
-  const serverPagination = Boolean(
-    paginationModel && setPaginationModel && typeof rowCount === "number"
-  );
+  ];
 
   return (
-    <div style={{ width: "100%" }}>
+    <div style={{ height: 420, width: "100%" }}>
       <DataGrid
-        rows={Array.isArray(sedes) ? sedes : []}
+        rows={sedes}
         columns={columns}
         getRowId={(row) => row.id}
-
-        // Selección
-        onRowClick={(params) => setSelectedRow?.(params.row)}
-        rowSelectionModel={selectedRow?.id ? [selectedRow.id] : []}
-        disableRowSelectionOnClick
-
-        // Paginación
-        paginationMode={serverPagination ? "server" : "client"}
-        loading={loading}
-        {...(serverPagination
-          ? {
-              // ----- Server controlled -----
-              paginationModel: {
-                page: paginationModel.page ?? 0,
-                pageSize: paginationModel.pageSize ?? paginationModel.size ?? 10,
-              },
-              onPaginationModelChange: (model) => {
-                const next = {
-                  page: model.page ?? 0,
-                  size: model.pageSize ?? model.size ?? 10,
-                };
-                setPaginationModel?.(next); // el padre hace el fetch con estos valores
-              },
-              rowCount,
-            }
-          : {
-              // ----- Client fallback -----
-              pageSizeOptions: [5, 10, 15, 20, 50],
-              initialState: {
-                pagination: { paginationModel: { page: 0, pageSize: 5 } },
-              },
-            })}
-        autoHeight
+        onRowSelectionModelChange={handleRowSelection}
+        initialState={{
+          pagination: { paginationModel: { pageSize: 5 } },
+        }}
+        pageSizeOptions={[5, 10, 20]}
       />
     </div>
   );
 }
 
 GridSede.propTypes = {
-  sedes: PropTypes.array,
-  selectedRow: PropTypes.object,
+  sedes: PropTypes.array.isRequired,
   setSelectedRow: PropTypes.func.isRequired,
-  paginationModel: PropTypes.shape({
-    page: PropTypes.number,
-    pageSize: PropTypes.number,
-    size: PropTypes.number,
-  }),
-  setPaginationModel: PropTypes.func,
-  rowCount: PropTypes.number,
-  loading: PropTypes.bool,
 };
