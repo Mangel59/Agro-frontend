@@ -11,25 +11,29 @@ import MessageSnackBar from "../MessageSnackBar";
 import VistaPreviaPDFPedido from "../r_pedido/VistaPreviaPDFPedido";
 import GridArticuloPedido from "../r_pedido/GridArticuloPedido";
 
-import useUbicacionFilters, {
-  buildPedidoCondicionEmpresa,
-  buildPedidoReporteEspecifico,
-} from "../useUbicacionFilters";
+import useUbicacionFilters from "../useUbicacionFilters";
+import UbicacionPedidoFilters from "../UbicacionPedidoFilters.jsx";
 
-import UbicacionPedidoFilters from "../UbicacionPedidoFilters.jsx"; 
 export default function RE_pedido() {
   const empresaId = localStorage.getItem("empresaId");
   const token = localStorage.getItem("token");
-  const logoPath = `${import.meta.env.VITE_RUTA_LOGO_EMPRESA}${empresaId}/logo_empresa.jpeg`;
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
   const asArray = (x) => (Array.isArray(x) ? x : x?.content ?? []);
-  const getFecha = (p) =>
-    p?.fechaHora ?? p?.pedFechaHora ?? p?.fecha ?? p?.createdAt ?? null;
+  const getFecha = (p) => p?.fechaHora ?? p?.pedFechaHora ?? p?.fecha ?? p?.createdAt ?? null;
   const fmt = (val) => {
     if (!val) return "";
     const d = new Date(val);
     return isNaN(d.getTime()) ? String(val) : d.toLocaleString();
+  };
+  const fmtDate = (val) => {
+    if (!val) return null;
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return null;
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
   };
 
   // ===== Hook unificado: ubicación + filtros de pedido (LOS 4 CAMPOS) =====
@@ -46,11 +50,7 @@ export default function RE_pedido() {
     handlePedidoChange,
     pedidos,
     categoriasEstado,
-  } = useUbicacionFilters({
-    empresaId,
-    headers,
-    autoselectSingle: true,
-  });
+  } = useUbicacionFilters({ empresaId, headers, autoselectSingle: true });
 
   // ===== estado UI (no filtros)
   const [pedidoData, setPedidoData] = useState(null);
@@ -69,7 +69,7 @@ export default function RE_pedido() {
       axios.get("/v1/pedido", headers).catch(() => {});
     }
     if (!categoriasEstado?.length) {
-      axios.get("/v1/items/estado_categoria/0", headers).catch(() => {});
+      axios.get("/v1/items/pedido_estado/0", headers).catch(() => {});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -118,11 +118,7 @@ export default function RE_pedido() {
           return true;
         });
         setResultados(lista);
-        setMessage({
-          open: true,
-          severity: "info",
-          text: `Mostrando ${lista.length} pedido(s).`,
-        });
+        setMessage({ open: true, severity: "info", text: `Mostrando ${lista.length} pedido(s).` });
       } catch {
         setResultados([]);
         setMessage({ open: true, severity: "error", text: "No se pudieron cargar pedidos." });
@@ -149,61 +145,55 @@ export default function RE_pedido() {
     }
   };
 
-  // Generar Reporte (PDF)
+  // ==== Helper para armar el objeto condicion con índices "0", "1", ... ====
+  const buildCondicion = () => {
+    const parts = [];
+    // 0: empresa obligatoria
+    parts.push(`p.ped_empresa_id = $EMPRESA_ID$`);
+
+    // 1: pedido (opcional)
+    if (pedido.pedido_id) parts.push(`AND p.ped_id = ${Number(pedido.pedido_id)}`);
+
+    // 2: categoría estado (opcional)
+    if (pedido.categoria_estado_id) parts.push(`AND est.est_estado_categoria_id = ${Number(pedido.categoria_estado_id)}`);
+
+    // 3: fechas (opcional)
+    const fIni = fmtDate(pedido.fecha_inicio);
+    const fFin = fmtDate(pedido.fecha_fin);
+    if (fIni && fFin) {
+      parts.push(`AND p.ped_fecha_hora BETWEEN "${fIni}" AND "${fFin}"`);
+    } else if (fIni) {
+      parts.push(`AND p.ped_fecha_hora >= "${fIni}"`);
+    } else if (fFin) {
+      parts.push(`AND p.ped_fecha_hora <= "${fFin}"`);
+    }
+
+    // Map a objeto indexado
+    return Object.fromEntries(parts.map((v, i) => [String(i), v]));
+  };
+
+  // ======= GENERAR REPORTE (PDF) -> SOLO /v2/report/nuevo/pedido con { condicion: { ... } } =======
   const generarReporte = async () => {
     if (!validarRango()) return;
 
     try {
-      // Caso específico (pedido + categoría)
-      if (pedido.pedido_id && pedido.categoria_estado_id) {
-        const payload = buildPedidoReporteEspecifico({
-          empresaId,
-          pedido_id: pedido.pedido_id,
-          categoria_estado_id: pedido.categoria_estado_id,
-          fecha_inicio: pedido.fecha_inicio,
-          fecha_fin: pedido.fecha_fin,
-          logoPath,
-        });
-
-        const res = await axios({
-          url: "/v2/report/pedido",
-          method: "POST",
-          data: payload,
-          responseType: "blob",
-          ...headers,
-        });
-        const blob = new Blob([res.data], { type: "application/pdf" });
-        if (previewUrl) URL.revokeObjectURL(previewUrl);
-        const url = window.URL.createObjectURL(blob);
-        setPreviewUrl(url);
-        setPreviewOpen(true);
-        setMessage({ open: true, severity: "success", text: "PDF del pedido generado." });
-        return;
-      }
-
-      // Caso empresa (con ubicación opcional)
-      const payloadEmpresa = buildPedidoCondicionEmpresa({
-        empresaId,
-        pedido_id: pedido.pedido_id,
-        categoria_estado_id: pedido.categoria_estado_id,
-        fecha_inicio: pedido.fecha_inicio,
-        fecha_fin: pedido.fecha_fin,
-        ubicacion: ubi, // ← pais/departamento/municipio/sede/bloque/espacio/almacen
-      });
+      const condicion = buildCondicion();
+      const payload = { condicion, EMPRESA_ID: empresaId }; // Si backend reemplaza $EMPRESA_ID$ de forma interna, EMPRESA_ID puede omitirse.
 
       const res = await axios({
-        url: "/v2/report/nuevo/pedidov2",
+        url: "/v2/report/nuevo/pedido",
         method: "POST",
-        data: payloadEmpresa,
+        data: payload,
         responseType: "blob",
         ...headers,
       });
+
       const blob = new Blob([res.data], { type: "application/pdf" });
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       const url = window.URL.createObjectURL(blob);
       setPreviewUrl(url);
       setPreviewOpen(true);
-      setMessage({ open: true, severity: "success", text: "PDF generado (empresa)." });
+      setMessage({ open: true, severity: "success", text: "PDF generado." });
     } catch (err) {
       console.error(err);
       setMessage({ open: true, severity: "error", text: "Error al generar el PDF." });

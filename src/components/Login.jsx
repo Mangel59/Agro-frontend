@@ -6,15 +6,12 @@ import {
 import { useTheme, alpha } from "@mui/material/styles";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import LoginIcon from "@mui/icons-material/Login";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import PropTypes from "prop-types";
 import axios from "axios";
-import ForgotPassword from "../ForgotPassword";
-import FormRegistroPersona from "./seguridad/FormRegistroPersona";
-import FormRegistroEmpresa from "./seguridad/FormRegistroEmpresa";
 
-// --- helper: decodifica payload del JWT sin librerías ---
+
 const decodeJwt = (jwt) => {
   try {
     const [, payload] = jwt.split(".");
@@ -28,6 +25,7 @@ const decodeJwt = (jwt) => {
 export default function Login(props) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const navigate = useNavigate();
   const isDark = theme.palette.mode === "dark";
 
   const softBg = isDark ? alpha(theme.palette.primary.light, 0.08) : "#e7f6f7";
@@ -47,10 +45,6 @@ export default function Login(props) {
     caretColor: inputText,
     transition: "background-color 9999s ease-out 0s",
   };
-  const moduleMap = {
-  form_registro_persona: FormRegistroPersona,
-  form_registro_empresa: FormRegistroEmpresa,
-};
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -62,17 +56,53 @@ export default function Login(props) {
   const handleMouseDownPassword = (e) => e.preventDefault();
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const handleSubmit = async (event) => {
+  const clearAuth = () => {
+    try {
+      localStorage.removeItem("token");
+      localStorage.removeItem("token_expiration");
+      localStorage.removeItem("tver");
+      localStorage.removeItem("empresaId");
+      localStorage.removeItem("rolId");
+      localStorage.removeItem("empresaNombre");
+      localStorage.removeItem("rolesByCompany");
+      localStorage.removeItem("activeModule");
+    } catch {}
+  };
+
+  const persistAuth = (
+    jwt,
+    { empresaId, rolId, empresaNombre, rolesByCompany, decodeJwt }
+  ) => {
+    const { exp, tver } = decodeJwt(jwt || "");
+    const expiration = exp ? exp * 1000 : Date.now() + 3 * 60 * 60 * 1000;
+
+    localStorage.setItem("token", jwt);
+    localStorage.setItem("token_expiration", String(expiration));
+    if (typeof tver !== "undefined") localStorage.setItem("tver", String(tver));
+    if (empresaId != null) localStorage.setItem("empresaId", String(empresaId));
+    if (rolId != null) localStorage.setItem("rolId", String(rolId));
+    localStorage.setItem("rolesByCompany", JSON.stringify(rolesByCompany || []));
+
+    const inferredName =
+      empresaNombre ||
+      (rolesByCompany?.find(
+        (r) => String(r.empresaId) === String(empresaId) && String(r.rolId) === String(rolId)
+      )?.empresaNombre) ||
+      "";
+    if (inferredName) localStorage.setItem("empresaNombre", inferredName);
+  };
+const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
 
     if (!validateEmail(username)) {
-      setError(t("invalid_email"));
+      setError(t("invalid_email") || "Correo inválido");
       return;
     }
 
     try {
       setSubmitting(true);
+
       const { data } = await axios.post(
         import.meta.env.VITE_BACKEND_URI + "/auth/v2/login",
         { username, password }
@@ -83,125 +113,86 @@ export default function Login(props) {
         empresaId, rolId, empresaNombre,
         rolesByCompany = [],
         usuarioEstado,
-        estadoUsuario, // por si el backend usa otro nombre
+        estadoUsuario,
+        estado: estadoPlano,
       } = data || {};
 
-      if (!token) {
-        setError(t("login_error"));
-        setSubmitting(false);
+      const { estado: estadoJwt } = decodeJwt(token || "");
+      const candidatos = [estadoPlano, usuarioEstado, estadoUsuario, estadoJwt];
+      const primeroValido = candidatos.find(v => Number.isFinite(Number(v)));
+      const estado = typeof primeroValido !== "undefined" ? Number(primeroValido) : null;
+
+      if (estado === null) {
+        clearAuth();
+        props.setIsAuthenticated?.(false);
+        setError("No se recibió el estado del usuario desde el backend.");
         return;
       }
 
-      // Persistencia del JWT
-      const { exp, tver } = decodeJwt(token);
-      const expiration = exp ? exp * 1000 : Date.now() + 3 * 60 * 60 * 1000;
-
-      try {
-        localStorage.removeItem("token");
-        localStorage.removeItem("token_expiration");
-        localStorage.removeItem("tver");
-        localStorage.removeItem("empresaId");
-        localStorage.removeItem("rolId");
-        localStorage.removeItem("empresaNombre");
-        localStorage.removeItem("rolesByCompany");
-        // 👇 importante: limpia activeModule anterior
-        localStorage.removeItem("activeModule");
-      } catch {}
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("token_expiration", String(expiration));
-      if (typeof tver !== "undefined") localStorage.setItem("tver", String(tver));
-      if (empresaId != null) localStorage.setItem("empresaId", String(empresaId));
-      if (rolId != null) localStorage.setItem("rolId", String(rolId));
-      localStorage.setItem("rolesByCompany", JSON.stringify(rolesByCompany || []));
-
-      const inferredName =
-        empresaNombre ||
-        (rolesByCompany.find(
-          (r) => String(r.empresaId) === String(empresaId) && String(r.rolId) === String(rolId)
-        )?.empresaNombre) ||
-        "";
-      if (inferredName) localStorage.setItem("empresaNombre", inferredName);
-
-      props.setIsAuthenticated?.(true);
-
-      // === LÓGICA DE ESTADO DE USUARIO ===
-// === LÓGICA DE ESTADO DE USUARIO ===
-const estado = Number(
-  typeof usuarioEstado !== "undefined" ? usuarioEstado : estadoUsuario
-);
-
-// helper: empuja a "/" para que App.jsx re-monte según activeModule
-const goHome = () => window.history.pushState({}, "", "/coagronet/");
-
-switch (estado) {
-  case 0: {
-    // Usuario desactivado
-    props.setIsAuthenticated?.(false);
-    localStorage.removeItem("activeModule");
-    setError("Tu usuario está desactivado. Contacta al administrador.");
-    break;
+      switch (estado) {
+        case 0: {
+          clearAuth();
+          props.setIsAuthenticated?.(false);
+          setError("Tu usuario está desactivado. Contacta al administrador.");
+          break;
+        }
+        case 1: {
+          clearAuth();
+          props.setIsAuthenticated?.(false);
+          setError("Debes activar tu cuenta desde el email de verificación.");
+          break;
+        }
+        case 2: {
+  if (!token) { 
+    clearAuth(); 
+    setError("No se recibió token válido."); 
+    break; 
   }
-  case 1: {
-    // Registrado, falta activar email
-    props.setIsAuthenticated?.(false);
-    localStorage.removeItem("activeModule");
-    // Opción A: navegar a la pantalla de verificación si tienes token/código
-    // window.history.pushState({}, "", "/coagronet/auth/verify");
-    // Opción B: solo mostrar CTA para reenviar enlace
-    setError("Debes activar tu cuenta desde el email de verificación.");
-    // (si tienes endpoint) axios.post(`${VITE_BACKEND}/auth/resend`, { username })
-    break;
-  }
-  case 2: {
-    // Falta info personal
-    localStorage.setItem("activeModule", "form_registro_persona");
-    props.setIsAuthenticated?.(true);
-    // Montaje inmediato para evitar parpadeo
-    props.setCurrentModule?.(
-      <FormRegistroPersona setCurrentModule={props.setCurrentModule} />
-    );
-    goHome();
-    break;
-  }
-  case 3: {
-    // Falta asociación a empresa
-    localStorage.setItem("activeModule", "form_registro_empresa");
-    props.setIsAuthenticated?.(true);
-    props.setCurrentModule?.(
-      <FormRegistroEmpresa setCurrentModule={props.setCurrentModule} />
-    );
-    goHome();
-    break;
-  }
-  case 4:
-  default: {
-    // Completo → dashboard
-    props.setIsAuthenticated?.(true);
-    localStorage.removeItem("activeModule"); // App.jsx cargará Contenido por defecto
-    // Si quieres montar inmediato:
-    // props.setCurrentModule?.(<Contenido setCurrentModule={props.setCurrentModule} />);
-    goHome();
-    break;
-  }
+  persistAuth(token, { empresaId, rolId, empresaNombre, rolesByCompany, decodeJwt });
+  localStorage.setItem("activeModule", "form_registro_persona");
+
+  // 🚀 Ruta de onboarding persona (App la intercepta y muestra solo el formulario)
+  navigate("/coagronet/onboarding/persona", { replace: true });
+  break;
 }
 
+case 3: {
+  if (!token) { 
+    clearAuth(); 
+    setError("No se recibió token válido."); 
+    break; 
+  }
+  persistAuth(token, { empresaId, rolId, empresaNombre, rolesByCompany, decodeJwt });
+  localStorage.setItem("activeModule", "form_registro_empresa");
 
-      setSubmitting(false);
+  // 🚀 Ruta de onboarding empresa (App la intercepta y muestra solo el formulario)
+  navigate("/coagronet/onboarding/empresa", { replace: true });
+  break;
+}
+
+        case 4:
+        default: { // Completo
+          if (!token) { clearAuth(); setError("No se recibió token válido."); break; }
+          persistAuth(token, { empresaId, rolId, empresaNombre, rolesByCompany, decodeJwt });
+          localStorage.removeItem("activeModule");
+          // ✅ Ahora sí, autenticado → mostrará menú en App
+          props.setIsAuthenticated?.(true);
+          navigate("/coagronet/", { replace: true });
+          break;
+        }
+      }
     } catch (err) {
       console.error("Login error:", err);
-      if (err?.response?.status === 401) {
-        setError(t("invalid_credentials") || "Usuario o contraseña inválidos");
-      } else {
-        const msg = err?.response?.data?.message || t("login_error") || "Ocurrió un error iniciando sesión";
-        setError(msg);
-      }
+      const msg = err?.response?.status === 401
+        ? (t("invalid_credentials") || "Usuario o contraseña inválidos")
+        : (err?.response?.data?.message || t("login_error") || "Ocurrió un error iniciando sesión");
+      setError(msg);
+      clearAuth();
+      props.setIsAuthenticated?.(false);
+    } finally {
       setSubmitting(false);
-      localStorage.removeItem("token");
-      localStorage.removeItem("token_expiration");
     }
   };
-
   return (
     <Box
       sx={{
@@ -246,7 +237,7 @@ switch (estado) {
           Inicia sesión
         </Typography>
         <Typography align="center" sx={{ color: textSecondary, mb: 3 }}>
-          Bienvenido de vuelta a InmeroStock
+          Bienvenido de vuelta a Inventario Usco
         </Typography>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -333,25 +324,10 @@ switch (estado) {
         </Button>
 
         <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
-          <Button
-            variant="text"
-            onClick={() =>
-              props.setCurrentModule?.(
-                <ForgotPassword setCurrentModule={props.setCurrentModule} />
-              )
-            }
-            sx={{ color: theme.palette.primary.main, textTransform: "none" }}
-          >
+          <Link component={RouterLink} to="/forgot" underline="none">
             ¿Olvidaste tu contraseña?
-          </Button>
-        </Box>
-
-        <Typography variant="body2" align="center" sx={{ mt: 2, color: textSecondary }}>
-          {t("no_account")}{" "}
-          <Link component={RouterLink} to="/register" sx={{ color: theme.palette.primary.main, textDecoration: "none", fontWeight: 700 }}>
-            {t("register_here")}
           </Link>
-        </Typography>
+        </Box>
       </Box>
     </Box>
   );
