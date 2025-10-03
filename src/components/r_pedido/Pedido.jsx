@@ -23,12 +23,12 @@ export default function Pedido() {
   const [presentaciones, setPresentaciones] = useState([]);
 
   // Estados para paginación en servidor (Pedidos)
-  const [pedidoPaginationModel, setPedidoPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [pedidoPaginationModel, setPedidoPaginationModel] = useState({ page: 0, pageSize: 5 });
   const [pedidoRowCount, setPedidoRowCount] = useState(0);
   const [pedidoLoading, setPedidoLoading] = useState(false);
 
   // Estados para paginación en servidor (Artículos)
-  const [articuloPaginationModel, setArticuloPaginationModel] = useState({ page: 0, pageSize: 10 });
+  const [articuloPaginationModel, setArticuloPaginationModel] = useState({ page: 0, pageSize: 5 });
   const [articuloRowCount, setArticuloRowCount] = useState(0);
   const [articuloLoading, setArticuloLoading] = useState(false);
 

@@ -30,7 +30,7 @@ export default function Movimineto() {
 
   return (
     <div>
-      <h1>Movimineto</h1>
+      <h1>Movimento</h1>
 
       <MessageSnackBar message={message} setMessage={setMessage} />
 
