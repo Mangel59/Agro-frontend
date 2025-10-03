@@ -21,18 +21,21 @@ export default function RE_productoVencimiento() {
   // === Helpers
   const asArray = (x) => (Array.isArray(x) ? x : x?.content ?? x?.data ?? []);
 
-  // "YYYY-MM-DDTHH:mm" -> "YYYY-MM-DD HH:mm:ss"
-  const toSec = (val, end = false) => {
+  // "YYYY-MM-DDTHH:mm" -> "YYYY-MM-DD HH:mm" (SIN segundos)
+  const toMin = (val, end = false) => {
     if (!val) return null;
     const [d, t] = String(val).split("T");
     const hhmm = (t || (end ? "23:59" : "00:00")).slice(0, 5);
-    return `${d} ${hhmm}:00`;
+    return `${d} ${hhmm}`;
   };
 
-  // 🔧 Cambia este alias si tu SQL usa otro nombre de columna/alias para la fecha de vencimiento
-  const ALIAS_VENC = "v.venc_fecha"; // p.ej. "l.lot_fecha_vencimiento"
+  // === ALIAS EXACTOS según tu JRXML:
+  // empresa   -> em.emp_id
+  // vencimiento -> k.kai_fecha_vencimiento
+  const ALIAS_EMP = "em.emp_id";
+  const ALIAS_VENC = "k.kai_fecha_vencimiento";
 
-  // === Ubicación (por si luego la usas)
+  // === Ubicación (si luego la usas en el back)
   const {
     form: ubi,
     handleChange: handleUbiChange,
@@ -58,7 +61,7 @@ export default function RE_productoVencimiento() {
   const [errors, setErrors] = useState({ fechas_rango: false });
   const [openUbi, setOpenUbi] = useState(false);
 
-  // === Cargar catálogos (todo vía /v1/items)
+  // === Cargar catálogos
   useEffect(() => {
     Promise.all([
       axios.get("/v1/items/producto/0", headers).catch(() => ({ data: [] })),
@@ -91,7 +94,7 @@ export default function RE_productoVencimiento() {
     return true;
   };
 
-  // === Buscar (lista/filtra en front)
+  // === Buscar (demo sencilla en front, opcional)
   const buscar = useCallback(async () => {
     setResultados([]);
     if (!validarRango()) return;
@@ -119,73 +122,89 @@ export default function RE_productoVencimiento() {
     }
   }, [filtro, headers]);
 
-  // === condicion compacta (sin huecos) 0..N (igual que pedido)
+  /**
+   * Construye la condición EXACTA para el JRXML:
+   *  - Siempre incluye empresa (ALIAS_EMP).
+   *  - Usa ALIAS_VENC para fechas; si no hay fechas, aplica BETWEEN amplio por defecto
+   *    para que el WHERE nunca quede vacío ni inválido.
+   *  - Producto / Categoría se agregan solo si vienen.
+   * 
+   * Si tu back requiere índices "0","1","2",..."n", mantenemos ese formato.
+   */
   const buildCondicion = () => {
-    const parts = [];
+    const DEF_INI = "1900-01-01 00:00";
+    const DEF_FIN = "2099-12-31 23:59";
 
-    // 0) empresa (obligatorio)
-    parts.push(`e.emp_id = $EMPRESA_ID$`);
+    const ini = toMin(filtro.fecha_inicio, false);
+    const fin = toMin(filtro.fecha_fin, true);
 
-    // Ubicación (opcional). Descomenta si el reporte las soporta:
-    // if (ubi.municipio_id) parts.push(`AND m.mun_id = ${Number(ubi.municipio_id)}`);
-    // if (ubi.sede_id)      parts.push(`AND s.sed_id = ${Number(ubi.sede_id)}`);
-    // if (ubi.bloque_id)    parts.push(`AND blo.blo_id = ${Number(ubi.bloque_id)}`);
-    // if (ubi.espacio_id)   parts.push(`AND esp.esp_id = ${Number(ubi.espacio_id)}`);
-    // if (ubi.almacen_id)   parts.push(`AND al.alm_id = ${Number(ubi.almacen_id)}`);
+    const out = {};
+    let idx = 0;
 
-    // Producto / Categoría (opcionales)
+    // 0) Empresa (obligatoria):
+    out[String(idx++)] = `${ALIAS_EMP} = $EMPRESA_ID$`;
+
+    // 1) Producto (opcional):
     if (filtro.producto_id) {
-      parts.push(`AND p.pro_id = ${Number(filtro.producto_id)}`);
+      out[String(idx++)] = `AND p.pro_id = ${Number(filtro.producto_id)}`;
     }
+
+    // 2) Categoría de producto (opcional):
     if (filtro.producto_categoria_id) {
-      parts.push(`AND p.pro_producto_categoria_id = ${Number(filtro.producto_categoria_id)}`);
+      out[String(idx++)] = `AND p.pro_producto_categoria_id = ${Number(filtro.producto_categoria_id)}`;
     }
 
-    // Rango SIEMPRE, con segundos y comillas dobles (default si no eliges fechas)
-    const ini = toSec(filtro.fecha_inicio, false) ?? "1900-01-01 00:00:00";
-    const fin  = toSec(filtro.fecha_fin,   true)  ?? "2099-12-31 23:59:59";
-    parts.push(`AND ${ALIAS_VENC} BETWEEN "${ini}" AND "${fin}"`);
-
-    // Compacta índices 0..N (exacto como en RE_pedido)
-    return Object.fromEntries(parts.map((v, i) => [String(i), v]));
-  };
-
-  // === POST PDF (nuevo) + lectura de error
-  const postPdfNuevo = async (data) => {
-    const res = await axios.post("/v2/report/nuevo/producto_vencimiento", data, {
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      responseType: "blob",
-    });
-    const ct = res.headers?.["content-type"] || "";
-    if (!ct.includes("pdf")) {
-      const txt = await res.data.text?.();
-      throw new Error(txt || "El servidor no devolvió un PDF.");
+    // 3) Fechas: si no hay ambas, aplica BETWEEN por defecto
+    if (ini && fin) {
+      out[String(idx++)] = `AND ${ALIAS_VENC} BETWEEN "${ini}" AND "${fin}"`;
+    } else {
+      out[String(idx++)] = `AND ${ALIAS_VENC} BETWEEN "${DEF_INI}" AND "${DEF_FIN}"`;
     }
-    return res.data;
+
+    return out;
   };
 
+  // === POST PDF (siempre devuelve WHERE válido)
   const generarPDF = async () => {
     if (!validarRango()) return;
-    try {
-      const condicion = buildCondicion();
-      const blobData = await postPdfNuevo({ condicion, EMPRESA_ID: empresaId });
 
-      const blob = new Blob([blobData], { type: "application/pdf" });
+    const condicion = buildCondicion();
+    const payload = { condicion, EMPRESA_ID: empresaId };
+
+    try {
+      const res = await axios({
+        url: "/v2/report/nuevo/producto_vencimiento",
+        method: "POST",
+        data: payload,
+        responseType: "blob",
+        ...headers,
+      });
+
+      const contentType = res.headers?.["content-type"] || "";
+      if (!contentType.includes("pdf")) {
+        // intento leer mensaje del back si vino texto
+        try {
+          const txt = await res.data.text?.();
+          throw new Error(txt || "El servidor no devolvió un PDF.");
+        } catch {
+          throw new Error("El servidor no devolvió un PDF.");
+        }
+      }
+
+      const blob = new Blob([res.data], { type: "application/pdf" });
       if (previewUrl) URL.revokeObjectURL(previewUrl);
-      const url = URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(blob);
       setPreviewUrl(url);
       setPreviewOpen(true);
       setMessage({ open: true, severity: "success", text: "PDF generado." });
     } catch (err) {
       console.error("❌ Error al generar PDF:", err);
-      if (err?.response?.data instanceof Blob) {
-        try {
-          const txt = await err.response.data.text();
-          setMessage({ open: true, severity: "error", text: (txt || "").slice(0, 500) });
-          return;
-        } catch {}
-      }
-      setMessage({ open: true, severity: "error", text: err?.message || "Error al generar el PDF." });
+      setMessage({
+        open: true,
+        severity: "error",
+        text:
+          "No fue posible generar el PDF. Verifica que la plantilla use em.emp_id y k.kai_fecha_vencimiento, y que la API /v2/report/nuevo/producto_vencimiento esté disponible.",
+      });
     }
   };
 
@@ -193,7 +212,7 @@ export default function RE_productoVencimiento() {
     <Box sx={{ p: 4 }}>
       <Typography variant="h4" gutterBottom>Reporte de Vencimiento de Producto</Typography>
 
-      {/* Filtros (todos son ítems) */}
+      {/* Filtros */}
       <Grid container spacing={2} mb={2}>
         <Grid item xs={12} md={6}>
           <FormControl fullWidth>
@@ -337,7 +356,7 @@ export default function RE_productoVencimiento() {
         </DialogContent>
       </Dialog>
 
-      {/* Resultados UI */}
+      {/* Resultados (demo) */}
       {resultados.length > 0 && (
         <Box mt={4}>
           <Typography variant="h6" gutterBottom>Productos encontrados</Typography>
@@ -347,6 +366,8 @@ export default function RE_productoVencimiento() {
                 <TableRow>
                   <TableCell>ID</TableCell>
                   <TableCell>Nombre</TableCell>
+                  <TableCell>Categoría</TableCell>
+                  <TableCell>Descripción</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -356,7 +377,7 @@ export default function RE_productoVencimiento() {
                     <TableCell>{p.nombre ?? p.name ?? ""}</TableCell>
                     <TableCell>{p.productoCategoriaId ?? p.categoriaId ?? p.producto_categoria_id ?? ""}</TableCell>
                     <TableCell>{p.descripcion ?? ""}</TableCell>
-                  </TableRow>  
+                  </TableRow>
                 ))}
               </TableBody>
             </Table>
