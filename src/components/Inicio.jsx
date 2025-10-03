@@ -26,11 +26,11 @@ import Register from './Register';
 import ResetPassword from './ResetPassword';
 
 // Imágenes (desde public/images/carousel)
-import img1 from '../assets/carousel/img1.webp';
-import img2 from '../assets/carousel/img2.webp';
-import img3 from '../assets/carousel/img3.webp';
-import img4 from '../assets/carousel/img4.webp';
-import img5 from '../assets/carousel/img5.webp';
+import img1 from '/images/carousel/img1.png';
+import img2 from '/images/carousel/img2.png';
+import img3 from '/images/carousel/img3.png';
+import img4 from '/images/carousel/img4.png';
+import img5 from '/images/carousel/img5.png';
 
 // Estructura/medidas del carrusel
 import './diseño/inicio-embla.css';
@@ -106,13 +106,7 @@ function FullWidthCarousel({
             {images.map((src, idx) => (
               <div className="embla__slide" key={idx}>
                 <div className="embla__slide__inner">
-                  <img
-                    src={src}
-                    alt={`slide-${idx + 1}`}
-                    className="embla__img"
-                    decoding="async"
-                    {...(idx === 0 ? { fetchpriority: 'high' } : { loading: 'lazy' })}
-                  />
+                  <img src={src} alt={`slide-${idx + 1}`} className="embla__img" />
                 </div>
               </div>
             ))}

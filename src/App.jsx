@@ -5,7 +5,6 @@ import { useThemeToggle } from './components/dashboard/ThemeToggleProvider';
 import { useTranslation } from 'react-i18next';
 import './i18n.js';
 import './index.css';
-import { useLocation } from 'react-router-dom';
 
 import AppBarComponent from './components/dashboard/AppBarComponent.jsx';
 import Copyright from './components/dashboard/Copyright';
@@ -59,7 +58,7 @@ import RE_kardex from './components/RKardex/Rkardex.jsx';
 import RE_productoVencimiento from './components/RE_pv/re_pvn.jsx';
 import RE_ordenCompra from './components/RE_oc/re_oc.jsx';
 import RE_fc from './components/RE_fc/re_fc.jsx';
-import Verify from './components/Verify.jsx';
+
 const moduleMap = {
   persona: Persona,
   pais: Pais,
@@ -110,12 +109,10 @@ const moduleMap = {
 
 const APPBAR_GREEN = '#0F2327';
 
-
-
 const App = () => {
   useTranslation();
   useThemeToggle();
-  const location = useLocation();
+
   const [currentModule, setCurrentModule] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [menuOpen, setMenuOpen] = useState(() => {
@@ -124,50 +121,27 @@ const App = () => {
   });
 
   useEffect(() => {
-  // 1) Forzar pantalla de verificación por URL
-  if (location.pathname.startsWith('/auth/verify')) {
-    setIsAuthenticated(false);
-    setCurrentModule(<Verify />);         // <-- ahora sí monta Verify
-    return;
-  }
-
-  // 2) Si ya estás en /dashboard, exige token válido
-  if (location.pathname === '/dashboard') {
     const token = localStorage.getItem('token');
     const expiresAt = localStorage.getItem('token_expiration');
-    const ok = token && expiresAt && Date.now() < Number(expiresAt);
-    if (ok) {
+    const isTokenValid = token && expiresAt && Date.now() < Number(expiresAt);
+
+    if (isTokenValid) {
       setIsAuthenticated(true);
-      setCurrentModule(<Contenido setCurrentModule={setCurrentModule} />);
-      return;
-    }
-    setIsAuthenticated(false);
-    setCurrentModule(<Inicio setCurrentModule={setCurrentModule} />);
-    return;
-  }
-
-  // 3) Flujo normal (Home/Contenido según token)
-  const token = localStorage.getItem('token');
-  const expiresAt = localStorage.getItem('token_expiration');
-  const isTokenValid = token && expiresAt && Date.now() < Number(expiresAt);
-
-  if (isTokenValid) {
-    setIsAuthenticated(true);
-    const savedModule = localStorage.getItem('activeModule');
-    if (savedModule && moduleMap[savedModule]) {
-      const Component = moduleMap[savedModule];
-      setCurrentModule(<Component />);
+      const savedModule = localStorage.getItem('activeModule');
+      if (savedModule && moduleMap[savedModule]) {
+        const Component = moduleMap[savedModule];
+        setCurrentModule(<Component />);
+      } else {
+        setCurrentModule(<Contenido setCurrentModule={setCurrentModule} />);
+      }
     } else {
-      setCurrentModule(<Contenido setCurrentModule={setCurrentModule} />);
+      localStorage.removeItem('token');
+      localStorage.removeItem('token_expiration');
+      localStorage.removeItem('activeModule');
+      setIsAuthenticated(false);
+      setCurrentModule(<Inicio setCurrentModule={setCurrentModule} />);
     }
-  } else {
-    localStorage.removeItem('token');
-    localStorage.removeItem('token_expiration');
-    localStorage.removeItem('activeModule');
-    setIsAuthenticated(false);
-    setCurrentModule(<Inicio setCurrentModule={setCurrentModule} />);
-  }
-}, [location.pathname]); // <— clave: reacciona al path
+  }, []);
 
   const isPublic = !isAuthenticated;
 

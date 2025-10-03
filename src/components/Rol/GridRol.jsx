@@ -1,94 +1,54 @@
-// src/components/Rol/GridRol.jsx
 /**
  * @file GridRol.jsx
  * @module GridRol
- * @description Grilla de Roles con paginación server/cliente, selección controlada y mapeo robusto de estado.
+ * @description Componente de grilla para visualizar los roles registrados. Utiliza DataGrid de Material UI. Permite seleccionar un rol para su edición mediante clic en fila.
  * @author Karla
  */
 
-import React, { useMemo } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { DataGrid } from "@mui/x-data-grid";
 
-export default function GridRol({
-  // Datos
-  roles = [],
+/**
+ * @typedef {Object} RolData
+ * @property {number|string} rol_id - ID del rol
+ * @property {string} rol_nombre - Nombre del rol
+ * @property {string} rol_descripcion - Descripción del rol
+ * @property {number} rol_estado - Estado del rol (1: activo, 0: inactivo)
+ */
 
-  // Selección
-  selectedRow = null,
-  onEdit,                // (row) => void  (click en fila)
-  setSelectedRow,        // opcional: si quieres mantener selección destacada
+/**
+ * @typedef {Object} GridRolProps
+ * @property {Array<RolData>} roles - Lista de roles a mostrar en la grilla
+ * @property {function(RolData): void} onEdit - Función que maneja la selección de un rol para edición
+ */
 
-  // Paginación (server-side opcional)
-  loading = false,
-  paginationModel,       // { page, pageSize } o { page, size }
-  setPaginationModel,    // (model) => void
-  rowCount,              // total en servidor
-}) {
-  const columns = useMemo(() => ([
-    { field: "rol_id", headerName: "ID", width: 100, type: "number" },
-    { field: "rol_nombre", headerName: "Nombre", width: 220 },
-    { field: "rol_descripcion", headerName: "Descripción", flex: 1, minWidth: 280 },
-    {
-      field: "rol_estado",
-      headerName: "Estado",
-      width: 140,
-      valueGetter: (p) => {
-        const v =
-          p?.row?.estado?.nombre ??
-          p?.row?.estado?.name ??
-          p?.row?.rol_estado;
-        if (v === 1 || v === "1") return "Activo";
-        if (v === 0 || v === "0" || v === 2 || v === "2") return "Inactivo";
-        return String(v ?? "");
-      },
-    },
-  ]), []);
+const columns = [
+  { field: "rol_id", headerName: "ID", width: 90 },
+  { field: "rol_nombre", headerName: "Nombre", width: 200 },
+  { field: "rol_descripcion", headerName: "Descripción", width: 300 },
+  {
+    field: "rol_estado",
+    headerName: "Estado",
+    width: 150,
+    valueGetter: (params) => (params.row.rol_estado === 1 ? "Activo" : "Inactivo"),
+  },
+];
 
-  const serverPagination = Boolean(
-    paginationModel && setPaginationModel && typeof rowCount === "number"
-  );
-
+/**
+ * Componente GridRol.
+ *
+ * @param {GridRolProps} props - Props del componente
+ * @returns {JSX.Element} Grilla con la lista de roles
+ */
+export default function GridRol({ roles, onEdit }) {
   return (
-    <div style={{ width: "100%" }}>
+    <div style={{ height: 400, width: "100%" }}>
       <DataGrid
-        rows={Array.isArray(roles) ? roles : []}
+        rows={roles}
         columns={columns}
         getRowId={(row) => row.rol_id}
-        loading={loading}
-
-        // Selección/edición
-        onRowClick={(params) => {
-          setSelectedRow?.(params.row);
-          onEdit?.(params.row);
-        }}
-        rowSelectionModel={selectedRow?.rol_id ? [selectedRow.rol_id] : []}
-        disableRowSelectionOnClick
-        autoHeight
-
-        // Paginación
-        paginationMode={serverPagination ? "server" : "client"}
-        {...(serverPagination
-          ? {
-              rowCount,
-              paginationModel: {
-                page: paginationModel.page ?? 0,
-                pageSize: paginationModel.pageSize ?? paginationModel.size ?? 10,
-              },
-              onPaginationModelChange: (model) => {
-                const next = {
-                  page: model.page ?? 0,
-                  size: model.pageSize ?? model.size ?? 10,
-                };
-                setPaginationModel?.(next);
-              },
-            }
-          : {
-              pageSizeOptions: [5, 10, 15, 20, 50],
-              initialState: {
-                pagination: { paginationModel: { page: 0, pageSize: 5 } },
-              },
-            })}
+        onRowClick={(rowData) => onEdit(rowData.row)}
       />
     </div>
   );
@@ -101,24 +61,8 @@ GridRol.propTypes = {
       rol_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
       rol_nombre: PropTypes.string.isRequired,
       rol_descripcion: PropTypes.string.isRequired,
-      rol_estado: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-      estado: PropTypes.shape({
-        nombre: PropTypes.string,
-        name: PropTypes.string,
-      }),
+      rol_estado: PropTypes.number.isRequired,
     })
-  ),
-  onEdit: PropTypes.func,           // click en fila
-  selectedRow: PropTypes.object,
-  setSelectedRow: PropTypes.func,
-
-  // Server-side pagination (opcional)
-  paginationModel: PropTypes.shape({
-    page: PropTypes.number,
-    pageSize: PropTypes.number,
-    size: PropTypes.number,
-  }),
-  setPaginationModel: PropTypes.func,
-  rowCount: PropTypes.number,
-  loading: PropTypes.bool,
+  ).isRequired,
+  onEdit: PropTypes.func.isRequired,
 };
